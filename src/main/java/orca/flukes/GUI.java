@@ -60,6 +60,7 @@ public class GUI {
 		//	        Map<GraphElements.MyVertex,Point2D> vertexLocations = new HashMap<GraphElements.MyVertex, Point2D>();
 		Layout<GraphElements.MyVertex, GraphElements.MyEdge> layout = new StaticLayout<GraphElements.MyVertex, GraphElements.MyEdge>(g);
 
+		
 		//layout.setSize(new Dimension(1000,800));
 		VisualizationViewer<GraphElements.MyVertex,GraphElements.MyEdge> vv = 
 			new VisualizationViewer<GraphElements.MyVertex,GraphElements.MyEdge>(layout);

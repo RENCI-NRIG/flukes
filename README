@@ -1,1 +1,3 @@
 NDL-OWL-enabled GUI based on JUNG and GWT
+
+'package' phase produces a zip file that contains JNLP that should be deployed at the URL specified in the POM (geni-images.renci.org/webstart).
