@@ -2,7 +2,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>orca</groupId>
   <artifactId>flukes</artifactId>
-  <version>0.1</version>
+  <version>0.1-SNAPSHOT</version>
   <name>FLUKES</name>
   <description>FLUKES - ORCA NDL graph editor</description>
   <url>http://geni-images.renci.org/webstart/</url>
@@ -44,8 +44,9 @@
 				<artifactId>webstart-maven-plugin</artifactId>
 				<executions>
         			<execution>
+        				<phase>package</phase>
          				<goals>
-            				<goal>jnlp</goal> <!-- use jnlp, jnlp-inline or jnlp-single as appropriate -->
+            				<goal>jnlp-single</goal> <!-- use jnlp, jnlp-inline or jnlp-single as appropriate -->
           				</goals>
         			</execution>
        			</executions>
@@ -56,6 +57,7 @@
          					Set to true to exclude all transitive dependencies. Default is false.
          			-->
          			<excludeTransitive>false</excludeTransitive>
+         			<inputTemplate>jnlp/template.vm</inputTemplate>
 
          			<!-- The path where the libraries are stored within the jnlp structure. not required. by default the libraries are within the working directory -->
          			<libPath>lib</libPath>
@@ -78,15 +80,15 @@
 
          			<!-- JNLP generation -->
          			<jnlp>
-           			<!-- default values -->
-           			<!--inputTemplateResourcePath>${project.basedir}</inputTemplateResourcePath-->
-           			<!--inputTemplate>src/main/jnlp/template.vm</inputTemplate--> <!-- relative to inputTemplateResourcePath -->
-           			<!-- defaults to launch.jnlp -->
-           			<outputFile>flukes.jnlp</outputFile> 
-
-           			<!-- used to automatically identify the jar containing the main class. -->
-           			<!-- this is perhaps going to change -->
-           			<mainClass>orca.flukes.GUI</mainClass>
+	           			<!-- default values -->
+	           			<!--inputTemplateResourcePath>${project.basedir}</inputTemplateResourcePath-->
+	           			<!--inputTemplate>src/main/jnlp/template.vm</inputTemplate--> <!-- relative to inputTemplateResourcePath -->
+	           			<!-- defaults to launch.jnlp -->
+	           			<outputFile>flukes.jnlp</outputFile> 
+	
+	           			<!-- used to automatically identify the jar containing the main class. -->
+	           			<!-- this is perhaps going to change -->
+	           			<mainClass>orca.flukes.GUI</mainClass>
          			</jnlp>
 
 
@@ -101,7 +103,7 @@
 			            <storepass>flukespass</storepass> 
 			            <storetype>JKS</storetype>
 			            <alias>IliaBaldine</alias>
-			            <validity></validity>
+			            <validity>3650</validity>
 						
 			            <!-- only required for generating the keystore -->
 			            <dnameCn>Ilia Baldine</dnameCn>

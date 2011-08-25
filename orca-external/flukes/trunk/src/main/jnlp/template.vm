@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<jnlp
+		spec="1.0+"
+		codebase="$project.Url"
+		href="$outputFile">
+	<information>
+		<title>$project.Name</title>
+		<vendor>$project.Organization.Name</vendor>
+		<homepage href="$project.Organization.Url"/>
+		<description>$project.Description</description>
+		<offline-allowed/>
+	</information>
+	<security>
+		<all-permissions/>
+	</security>
+	<resources>
+		<j2se version="1.6+"/>
+		$dependencies
+	</resources>
+	<application-desc main-class="$mainClass"/>
+</jnlp>
