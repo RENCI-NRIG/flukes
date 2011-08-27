@@ -102,33 +102,33 @@ public class GUI {
 	public GUI() {
 		initialize();
 	}
-
+	
 	/**
 	 * Initialize request pane 
 	 */
 	protected void requestPane(Container c) {
-		SparseMultigraph<GraphElements.MyVertex, GraphElements.MyEdge> g = 
-			new SparseMultigraph<GraphElements.MyVertex, GraphElements.MyEdge>();
+		SparseMultigraph<OrcaNode, OrcaLink> g = 
+			new SparseMultigraph<OrcaNode, OrcaLink>();
 		// Layout<V, E>, VisualizationViewer<V,E>
-		//	        Map<GraphElements.MyVertex,Point2D> vertexLocations = new HashMap<GraphElements.MyVertex, Point2D>();
-		Layout<GraphElements.MyVertex, GraphElements.MyEdge> layout = new StaticLayout<GraphElements.MyVertex, GraphElements.MyEdge>(g);
+		//	        Map<OrcaNode,Point2D> vertexLocations = new HashMap<OrcaNode, Point2D>();
+		Layout<OrcaNode, OrcaLink> layout = new StaticLayout<OrcaNode, OrcaLink>(g);
 
 		
 		//layout.setSize(new Dimension(1000,800));
-		VisualizationViewer<GraphElements.MyVertex,GraphElements.MyEdge> vv = 
-			new VisualizationViewer<GraphElements.MyVertex,GraphElements.MyEdge>(layout);
+		VisualizationViewer<OrcaNode,OrcaLink> vv = 
+			new VisualizationViewer<OrcaNode,OrcaLink>(layout);
 		// Show vertex and edge labels
-		vv.getRenderContext().setVertexLabelTransformer(new ToStringLabeller<GraphElements.MyVertex>());
-		vv.getRenderContext().setEdgeLabelTransformer(new ToStringLabeller<GraphElements.MyEdge>());
+		vv.getRenderContext().setVertexLabelTransformer(new ToStringLabeller<OrcaNode>());
+		vv.getRenderContext().setEdgeLabelTransformer(new ToStringLabeller<OrcaLink>());
 		
 		// Create a graph mouse and add it to the visualization viewer
 		gm = new EditingModalGraphMouse(vv.getRenderContext(), 
-				GraphElements.MyVertexFactory.getInstance(),
-				GraphElements.MyEdgeFactory.getInstance()); 
+				OrcaNode.OrcaNodeFactory.getInstance(),
+				OrcaLink.OrcaLinkFactory.getInstance()); 
 		
 		// Set some defaults for the Edges...
-		GraphElements.MyEdgeFactory.setDefaultCapacity(192.0);
-		GraphElements.MyEdgeFactory.setDefaultWeight(5.0);
+		OrcaLink.OrcaLinkFactory.setDefaultCapacity(192.0);
+		OrcaLink.OrcaLinkFactory.setDefaultWeight(5.0);
 		
 		// Trying out our new popup menu mouse plugin...
 		PopupVertexEdgeMenuMousePlugin myPlugin = new PopupVertexEdgeMenuMousePlugin();

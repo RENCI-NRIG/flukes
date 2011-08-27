@@ -30,7 +30,7 @@ public class MyMouseMenus {
         public EdgeMenu() {
             super("Edge Menu");
             // this.frame = frame;
-            this.add(new DeleteEdgeMenuItem<GraphElements.MyEdge>());
+            this.add(new DeleteEdgeMenuItem<OrcaLink>());
             this.addSeparator();
             this.add(new WeightDisplay());
             this.add(new CapacityDisplay());
@@ -40,13 +40,13 @@ public class MyMouseMenus {
         
     }
     
-    public static class EdgePropItem extends JMenuItem implements EdgeMenuListener<GraphElements.MyEdge>,
+    public static class EdgePropItem extends JMenuItem implements EdgeMenuListener<OrcaLink>,
             MenuPointListener {
-        GraphElements.MyEdge edge;
+        OrcaLink edge;
         VisualizationViewer visComp;
         Point2D point;
         
-        public void setEdgeAndView(GraphElements.MyEdge edge, VisualizationViewer visComp) {
+        public void setEdgeAndView(OrcaLink edge, VisualizationViewer visComp) {
             this.edge = edge;
             this.visComp = visComp;
         }
@@ -68,14 +68,14 @@ public class MyMouseMenus {
         }
         
     }
-    public static class WeightDisplay extends JMenuItem implements EdgeMenuListener<GraphElements.MyEdge> {
-        public void setEdgeAndView(GraphElements.MyEdge e, VisualizationViewer visComp) {
+    public static class WeightDisplay extends JMenuItem implements EdgeMenuListener<OrcaLink> {
+        public void setEdgeAndView(OrcaLink e, VisualizationViewer visComp) {
             this.setText("Weight " + e + " = " + e.getWeight());
         }
     }
     
-    public static class CapacityDisplay extends JMenuItem implements EdgeMenuListener<GraphElements.MyEdge> {
-        public void setEdgeAndView(GraphElements.MyEdge e, VisualizationViewer visComp) {
+    public static class CapacityDisplay extends JMenuItem implements EdgeMenuListener<OrcaLink> {
+        public void setEdgeAndView(OrcaLink e, VisualizationViewer visComp) {
             this.setText("Capacity " + e + " = " + e.getCapacity());
         }
     }
@@ -83,15 +83,15 @@ public class MyMouseMenus {
     public static class VertexMenu extends JPopupMenu {
         public VertexMenu() {
             super("Vertex Menu");
-            this.add(new DeleteVertexMenuItem<GraphElements.MyVertex>());
+            this.add(new DeleteVertexMenuItem<OrcaNode>());
             this.addSeparator();
             this.add(new pscCheckBox());
             this.add(new tdmCheckBox());
         }
     }
     
-    public static class pscCheckBox extends JCheckBoxMenuItem implements VertexMenuListener<GraphElements.MyVertex> {
-        GraphElements.MyVertex v;
+    public static class pscCheckBox extends JCheckBoxMenuItem implements VertexMenuListener<OrcaNode> {
+        OrcaNode v;
         
         public pscCheckBox() {
             super("PSC Capable");
@@ -102,15 +102,15 @@ public class MyMouseMenus {
                 
             });
         }
-        public void setVertexAndView(GraphElements.MyVertex v, VisualizationViewer visComp) {
+        public void setVertexAndView(OrcaNode v, VisualizationViewer visComp) {
             this.v = v;
             this.setSelected(v.isPacketSwitchCapable());
         }
         
     }
     
-        public static class tdmCheckBox extends JCheckBoxMenuItem implements VertexMenuListener<GraphElements.MyVertex> {
-        GraphElements.MyVertex v;
+        public static class tdmCheckBox extends JCheckBoxMenuItem implements VertexMenuListener<OrcaNode> {
+        OrcaNode v;
         
         public tdmCheckBox() {
             super("TDM Capable");
@@ -121,7 +121,7 @@ public class MyMouseMenus {
                 
             });
         }
-        public void setVertexAndView(GraphElements.MyVertex v, VisualizationViewer visComp) {
+        public void setVertexAndView(OrcaNode v, VisualizationViewer visComp) {
             this.v = v;
             this.setSelected(v.isTdmSwitchCapable());
         }
