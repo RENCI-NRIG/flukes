@@ -44,7 +44,8 @@
 				<artifactId>webstart-maven-plugin</artifactId>
 				<executions>
         			<execution>
-        				<phase>package</phase>
+					<id>pack-jnlp</id>
+        				<phase>deploy</phase>
          				<goals>
             				<goal>jnlp-single</goal> <!-- use jnlp, jnlp-inline or jnlp-single as appropriate -->
           				</goals>

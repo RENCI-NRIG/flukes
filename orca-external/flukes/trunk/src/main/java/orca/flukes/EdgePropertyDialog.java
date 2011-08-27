@@ -12,10 +12,10 @@ package orca.flukes;
  * @author  Greg
  */
 public class EdgePropertyDialog extends javax.swing.JDialog {
-    GraphElements.MyEdge edge;
+    OrcaLink edge;
     
     /** Creates new form EdgePropertyDialog */
-    public EdgePropertyDialog(java.awt.Frame parent, GraphElements.MyEdge edge) {
+    public EdgePropertyDialog(java.awt.Frame parent, OrcaLink edge) {
         super(parent, true);
         initComponents();
         this.edge = edge;
