@@ -15,10 +15,10 @@ import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JSeparator;
-import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JToolBar;
 import javax.swing.SwingConstants;
@@ -35,7 +35,6 @@ public class GUI {
 
 	private JFrame frmOrcaFlukes;
 	private JPanel requestPanel, resourcePanel;
-	private JSplitPane splitPane;
 	private JToolBar toolBar;
 	private JButton nodeButton;
 	private JButton domainButton;
@@ -54,7 +53,9 @@ public class GUI {
 	private JMenuItem aboutMenuItem;
 	private JSeparator separator_1;
 	
-	private EditingModalGraphMouse gm;
+	private EditingModalGraphMouse<OrcaNode, OrcaLink> gm;
+	private JButton attributesButton;
+	private Component horizontalStrut_2;
 
 	// All menu actions here
 	public class MenuListener implements ActionListener {
@@ -122,7 +123,7 @@ public class GUI {
 		vv.getRenderContext().setEdgeLabelTransformer(new ToStringLabeller<OrcaLink>());
 		
 		// Create a graph mouse and add it to the visualization viewer
-		gm = new EditingModalGraphMouse(vv.getRenderContext(), 
+		gm = new EditingModalGraphMouse<OrcaNode, OrcaLink>(vv.getRenderContext(), 
 				OrcaNode.OrcaNodeFactory.getInstance(),
 				OrcaLink.OrcaLinkFactory.getInstance()); 
 		
@@ -131,7 +132,7 @@ public class GUI {
 		OrcaLink.OrcaLinkFactory.setDefaultWeight(5.0);
 		
 		// Trying out our new popup menu mouse plugin...
-		PopupVertexEdgeMenuMousePlugin myPlugin = new PopupVertexEdgeMenuMousePlugin();
+		PopupVertexEdgeMenuMousePlugin<OrcaNode, OrcaLink> myPlugin = new PopupVertexEdgeMenuMousePlugin<OrcaNode, OrcaLink>();
 		
 		// Add some popup menus for the edges and vertices to our mouse plugin.
 		JPopupMenu edgeMenu = new MyMouseMenus.EdgeMenu();
@@ -147,13 +148,13 @@ public class GUI {
 		
 		c.add(vv);
 
-		// Let's add a menu for changing mouse modes
-		JMenu modeMenu = gm.getModeMenu();
-		modeMenu.setText("Mouse Mode");
-		modeMenu.setPreferredSize(new Dimension(120,20)); // Change the size so I can see the text
-		menuBar.add(modeMenu);
-
 		gm.setMode(ModalGraphMouse.Mode.EDITING); // Start off in editing mode  
+	}
+	
+	private void aboutDialog() {
+		JOptionPane.showMessageDialog(frmOrcaFlukes, "FLUKES - ORCA NDL-OWL Network Editor", JOptionPane.PLAIN_MESSAGE);
+		
+		
 	}
 	
 	/*
@@ -170,12 +171,12 @@ public class GUI {
 		fileNewMenu = new JMenu("File ");
 		menuBar.add(fileNewMenu);
 		
-		openMenuItem = new JMenuItem("Open");
+		openMenuItem = new JMenuItem("Open...");
 		openMenuItem.setActionCommand("open");
 		openMenuItem.addActionListener(mListener);
 		fileNewMenu.add(openMenuItem);
 		
-		saveMenuItem = new JMenuItem("Save");
+		saveMenuItem = new JMenuItem("Save...");
 		saveMenuItem.setActionCommand("save");
 		saveMenuItem.addActionListener(mListener);
 		fileNewMenu.add(saveMenuItem);
@@ -187,6 +188,12 @@ public class GUI {
 		exitMenuItem.setActionCommand("exit");
 		exitMenuItem.addActionListener(mListener);
 		fileNewMenu.add(exitMenuItem);
+		
+		// Let's add a menu for changing mouse modes
+		JMenu modeMenu = gm.getModeMenu();
+		modeMenu.setText("Mouse Mode");
+		modeMenu.setPreferredSize(new Dimension(120,20)); 
+		menuBar.add(modeMenu);
 		
 		mnNewMenu = new JMenu("Help");
 		menuBar.add(mnNewMenu);
@@ -240,7 +247,7 @@ public class GUI {
 		toolBar.setAlignmentY(Component.CENTER_ALIGNMENT);
 		requestPanel.add(toolBar);
 		
-		nodeButton = new JButton("Node");
+		nodeButton = new JButton("Add Node");
 		nodeButton.setToolTipText("Add new node");
 		nodeButton.setVerticalAlignment(SwingConstants.TOP);
 		toolBar.add(nodeButton);
@@ -248,7 +255,7 @@ public class GUI {
 		horizontalStrut = Box.createHorizontalStrut(10);
 		toolBar.add(horizontalStrut);
 		
-		domainButton = new JButton("Domain");
+		domainButton = new JButton("Add Domain");
 		domainButton.setToolTipText("Add new domain");
 		domainButton.setVerticalAlignment(SwingConstants.TOP);
 		toolBar.add(domainButton);
@@ -256,13 +263,19 @@ public class GUI {
 		horizontalStrut_1 = Box.createHorizontalStrut(10);
 		toolBar.add(horizontalStrut_1);
 		
-		reservationButton = new JButton("Reservation");
+		reservationButton = new JButton("Edit Reservation");
 		toolBar.add(reservationButton);
 		
+		horizontalStrut_2 = Box.createHorizontalStrut(10);
+		toolBar.add(horizontalStrut_2);
+		
+		attributesButton = new JButton("Edit Attributes");
+		toolBar.add(attributesButton);
+				
+		requestPane(requestPanel);
+
 		// now the menu
 		commonMenus();
-		
-		requestPane(requestPanel);
 	}
 
 }
