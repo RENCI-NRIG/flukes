@@ -17,6 +17,6 @@ import edu.uci.ics.jung.visualization.VisualizationViewer;
  * has full access to the graph and layout.
  * @author Dr. Greg M. Bernstein
  */
-public interface VertexMenuListener<V> {
-    void setVertexAndView(V v, VisualizationViewer visView);    
+public interface VertexMenuListener<V, E> {
+    void setVertexAndView(V v, VisualizationViewer<V,E> visView);    
 }

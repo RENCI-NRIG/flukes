@@ -14,12 +14,12 @@ import edu.uci.ics.jung.visualization.VisualizationViewer;
  * its visualization component context.  Used with PopupVertexEdgeMenuMousePlugin.
  * @author Dr. Greg M. Bernstein
  */
-public interface EdgeMenuListener<E> {
+public interface EdgeMenuListener<V, E> {
     /**
      * Used to set the edge and visulization component.
      * @param e 
      * @param visComp 
      */
-     void setEdgeAndView(E e, VisualizationViewer visView); 
+     void setEdgeAndView(E e, VisualizationViewer<V, E> visView); 
     
 }
