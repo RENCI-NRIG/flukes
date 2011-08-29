@@ -48,7 +48,6 @@ public class GUI {
 	private JButton reservationButton;
 	private Component horizontalStrut_1;
 	private JMenu mnNewMenu;
-	private JMenuItem welcomeMenuItem;
 	private JMenuItem helpMenuItem;
 	private JMenuItem aboutMenuItem;
 	private JSeparator separator_1;
@@ -57,6 +56,8 @@ public class GUI {
 	private JButton attributesButton;
 	private Component horizontalStrut_2;
 
+	private static GUI instance = null;
+	
 	// All menu actions here
 	public class MenuListener implements ActionListener {
 		
@@ -68,9 +69,9 @@ public class GUI {
 			else if (e.getActionCommand().equals("save"))
 				;
 			else if (e.getActionCommand().equals("help"))
-				;
+				helpDialog();
 			else if (e.getActionCommand().equals("about"))
-				;
+				aboutDialog();
 			else if (e.getActionCommand().equals("welcome"))
 				;
 		}
@@ -88,8 +89,9 @@ public class GUI {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
-					GUI window = new GUI();
-					window.frmOrcaFlukes.setVisible(true);
+					GUI gui = GUI.getInstance();
+					gui.initialize();
+					gui.getFrame().setVisible(true);
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
@@ -100,8 +102,18 @@ public class GUI {
 	/**
 	 * Create the application.
 	 */
-	public GUI() {
-		initialize();
+	private GUI() {
+		;
+	}
+	
+	public static GUI getInstance() {
+		if (instance == null)
+			instance = new GUI();
+		return instance;
+	}
+	
+	public JFrame getFrame() {
+		return frmOrcaFlukes;
 	}
 	
 	/**
@@ -152,9 +164,14 @@ public class GUI {
 	}
 	
 	private void aboutDialog() {
-		JOptionPane.showMessageDialog(frmOrcaFlukes, "FLUKES - ORCA NDL-OWL Network Editor", JOptionPane.PLAIN_MESSAGE);
-		
-		
+		JOptionPane.showMessageDialog(frmOrcaFlukes, 
+				"FLUKES - ORCA NDL-OWL Network Editor v0.1\nVisit http://geni-orca.renci.org/trac/flukes",
+				"About", JOptionPane.INFORMATION_MESSAGE);
+	}
+	
+	private void helpDialog() {
+		JOptionPane.showMessageDialog(frmOrcaFlukes, 
+				"Helpful help message", "Help", JOptionPane.INFORMATION_MESSAGE);
 	}
 	
 	/*
@@ -198,11 +215,6 @@ public class GUI {
 		mnNewMenu = new JMenu("Help");
 		menuBar.add(mnNewMenu);
 		
-		welcomeMenuItem = new JMenuItem("Welcome");
-		welcomeMenuItem.setActionCommand("welcome");
-		welcomeMenuItem.addActionListener(mListener);
-		mnNewMenu.add(welcomeMenuItem);
-		
 		helpMenuItem = new JMenuItem("Help Contents");
 		helpMenuItem.setActionCommand("help");
 		helpMenuItem.addActionListener(mListener);
@@ -221,7 +233,7 @@ public class GUI {
 	/**
 	 * Initialize the contents of the frame.
 	 */
-	private void initialize() {
+	public void initialize() {
 		frmOrcaFlukes = new JFrame();
 		frmOrcaFlukes.setTitle("ORCA FLUKES - The ORCA Network Editor");
 		//frmOrcaFlukes.getContentPane().setLayout(new BoxLayout(frmOrcaFlukes.getContentPane(), BoxLayout.X_AXIS));
@@ -256,7 +268,7 @@ public class GUI {
 		toolBar.add(horizontalStrut);
 		
 		domainButton = new JButton("Add Domain");
-		domainButton.setToolTipText("Add new domain");
+		domainButton.setToolTipText("Add new doedgemmain");
 		domainButton.setVerticalAlignment(SwingConstants.TOP);
 		toolBar.add(domainButton);
 		

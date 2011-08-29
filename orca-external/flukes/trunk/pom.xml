@@ -28,6 +28,13 @@
       <url>https://ci-dev.renci.org/nexus/content/repositories/geni-orca-libs/</url>
     </repository>
   </distributionManagement>
+  <repositories>
+	<repository>
+		<id>geni-orca-libs</id>
+		<name>Orca Project Maven Repository</name>
+		<url>http://ci-dev.renci.org/nexus/content/repositories/geni-orca-libs</url>
+	</repository>
+  </repositories>
 	<build>
 		<plugins>
 			<plugin>
@@ -190,6 +197,11 @@
     	<groupId>net.java.dev.swing-layout</groupId>
     	<artifactId>swing-layout</artifactId>
     	<version>1.0.2</version>
+    </dependency>
+    <dependency>
+    	<groupId>hyperrealm</groupId>
+    	<artifactId>kiwi</artifactId>
+    	<version>2.4.1</version>
     </dependency>
   </dependencies>
 </project>

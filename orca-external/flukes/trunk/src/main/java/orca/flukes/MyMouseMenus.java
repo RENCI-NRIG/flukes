@@ -30,23 +30,23 @@ public class MyMouseMenus {
         public EdgeMenu() {
             super("Edge Menu");
             // this.frame = frame;
-            this.add(new DeleteEdgeMenuItem<OrcaLink>());
+            this.add(new DeleteEdgeMenuItem<OrcaNode, OrcaLink>());
             this.addSeparator();
             this.add(new WeightDisplay());
             this.add(new CapacityDisplay());
             this.addSeparator();
-            //this.add(new EdgePropItem(frame));           
+            this.add(new EdgePropItem(GUI.getInstance().getFrame()));           
         }
         
     }
     
-    public static class EdgePropItem extends JMenuItem implements EdgeMenuListener<OrcaLink>,
+    public static class EdgePropItem extends JMenuItem implements EdgeMenuListener<OrcaNode, OrcaLink>,
             MenuPointListener {
         OrcaLink edge;
-        VisualizationViewer visComp;
+        VisualizationViewer<OrcaNode, OrcaLink> visComp;
         Point2D point;
         
-        public void setEdgeAndView(OrcaLink edge, VisualizationViewer visComp) {
+        public void setEdgeAndView(OrcaLink edge, VisualizationViewer<OrcaNode, OrcaLink> visComp) {
             this.edge = edge;
             this.visComp = visComp;
         }
@@ -68,13 +68,13 @@ public class MyMouseMenus {
         }
         
     }
-    public static class WeightDisplay extends JMenuItem implements EdgeMenuListener<OrcaLink> {
+    public static class WeightDisplay extends JMenuItem implements EdgeMenuListener<OrcaNode, OrcaLink> {
         public void setEdgeAndView(OrcaLink e, VisualizationViewer visComp) {
             this.setText("Weight " + e + " = " + e.getWeight());
         }
     }
     
-    public static class CapacityDisplay extends JMenuItem implements EdgeMenuListener<OrcaLink> {
+    public static class CapacityDisplay extends JMenuItem implements EdgeMenuListener<OrcaNode, OrcaLink> {
         public void setEdgeAndView(OrcaLink e, VisualizationViewer visComp) {
             this.setText("Capacity " + e + " = " + e.getCapacity());
         }
