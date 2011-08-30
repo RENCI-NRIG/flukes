@@ -13,6 +13,7 @@ import java.awt.Component;
 import java.awt.event.MouseEvent;
 import java.awt.geom.Point2D;
 
+import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 
@@ -29,7 +30,7 @@ import edu.uci.ics.jung.visualization.control.AbstractPopupGraphMousePlugin;
  * @author Dr. Greg M. Bernstein
  */
 public class PopupVertexEdgeMenuMousePlugin<V, E> extends AbstractPopupGraphMousePlugin {
-    private JPopupMenu edgePopup, vertexPopup;
+    private JPopupMenu edgePopup, vertexPopup, modePopup;
     
     /** Creates a new instance of PopupVertexEdgeMenuMousePlugin */
     public PopupVertexEdgeMenuMousePlugin() {
@@ -63,28 +64,26 @@ public class PopupVertexEdgeMenuMousePlugin<V, E> extends AbstractPopupGraphMous
                 vertexPopup.show(vv, e.getX(), e.getY());
             } else {
                 final E edge = pickSupport.getEdge(vv.getGraphLayout(), p.getX(), p.getY());
-                if(edge != null) {
+                if (edge != null) {
                     // System.out.println("Edge " + edge + " was right clicked");
                     updateEdgeMenu(edge, vv, p);
                     edgePopup.show(vv, e.getX(), e.getY());
-                  
+                }  else  {
+                	// pop up the mode menu
+                	if (modePopup != null)
+                		modePopup.show(vv, e.getX(), e.getY());
                 }
             }
-        } else  {
-        	// pop up the mode menu
-        	System.out.println("Outside\n");
-        	JPopupMenu modePopMenu = new JPopupMenu();
-        	JMenuItem menuItem = new JMenuItem("A popup menu item");
-        	modePopMenu.add(menuItem);
         }
+
     }
     
-    private void updateVertexMenu(V v, VisualizationViewer vv, Point2D point) {
+    private void updateVertexMenu(V v, VisualizationViewer<V,E> vv, Point2D point) {
         if (vertexPopup == null) return;
         Component[] menuComps = vertexPopup.getComponents();
         for (Component comp: menuComps) {
-            if (comp instanceof VertexMenuListener) {
-                ((VertexMenuListener)comp).setVertexAndView(v, vv);
+            if (comp instanceof VertexMenuListener<?, ?>) {
+                ((VertexMenuListener<V, E>)comp).setVertexAndView(v, vv);
             }
             if (comp instanceof MenuPointListener) {
                 ((MenuPointListener)comp).setPoint(point);
@@ -125,12 +124,20 @@ public class PopupVertexEdgeMenuMousePlugin<V, E> extends AbstractPopupGraphMous
         this.vertexPopup = vertexPopup;
     }
     
-    private void updateEdgeMenu(E edge, VisualizationViewer vv, Point2D point) {
+    public JPopupMenu getModePopup() {
+    	return modePopup;
+    }
+    
+    public void setModePopup(JPopupMenu modePopup) {
+    	this.modePopup = modePopup;
+    }
+    
+    private void updateEdgeMenu(E edge, VisualizationViewer<V, E> vv, Point2D point) {
         if (edgePopup == null) return;
         Component[] menuComps = edgePopup.getComponents();
         for (Component comp: menuComps) {
-            if (comp instanceof EdgeMenuListener) {
-                ((EdgeMenuListener)comp).setEdgeAndView(edge, vv);
+            if (comp instanceof EdgeMenuListener<?,?>) {
+                ((EdgeMenuListener<V, E>)comp).setEdgeAndView(edge, vv);
             }
             if (comp instanceof MenuPointListener) {
                 ((MenuPointListener)comp).setPoint(point);
