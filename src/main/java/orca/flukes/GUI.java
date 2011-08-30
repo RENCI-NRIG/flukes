@@ -3,10 +3,11 @@ package orca.flukes;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Container;
-import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
+import java.util.HashMap;
 
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -17,16 +18,18 @@ import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.JPopupMenu;
 import javax.swing.JSeparator;
 import javax.swing.JTabbedPane;
 import javax.swing.JToolBar;
 import javax.swing.SwingConstants;
 
+import orca.flukes.ui.ChooserWithNewDialog;
+
 import edu.uci.ics.jung.algorithms.layout.Layout;
 import edu.uci.ics.jung.algorithms.layout.StaticLayout;
 import edu.uci.ics.jung.graph.SparseMultigraph;
 import edu.uci.ics.jung.visualization.VisualizationViewer;
+import edu.uci.ics.jung.visualization.control.AbstractModalGraphMouse;
 import edu.uci.ics.jung.visualization.control.EditingModalGraphMouse;
 import edu.uci.ics.jung.visualization.control.ModalGraphMouse;
 import edu.uci.ics.jung.visualization.decorators.ToStringLabeller;
@@ -57,8 +60,17 @@ public class GUI {
 	private Component horizontalStrut_2;
 
 	private static GUI instance = null;
+	private JButton imageButton;
+	private Component horizontalStrut_3;
+	
+	HashMap<String, OrcaImage> definedImages = new HashMap<String, OrcaImage>();
+	ChooserWithNewDialog<String> icd = null;
+	boolean addingNewImage = false;
 	
 	// All menu actions here
+	/**
+	 * Menu actions
+	 */
 	public class MenuListener implements ActionListener {
 		
 		public void actionPerformed(ActionEvent e) {
@@ -74,6 +86,22 @@ public class GUI {
 				aboutDialog();
 			else if (e.getActionCommand().equals("welcome"))
 				;
+		}
+	}
+	
+	/**
+	 * Request pane button actions
+	 * @author ibaldin
+	 *
+	 */
+	public class RequestButtonListener implements ActionListener {
+		public void actionPerformed(ActionEvent e) {
+			if (e.getActionCommand().equals("images")) {
+				icd = new ImageChooserDialog();
+				icd.setTexture(null);
+				icd.pack();
+				icd.setVisible(true);
+			}
 		}
 	}
 	
@@ -116,6 +144,10 @@ public class GUI {
 		return frmOrcaFlukes;
 	}
 	
+	public AbstractModalGraphMouse getMouse() {
+		return gm;
+	}
+	
 	/**
 	 * Initialize request pane 
 	 */
@@ -147,10 +179,9 @@ public class GUI {
 		PopupVertexEdgeMenuMousePlugin<OrcaNode, OrcaLink> myPlugin = new PopupVertexEdgeMenuMousePlugin<OrcaNode, OrcaLink>();
 		
 		// Add some popup menus for the edges and vertices to our mouse plugin.
-		JPopupMenu edgeMenu = new MyMouseMenus.EdgeMenu();
-		JPopupMenu vertexMenu = new MyMouseMenus.VertexMenu();
-		myPlugin.setEdgePopup(edgeMenu);
-		myPlugin.setVertexPopup(vertexMenu);
+		myPlugin.setEdgePopup(new MouseMenus.EdgeMenu());
+		myPlugin.setVertexPopup(new MouseMenus.VertexMenu());
+		myPlugin.setModePopup(new MouseMenus.ModeMenu());
 		gm.remove(gm.getPopupEditingPlugin());  // Removes the existing popup editing plugin
 		gm.add(myPlugin);
 		
@@ -207,10 +238,10 @@ public class GUI {
 		fileNewMenu.add(exitMenuItem);
 		
 		// Let's add a menu for changing mouse modes
-		JMenu modeMenu = gm.getModeMenu();
+		/*	JMenu modeMenu = gm.getModeMenu();
 		modeMenu.setText("Mouse Mode");
 		modeMenu.setPreferredSize(new Dimension(120,20)); 
-		menuBar.add(modeMenu);
+		menuBar.add(modeMenu);*/
 		
 		mnNewMenu = new JMenu("Help");
 		menuBar.add(mnNewMenu);
@@ -259,21 +290,30 @@ public class GUI {
 		toolBar.setAlignmentY(Component.CENTER_ALIGNMENT);
 		requestPanel.add(toolBar);
 		
-		nodeButton = new JButton("Add Node");
-		nodeButton.setToolTipText("Add new node");
+		nodeButton = new JButton("Add Nodes");
+		nodeButton.setToolTipText("Add new nodes");
 		nodeButton.setVerticalAlignment(SwingConstants.TOP);
 		toolBar.add(nodeButton);
 		
 		horizontalStrut = Box.createHorizontalStrut(10);
 		toolBar.add(horizontalStrut);
 		
-		domainButton = new JButton("Add Domain");
-		domainButton.setToolTipText("Add new doedgemmain");
+		domainButton = new JButton("Add Domains");
+		domainButton.setToolTipText("Add new domains");
 		domainButton.setVerticalAlignment(SwingConstants.TOP);
 		toolBar.add(domainButton);
 		
 		horizontalStrut_1 = Box.createHorizontalStrut(10);
 		toolBar.add(horizontalStrut_1);
+		
+		imageButton = new JButton("Images");
+		imageButton.setToolTipText("Add or edit images");
+		imageButton.setActionCommand("images");
+		imageButton.addActionListener(new RequestButtonListener());
+		toolBar.add(imageButton);
+		
+		horizontalStrut_3 = Box.createHorizontalStrut(10);
+		toolBar.add(horizontalStrut_3);
 		
 		reservationButton = new JButton("Edit Reservation");
 		toolBar.add(reservationButton);
