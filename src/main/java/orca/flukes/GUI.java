@@ -6,8 +6,8 @@ import java.awt.Container;
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.net.MalformedURLException;
+import java.net.URL;
 
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -23,7 +23,8 @@ import javax.swing.JTabbedPane;
 import javax.swing.JToolBar;
 import javax.swing.SwingConstants;
 
-import orca.flukes.ui.ChooserWithNewDialog;
+import com.hyperrealm.kiwi.ui.AboutFrame;
+import com.hyperrealm.kiwi.ui.UIChangeManager;
 
 import edu.uci.ics.jung.algorithms.layout.Layout;
 import edu.uci.ics.jung.algorithms.layout.StaticLayout;
@@ -63,10 +64,6 @@ public class GUI {
 	private JButton imageButton;
 	private Component horizontalStrut_3;
 	
-	HashMap<String, OrcaImage> definedImages = new HashMap<String, OrcaImage>();
-	ChooserWithNewDialog<String> icd = null;
-	boolean addingNewImage = false;
-	
 	// All menu actions here
 	/**
 	 * Menu actions
@@ -97,10 +94,16 @@ public class GUI {
 	public class RequestButtonListener implements ActionListener {
 		public void actionPerformed(ActionEvent e) {
 			if (e.getActionCommand().equals("images")) {
-				icd = new ImageChooserDialog();
-				icd.setTexture(null);
-				icd.pack();
-				icd.setVisible(true);
+				GUIState.getInstance().icd = new ImageChooserDialog(getFrame());
+				GUIState.getInstance().icd.pack();
+				GUIState.getInstance().icd.setVisible(true);
+			} else if (e.getActionCommand().equals("reservation")) {
+				GUIState.getInstance().rdd = new ReservationDetailsDialog(getFrame());
+				GUIState.getInstance().rdd.setFields(GUIState.getInstance().resImageName, 
+						GUIState.getInstance().resStart, 
+						GUIState.getInstance().resEnd);
+				GUIState.getInstance().rdd.pack();
+				GUIState.getInstance().rdd.setVisible(true);
 			}
 		}
 	}
@@ -131,7 +134,7 @@ public class GUI {
 	 * Create the application.
 	 */
 	private GUI() {
-		;
+		UIChangeManager.setDefaultTexture(null);
 	}
 	
 	public static GUI getInstance() {
@@ -152,11 +155,11 @@ public class GUI {
 	 * Initialize request pane 
 	 */
 	protected void requestPane(Container c) {
-		SparseMultigraph<OrcaNode, OrcaLink> g = 
+		GUIState.getInstance().g = 
 			new SparseMultigraph<OrcaNode, OrcaLink>();
 		// Layout<V, E>, VisualizationViewer<V,E>
 		//	        Map<OrcaNode,Point2D> vertexLocations = new HashMap<OrcaNode, Point2D>();
-		Layout<OrcaNode, OrcaLink> layout = new StaticLayout<OrcaNode, OrcaLink>(g);
+		Layout<OrcaNode, OrcaLink> layout = new StaticLayout<OrcaNode, OrcaLink>(GUIState.getInstance().g);
 
 		
 		//layout.setSize(new Dimension(1000,800));
@@ -195,9 +198,16 @@ public class GUI {
 	}
 	
 	private void aboutDialog() {
-		JOptionPane.showMessageDialog(frmOrcaFlukes, 
-				"FLUKES - ORCA NDL-OWL Network Editor v0.1\nVisit http://geni-orca.renci.org/trac/flukes",
-				"About", JOptionPane.INFORMATION_MESSAGE);
+//		JOptionPane.showMessageDialog(frmOrcaFlukes, 
+//				"FLUKES - ORCA NDL-OWL Network Editor v0.1\nVisit http://geni-orca.renci.org/trac/flukes",
+//				"About", JOptionPane.INFORMATION_MESSAGE);
+		try {
+			AboutFrame ab = new AboutFrame("About FLUKES", new URL("https://geni-orca.renci.org"));
+			ab.setVisible(true);
+		} catch (MalformedURLException e) {
+			;
+		}
+		
 	}
 	
 	private void helpDialog() {
@@ -306,23 +316,28 @@ public class GUI {
 		horizontalStrut_1 = Box.createHorizontalStrut(10);
 		toolBar.add(horizontalStrut_1);
 		
+		RequestButtonListener rbl = new RequestButtonListener();
+		
 		imageButton = new JButton("Images");
 		imageButton.setToolTipText("Add or edit images");
 		imageButton.setActionCommand("images");
-		imageButton.addActionListener(new RequestButtonListener());
+		imageButton.addActionListener(rbl);
 		toolBar.add(imageButton);
 		
 		horizontalStrut_3 = Box.createHorizontalStrut(10);
 		toolBar.add(horizontalStrut_3);
 		
 		reservationButton = new JButton("Edit Reservation");
+		reservationButton.setToolTipText("Edit reservation details");
+		reservationButton.setActionCommand("reservation");
+		reservationButton.addActionListener(rbl);
 		toolBar.add(reservationButton);
 		
-		horizontalStrut_2 = Box.createHorizontalStrut(10);
-		toolBar.add(horizontalStrut_2);
-		
-		attributesButton = new JButton("Edit Attributes");
-		toolBar.add(attributesButton);
+//		horizontalStrut_2 = Box.createHorizontalStrut(10);
+//		toolBar.add(horizontalStrut_2);
+//		
+//		attributesButton = new JButton("Edit Attributes");
+//		toolBar.add(attributesButton);
 				
 		requestPane(requestPanel);
 

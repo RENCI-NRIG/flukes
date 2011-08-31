@@ -24,19 +24,13 @@ import com.hyperrealm.kiwi.ui.dialog.KMessageDialog;
 public class OrcaImageDialog extends ComponentDialog {
 	private KTextField shortName, imageHash;
 	private URLField imageUrl;
-	
-	public OrcaImageDialog(Dialog parent) {
-		super(parent, "ORCA Images", true);
-		setTexture(null);
-		setComment("Enter image name, URL and hash");
-		setVisible(true);
-	}
+	JFrame parent;
 
 	public OrcaImageDialog(JFrame parent) {
 		super(parent, "ORCA Images", true);
 		super.setLocationRelativeTo(parent);
-		setTexture(null);
 		setComment("Enter image name, URL and hash");
+		this.parent = parent;
 	}
 	
 	public void setFields(String shortName, URL url, String hash) {
@@ -48,7 +42,6 @@ public class OrcaImageDialog extends ComponentDialog {
 	@Override
 	protected Component buildDialogUI() {
 		KPanel kp = new KPanel();
-		kp.setTexture(null);
 		
 		GridBagLayout gbl_contentPanel = new GridBagLayout();
 //		gbl_contentPanel.columnWidths = new int[]{0, 0, 0, 0};
@@ -130,19 +123,26 @@ public class OrcaImageDialog extends ComponentDialog {
 				(imageUrl.getObject() != null) && 
 				checkField(imageHash.getObject())) {
 			// disallow adding under same name
-			if (GUI.getInstance().addingNewImage && GUI.getInstance().definedImages.containsKey(shortName.getObject())) {
+			if (GUIState.getInstance().addingNewImage && GUIState.getInstance().definedImages.containsKey(shortName.getObject())) {
 				KMessageDialog kmd = new KMessageDialog(GUI.getInstance().getFrame());
 				kmd.setMessage("Image with short name " + shortName.getObject() + " already exists!");
-				kmd.setTexture(null);
+				kmd.setLocationRelativeTo(parent);
 				kmd.setVisible(true);
 				return false;
 			}
-			GUI.getInstance().definedImages.put(shortName.getObject(), 
+			if (GUIState.getInstance().addingNewImage && shortName.getObject().equals(GUIState.NO_GLOBAL_IMAGE)) {
+				KMessageDialog kmd = new KMessageDialog(GUI.getInstance().getFrame());
+				kmd.setMessage("Short name \"None\" is reserved!");
+				kmd.setLocationRelativeTo(parent);
+				kmd.setVisible(true);
+				return false;
+			}
+			GUIState.getInstance().definedImages.put(shortName.getObject(), 
 					new OrcaImage(shortName.getObject(), imageUrl.getObject(), imageHash.getObject()));
 			// TODO: repaint the dialog instead of killing it
-			GUI.getInstance().icd.setVisible(false);
-			GUI.getInstance().icd.destroy();
-			GUI.getInstance().addingNewImage = false;
+			GUIState.getInstance().icd.setVisible(false);
+			GUIState.getInstance().icd.destroy();
+			GUIState.getInstance().addingNewImage = false;
 			return true;
 		}
 		return false;

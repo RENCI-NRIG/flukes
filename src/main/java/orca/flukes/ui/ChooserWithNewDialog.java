@@ -12,6 +12,7 @@ import com.hyperrealm.kiwi.ui.ButtonPanel;
 import com.hyperrealm.kiwi.ui.KPanel;
 import com.hyperrealm.kiwi.ui.dialog.ItemChooserDialog;
 
+@SuppressWarnings("serial")
 public class ChooserWithNewDialog<T> extends ItemChooserDialog<T> {
 
 	public ChooserWithNewDialog(Dialog parent, String title, String comment, Iterator<T> items) {
