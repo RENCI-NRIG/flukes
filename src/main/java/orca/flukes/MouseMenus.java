@@ -76,8 +76,8 @@ public class MouseMenus {
             // this.frame = frame;
             this.add(new DeleteEdgeMenuItem<OrcaNode, OrcaLink>());
             this.addSeparator();
-            this.add(new WeightDisplay());
-            this.add(new CapacityDisplay());
+            this.add(new LatencyDisplay());
+            this.add(new BandwidthDisplay());
             this.addSeparator();
             this.add(new EdgePropItem(GUI.getInstance().getFrame()));           
         }
@@ -100,76 +100,63 @@ public class MouseMenus {
         }
         
         public  EdgePropItem(final JFrame frame) {            
-            super("Edit Edge Properties...");
+            super("Edit Link Properties...");
             this.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
-                    EdgePropertyDialog dialog = new EdgePropertyDialog(frame, edge);
-                    dialog.setLocation((int)point.getX()+ frame.getX(), (int)point.getY()+ frame.getY());
+                    OrcaLinkPropertyDialog dialog = new OrcaLinkPropertyDialog(frame, edge);
+                    dialog.pack();
                     dialog.setVisible(true);
                 }
-                
             });
         }
         
     }
-    public static class WeightDisplay extends JMenuItem implements EdgeMenuListener<OrcaNode, OrcaLink> {
+    public static class LatencyDisplay extends JMenuItem implements EdgeMenuListener<OrcaNode, OrcaLink> {
         public void setEdgeAndView(OrcaLink e, VisualizationViewer<OrcaNode, OrcaLink> visComp) {
-            this.setText("Weight " + e + " = " + e.getWeight());
+            this.setText("Latency: " + e.getLatency());
         }
     }
     
-    public static class CapacityDisplay extends JMenuItem implements EdgeMenuListener<OrcaNode, OrcaLink> {
+    public static class BandwidthDisplay extends JMenuItem implements EdgeMenuListener<OrcaNode, OrcaLink> {
         public void setEdgeAndView(OrcaLink e, VisualizationViewer<OrcaNode, OrcaLink> visComp) {
-            this.setText("Capacity " + e + " = " + e.getCapacity());
+            this.setText("Capacity: " + e.getBandwidth());
         }
     }
     
-    public static class VertexMenu extends JPopupMenu {
-        public VertexMenu() {
-            super("Vertex Menu");
+    public static class NodeMenu extends JPopupMenu {
+        public NodeMenu() {
+            super("Node Menu");
             this.add(new DeleteVertexMenuItem<OrcaNode, OrcaLink>());
             this.addSeparator();
-            this.add(new pscCheckBox());
-            this.add(new tdmCheckBox());
+            this.add(new NodePropItem(GUI.getInstance().getFrame()));
         }
     }
     
-    public static class pscCheckBox extends JCheckBoxMenuItem implements VertexMenuListener<OrcaNode, OrcaLink> {
-        OrcaNode v;
+    public static class NodePropItem extends JMenuItem implements NodeMenuListener<OrcaNode, OrcaLink>, MenuPointListener {
+        OrcaNode node;
+        VisualizationViewer<OrcaNode, OrcaLink> visComp;
+        Point2D point;
         
-        public pscCheckBox() {
-            super("PSC Capable");
+        public  NodePropItem(final JFrame frame) {            
+            super("Edit Node Properties...");
             this.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
-                    v.setPacketSwitchCapable(isSelected());
+                    OrcaNodePropertyDialog dialog = new OrcaNodePropertyDialog(frame, node);
+                    dialog.pack();
+                    dialog.setVisible(true);
                 }
-                
             });
         }
-        public void setVertexAndView(OrcaNode v, VisualizationViewer<OrcaNode, OrcaLink> visComp) {
-            this.v = v;
-            this.setSelected(v.isPacketSwitchCapable());
-        }
         
+		public void setNodeAndView(OrcaNode v,
+				VisualizationViewer<OrcaNode, OrcaLink> visView) {
+			visComp = visView;
+			node = v;
+		}
+
+		public void setPoint(Point2D point) {
+			this.point = point;
+		}
+    	
     }
-    
-        public static class tdmCheckBox extends JCheckBoxMenuItem implements VertexMenuListener<OrcaNode, OrcaLink> {
-        OrcaNode v;
-        
-        public tdmCheckBox() {
-            super("TDM Capable");
-            this.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    v.setTdmSwitchCapable(isSelected());
-                }
-                
-            });
-        }
-        public void setVertexAndView(OrcaNode v, VisualizationViewer<OrcaNode, OrcaLink> visComp) {
-            this.v = v;
-            this.setSelected(v.isTdmSwitchCapable());
-        }
-        
-    }
-    
 }

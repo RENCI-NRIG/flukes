@@ -3,29 +3,30 @@ package orca.flukes;
 import org.apache.commons.collections15.Factory;
 
 public class OrcaLink {
-    private double capacity;
-    private double weight;
+    private long bandwidth;
+    private long latency;
     private String name;
 
     public OrcaLink(String name) {
         this.name = name;
     }
-    public double getCapacity() {
-        return capacity;
+    
+    public void setBandwidth(long bw) {
+    	bandwidth = bw;
     }
 
-    public void setCapacity(double capacity) {
-        this.capacity = capacity;
+    public void setLatency(long l) {
+    	latency = l;
     }
 
-    public double getWeight() {
-        return weight;
+    public long getBandwidth() {
+    	return bandwidth;
     }
-
-    public void setWeight(double weight) {
-        this.weight = weight;
+    
+    public long getLatency() {
+    	return latency;
     }
-
+    
     public String getName() {
         return name;
     }
@@ -34,14 +35,15 @@ public class OrcaLink {
         this.name = name;
     }             
     
+    @Override
     public String toString() {
         return name;
     }
     
     public static class OrcaLinkFactory implements Factory<OrcaLink> {
         private static int linkCount = 0;
-        private static double defaultWeight;
-        private static double defaultCapacity;
+        private static long defaultBandwidth;
+        private static long defaultLatency;
 
         private static OrcaLinkFactory instance = new OrcaLinkFactory();
         
@@ -55,25 +57,25 @@ public class OrcaLink {
         public OrcaLink create() {
             String name = "Link" + linkCount++;
             OrcaLink link = new OrcaLink(name);
-            link.setWeight(defaultWeight);
-            link.setCapacity(defaultCapacity);
+            link.setBandwidth(defaultBandwidth);
+            link.setLatency(defaultLatency);
             return link;
         }    
 
-        public static double getDefaultWeight() {
-            return defaultWeight;
+        public static long getDefaultLatency() {
+            return defaultLatency;
         }
 
-        public static void setDefaultWeight(double aDefaultWeight) {
-            defaultWeight = aDefaultWeight;
+        public static void setDefaultLatency(long l) {
+            defaultLatency = l;
         }
 
-        public static double getDefaultCapacity() {
-            return defaultCapacity;
+        public static long getDefaultBandwidth() {
+            return defaultBandwidth;
         }
 
-        public static void setDefaultCapacity(double aDefaultCapacity) {
-            defaultCapacity = aDefaultCapacity;
+        public static void setDefaultBandwidth(long bw) {
+            defaultBandwidth = bw;
         }   
     }  
 }

@@ -175,15 +175,15 @@ public class GUI {
 				OrcaLink.OrcaLinkFactory.getInstance()); 
 		
 		// Set some defaults for the Edges...
-		OrcaLink.OrcaLinkFactory.setDefaultCapacity(192.0);
-		OrcaLink.OrcaLinkFactory.setDefaultWeight(5.0);
+		OrcaLink.OrcaLinkFactory.setDefaultBandwidth(10000000);
+		OrcaLink.OrcaLinkFactory.setDefaultLatency(5000);
 		
 		// Trying out our new popup menu mouse plugin...
 		PopupVertexEdgeMenuMousePlugin<OrcaNode, OrcaLink> myPlugin = new PopupVertexEdgeMenuMousePlugin<OrcaNode, OrcaLink>();
 		
 		// Add some popup menus for the edges and vertices to our mouse plugin.
 		myPlugin.setEdgePopup(new MouseMenus.EdgeMenu());
-		myPlugin.setVertexPopup(new MouseMenus.VertexMenu());
+		myPlugin.setVertexPopup(new MouseMenus.NodeMenu());
 		myPlugin.setModePopup(new MouseMenus.ModeMenu());
 		gm.remove(gm.getPopupEditingPlugin());  // Removes the existing popup editing plugin
 		gm.add(myPlugin);
