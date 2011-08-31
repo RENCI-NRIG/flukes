@@ -20,9 +20,9 @@ import javax.swing.JMenuItem;
  * PopupVertexEdgeMenuMousePlugin.
  * @author Dr. Greg M. Bernstein
  */
-public class DeleteVertexMenuItem<V, E> extends JMenuItem implements VertexMenuListener<V, E> {
+public class DeleteVertexMenuItem<V, E> extends JMenuItem implements NodeMenuListener<V, E> {
     private V vertex;
-    private VisualizationViewer visComp;
+    private VisualizationViewer<V, E> visComp;
     
     /** Creates a new instance of DeleteVertexMenuItem */
     public DeleteVertexMenuItem() {
@@ -37,11 +37,11 @@ public class DeleteVertexMenuItem<V, E> extends JMenuItem implements VertexMenuL
     }
 
     /**
-     * Implements the VertexMenuListener interface.
+     * Implements the NodeMenuListener interface.
      * @param v 
      * @param visComp 
      */
-    public void setVertexAndView(V v, VisualizationViewer<V, E> visComp) {
+    public void setNodeAndView(V v, VisualizationViewer<V, E> visComp) {
         this.vertex = v;
         this.visComp = visComp;
         this.setText("Delete Vertex " + v.toString());

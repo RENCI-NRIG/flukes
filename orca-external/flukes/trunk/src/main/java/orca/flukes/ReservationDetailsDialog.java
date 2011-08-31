@@ -163,6 +163,9 @@ public class ReservationDetailsDialog extends ComponentDialog {
 	@Override
 	protected boolean accept() {
 	
+		if (!stf.validateInput() || !etf.validateInput())
+			return false;
+		
 		// check that start/end time are proper, save the information
 		Date sDate = sdcf.getDate();
 		Date eDate = edcf.getDate();

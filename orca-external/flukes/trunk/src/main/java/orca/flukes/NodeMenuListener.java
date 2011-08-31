@@ -1,5 +1,5 @@
 /*
- * VertexMenuListener.java
+ * NodeMenuListener.java
  *
  * Created on March 21, 2007, 1:50 PM; Updated May 29, 2007
  *
@@ -17,6 +17,6 @@ import edu.uci.ics.jung.visualization.VisualizationViewer;
  * has full access to the graph and layout.
  * @author Dr. Greg M. Bernstein
  */
-public interface VertexMenuListener<V, E> {
-    void setVertexAndView(V v, VisualizationViewer<V,E> visView);    
+public interface NodeMenuListener<V, E> {
+    void setNodeAndView(V v, VisualizationViewer<V,E> visView);    
 }

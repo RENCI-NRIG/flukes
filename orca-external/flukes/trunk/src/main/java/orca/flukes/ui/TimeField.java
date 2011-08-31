@@ -14,8 +14,8 @@ import com.hyperrealm.kiwi.ui.DataField;
 @SuppressWarnings("serial")
 public class TimeField extends DataField<String> {
 	private static String[] timePatterns = { 
-		"[0-2][0-9]:[0-6][0-9]",
-		"[0-9]:[0-6][0-9]" };
+		"[0-2][0-9]:[0-5][0-9]",
+		"[0-9]:[0-5][0-9]" };
 
 	public TimeField() {
 		super(5);

@@ -24,7 +24,7 @@ import edu.uci.ics.jung.visualization.control.AbstractPopupGraphMousePlugin;
 /**
  * A GraphMousePlugin that brings up distinct popup menus when an edge or vertex is
  * appropriately clicked in a graph.  If these menus contain components that implement
- * either the EdgeMenuListener or VertexMenuListener then the corresponding interface
+ * either the EdgeMenuListener or NodeMenuListener then the corresponding interface
  * methods will be called prior to the display of the menus (so that they can display
  * context sensitive information for the edge or vertex).
  * @author Dr. Greg M. Bernstein
@@ -82,8 +82,8 @@ public class PopupVertexEdgeMenuMousePlugin<V, E> extends AbstractPopupGraphMous
         if (vertexPopup == null) return;
         Component[] menuComps = vertexPopup.getComponents();
         for (Component comp: menuComps) {
-            if (comp instanceof VertexMenuListener<?, ?>) {
-                ((VertexMenuListener<V, E>)comp).setVertexAndView(v, vv);
+            if (comp instanceof NodeMenuListener<?, ?>) {
+                ((NodeMenuListener<V, E>)comp).setNodeAndView(v, vv);
             }
             if (comp instanceof MenuPointListener) {
                 ((MenuPointListener)comp).setPoint(point);
