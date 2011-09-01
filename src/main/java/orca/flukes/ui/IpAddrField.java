@@ -18,7 +18,6 @@ public class IpAddrField extends KPanel {
 	}
 	
 	public void setAddress(String s) {
-		System.out.println("Setting address " + s);
 		if (s == null)
 			return;
 		if (!s.matches(ipPattern))

@@ -209,7 +209,7 @@ public class GUI {
 //				"FLUKES - ORCA NDL-OWL Network Editor v0.1\nVisit http://geni-orca.renci.org/trac/flukes",
 //				"About", JOptionPane.INFORMATION_MESSAGE);
 		try {
-			AboutFrame ab = new AboutFrame("About FLUKES", new URL("https://geni-orca.renci.org"));
+			AboutFrame ab = new AboutFrame("About FLUKES", new URL("http://geni-images.renci.org/webstart/html/about.html"));
 			ab.setVisible(true);
 		} catch (MalformedURLException e) {
 			;

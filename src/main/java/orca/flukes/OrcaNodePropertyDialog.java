@@ -74,7 +74,6 @@ public class OrcaNodePropertyDialog extends ComponentDialog {
 		// labeled IP address fields; populate fields as needed
 		Collection<OrcaLink> nodeEdges = GUIState.getInstance().g.getIncidentEdges(node);
 		if (nodeEdges == null) {
-			System.out.println("incident edges is null");
 			return;
 		}
 		for (OrcaLink e: nodeEdges) {
