@@ -1,0 +1,45 @@
+<html>
+<head>
+<title>FLUKES Help</title>
+</head>
+<body>
+<h2>FLUKES Help</h2>
+<img src="icon.jpg" align="left"/>
+<h3>Overview</h3>
+<p>FLUKES allows you to graphically create the topology of your ORCA request, assign IP addresses, VM images to nodes and edit global reservation details. There are several tabs:</p>
+<ul>
+<li>Request pane - for creating the request graph</li>
+<li>Resources pane - for inspecting available resources</li>
+</ul>
+
+<h3>User interface - Request pane</h3>
+
+<p>Request is created using the Request pane and can be saved/loaded into a NDL-formatted file that can be submitted to ORCA for provisioning.</p>
+
+<p>There are 3 mouse modes accessible from the right-click menu anywhere:</p>
+<ul>
+<li>Edit - for creating nodes and edges</li>
+<li>Pick - for picking one or more nodes (holding the left mouse button while dragging selects multiple nodes)</li>
+<li>Pan - panning the graph image within the pane</li>
+</ul> 
+<p>Right-clicking on node or edge shows a context menu that allows you to view and edit node and edge properties.</p>
+
+<h3>User interface - Resources pane</h3>
+ 
+<h3>Images</h3>
+<p>VM Images are defined using the 'Images' button. You can add new images or edit the properties of existing images. Each image must have:</p>
+<ul>
+<li>A unique short name</li>
+<li>A URL of the ImageProxy metafile from which it can be downloaded</li>
+<li>A SHA-1 hash of the metafile</li>
+</ul>
+
+<p>Images can be specified per reservation (as part of reservation properties) or per node. 
+Images must first be defined using the 'Images|New' dialog and then can be used from pull down menus
+in reservation and node properties.</p>
+
+<p>If an image is selected for a reservation it takes on global significance and any images specified for nodes are ignored. 
+If no image is specified in the reservation you can specify different images for individual nodes. Nodes for which an image is not specified
+will use the default image for the site at which the node is allocated.</p>
+</body>
+</html>

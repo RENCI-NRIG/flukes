@@ -39,6 +39,9 @@ import edu.uci.ics.jung.visualization.decorators.ToStringLabeller;
 
 public class GUI {
 
+	private static final String FLUKES_HREF_URL = "http://geni-images.renci.org/webstart/";
+	private static final String ABOUT_DOC = "html/about.html";
+	private static final String HELP_DOC = "html/help.html";
 	private JFrame frmOrcaFlukes;
 	private JPanel requestPanel, resourcePanel;
 	private JToolBar toolBar;
@@ -209,7 +212,7 @@ public class GUI {
 //				"FLUKES - ORCA NDL-OWL Network Editor v0.1\nVisit http://geni-orca.renci.org/trac/flukes",
 //				"About", JOptionPane.INFORMATION_MESSAGE);
 		try {
-			AboutFrame ab = new AboutFrame("About FLUKES", new URL("http://geni-images.renci.org/webstart/html/about.html"));
+			AboutFrame ab = new AboutFrame("About FLUKES", new URL(FLUKES_HREF_URL + ABOUT_DOC));
 			ab.setVisible(true);
 		} catch (MalformedURLException e) {
 			;
@@ -218,8 +221,12 @@ public class GUI {
 	}
 	
 	private void helpDialog() {
-		JOptionPane.showMessageDialog(frmOrcaFlukes, 
-				"Helpful help message", "Help", JOptionPane.INFORMATION_MESSAGE);
+		try {
+			AboutFrame ab = new AboutFrame("About FLUKES", new URL(FLUKES_HREF_URL + HELP_DOC));
+			ab.setVisible(true);
+		} catch (MalformedURLException e) {
+			;
+		}
 	}
 	
 	/*
