@@ -23,12 +23,15 @@ import javax.swing.JMenuItem;
 public class DeleteVertexMenuItem<V, E> extends JMenuItem implements NodeMenuListener<V, E> {
     private V vertex;
     private VisualizationViewer<V, E> visComp;
+    private IDeleteNodeCallBack<V> ic;
     
     /** Creates a new instance of DeleteVertexMenuItem */
-    public DeleteVertexMenuItem() {
+    public DeleteVertexMenuItem(IDeleteNodeCallBack<V> i) {
         super("Delete Vertex");
+        ic = i;
         this.addActionListener(new ActionListener(){
             public void actionPerformed(ActionEvent e) {
+            	ic.deleteNodeCallBack(vertex);
                 visComp.getPickedVertexState().pick(vertex, false);
                 visComp.getGraphLayout().getGraph().removeVertex(vertex);
                 visComp.repaint();

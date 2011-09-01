@@ -1,14 +1,18 @@
 package orca.flukes;
 
+import java.util.HashMap;
+
 import org.apache.commons.collections15.Factory;
 
 public class OrcaNode {
 
 	private String name;
 	private String image;
+	private HashMap<OrcaLink, String> addresses;
 	
 	public OrcaNode(String name) {
 		this.name = name;
+		this.addresses = new HashMap<OrcaLink, String>();
 	}
 
 	public String getName() {
@@ -25,6 +29,24 @@ public class OrcaNode {
 
 	public void setImage(String image) {
 		this.image = image;
+	}
+	
+	public void setIp(OrcaLink e, String addr) {
+		if (e == null)
+			return;
+		addresses.put(e, addr);
+	}
+	
+	public String getIp(OrcaLink e) {
+		if (e == null)
+			return null;
+		return addresses.get(e);
+	}
+	
+	public void removeIp(OrcaLink e) {
+		if (e == null)
+			return;
+		addresses.remove(e);
 	}
 	
 	@Override
