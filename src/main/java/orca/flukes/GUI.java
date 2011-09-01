@@ -24,7 +24,9 @@ import javax.swing.JToolBar;
 import javax.swing.SwingConstants;
 
 import com.hyperrealm.kiwi.ui.AboutFrame;
+import com.hyperrealm.kiwi.ui.KFileChooser;
 import com.hyperrealm.kiwi.ui.UIChangeManager;
+import com.hyperrealm.kiwi.ui.dialog.KFileChooserDialog;
 
 import edu.uci.ics.jung.algorithms.layout.Layout;
 import edu.uci.ics.jung.algorithms.layout.StaticLayout;
@@ -75,8 +77,13 @@ public class GUI {
 				quit();
 			else if (e.getActionCommand().equals("open"))
 				;
-			else if (e.getActionCommand().equals("save"))
-				;
+			else if (e.getActionCommand().equals("save")) {
+				KFileChooserDialog d = new KFileChooserDialog(getFrame(), "Save in NDL", KFileChooser.SAVE_DIALOG);
+				d.setLocationRelativeTo(getFrame());
+				d.pack();
+				d.setVisible(true);
+				GraphSaver.getInstance().saveGraph(d.getSelectedFile(), GUIState.getInstance().g);
+			}
 			else if (e.getActionCommand().equals("help"))
 				helpDialog();
 			else if (e.getActionCommand().equals("about"))

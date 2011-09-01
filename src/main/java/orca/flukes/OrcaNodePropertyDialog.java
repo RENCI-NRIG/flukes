@@ -4,15 +4,22 @@ import java.awt.Component;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.ListSelectionModel;
 
+import orca.flukes.ui.IpAddrField;
+
 import com.hyperrealm.kiwi.ui.KPanel;
 import com.hyperrealm.kiwi.ui.KTextField;
 import com.hyperrealm.kiwi.ui.dialog.ComponentDialog;
+
+import edu.uci.ics.jung.graph.SparseMultigraph;
 
 @SuppressWarnings("serial")
 public class OrcaNodePropertyDialog extends ComponentDialog {
@@ -22,6 +29,7 @@ public class OrcaNodePropertyDialog extends ComponentDialog {
 	
 	private KTextField name;
 	private JList imageList;
+	private HashMap<OrcaLink, IpAddrField> ipFields;
 	
 	public OrcaNodePropertyDialog(JFrame parent, OrcaNode n) {
 		super(parent, "Node Properties", true);
@@ -42,6 +50,8 @@ public class OrcaNodePropertyDialog extends ComponentDialog {
 			else
 				imageList.setSelectedIndex(index);
 		}
+		ipFields = new HashMap<OrcaLink, IpAddrField>();
+		addIpFields();
 	}
 	
 	@Override
@@ -50,7 +60,46 @@ public class OrcaNodePropertyDialog extends ComponentDialog {
 		node.setImage(GUIState.getInstance().getImageShortNamesWithNone()[imageList.getSelectedIndex()]);
 		if (node.getImage().equals(GUIState.NO_GLOBAL_IMAGE))
 			node.setImage(null);
+		// get IP addresses from GUI and set the on the node
+		for (Map.Entry<OrcaLink, IpAddrField> entry: ipFields.entrySet()) {
+			node.setIp(entry.getKey(), entry.getValue().getAddress());
+		}
+		
 		return true;
+	}
+	
+	private void addIpFields() {
+		int ycoord = 2;
+		// query the graph for edges incident on this node and create 
+		// labeled IP address fields; populate fields as needed
+		Collection<OrcaLink> nodeEdges = GUIState.getInstance().g.getIncidentEdges(node);
+		if (nodeEdges == null) {
+			System.out.println("incident edges is null");
+			return;
+		}
+		for (OrcaLink e: nodeEdges) {
+			{
+				JLabel lblNewLabel_1 = new JLabel(e.getName() + " IP Address: ");
+				GridBagConstraints gbc_lblNewLabel_1 = new GridBagConstraints();
+				gbc_lblNewLabel_1.anchor = GridBagConstraints.WEST;
+				gbc_lblNewLabel_1.insets = new Insets(0, 0, 5, 5);
+				gbc_lblNewLabel_1.gridx = 0;
+				gbc_lblNewLabel_1.gridy = ycoord;
+				kp.add(lblNewLabel_1, gbc_lblNewLabel_1);
+			}
+			{
+				IpAddrField ipf = new IpAddrField();
+				ipf.setAddress(node.getIp(e));
+				GridBagConstraints gbc_list = new GridBagConstraints();
+				gbc_list.insets = new Insets(0, 0, 5, 5);
+				gbc_list.fill = GridBagConstraints.HORIZONTAL;
+				gbc_list.gridx = 1;
+				gbc_list.gridy = ycoord;
+				kp.add(ipf, gbc_list);
+				ipFields.put(e, ipf);
+			}
+			ycoord++;
+		}
 	}
 	
 	@Override
@@ -72,7 +121,7 @@ public class OrcaNodePropertyDialog extends ComponentDialog {
 			name = new KTextField(10);
 			GridBagConstraints gbc_list = new GridBagConstraints();
 			gbc_list.insets = new Insets(0, 0, 5, 5);
-			gbc_list.fill = GridBagConstraints.WEST;
+			gbc_list.fill = GridBagConstraints.HORIZONTAL;
 			gbc_list.gridx = 1;
 			gbc_list.gridy = 0;
 			kp.add(name, gbc_list);
@@ -94,11 +143,12 @@ public class OrcaNodePropertyDialog extends ComponentDialog {
 			imageList.setVisibleRowCount(1);
 			GridBagConstraints gbc_list = new GridBagConstraints();
 			gbc_list.insets = new Insets(0, 0, 5, 5);
-			gbc_list.fill = GridBagConstraints.WEST;
+			gbc_list.fill = GridBagConstraints.HORIZONTAL;
 			gbc_list.gridx = 1;
 			gbc_list.gridy = 1;
 			kp.add(imageList, gbc_list);
 		}
+		
 		return kp;
 	}
 

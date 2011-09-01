@@ -74,7 +74,7 @@ public class MouseMenus {
         public EdgeMenu() {
             super("Edge Menu");
             // this.frame = frame;
-            this.add(new DeleteEdgeMenuItem<OrcaNode, OrcaLink>());
+            this.add(new DeleteEdgeMenuItem<OrcaNode, OrcaLink>(GUIState.getInstance()));
             this.addSeparator();
             this.add(new LatencyDisplay());
             this.add(new BandwidthDisplay());
@@ -126,7 +126,7 @@ public class MouseMenus {
     public static class NodeMenu extends JPopupMenu {
         public NodeMenu() {
             super("Node Menu");
-            this.add(new DeleteVertexMenuItem<OrcaNode, OrcaLink>());
+            this.add(new DeleteVertexMenuItem<OrcaNode, OrcaLink>(GUIState.getInstance()));
             this.addSeparator();
             this.add(new NodePropItem(GUI.getInstance().getFrame()));
         }

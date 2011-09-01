@@ -22,12 +22,15 @@ import javax.swing.JMenuItem;
 public class DeleteEdgeMenuItem<V, E> extends JMenuItem implements EdgeMenuListener<V, E> {
     private E edge;
     private VisualizationViewer<V, E> visComp;
+    private IDeleteEdgeCallBack<E> ic;
     
     /** Creates a new instance of DeleteEdgeMenuItem */
-    public DeleteEdgeMenuItem() {
+    public DeleteEdgeMenuItem(final IDeleteEdgeCallBack<E> i) {
         super("Delete Edge");
+    	ic = i;
         this.addActionListener(new ActionListener(){
             public void actionPerformed(ActionEvent e) {
+            	ic.deleteEdgeCallBack(edge);
                 visComp.getPickedEdgeState().pick(edge, false);
                 visComp.getGraphLayout().getGraph().removeEdge(edge);
                 visComp.repaint();

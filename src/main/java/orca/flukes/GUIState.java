@@ -1,18 +1,20 @@
 package orca.flukes;
 
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 
 import orca.flukes.ui.ChooserWithNewDialog;
 import edu.uci.ics.jung.graph.SparseMultigraph;
+import edu.uci.ics.jung.graph.util.Pair;
 
 /**
  * Singleton class that holds shared GUI state. Since dialogs are all modal, no need for locking for now.
  * @author ibaldin
  *
  */
-public class GUIState {
+public class GUIState implements IDeleteEdgeCallBack<OrcaLink>, IDeleteNodeCallBack<OrcaNode> {
 	public static String NO_GLOBAL_IMAGE = "None";
 	
 	private static GUIState instance = null;
@@ -52,5 +54,28 @@ public class GUIState {
 	
 	public Iterator<String> getImageShortNamesIterator() {
 		return definedImages.keySet().iterator();
+	}
+	
+	/**
+	 * Cleanup before deleting an edge
+	 * @param e
+	 */
+	public void deleteEdgeCallBack(OrcaLink e) {
+		if (e == null)
+			return;
+		// remove edge from node IP maps
+		Pair<OrcaNode> p = g.getEndpoints(e);
+		p.getFirst().removeIp(e);
+		p.getSecond().removeIp(e);
+	}
+
+	public void deleteNodeCallBack(OrcaNode n) {
+		if (n == null)
+			return;
+		// remove incident edges
+		Collection<OrcaLink> edges = g.getIncidentEdges(n);
+		for (OrcaLink e: edges) {
+			deleteEdgeCallBack(e);
+		}
 	}
 }
