@@ -9,7 +9,7 @@ import java.net.URL;
  */
 public class OrcaImage {
 	private String shortName, hash;
-	URL url;
+	private URL url;
 	
 	public OrcaImage(String shortName, URL url, String hash) {
 		this.shortName = shortName;
