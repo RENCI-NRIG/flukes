@@ -18,6 +18,7 @@ import orca.flukes.ui.IpAddrField;
 import com.hyperrealm.kiwi.ui.KPanel;
 import com.hyperrealm.kiwi.ui.KTextField;
 import com.hyperrealm.kiwi.ui.dialog.ComponentDialog;
+import com.hyperrealm.kiwi.ui.dialog.KMessageDialog;
 
 import edu.uci.ics.jung.graph.SparseMultigraph;
 
@@ -56,6 +57,13 @@ public class OrcaNodePropertyDialog extends ComponentDialog {
 	
 	@Override
 	public boolean accept() {
+		if (!GUIState.getInstance().checkUniqueNodeName(node, name.getObject())) {
+			KMessageDialog kmd = new KMessageDialog(parent, "Node name not unique", true);
+			kmd.setLocationRelativeTo(parent);
+			kmd.setMessage("Node Name " + name.getObject() + " is not unique");
+			kmd.setVisible(true);
+			return false;
+		}
 		node.setName(name.getObject());
 		node.setImage(GUIState.getInstance().getImageShortNamesWithNone()[imageList.getSelectedIndex()]);
 		if (node.getImage().equals(GUIState.NO_GLOBAL_IMAGE))

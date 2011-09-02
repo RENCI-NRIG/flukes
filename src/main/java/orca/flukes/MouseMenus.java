@@ -12,6 +12,7 @@ package orca.flukes;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.geom.Point2D;
+import java.util.Set;
 
 import javax.swing.ButtonGroup;
 import javax.swing.JCheckBoxMenuItem;
@@ -31,10 +32,11 @@ import edu.uci.ics.jung.visualization.control.ModalGraphMouse;
 public class MouseMenus {
     
 	public static class ModeMenu extends JPopupMenu implements ActionListener {
-		final ButtonGroup bg = new ButtonGroup();
+		final ButtonGroup bg;
 		
 		public ModeMenu() {
 			super("Mode Menu");
+			bg = new ButtonGroup();
 //			JMenu mm = GUI.getInstance().getMouse().getModeMenu();
 //			for(int itemCnt = 0; itemCnt < mm.getItemCount(); itemCnt ++) {
 //				if (mm.getItem(itemCnt) != null)
@@ -56,15 +58,41 @@ public class MouseMenus {
 			mi.addActionListener(this);
 			this.add(mi);
 			bg.add(mi);
+			this.addSeparator();
+			// add button to create multi-node property window
+			CommonPropItem rmi = new CommonPropItem(GUI.getInstance().getFrame());
+			this.add(rmi);
 		}
 		
 		public void actionPerformed(ActionEvent e) {
-			if (e.getActionCommand().equals("edit"))
+			if (e.getActionCommand().equals("edit")) {
 				GUI.getInstance().getMouse().setMode(ModalGraphMouse.Mode.EDITING);
-			else if (e.getActionCommand().equals("pick"))
+			}
+			else if (e.getActionCommand().equals("pick")) {
 				GUI.getInstance().getMouse().setMode(ModalGraphMouse.Mode.PICKING);
-			else if (e.getActionCommand().equals("pan"))
+			}
+			else if (e.getActionCommand().equals("pan")) {
 				GUI.getInstance().getMouse().setMode(ModalGraphMouse.Mode.TRANSFORMING);
+			}
+		}
+	}
+	
+	public static class CommonPropItem extends JMenuItem implements SelectListener<OrcaNode> {
+		Set<OrcaNode> nodes;
+		
+		public CommonPropItem(final JFrame parent) {
+			super("Edit Selected Nodes...");
+			this.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					OrcaMultiNodePropertyDialog mnp = new OrcaMultiNodePropertyDialog(GUI.getInstance().getFrame(), nodes);
+					mnp.pack();
+					mnp.setVisible(true);
+				}
+			});
+		}
+		
+		public void setSelectedNodes(Set<OrcaNode> nodes) {
+			this.nodes = nodes;			
 		}
 		
 	}
@@ -127,9 +155,20 @@ public class MouseMenus {
         public NodeMenu() {
             super("Node Menu");
             this.add(new DeleteVertexMenuItem<OrcaNode, OrcaLink>(GUIState.getInstance()));
+            this.add(new ImageDisplay());
             this.addSeparator();
             this.add(new NodePropItem(GUI.getInstance().getFrame()));
         }
+    }
+    
+    public static class ImageDisplay extends JMenuItem implements NodeMenuListener<OrcaNode, OrcaLink> {
+    	public void setNodeAndView(OrcaNode v,
+				VisualizationViewer<OrcaNode, OrcaLink> visView) {
+    		if ((v.getImage() != null) && (v.getImage().length() > 0))
+    			this.setText("Image: " + v.getImage());
+    		else
+    			this.setText("Image: " + GUIState.NO_GLOBAL_IMAGE);
+    	}
     }
     
     public static class NodePropItem extends JMenuItem implements NodeMenuListener<OrcaNode, OrcaLink>, MenuPointListener {

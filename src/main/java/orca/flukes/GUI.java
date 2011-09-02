@@ -16,7 +16,6 @@ import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JSeparator;
 import javax.swing.JTabbedPane;
@@ -27,6 +26,7 @@ import com.hyperrealm.kiwi.ui.AboutFrame;
 import com.hyperrealm.kiwi.ui.KFileChooser;
 import com.hyperrealm.kiwi.ui.UIChangeManager;
 import com.hyperrealm.kiwi.ui.dialog.KFileChooserDialog;
+import com.hyperrealm.kiwi.ui.dialog.KQuestionDialog;
 
 import edu.uci.ics.jung.algorithms.layout.Layout;
 import edu.uci.ics.jung.algorithms.layout.StaticLayout;
@@ -114,13 +114,19 @@ public class GUI {
 						GUIState.getInstance().resEnd);
 				GUIState.getInstance().rdd.pack();
 				GUIState.getInstance().rdd.setVisible(true);
+			} else if (e.getActionCommand().equals("nodes")) {
+				;
 			}
 		}
 	}
 	
 	private void quit() {
-		// TODO: add checks for saving state
-		System.exit(0);
+		KQuestionDialog kqd = new KQuestionDialog(GUI.getInstance().getFrame(), "Exit", true);
+		kqd.setMessage("Are you sure you want to exit?");
+		kqd.setLocationRelativeTo(GUI.getInstance().getFrame());
+		kqd.setVisible(true);
+		if (kqd.getStatus())
+			System.exit(0);
 	}
 	
 	/**
@@ -170,7 +176,6 @@ public class GUI {
 		// Layout<V, E>, VisualizationViewer<V,E>
 		//	        Map<OrcaNode,Point2D> vertexLocations = new HashMap<OrcaNode, Point2D>();
 		Layout<OrcaNode, OrcaLink> layout = new StaticLayout<OrcaNode, OrcaLink>(GUIState.getInstance().g);
-
 		
 		//layout.setSize(new Dimension(1000,800));
 		VisualizationViewer<OrcaNode,OrcaLink> vv = 
@@ -314,8 +319,12 @@ public class GUI {
 		toolBar.setAlignmentY(Component.CENTER_ALIGNMENT);
 		requestPanel.add(toolBar);
 		
+		RequestButtonListener rbl = new RequestButtonListener();
+		
 		nodeButton = new JButton("Add Nodes");
 		nodeButton.setToolTipText("Add new nodes");
+		nodeButton.setActionCommand("nodes");
+		nodeButton.addActionListener(rbl);
 		nodeButton.setVerticalAlignment(SwingConstants.TOP);
 		toolBar.add(nodeButton);
 		
@@ -329,8 +338,7 @@ public class GUI {
 		
 		horizontalStrut_1 = Box.createHorizontalStrut(10);
 		toolBar.add(horizontalStrut_1);
-		
-		RequestButtonListener rbl = new RequestButtonListener();
+
 		
 		imageButton = new JButton("Images");
 		imageButton.setToolTipText("Add or edit images");

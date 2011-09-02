@@ -3,7 +3,9 @@ package orca.flukes;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Set;
 
 import orca.flukes.ui.ChooserWithNewDialog;
 import edu.uci.ics.jung.graph.SparseMultigraph;
@@ -19,7 +21,12 @@ public class GUIState implements IDeleteEdgeCallBack<OrcaLink>, IDeleteNodeCallB
 	
 	private static GUIState instance = null;
 	
+	// VM images defined by the user
 	HashMap<String, OrcaImage> definedImages = new HashMap<String, OrcaImage>();
+
+	// domains available for binding
+	Set<String> availableDomains = new HashSet<String>();
+	
 	ChooserWithNewDialog<String> icd = null;
 	ReservationDetailsDialog rdd = null;
 	
@@ -37,6 +44,19 @@ public class GUIState implements IDeleteEdgeCallBack<OrcaLink>, IDeleteNodeCallB
 		if (instance == null)
 			instance = new GUIState();
 		return instance;
+	}
+	
+	public OrcaImage getImageByName(String nm) {
+		return definedImages.get(nm);
+	}
+	
+	public void addImage(OrcaImage newIm, OrcaImage oldIm) {
+		if (newIm == null)
+			return;
+		// if old image is not null, then we are replacing, so delete first
+		if (oldIm != null)
+			definedImages.remove(oldIm.getShortName());
+		definedImages.put(newIm.getShortName(), newIm);
 	}
 	
 	public Object[] getImageShortNames() {
@@ -69,6 +89,9 @@ public class GUIState implements IDeleteEdgeCallBack<OrcaLink>, IDeleteNodeCallB
 		p.getSecond().removeIp(e);
 	}
 
+	/**
+	 * cleanup before deleting a node
+	 */
 	public void deleteNodeCallBack(OrcaNode n) {
 		if (n == null)
 			return;
@@ -77,5 +100,38 @@ public class GUIState implements IDeleteEdgeCallBack<OrcaLink>, IDeleteNodeCallB
 		for (OrcaLink e: edges) {
 			deleteEdgeCallBack(e);
 		}
+	}
+	
+	/**
+	 * Check if the link name is unique
+	 * @param nm
+	 * @return
+	 */
+	public boolean checkUniqueLinkName(OrcaLink edge, String nm) {
+		// check all edges in graph
+		Collection<OrcaLink> edges = g.getEdges();
+		for (OrcaLink e: edges) {
+			// check that some other edge doesn't have this name
+			if ((e != edge) &&(e.getName().equals(nm)))
+				return false;
+		}
+		return true;
+	}
+	
+	/**
+	 * check if node name is unique
+	 * @param node
+	 * @param nm
+	 * @return
+	 */
+	public boolean checkUniqueNodeName(OrcaNode node, String nm) {
+		// check all edges in graph
+		Collection<OrcaNode> nodes = g.getVertices();
+		for (OrcaNode n: nodes) {
+			// check that some other edge doesn't have this name
+			if ((n != node) &&(n.getName().equals(nm)))
+				return false;
+		}
+		return true;
 	}
 }

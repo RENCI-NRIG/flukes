@@ -12,9 +12,8 @@ package orca.flukes;
 import java.awt.Component;
 import java.awt.event.MouseEvent;
 import java.awt.geom.Point2D;
+import java.util.Set;
 
-import javax.swing.JMenu;
-import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 
 import edu.uci.ics.jung.algorithms.layout.GraphElementAccessor;
@@ -50,7 +49,10 @@ public class PopupVertexEdgeMenuMousePlugin<V, E> extends AbstractPopupGraphMous
      * work gets done. You shouldn't have to modify unless you really want to...
      * @param e 
      */
+    @Override
     protected void handlePopup(MouseEvent e) {
+    	if (e.getButton() != 3) 
+    		return;
         final VisualizationViewer<V,E> vv =
                 (VisualizationViewer<V,E>)e.getSource();
         Point2D p = e.getPoint();
@@ -59,7 +61,6 @@ public class PopupVertexEdgeMenuMousePlugin<V, E> extends AbstractPopupGraphMous
         if(pickSupport != null) {
             final V v = pickSupport.getVertex(vv.getGraphLayout(), p.getX(), p.getY());
             if(v != null) {
-                // System.out.println("Vertex " + v + " was right clicked");
                 updateVertexMenu(v, vv, p);
                 vertexPopup.show(vv, e.getX(), e.getY());
             } else {
@@ -69,7 +70,8 @@ public class PopupVertexEdgeMenuMousePlugin<V, E> extends AbstractPopupGraphMous
                     updateEdgeMenu(edge, vv, p);
                     edgePopup.show(vv, e.getX(), e.getY());
                 }  else  {
-                	// pop up the mode menu
+                	// pop up the mode menu with common node properties
+                	updateModeMenu(vv,p);
                 	if (modePopup != null)
                 		modePopup.show(vv, e.getX(), e.getY());
                 }
@@ -141,6 +143,16 @@ public class PopupVertexEdgeMenuMousePlugin<V, E> extends AbstractPopupGraphMous
             }
             if (comp instanceof MenuPointListener) {
                 ((MenuPointListener)comp).setPoint(point);
+            }
+        }
+    }
+    
+    private void updateModeMenu(VisualizationViewer<V, E> vv, Point2D point) {
+        if (modePopup == null) return;
+        Component[] menuComps = modePopup.getComponents();
+        for (Component comp: menuComps) {
+            if (comp instanceof SelectListener<?>) {
+            	((SelectListener<V>)comp).setSelectedNodes(vv.getPickedVertexState().getPicked());
             }
         }
     }

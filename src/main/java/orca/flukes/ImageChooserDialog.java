@@ -31,8 +31,9 @@ public class ImageChooserDialog extends ChooserWithNewDialog<String> implements 
 		// open image dialog with image details
 		if (st != null) {
 			OrcaImageDialog oid = new OrcaImageDialog(GUI.getInstance().getFrame());
-			oid.setFields(st, GUIState.getInstance().definedImages.get(st).getUrl(), 
-					GUIState.getInstance().definedImages.get(st).getHash());
+			//oid.setFields(st, GUIState.getInstance().definedImages.get(st).getUrl(), 
+			//		GUIState.getInstance().definedImages.get(st).getHash());
+			oid.setImage(GUIState.getInstance().getImageByName(st));
 			oid.pack();
 			oid.setVisible(true);
 		}

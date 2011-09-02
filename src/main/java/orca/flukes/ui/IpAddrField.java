@@ -10,9 +10,12 @@ public class IpAddrField extends KPanel {
 	private NumericField o2;
 	private NumericField o3;
 	private NumericField o4;
-	private String ipPattern = "[0-9]{1,3}[.][0-9]{1,3}[.][0-9]{1,3}[.][0-9]{1,3}";
+	private String ipPattern = "[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}";
 	
 	public String getAddress() {
+		// 0 in first octet is meaningless
+		if ((int)o1.getValue() == 0)
+			return null;
 		return "" + (int)o1.getValue() + "." + (int)o2.getValue() + 
 		"." + (int)o3.getValue() + "." + (int)o4.getValue();
 	}
@@ -35,7 +38,7 @@ public class IpAddrField extends KPanel {
 	public IpAddrField() {
 		
 		o1 = new NumericField(3);
-		o1.setMinValue(0);
+		o1.setMinValue(1);
 		o1.setMaxValue(255);
 		o1.setType(FormatConstants.INTEGER_FORMAT);
 		o1.setDecimals(0);
