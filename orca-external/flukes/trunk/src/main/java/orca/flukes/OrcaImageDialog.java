@@ -25,6 +25,7 @@ public class OrcaImageDialog extends ComponentDialog {
 	private KTextField shortName, imageHash;
 	private URLField imageUrl;
 	JFrame parent;
+	OrcaImage oi = null;
 
 	public OrcaImageDialog(JFrame parent) {
 		super(parent, "ORCA Images", true);
@@ -33,10 +34,11 @@ public class OrcaImageDialog extends ComponentDialog {
 		this.parent = parent;
 	}
 	
-	public void setFields(String shortName, URL url, String hash) {
-		this.shortName.setObject(shortName);
-		this.imageUrl.setObject(url);
-		this.imageHash.setObject(hash);
+	public void setImage(OrcaImage oi) {
+		this.oi = oi;
+		shortName.setObject(oi.getShortName());
+		imageUrl.setObject(oi.getUrl());
+		imageHash.setObject(oi.getHash());
 	}
 	
 	@Override
@@ -137,8 +139,10 @@ public class OrcaImageDialog extends ComponentDialog {
 				kmd.setVisible(true);
 				return false;
 			}
-			GUIState.getInstance().definedImages.put(shortName.getObject(), 
-					new OrcaImage(shortName.getObject(), imageUrl.getObject(), imageHash.getObject()));
+			// add or replace image
+			GUIState.getInstance().addImage(new OrcaImage(shortName.getObject(), imageUrl.getObject(), imageHash.getObject()), oi);
+			//GUIState.getInstance().definedImages.put(shortName.getObject(), 
+			//		new OrcaImage(shortName.getObject(), imageUrl.getObject(), imageHash.getObject()));
 			// TODO: repaint the dialog instead of killing it
 			GUIState.getInstance().icd.setVisible(false);
 			GUIState.getInstance().icd.destroy();

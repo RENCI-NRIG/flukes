@@ -13,6 +13,7 @@ import com.hyperrealm.kiwi.ui.KPanel;
 import com.hyperrealm.kiwi.ui.KTextField;
 import com.hyperrealm.kiwi.ui.NumericField;
 import com.hyperrealm.kiwi.ui.dialog.ComponentDialog;
+import com.hyperrealm.kiwi.ui.dialog.KMessageDialog;
 
 public class OrcaLinkPropertyDialog extends ComponentDialog {
 	JFrame parent;
@@ -40,6 +41,13 @@ public class OrcaLinkPropertyDialog extends ComponentDialog {
 	public boolean accept() {
 		if ((name.getObject().length() == 0) || (!bandwidth.validateInput()) || (!latency.validateInput()))
 			return false;
+		if (!GUIState.getInstance().checkUniqueLinkName(edge, name.getObject())) {
+			KMessageDialog kmd = new KMessageDialog(parent, "Link name not unique", true);
+			kmd.setLocationRelativeTo(parent);
+			kmd.setMessage("Link Name " + name.getObject() + " is not unique");
+			kmd.setVisible(true);
+			return false;
+		}
 		edge.setName(name.getObject());
 		edge.setBandwidth((long)bandwidth.getValue());
 		edge.setLatency((long)latency.getValue());
