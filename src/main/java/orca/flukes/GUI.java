@@ -11,12 +11,14 @@ import java.net.URL;
 
 import javax.swing.Box;
 import javax.swing.BoxLayout;
+import javax.swing.ButtonGroup;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
+import javax.swing.JRadioButtonMenuItem;
 import javax.swing.JSeparator;
 import javax.swing.JTabbedPane;
 import javax.swing.JToolBar;
@@ -26,6 +28,7 @@ import com.hyperrealm.kiwi.ui.AboutFrame;
 import com.hyperrealm.kiwi.ui.KFileChooser;
 import com.hyperrealm.kiwi.ui.UIChangeManager;
 import com.hyperrealm.kiwi.ui.dialog.KFileChooserDialog;
+import com.hyperrealm.kiwi.ui.dialog.KMessageDialog;
 import com.hyperrealm.kiwi.ui.dialog.KQuestionDialog;
 
 import edu.uci.ics.jung.algorithms.layout.Layout;
@@ -56,7 +59,7 @@ public class GUI {
 	private JMenuItem exitMenuItem;
 	private JButton reservationButton;
 	private Component horizontalStrut_1;
-	private JMenu mnNewMenu;
+	private JMenu mnNewMenu, outputMenu;
 	private JMenuItem helpMenuItem;
 	private JMenuItem aboutMenuItem;
 	private JSeparator separator_1;
@@ -85,7 +88,8 @@ public class GUI {
 				d.setLocationRelativeTo(getFrame());
 				d.pack();
 				d.setVisible(true);
-				GraphSaver.getInstance().saveGraph(d.getSelectedFile(), GUIState.getInstance().g);
+				if (d.getSelectedFile() != null)
+					GraphSaver.getInstance().saveGraph(d.getSelectedFile(), GUIState.getInstance().g);
 			}
 			else if (e.getActionCommand().equals("help"))
 				helpDialog();
@@ -93,6 +97,10 @@ public class GUI {
 				aboutDialog();
 			else if (e.getActionCommand().equals("welcome"))
 				;
+			else if (e.getActionCommand().equals("xml"))
+				GraphSaver.getInstance().setOutputFormat(GraphSaver.RDF_XML_FORMAT);
+			else if (e.getActionCommand().equals("n3"))
+				GraphSaver.getInstance().setOutputFormat(GraphSaver.N3_FORMAT);
 		}
 	}
 	
@@ -109,7 +117,8 @@ public class GUI {
 				GUIState.getInstance().icd.setVisible(true);
 			} else if (e.getActionCommand().equals("reservation")) {
 				GUIState.getInstance().rdd = new ReservationDetailsDialog(getFrame());
-				GUIState.getInstance().rdd.setFields(GUIState.getInstance().resImageName, 
+				GUIState.getInstance().rdd.setFields(GUIState.getInstance().getVMImageInReservation(), 
+						GUIState.getInstance().getDomainInReservation(),
 						GUIState.getInstance().resStart, 
 						GUIState.getInstance().resEnd);
 				GUIState.getInstance().rdd.pack();
@@ -271,6 +280,25 @@ public class GUI {
 		modeMenu.setText("Mouse Mode");
 		modeMenu.setPreferredSize(new Dimension(120,20)); 
 		menuBar.add(modeMenu);*/
+		
+		// optput format selection
+		outputMenu = new JMenu("Output Format");
+		menuBar.add(outputMenu);
+		
+		ButtonGroup obg = new ButtonGroup();
+
+		JRadioButtonMenuItem mi = new JRadioButtonMenuItem("RDF-XML");
+		mi.setActionCommand("xml");
+		mi.addActionListener(mListener);
+		mi.setSelected(true);
+		outputMenu.add(mi);	
+		obg.add(mi);
+		
+		mi = new JRadioButtonMenuItem("N3");
+		mi.setActionCommand("n3");
+		mi.addActionListener(mListener);
+		outputMenu.add(mi);	
+		obg.add(mi);
 		
 		mnNewMenu = new JMenu("Help");
 		menuBar.add(mnNewMenu);

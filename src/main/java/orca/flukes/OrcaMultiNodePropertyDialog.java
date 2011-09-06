@@ -20,7 +20,7 @@ public class OrcaMultiNodePropertyDialog extends ComponentDialog {
 	private Set<OrcaNode> nodes = null;
 	private KPanel kp;
 	
-	private JList imageList;
+	private JList imageList, domainList;
 	
 	public OrcaMultiNodePropertyDialog(JFrame parent, Set<OrcaNode> ns) {
 		super(parent, "Shared Node Properties", true);
@@ -32,12 +32,15 @@ public class OrcaMultiNodePropertyDialog extends ComponentDialog {
 	@Override
 	public boolean accept() {
 		for (OrcaNode node: nodes) {
-			node.setImage(GUIState.getInstance().getImageShortNamesWithNone()[imageList.getSelectedIndex()]);
-			if (node.getImage().equals(GUIState.NO_GLOBAL_IMAGE))
-				node.setImage(null);
+			// image
+			node.setImage(GUIState.getNodeImageProper(GUIState.getInstance().getImageShortNamesWithNone()[imageList.getSelectedIndex()]));
+			// domain
+			node.setDomain(GUIState.getNodeDomainProper(GUIState.getInstance().getAvailableDomains()[domainList.getSelectedIndex()]));
 		}
 		return true;
 	}
+
+
 	
 	@Override
 	protected Component buildDialogUI() {
@@ -45,28 +48,9 @@ public class OrcaMultiNodePropertyDialog extends ComponentDialog {
 		
 		GridBagLayout gbl_contentPanel = new GridBagLayout();
 		kp.setLayout(gbl_contentPanel);
-		{
-			JLabel lblNewLabel_1 = new JLabel("Select image: ");
-			GridBagConstraints gbc_lblNewLabel_1 = new GridBagConstraints();
-			gbc_lblNewLabel_1.anchor = GridBagConstraints.WEST;
-			gbc_lblNewLabel_1.insets = new Insets(0, 0, 5, 5);
-			gbc_lblNewLabel_1.gridx = 0;
-			gbc_lblNewLabel_1.gridy = 1;
-			kp.add(lblNewLabel_1, gbc_lblNewLabel_1);
-		}
-		{
-			imageList = new JList(GUIState.getInstance().getImageShortNamesWithNone());
-			imageList.setSelectedIndex(0);
-			imageList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-			imageList.setLayoutOrientation(JList.VERTICAL);
-			imageList.setVisibleRowCount(1);
-			GridBagConstraints gbc_list = new GridBagConstraints();
-			gbc_list.insets = new Insets(0, 0, 5, 5);
-			gbc_list.fill = GridBagConstraints.HORIZONTAL;
-			gbc_list.gridx = 1;
-			gbc_list.gridy = 1;
-			kp.add(imageList, gbc_list);
-		}
+		
+		imageList = OrcaNodePropertyDialog.addImageList(kp, gbl_contentPanel, 0);
+		domainList = OrcaNodePropertyDialog.addDomainList(kp, gbl_contentPanel, 1);
 		
 		return kp;
 	}

@@ -15,13 +15,15 @@ import edu.uci.ics.jung.graph.SparseMultigraph;
 import edu.uci.ics.jung.graph.util.Pair;
 
 public class GraphSaver {
-	private static final String DOT_FORMAT = "DOT";
-	private static final String N3_FORMAT = "N3";
+	public static final String DOT_FORMAT = "DOT";
+	public static final String N3_FORMAT = "N3";
 	public static final String RDF_XML_FORMAT = "RDF-XML";
 
 	private static GraphSaver instance = null;
+	public static final String defaultFormat = RDF_XML_FORMAT;
 	private NdlGenerator ngen = null;
 	private Individual reservation = null;
+	private String outputFormat = null;
 	
 	public static GraphSaver getInstance() {
 		if (instance == null)
@@ -30,6 +32,8 @@ public class GraphSaver {
 	}
 	
 	private String getFormattedOutput(NdlGenerator ng, String oFormat) {
+		if (oFormat == null)
+			return getFormattedOutput(ng, defaultFormat);
 		if (oFormat.equals(RDF_XML_FORMAT)) 
 			return ng.toXMLString();
 		else if (oFormat.equals(N3_FORMAT))
@@ -38,7 +42,11 @@ public class GraphSaver {
 			return ng.getGVOutput();
 		}
 		else
-			return ng.toString();
+			return getFormattedOutput(ng, defaultFormat);
+	}
+	
+	public void setOutputFormat(String of) {
+		outputFormat = of;
 	}
 	
 	/**
@@ -47,13 +55,14 @@ public class GraphSaver {
 	 * @param e
 	 * @param edgeI
 	 * @param gi - is global image set?
+	 * @param gd - is global domain set?
 	 * @throws NdlException
 	 */
-	private void processNodeAndLink(OrcaNode n, OrcaLink e, Individual edgeI, boolean gi) throws NdlException {
+	private void processNodeAndLink(OrcaNode n, OrcaLink e, Individual edgeI, boolean gi, boolean gd) throws NdlException {
 		Individual intI = ngen.declareInterface(e.getName()+"-"+n.getName());
 		ngen.addInterfaceToIndividual(intI, edgeI);
-		Individual ni = ngen.getRequestIndividual(n.getName());
-		ngen.addInterfaceToIndividual(intI, ni);
+		Individual nodeI = ngen.getRequestIndividual(n.getName());
+		ngen.addInterfaceToIndividual(intI, nodeI);
 		
 		// see if there is an IP address for this link on this node
 		if (n.getIp(e) != null) {
@@ -66,8 +75,14 @@ public class GraphSaver {
 			OrcaImage im = GUIState.getInstance().definedImages.get(n.getImage());
 			if (im != null) {
 				Individual imI = ngen.declareVMImage(im.getUrl().toString(), im.getHash(), im.getShortName());
-				ngen.addVMImageToIndividual(imI, ni);
+				ngen.addVMImageToIndividual(imI, nodeI);
 			}
+		}
+		
+		// if no global domain domain is set, declare a domain and add inDomain property
+		if (!gd && (n.getDomain() != null)) {
+			Individual domI = ngen.declareDomain(n.getDomain());
+			ngen.addNodeToDomain(domI, nodeI);
 		}
 	}
 	
@@ -94,6 +109,9 @@ public class GraphSaver {
 //				pd.setVisible(true);
 //				pd.setProgress(10);
 				
+				if ((f == null) || (g == null))
+					return;
+				
 				ngen = new NdlGenerator(Logger.getLogger(this.getClass().getCanonicalName()));
 			
 				if ((GUIState.getInstance().resStart != null) && (GUIState.getInstance().resEnd != null))
@@ -109,11 +127,12 @@ public class GraphSaver {
 				}
 				
 				// decide whether we a global image
-				boolean globalImage = false;
+				boolean globalImage = false, globalDomain = false;
 				
-				if (GUIState.getInstance().resImageName != null) {
+				// is image specified in the reservation?
+				if (GUIState.getInstance().getVMImageInReservation() != null) {
 					// there is a global image (maybe)
-					OrcaImage im = GUIState.getInstance().definedImages.get(GUIState.getInstance().resImageName);
+					OrcaImage im = GUIState.getInstance().definedImages.get(GUIState.getInstance().getVMImageInReservation());
 					if (im != null) {
 						// definitely an global image - attach it to the reservation
 						globalImage = true;
@@ -121,6 +140,13 @@ public class GraphSaver {
 						Individual imI = ngen.declareVMImage(im.getUrl().toString(), im.getHash(), im.getShortName());
 						ngen.addVMImageToIndividual(imI, reservation);
 					}
+				}
+				
+				// is domain specified in the reservation?
+				if (GUIState.getInstance().getDomainInReservation() != null) {
+					globalDomain = true;
+					Individual domI = ngen.declareDomain(GUIState.getInstance().getDomainInReservation());
+					ngen.addDomainToIndividual(domI, reservation);
 				}
 				
 				if (GUIState.getInstance().g.getEdgeCount() == 0) {
@@ -135,13 +161,13 @@ public class GraphSaver {
 						ngen.addBandwidthToConnection(ei, e.getBandwidth());
 
 						Pair<OrcaNode> pn = GUIState.getInstance().g.getEndpoints(e);
-						processNodeAndLink(pn.getFirst(), e, ei, globalImage);
-						processNodeAndLink(pn.getSecond(), e, ei, globalImage);
+						processNodeAndLink(pn.getFirst(), e, ei, globalImage, globalDomain);
+						processNodeAndLink(pn.getSecond(), e, ei, globalImage, globalDomain);
 					}
 				}
 				
 				// save the contents
-				String res = getFormattedOutput(ngen, N3_FORMAT);
+				String res = getFormattedOutput(ngen, outputFormat);
 				FileWriter fsw = new FileWriter(f);
 				fsw.write(res);
 				fsw.close();

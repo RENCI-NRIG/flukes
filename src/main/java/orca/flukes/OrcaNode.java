@@ -7,7 +7,8 @@ import org.apache.commons.collections15.Factory;
 public class OrcaNode {
 
 	private String name;
-	private String image;
+	private String image = null;
+	private String domain = null;
 	private HashMap<OrcaLink, String> addresses;
 	
 	public OrcaNode(String name) {
@@ -29,6 +30,14 @@ public class OrcaNode {
 
 	public void setImage(String image) {
 		this.image = image;
+	}
+	
+	public String getDomain() {
+		return domain;
+	}
+	
+	public void setDomain(String d) {
+		domain = d;
 	}
 	
 	public void setIp(OrcaLink e, String addr) {

@@ -15,11 +15,12 @@ import java.awt.geom.Point2D;
 import java.util.Set;
 
 import javax.swing.ButtonGroup;
-import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JFrame;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.JRadioButtonMenuItem;
+
+import com.hyperrealm.kiwi.ui.dialog.KMessageDialog;
 
 import edu.uci.ics.jung.visualization.VisualizationViewer;
 import edu.uci.ics.jung.visualization.control.ModalGraphMouse;
@@ -84,9 +85,16 @@ public class MouseMenus {
 			super("Edit Selected Nodes...");
 			this.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
-					OrcaMultiNodePropertyDialog mnp = new OrcaMultiNodePropertyDialog(GUI.getInstance().getFrame(), nodes);
-					mnp.pack();
-					mnp.setVisible(true);
+					if (nodes.size() > 0) {
+						OrcaMultiNodePropertyDialog mnp = new OrcaMultiNodePropertyDialog(GUI.getInstance().getFrame(), nodes);
+						mnp.pack();
+						mnp.setVisible(true);
+					} else {
+						KMessageDialog kqd = new KMessageDialog(GUI.getInstance().getFrame(), "Empty selection", true);
+						kqd.setMessage("You have not selected any nodes!");
+						kqd.setLocationRelativeTo(GUI.getInstance().getFrame());
+						kqd.setVisible(true);
+					}
 				}
 			});
 		}
@@ -156,6 +164,7 @@ public class MouseMenus {
             super("Node Menu");
             this.add(new DeleteVertexMenuItem<OrcaNode, OrcaLink>(GUIState.getInstance()));
             this.add(new ImageDisplay());
+            this.add(new DomainDisplay());
             this.addSeparator();
             this.add(new NodePropItem(GUI.getInstance().getFrame()));
         }
@@ -168,6 +177,16 @@ public class MouseMenus {
     			this.setText("Image: " + v.getImage());
     		else
     			this.setText("Image: " + GUIState.NO_GLOBAL_IMAGE);
+    	}
+    }
+    
+    public static class DomainDisplay extends JMenuItem implements NodeMenuListener<OrcaNode, OrcaLink> {
+    	public void setNodeAndView(OrcaNode v,
+				VisualizationViewer<OrcaNode, OrcaLink> visView) {
+    		if ((v.getDomain() != null) && (v.getDomain().length() > 0))
+    			this.setText("Domain: " + v.getDomain());
+    		else
+    			this.setText("Domain: " + GUIState.NO_DOMAIN_SELECT);
     	}
     }
     
@@ -195,7 +214,6 @@ public class MouseMenus {
 
 		public void setPoint(Point2D point) {
 			this.point = point;
-		}
-    	
+		}	
     }
 }

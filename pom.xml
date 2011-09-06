@@ -18,7 +18,7 @@
   	<url>https://geni-orca.renci.org/svn</url>
   </scm>
   <organization>
-  	<name>RENCI</name>
+  	<name>RENCI, The University of North Carolina at Chapel Hill</name>
   	<url>http://www.renci.org</url>
   </organization>
   <distributionManagement>
