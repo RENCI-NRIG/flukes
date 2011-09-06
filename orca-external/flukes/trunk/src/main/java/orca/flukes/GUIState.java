@@ -17,7 +17,11 @@ import edu.uci.ics.jung.graph.util.Pair;
  *
  */
 public class GUIState implements IDeleteEdgeCallBack<OrcaLink>, IDeleteNodeCallBack<OrcaNode> {
-	public static String NO_GLOBAL_IMAGE = "None";
+	public static final String NO_GLOBAL_IMAGE = "None";
+	public static final String NO_DOMAIN_SELECT = "System select";
+	
+	// for now hardcode a list - should be able to get it via query
+	public static String[] NdlDomains = { NO_DOMAIN_SELECT, "uncvmsite", "rencivmsite", "dukevmsite" };
 	
 	private static GUIState instance = null;
 	
@@ -38,12 +42,45 @@ public class GUIState implements IDeleteEdgeCallBack<OrcaLink>, IDeleteNodeCallB
 	
 	// Reservation details
 	Date resStart = null, resEnd = null;
-	String resImageName = null;
+	private String resImageName = null;
+	private String resDomainName = null;
 	
 	static GUIState getInstance() {
 		if (instance == null)
 			instance = new GUIState();
 		return instance;
+	}
+	
+	public void setVMImageInReservation(String im) {
+		// if the value is changing
+		// set it for all nodes
+		if ((resImageName == null) && (im == null))
+			return;
+		if ((resImageName != null) && (resImageName.equals(im)))
+			return;
+		for (OrcaNode n: g.getVertices()) 
+			n.setImage(im);
+		resImageName = im;
+	}
+	
+	public String getVMImageInReservation() {
+		return resImageName;
+	}
+	
+	public void setDomainInReservation(String d) {
+		// if the value is changing
+		// set it for all nodes
+		if ((resDomainName == null) && ( d == null))
+			return;
+		if ((resDomainName != null) && (resDomainName.equals(d)))
+			return;
+		for (OrcaNode n: g.getVertices()) 
+			n.setDomain(d);
+		resDomainName = d;
+	}
+	
+	public String getDomainInReservation() {
+		return resDomainName;
 	}
 	
 	public OrcaImage getImageByName(String nm) {
@@ -133,5 +170,36 @@ public class GUIState implements IDeleteEdgeCallBack<OrcaLink>, IDeleteNodeCallB
 				return false;
 		}
 		return true;
+	}
+	
+	/**
+	 * Return available domains
+	 * @return
+	 */
+	public String[] getAvailableDomains() {
+		return NdlDomains;
+	}
+	
+	/**
+	 * Return null if 'None' image is asked for
+	 * @param n
+	 * @param image
+	 */
+	public static String getNodeImageProper(String image) {
+		if ((image == null) || image.equals(NO_GLOBAL_IMAGE))
+			return null;
+		else
+			return image;
+	}
+	
+	/**
+	 * Return null if 'System select' domain is asked for
+	 * 
+	 */
+	public static String getNodeDomainProper(String domain) {
+		if ((domain == null) || domain.equals(NO_DOMAIN_SELECT))
+			return null;
+		else
+			return domain;
 	}
 }

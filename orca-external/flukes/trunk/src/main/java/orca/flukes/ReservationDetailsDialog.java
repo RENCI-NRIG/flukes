@@ -24,7 +24,7 @@ public class ReservationDetailsDialog extends ComponentDialog {
 	private KPanel kp;
 	private TimeField stf, etf;
 	private DateChooserField sdcf, edcf;
-	private JList imageList;
+	private JList imageList, domainList;
 
 	private JFrame parent;
 	
@@ -38,7 +38,7 @@ public class ReservationDetailsDialog extends ComponentDialog {
 		this.parent = parent;
 	}
 
-	public void setFields(String shortImageName, Date start, Date end) {
+	public void setFields(String shortImageName, String domain, Date start, Date end) {
 		int index = 0;
 		if (shortImageName != null) {
 			for (String n: GUIState.getInstance().getImageShortNamesWithNone()) {
@@ -52,6 +52,17 @@ public class ReservationDetailsDialog extends ComponentDialog {
 				imageList.setSelectedIndex(index);
 		}
 		
+		if (domain !=null) {
+			for (String n: GUIState.getInstance().getAvailableDomains()) {
+				if (n.equals(domain))
+					break;
+				index++;
+			}
+			if (index == GUIState.getInstance().getAvailableDomains().length)
+				domainList.setSelectedIndex(0);
+			else
+				domainList.setSelectedIndex(index);
+		}
 		// set dates and times
 		setTimeDateField(stf, sdcf, GUIState.getInstance().resStart);
 		setTimeDateField(etf, edcf, GUIState.getInstance().resEnd);
@@ -79,36 +90,17 @@ public class ReservationDetailsDialog extends ComponentDialog {
 //		gbl_contentPanel.columnWeights = new double[]{0.0, 1.0, Double.MIN_VALUE};
 //		gbl_contentPanel.rowWeights = new double[]{0.0, 1.0, 0.0, Double.MIN_VALUE};
 		kp.setLayout(gbl_contentPanel);
-		{
-			JLabel lblNewLabel_1 = new JLabel("Select image: ");
-			GridBagConstraints gbc_lblNewLabel_1 = new GridBagConstraints();
-			gbc_lblNewLabel_1.anchor = GridBagConstraints.WEST;
-			gbc_lblNewLabel_1.insets = new Insets(0, 0, 5, 5);
-			gbc_lblNewLabel_1.gridx = 0;
-			gbc_lblNewLabel_1.gridy = 0;
-			kp.add(lblNewLabel_1, gbc_lblNewLabel_1);
-		}
-		{
-			imageList = new JList(GUIState.getInstance().getImageShortNamesWithNone());
-			imageList.setToolTipText("Selecting an image for entire reservation overrides images selected for individual nodes or domains!");
-			imageList.setSelectedIndex(0);
-			imageList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-			imageList.setLayoutOrientation(JList.VERTICAL);
-			imageList.setVisibleRowCount(1);
-			GridBagConstraints gbc_list = new GridBagConstraints();
-			gbc_list.insets = new Insets(0, 0, 5, 5);
-			gbc_list.fill = GridBagConstraints.WEST;
-			gbc_list.gridx = 1;
-			gbc_list.gridy = 0;
-			kp.add(imageList, gbc_list);
-		}
+		int y = 0;
+		imageList = OrcaNodePropertyDialog.addImageList(kp, gbl_contentPanel, y++);
+		domainList = OrcaNodePropertyDialog.addDomainList(kp, gbl_contentPanel, y++);
+		
 		{
 			JLabel lblNewLabel = new JLabel("Start Time");
 			GridBagConstraints gbc_lblNewLabel = new GridBagConstraints();
 			gbc_lblNewLabel.anchor = GridBagConstraints.WEST;
 			gbc_lblNewLabel.insets = new Insets(0, 0, 5, 5);
 			gbc_lblNewLabel.gridx = 0;
-			gbc_lblNewLabel.gridy = 1;
+			gbc_lblNewLabel.gridy = y;
 			kp.add(lblNewLabel, gbc_lblNewLabel);
 		}
 		{
@@ -117,7 +109,7 @@ public class ReservationDetailsDialog extends ComponentDialog {
 			gbc_tf.anchor = GridBagConstraints.WEST;
 			gbc_tf.insets = new Insets(0, 0, 5, 5);
 			gbc_tf.gridx = 1;
-			gbc_tf.gridy = 1;
+			gbc_tf.gridy = y;
 			kp.add(stf, gbc_tf);
 		}
 		{
@@ -126,7 +118,7 @@ public class ReservationDetailsDialog extends ComponentDialog {
 			gbc_dcf.anchor = GridBagConstraints.WEST;
 			gbc_dcf.insets = new Insets(0, 0, 5, 5);
 			gbc_dcf.gridx = 2;
-			gbc_dcf.gridy = 1;
+			gbc_dcf.gridy = y++;
 			kp.add(sdcf, gbc_dcf);
 		}
 		{
@@ -135,7 +127,7 @@ public class ReservationDetailsDialog extends ComponentDialog {
 			gbc_lblNewLabel.anchor = GridBagConstraints.WEST;
 			gbc_lblNewLabel.insets = new Insets(0, 0, 5, 5);
 			gbc_lblNewLabel.gridx = 0;
-			gbc_lblNewLabel.gridy = 2;
+			gbc_lblNewLabel.gridy = y;
 			kp.add(lblNewLabel, gbc_lblNewLabel);
 		}
 		{
@@ -144,7 +136,7 @@ public class ReservationDetailsDialog extends ComponentDialog {
 			gbc_tf.anchor = GridBagConstraints.WEST;
 			gbc_tf.insets = new Insets(0, 0, 5, 5);
 			gbc_tf.gridx = 1;
-			gbc_tf.gridy = 2;
+			gbc_tf.gridy = y;
 			kp.add(etf, gbc_tf);
 		}
 		{
@@ -153,7 +145,7 @@ public class ReservationDetailsDialog extends ComponentDialog {
 			gbc_dcf.anchor = GridBagConstraints.WEST;
 			gbc_dcf.insets = new Insets(0, 0, 5, 5);
 			gbc_dcf.gridx = 2;
-			gbc_dcf.gridy = 2;
+			gbc_dcf.gridy = y++;
 			kp.add(edcf, gbc_dcf);
 		}
 
@@ -202,7 +194,12 @@ public class ReservationDetailsDialog extends ComponentDialog {
 		GUIState.getInstance().resEnd = lc.getTime();
 		
 		// get the image short name
-		GUIState.getInstance().resImageName = GUIState.getInstance().getImageShortNamesWithNone()[imageList.getSelectedIndex()];
+		String curImName = GUIState.getNodeImageProper(GUIState.getInstance().getImageShortNamesWithNone()[imageList.getSelectedIndex()]);
+		GUIState.getInstance().setVMImageInReservation(curImName);
+		
+		// get the domain for reservation
+		String domName = GUIState.getNodeDomainProper(GUIState.getInstance().getAvailableDomains()[domainList.getSelectedIndex()]);
+		GUIState.getInstance().setDomainInReservation(domName);
 		
 		return true;
 	}
