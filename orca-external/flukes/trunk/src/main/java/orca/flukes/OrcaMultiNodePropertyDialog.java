@@ -24,6 +24,7 @@ public class OrcaMultiNodePropertyDialog extends ComponentDialog {
 	
 	public OrcaMultiNodePropertyDialog(JFrame parent, Set<OrcaNode> ns) {
 		super(parent, "Shared Node Properties", true);
+		setComment("Edit shared properties of selected nodes");
 		super.setLocationRelativeTo(parent);
 		this.parent = parent;
 		this.nodes = ns;

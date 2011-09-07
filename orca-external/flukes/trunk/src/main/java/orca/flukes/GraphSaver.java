@@ -2,6 +2,8 @@ package orca.flukes;
 
 import java.io.File;
 import java.io.FileWriter;
+import java.util.HashMap;
+import java.util.Map;
 
 import orca.ndl.NdlException;
 import orca.ndl.NdlGenerator;
@@ -24,6 +26,23 @@ public class GraphSaver {
 	private NdlGenerator ngen = null;
 	private Individual reservation = null;
 	private String outputFormat = null;
+	
+	// converting to netmask
+	private static final String[] netmaskConverter = {
+		"128.0.0.0", "192.0.0.0", "224.0.0.0", "240.0.0.0", "248.0.0.0", "252.0.0.0", "254.0.0.0", "255.0.0.0",
+		"255.128.0.0", "255.192.0.0", "255.224.0.0", "255.240.0.0", "255.248.0.0", "255.252.0.0", "255.254.0.0", "255.255.0.0",
+		"255.255.128.0", "255.255.192.0", "255.255.224.0", "255.255.240.0", "255.255.248.0", "255.255.252.0", "255.255.254.0", "255.255.255.0",
+		"255.255.255.128", "255.255.255.192", "255.255.255.224", "255.255.255.240", "255.255.255.248", "255.255.255.252", "255.255.255.254", "255.255.255.255"
+	};
+		
+	// helper
+	static Map<String, String> domainMap;
+	static {
+		domainMap = new HashMap<String, String>();
+		domainMap.put("RENCI", "rencivmsite.rdf#rencivmsite");
+		domainMap.put("UNC", "uncvmsite.rdf#uncvmsite");
+		domainMap.put("Duke", "dukevmsite.rdf#dukevmsite");
+	}
 	
 	public static GraphSaver getInstance() {
 		if (instance == null)
@@ -54,13 +73,12 @@ public class GraphSaver {
 	 * @param n
 	 * @param e
 	 * @param edgeI
-	 * @param gi - is global image set?
-	 * @param gd - is global domain set?
 	 * @throws NdlException
 	 */
-	private void processNodeAndLink(OrcaNode n, OrcaLink e, Individual edgeI, boolean gi, boolean gd) throws NdlException {
+	private void processNodeAndLink(OrcaNode n, OrcaLink e, Individual edgeI) throws NdlException {
 		Individual intI = ngen.declareInterface(e.getName()+"-"+n.getName());
 		ngen.addInterfaceToIndividual(intI, edgeI);
+		
 		Individual nodeI = ngen.getRequestIndividual(n.getName());
 		ngen.addInterfaceToIndividual(intI, nodeI);
 		
@@ -68,21 +86,8 @@ public class GraphSaver {
 		if (n.getIp(e) != null) {
 			// create IP object, attach to interface
 			ngen.addIPToIndividual(n.getIp(e), intI);
-		}
-		// if no global image is set and a local image is set, add it to node
-		if (!gi && (n.getImage() != null)) {
-			// check if image is set in this node
-			OrcaImage im = GUIState.getInstance().definedImages.get(n.getImage());
-			if (im != null) {
-				Individual imI = ngen.declareVMImage(im.getUrl().toString(), im.getHash(), im.getShortName());
-				ngen.addVMImageToIndividual(imI, nodeI);
-			}
-		}
-		
-		// if no global domain domain is set, declare a domain and add inDomain property
-		if (!gd && (n.getDomain() != null)) {
-			Individual domI = ngen.declareDomain(n.getDomain());
-			ngen.addNodeToDomain(domI, nodeI);
+			if (n.getNm(e) != null)
+				ngen.addNetmaskToIP(n.getIp(e), netmaskConverter[Integer.parseInt(n.getNm(e)) - 1]);
 		}
 	}
 	
@@ -120,12 +125,6 @@ public class GraphSaver {
 				else
 					reservation = ngen.declareReservation();
 				
-				// shove invidividual nodes onto the reservation
-				for (OrcaNode n: GUIState.getInstance().g.getVertices()) {
-					Individual ni = ngen.declareServer(n.getName());
-					ngen.addResourceToReservation(reservation, ni);
-				}
-				
 				// decide whether we a global image
 				boolean globalImage = false, globalDomain = false;
 				
@@ -149,6 +148,36 @@ public class GraphSaver {
 					ngen.addDomainToIndividual(domI, reservation);
 				}
 				
+				// shove invidividual nodes onto the reservation
+				for (OrcaNode n: GUIState.getInstance().g.getVertices()) {
+					Individual ni = ngen.declareServer(n.getName());
+					ngen.addResourceToReservation(reservation, ni);
+					
+					// for clusters, add number of nodes, declare as cluster (VM domain)
+					if (!n.isNode()) {
+						ngen.addNumServersToCluster(n.getNodeCount(), ni);
+						ngen.addVMDomainProperty(ni);
+					}
+					
+					// if no global image is set and a local image is set, add it to node
+					if (!globalImage && (n.getImage() != null)) {
+						// check if image is set in this node
+						OrcaImage im = GUIState.getInstance().definedImages.get(n.getImage());
+						if (im != null) {
+							Individual imI = ngen.declareVMImage(im.getUrl().toString(), im.getHash(), im.getShortName());
+							ngen.addVMImageToIndividual(imI, ni);
+						}
+					}
+					
+					// if no global domain domain is set, declare a domain and add inDomain property
+					if (!globalDomain && (n.getDomain() != null)) {
+						Individual domI = ngen.declareDomain(domainMap.get(n.getDomain()));
+						ngen.addNodeToDomain(domI, ni);
+					}
+				}
+				
+
+				
 				if (GUIState.getInstance().g.getEdgeCount() == 0) {
 					// a bunch of disconnected nodes, no IP addresses 
 					
@@ -161,8 +190,8 @@ public class GraphSaver {
 						ngen.addBandwidthToConnection(ei, e.getBandwidth());
 
 						Pair<OrcaNode> pn = GUIState.getInstance().g.getEndpoints(e);
-						processNodeAndLink(pn.getFirst(), e, ei, globalImage, globalDomain);
-						processNodeAndLink(pn.getSecond(), e, ei, globalImage, globalDomain);
+						processNodeAndLink(pn.getFirst(), e, ei);
+						processNodeAndLink(pn.getSecond(), e, ei);
 					}
 				}
 				

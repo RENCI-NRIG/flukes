@@ -28,7 +28,6 @@ import com.hyperrealm.kiwi.ui.AboutFrame;
 import com.hyperrealm.kiwi.ui.KFileChooser;
 import com.hyperrealm.kiwi.ui.UIChangeManager;
 import com.hyperrealm.kiwi.ui.dialog.KFileChooserDialog;
-import com.hyperrealm.kiwi.ui.dialog.KMessageDialog;
 import com.hyperrealm.kiwi.ui.dialog.KQuestionDialog;
 
 import edu.uci.ics.jung.algorithms.layout.Layout;
@@ -39,6 +38,7 @@ import edu.uci.ics.jung.visualization.control.AbstractModalGraphMouse;
 import edu.uci.ics.jung.visualization.control.EditingModalGraphMouse;
 import edu.uci.ics.jung.visualization.control.ModalGraphMouse;
 import edu.uci.ics.jung.visualization.decorators.ToStringLabeller;
+import edu.uci.ics.jung.visualization.picking.PickedState;
 
 public class GUI {
 
@@ -49,7 +49,7 @@ public class GUI {
 	private JPanel requestPanel, resourcePanel;
 	private JToolBar toolBar;
 	private JButton nodeButton;
-	private JButton domainButton;
+	private JButton clusterButton;
 	private Component horizontalStrut;
 	private JMenuBar menuBar;
 	private JMenu fileNewMenu;
@@ -95,8 +95,6 @@ public class GUI {
 				helpDialog();
 			else if (e.getActionCommand().equals("about"))
 				aboutDialog();
-			else if (e.getActionCommand().equals("welcome"))
-				;
 			else if (e.getActionCommand().equals("xml"))
 				GraphSaver.getInstance().setOutputFormat(GraphSaver.RDF_XML_FORMAT);
 			else if (e.getActionCommand().equals("n3"))
@@ -124,7 +122,9 @@ public class GUI {
 				GUIState.getInstance().rdd.pack();
 				GUIState.getInstance().rdd.setVisible(true);
 			} else if (e.getActionCommand().equals("nodes")) {
-				;
+				GUIState.getInstance().nodesOrClusters = true;
+			} else if (e.getActionCommand().equals("clusters")) {
+				GUIState.getInstance().nodesOrClusters = false;
 			}
 		}
 	}
@@ -161,7 +161,7 @@ public class GUI {
 	private GUI() {
 		UIChangeManager.setDefaultTexture(null);
 	}
-	
+
 	public static GUI getInstance() {
 		if (instance == null)
 			instance = new GUI();
@@ -202,7 +202,7 @@ public class GUI {
 		OrcaLink.OrcaLinkFactory.setDefaultBandwidth(10000000);
 		OrcaLink.OrcaLinkFactory.setDefaultLatency(5000);
 		
-		// Trying out our new popup menu mouse plugin...
+		// add the plugin
 		PopupVertexEdgeMenuMousePlugin<OrcaNode, OrcaLink> myPlugin = new PopupVertexEdgeMenuMousePlugin<OrcaNode, OrcaLink>();
 		
 		// Add some popup menus for the edges and vertices to our mouse plugin.
@@ -211,6 +211,15 @@ public class GUI {
 		myPlugin.setModePopup(new MouseMenus.ModeMenu());
 		gm.remove(gm.getPopupEditingPlugin());  // Removes the existing popup editing plugin
 		gm.add(myPlugin);
+
+		// Add icon transformer
+		// TODO: we may need setVertexShapeTransformer as well to help selection
+		OrcaNode.OrcaNodeIconTransformer it = new OrcaNode.OrcaNodeIconTransformer();
+		vv.getRenderContext().setVertexIconTransformer(it);
+		
+		// add listener to add/remove checkmarks on selected nodes
+		PickedState<OrcaNode> ps = vv.getPickedVertexState();
+        ps.addItemListener(new OrcaNode.PickWithIconListener(it));
 		
 		vv.setGraphMouse(gm);
 
@@ -359,17 +368,19 @@ public class GUI {
 		horizontalStrut = Box.createHorizontalStrut(10);
 		toolBar.add(horizontalStrut);
 		
-		domainButton = new JButton("Add Domains");
-		domainButton.setToolTipText("Add new domains");
-		domainButton.setVerticalAlignment(SwingConstants.TOP);
-		toolBar.add(domainButton);
+		clusterButton = new JButton("Add Clusters");
+		clusterButton.setToolTipText("Add new clusters");
+		clusterButton.setActionCommand("clusters");
+		clusterButton.addActionListener(rbl);
+		clusterButton.setVerticalAlignment(SwingConstants.TOP);
+		toolBar.add(clusterButton);
 		
 		horizontalStrut_1 = Box.createHorizontalStrut(10);
 		toolBar.add(horizontalStrut_1);
 
 		
-		imageButton = new JButton("Images");
-		imageButton.setToolTipText("Add or edit images");
+		imageButton = new JButton("Client Images");
+		imageButton.setToolTipText("Add or edit VM images");
 		imageButton.setActionCommand("images");
 		imageButton.addActionListener(rbl);
 		toolBar.add(imageButton);
