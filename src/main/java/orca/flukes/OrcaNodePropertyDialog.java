@@ -15,12 +15,12 @@ import javax.swing.ListSelectionModel;
 
 import orca.flukes.ui.IpAddrField;
 
+import com.hyperrealm.kiwi.text.FormatConstants;
 import com.hyperrealm.kiwi.ui.KPanel;
 import com.hyperrealm.kiwi.ui.KTextField;
+import com.hyperrealm.kiwi.ui.NumericField;
 import com.hyperrealm.kiwi.ui.dialog.ComponentDialog;
 import com.hyperrealm.kiwi.ui.dialog.KMessageDialog;
-
-import edu.uci.ics.jung.graph.SparseMultigraph;
 
 @SuppressWarnings("serial")
 public class OrcaNodePropertyDialog extends ComponentDialog {
@@ -30,12 +30,17 @@ public class OrcaNodePropertyDialog extends ComponentDialog {
 	
 	private KTextField name;
 	private JList imageList, domainList;
+	NumericField ns;
 	private HashMap<OrcaLink, IpAddrField> ipFields;
+	int ycoord;
 	
 	public OrcaNodePropertyDialog(JFrame parent, OrcaNode n) {
 		super(parent, "Node Properties", true);
 		super.setLocationRelativeTo(parent);
-		setComment("Node " + n.getName() + " properties");
+		if (n.isNode())
+			setComment("Node " + n.getName() + " properties");
+		else
+			setComment("Domain " + n.getName() + " properties");
 		this.parent = parent;
 		this.node = n;
 		if (n != null) {
@@ -64,7 +69,12 @@ public class OrcaNodePropertyDialog extends ComponentDialog {
 				domainList.setSelectedIndex(index);
 		}
 		ipFields = new HashMap<OrcaLink, IpAddrField>();
+		
+		ycoord = 3;
+		// if a node, IP fields are meaningful
 		addIpFields();
+		if (!n.isNode())
+			addNumServersField();
 	}
 	
 	@Override
@@ -83,17 +93,21 @@ public class OrcaNodePropertyDialog extends ComponentDialog {
 
 		// domain
 		node.setDomain(GUIState.getNodeDomainProper(GUIState.getInstance().getAvailableDomains()[domainList.getSelectedIndex()]));
-		
+
 		// get IP addresses from GUI and set the on the node
 		for (Map.Entry<OrcaLink, IpAddrField> entry: ipFields.entrySet()) {
-			node.setIp(entry.getKey(), entry.getValue().getAddress());
+			node.setIp(entry.getKey(), entry.getValue().getAddress(), entry.getValue().getNetmask());
+		}
+		
+		// if cluster, set node count
+		if (!node.isNode()) {
+			node.setNodeCount((int)ns.getValue());
 		}
 		
 		return true;
 	}
 	
 	private void addIpFields() {
-		int ycoord = 3;
 		// query the graph for edges incident on this node and create 
 		// labeled IP address fields; populate fields as needed
 		Collection<OrcaLink> nodeEdges = GUIState.getInstance().g.getIncidentEdges(node);
@@ -111,8 +125,12 @@ public class OrcaNodePropertyDialog extends ComponentDialog {
 				kp.add(lblNewLabel_1, gbc_lblNewLabel_1);
 			}
 			{
-				IpAddrField ipf = new IpAddrField();
-				ipf.setAddress(node.getIp(e));
+				IpAddrField ipf;
+				if (node.isNode()) 
+					ipf = new IpAddrField(true);
+				else
+					ipf = new IpAddrField(false);
+				ipf.setAddress(node.getIp(e), node.getNm(e));
 				GridBagConstraints gbc_list = new GridBagConstraints();
 				gbc_list.insets = new Insets(0, 0, 5, 5);
 				gbc_list.fill = GridBagConstraints.HORIZONTAL;
@@ -122,6 +140,31 @@ public class OrcaNodePropertyDialog extends ComponentDialog {
 				ipFields.put(e, ipf);
 			}
 			ycoord++;
+		}
+	}
+	
+	private void addNumServersField() {
+		{
+			JLabel lblNewLabel_1 = new JLabel("Number of servers: ");
+			GridBagConstraints gbc_lblNewLabel_1 = new GridBagConstraints();
+			gbc_lblNewLabel_1.anchor = GridBagConstraints.WEST;
+			gbc_lblNewLabel_1.insets = new Insets(0, 0, 5, 5);
+			gbc_lblNewLabel_1.gridx = 0;
+			gbc_lblNewLabel_1.gridy = ycoord;
+			kp.add(lblNewLabel_1, gbc_lblNewLabel_1);
+		}
+		{
+			ns = new NumericField(5);
+			ns.setDecimals(0);
+			ns.setType(FormatConstants.INTEGER_FORMAT);
+			ns.setMinValue(1);
+			ns.setValue(node.getNodeCount());
+			GridBagConstraints gbc_list = new GridBagConstraints();
+			gbc_list.insets = new Insets(0, 0, 5, 5);
+			gbc_list.fill = GridBagConstraints.HORIZONTAL;
+			gbc_list.gridx = 1;
+			gbc_list.gridy = ycoord;
+			kp.add(ns, gbc_list);
 		}
 	}
 	

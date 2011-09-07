@@ -1,5 +1,6 @@
 package orca.flukes;
 
+import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
@@ -19,9 +20,8 @@ import edu.uci.ics.jung.graph.util.Pair;
 public class GUIState implements IDeleteEdgeCallBack<OrcaLink>, IDeleteNodeCallBack<OrcaNode> {
 	public static final String NO_GLOBAL_IMAGE = "None";
 	public static final String NO_DOMAIN_SELECT = "System select";
-	
-	// for now hardcode a list - should be able to get it via query
-	public static String[] NdlDomains = { NO_DOMAIN_SELECT, "uncvmsite", "rencivmsite", "dukevmsite" };
+	public static final String NODE_ICON = "node-50.gif";
+	public static final String CLOUD_ICON = "cloud-50.gif";
 	
 	private static GUIState instance = null;
 	
@@ -45,9 +45,26 @@ public class GUIState implements IDeleteEdgeCallBack<OrcaLink>, IDeleteNodeCallB
 	private String resImageName = null;
 	private String resDomainName = null;
 	
+	// true for nodes, false for clusters
+	boolean nodesOrClusters = true;
+	
+	private static void initialize() {
+		;
+	}
+	
+	private GUIState() {
+		// start/end dates (+24 hours)
+		Calendar cl = Calendar.getInstance();
+		resStart = cl.getTime();
+		cl.add(Calendar.DAY_OF_MONTH, 1);
+		resEnd = cl.getTime();
+	}
+	
 	static GUIState getInstance() {
-		if (instance == null)
+		if (instance == null) {
+			initialize();
 			instance = new GUIState();
+		}
 		return instance;
 	}
 	
@@ -177,7 +194,18 @@ public class GUIState implements IDeleteEdgeCallBack<OrcaLink>, IDeleteNodeCallB
 	 * @return
 	 */
 	public String[] getAvailableDomains() {
-		return NdlDomains;
+		Set<String> knownDomains = GraphSaver.domainMap.keySet();
+		
+		String[] itemList = new String[knownDomains.size() + 1];
+		
+		int index = 0;
+		itemList[index] = NO_DOMAIN_SELECT;
+		
+		for(String s: knownDomains) {
+			itemList[++index] = s;
+		}
+		
+		return itemList;
 	}
 	
 	/**
