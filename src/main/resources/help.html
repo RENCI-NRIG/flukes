@@ -28,8 +28,15 @@
 <p>In pick mode you can select multiple nodes and edit their common properties (e.g. image, domain binding etc) by right clicking 
 anywhere except node or edge and selecting 'Edit Selected Nodes'.</p>
 
-<h3>User interface - Resources pane</h3>
+<h3>Node Types and IP address assignment</h3>
  
+ <p>Two node types are possible - plain node (a VM with either a default image or an image specified by the user) or a cluster. A cluster is a set of 
+ nodes in a bus configuration allocated from one site possibly connected to other sites over a Layer 2 connection (e.g. a VLAN). Similar parameters
+ can be specified for nodes and clusters. For clusters, a number of nodes should be specified, also the 
+ IP address specified is the address to be assigned to the <it>first node</it>, with other addresses sequentially selected from the same address set 
+ limited by the netmask. E.g. if there are 3 nodes in a cluster and a user specifies 172.16.1.10/16 then the first node will 
+ have 172.16.1.10/16, second 172.16.1.11/16 etc.</p>
+  
 <h3>Images</h3>
 <p>VM Images are defined using the 'Images' button. You can add new images or edit the properties of existing images. Each image must have:</p>
 <ul>
@@ -45,5 +52,10 @@ in reservation and node properties.</p>
 <p>If an image is selected for a reservation it takes on global significance and any images specified for nodes are ignored. 
 If no image is specified in the reservation you can specify different images for individual nodes. Nodes for which an image is not specified
 will use the default image for the site at which the node is allocated.</p>
+
+
+<h3>User interface - Resources pane</h3>
+ 
+Allows to view available ORCA resources. To be implemented ...
 </body>
 </html>

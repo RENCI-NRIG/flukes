@@ -126,10 +126,7 @@ public class OrcaNodePropertyDialog extends ComponentDialog {
 			}
 			{
 				IpAddrField ipf;
-				if (node.isNode()) 
-					ipf = new IpAddrField(true);
-				else
-					ipf = new IpAddrField(false);
+				ipf = new IpAddrField();
 				ipf.setAddress(node.getIp(e), node.getNm(e));
 				GridBagConstraints gbc_list = new GridBagConstraints();
 				gbc_list.insets = new Insets(0, 0, 5, 5);
