@@ -8,6 +8,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.HashSet;
+import java.util.Set;
 
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -53,6 +55,7 @@ public class GUI {
 	private Component horizontalStrut;
 	private JMenuBar menuBar;
 	private JMenu fileNewMenu;
+	private JMenuItem newMenuItem;
 	private JMenuItem openMenuItem;
 	private JMenuItem saveMenuItem;
 	private JSeparator separator;
@@ -63,6 +66,8 @@ public class GUI {
 	private JMenuItem helpMenuItem;
 	private JMenuItem aboutMenuItem;
 	private JSeparator separator_1;
+	
+	private VisualizationViewer<OrcaNode,OrcaLink> vv;
 	
 	private EditingModalGraphMouse<OrcaNode, OrcaLink> gm;
 	private JButton attributesButton;
@@ -83,6 +88,12 @@ public class GUI {
 				quit();
 			else if (e.getActionCommand().equals("open"))
 				;
+			else if (e.getActionCommand().equals("new")) { 
+				Set<OrcaNode> nodes = new HashSet<OrcaNode>(GUIState.getInstance().g.getVertices());
+				for (OrcaNode n: nodes)
+					GUIState.getInstance().g.removeVertex(n);
+				vv.repaint();
+			}
 			else if (e.getActionCommand().equals("save")) {
 				KFileChooserDialog d = new KFileChooserDialog(getFrame(), "Save in NDL", KFileChooser.SAVE_DIALOG);
 				d.setLocationRelativeTo(getFrame());
@@ -187,7 +198,7 @@ public class GUI {
 		Layout<OrcaNode, OrcaLink> layout = new StaticLayout<OrcaNode, OrcaLink>(GUIState.getInstance().g);
 		
 		//layout.setSize(new Dimension(1000,800));
-		VisualizationViewer<OrcaNode,OrcaLink> vv = 
+		vv = 
 			new VisualizationViewer<OrcaNode,OrcaLink>(layout);
 		// Show vertex and edge labels
 		vv.getRenderContext().setVertexLabelTransformer(new ToStringLabeller<OrcaNode>());
@@ -265,6 +276,11 @@ public class GUI {
 		
 		fileNewMenu = new JMenu("File ");
 		menuBar.add(fileNewMenu);
+		
+		newMenuItem = new JMenuItem("New");
+		newMenuItem.setActionCommand("new");
+		newMenuItem.addActionListener(mListener);
+		fileNewMenu.add(newMenuItem);
 		
 		openMenuItem = new JMenuItem("Open...");
 		openMenuItem.setActionCommand("open");

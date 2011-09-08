@@ -12,7 +12,6 @@ public class IpAddrField extends KPanel {
 	private NumericField o4;
 	private NumericField nm;
 	private String ipPattern = "[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}";
-	private boolean fixedMask = true;
 	
 	public String getAddress() {
 		// 0 in first octet is meaningless
@@ -23,12 +22,9 @@ public class IpAddrField extends KPanel {
 	}
 	
 	public String getNetmask() {
-		if (!fixedMask) {
-			if (((int)nm.getValue() < 1) || ((int)nm.getValue() > 32))
-				return null;
-			return "" + (int)nm.getValue();
-		}
-		return null;
+		if (((int)nm.getValue() < 1) || ((int)nm.getValue() > 32))
+			return null;
+		return "" + (int)nm.getValue();
 	}
 	
 	public void setAddress(String s, String maskString) {
@@ -41,7 +37,7 @@ public class IpAddrField extends KPanel {
 		o2.setValue(Integer.parseInt(octets[1]));
 		o3.setValue(Integer.parseInt(octets[2]));
 		o4.setValue(Integer.parseInt(octets[3]));
-		if (!fixedMask && (maskString != null)) {
+		if (maskString != null) {
 			int mask = Integer.parseInt(maskString);
 			if ((mask >= 1) && (mask <= 32))
 				nm.setValue(mask);
@@ -51,8 +47,7 @@ public class IpAddrField extends KPanel {
 	/**
 	 * Create the panel. Fixed mask true means don't allow changing the mask
 	 */
-	public IpAddrField(boolean fixedMask) {
-		this.fixedMask = fixedMask;
+	public IpAddrField() {
 		
 		o1 = new NumericField(3);
 		o1.setMinValue(1);
@@ -95,19 +90,16 @@ public class IpAddrField extends KPanel {
 		add(o4);
 		o4.setColumns(3);
 		
-		if (!fixedMask) {
-			KLabel sl = new KLabel("/");
-			add(sl);
+		KLabel sl = new KLabel("/");
+		add(sl);
 			
-			nm = new NumericField(2);
-			nm.setMinValue(1);
-			nm.setMaxValue(32);
-			nm.setType(FormatConstants.INTEGER_FORMAT);
-			nm.setDecimals(0);
-			add(nm);
-			nm.setColumns(2);
-		}
-
+		nm = new NumericField(2);
+		nm.setMinValue(1);
+		nm.setMaxValue(32);
+		nm.setType(FormatConstants.INTEGER_FORMAT);
+		nm.setDecimals(0);
+		add(nm);
+		nm.setColumns(2);
 	}
 
 }
