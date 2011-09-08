@@ -4,6 +4,8 @@
  * Created on March 21, 2007, 2:03 PM; Updated May 29, 2007
  *
  * Copyright March 21, 2007 Grotto Networking
+ * 
+ * Modified for Flukes. Additional code copyright 2011 RENCI/UNC Chapel Hill by Ilia Baldine
  *
  */
 
