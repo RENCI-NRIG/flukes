@@ -1,3 +1,8 @@
-NDL-OWL-enabled GUI based on JUNG, GWT, Swing and Kiwi
+NDL-OWL-enabled GUI based on 
 
-'mvn webstart:jnlp-single' produces a zip file that contains JNLP that should be deployed at the URL specified in the POM (geni-images.renci.org/webstart).
+- JUNG (http://jung.sourceforge.net/)
+- GWT WindowBuilder (http://code.google.com/javadevtools/wbpro/)
+- Java Swing 
+- Kiwi (http://www.hyperrealm.com/kiwi/docs/index.html, http://www.hyperrealm.com/main.php?s=kiwi)
+
+'mvn webstart:jnlp' produces a zip file that contains JNLP that should be deployed at the URL specified in the POM (geni-images.renci.org/webstart).

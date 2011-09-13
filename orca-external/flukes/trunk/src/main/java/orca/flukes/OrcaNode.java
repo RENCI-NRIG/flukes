@@ -23,9 +23,12 @@
 package orca.flukes;
 
 import java.awt.Color;
+import java.awt.Shape;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.awt.geom.Ellipse2D;
 import java.util.HashMap;
+import java.util.Map;
 
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
@@ -47,6 +50,7 @@ public class OrcaNode {
 	private HashMap<OrcaLink, Pair<String>> addresses;
 	private final LayeredIcon icon;
 	private final boolean amNode;
+	private String nodeType = null;
 	// if cloud. 
 	// TODO: probably need to have a class hierarchy here. 
 	private int nodeCount = 1;
@@ -58,6 +62,19 @@ public class OrcaNode {
 			return node.icon;
 		}
 	}
+	
+	// Icon shape transformer for GUI (to make sure icon clickable shape roughly matches the icon)
+	public static class OrcaNodeIconShapeTransformer implements Transformer<OrcaNode, Shape> {
+//		        private final Shape[] styles = {
+//		            new Rectangle(-20, -10, 40, 20),
+//		            new Ellipse2D.Double(-25, -10, 50, 20),
+//		            new Arc2D.Double(-30, -15, 60, 30, 30, 30,
+//		                Arc2D.PIE) };
+		        public Shape transform(OrcaNode i) {
+		            return new Ellipse2D.Double(-25, -15, 50, 30);
+		        }
+		    }
+
 	
 	// check mark for selected nodes
 	// boosted from JUNG Lens example
@@ -135,6 +152,14 @@ public class OrcaNode {
 	
 	public void setDomain(String d) {
 		domain = d;
+	}
+	
+	public void setNodeType(String t) {
+		nodeType = t;
+	}
+	
+	public String getNodeType() {
+		return nodeType;
 	}
 	
 	public void setIp(OrcaLink e, String addr, String nm) {

@@ -33,7 +33,9 @@ import java.util.Map;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JList;
+import javax.swing.JScrollPane;
 import javax.swing.ListSelectionModel;
+import javax.swing.ScrollPaneConstants;
 
 import orca.flukes.ui.IpAddrField;
 
@@ -51,7 +53,7 @@ public class OrcaNodePropertyDialog extends ComponentDialog {
 	private KPanel kp;
 	
 	private KTextField name;
-	private JList imageList, domainList;
+	private JList imageList, domainList, typeList;
 	NumericField ns;
 	private HashMap<OrcaLink, IpAddrField> ipFields;
 	int ycoord;
@@ -92,7 +94,7 @@ public class OrcaNodePropertyDialog extends ComponentDialog {
 		}
 		ipFields = new HashMap<OrcaLink, IpAddrField>();
 		
-		ycoord = 3;
+		ycoord = 4;
 		// if a node, IP fields are meaningful
 		addIpFields();
 		if (!n.isNode())
@@ -116,6 +118,9 @@ public class OrcaNodePropertyDialog extends ComponentDialog {
 		// domain
 		node.setDomain(GUIState.getNodeDomainProper(GUIState.getInstance().getAvailableDomains()[domainList.getSelectedIndex()]));
 
+		// node type
+		node.setNodeType(GUIState.getNodeTypeProper(GUIState.getInstance().getAvailableNodeTypes()[typeList.getSelectedIndex()]));
+		
 		// get IP addresses from GUI and set the on the node
 		for (Map.Entry<OrcaLink, IpAddrField> entry: ipFields.entrySet()) {
 			node.setIp(entry.getKey(), entry.getValue().getAddress(), entry.getValue().getNetmask());
@@ -212,8 +217,10 @@ public class OrcaNodePropertyDialog extends ComponentDialog {
 			kp.add(name, gbc_list);
 		}
 		
-		imageList = addImageList(kp, gbl_contentPanel, 1);
-		domainList = addDomainList(kp, gbl_contentPanel, 2);
+		
+		typeList = addTypeList(kp, gbl_contentPanel, 1);
+		imageList = addImageList(kp, gbl_contentPanel, 2);
+		domainList = addDomainList(kp, gbl_contentPanel, 3);
 		
 		return kp;
 	}
@@ -241,13 +248,53 @@ public class OrcaNodePropertyDialog extends ComponentDialog {
 			il.setSelectedIndex(0);
 			il.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 			il.setLayoutOrientation(JList.VERTICAL);
-			il.setVisibleRowCount(1);
+			il.setVisibleRowCount(3);
+			JScrollPane scrollPane = new JScrollPane(il);
+			scrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
+			scrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
 			GridBagConstraints gbc_list = new GridBagConstraints();
 			gbc_list.insets = new Insets(0, 0, 5, 5);
 			gbc_list.fill = GridBagConstraints.HORIZONTAL;
 			gbc_list.gridx = 1;
 			gbc_list.gridy = starty;
-			kp.add(il, gbc_list);
+			kp.add(scrollPane, gbc_list);
+		}
+		return il;
+	}
+	
+	/**
+	 * Add list of node types
+	 * @param kp
+	 * @param l
+	 * @param starty
+	 * @return
+	 */
+	static JList addTypeList(KPanel kp, GridBagLayout l, int starty) {
+		JList il;
+		{
+			JLabel lblNewLabel_1 = new JLabel("Select node type: ");
+			GridBagConstraints gbc_lblNewLabel_1 = new GridBagConstraints();
+			gbc_lblNewLabel_1.anchor = GridBagConstraints.WEST;
+			gbc_lblNewLabel_1.insets = new Insets(0, 0, 5, 5);
+			gbc_lblNewLabel_1.gridx = 0;
+			gbc_lblNewLabel_1.gridy = starty;
+			kp.add(lblNewLabel_1, gbc_lblNewLabel_1);
+		}
+		{
+			il = new JList(GUIState.getInstance().getAvailableNodeTypes());
+			il.setSelectedIndex(0);
+			il.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+			il.setLayoutOrientation(JList.VERTICAL);
+			il.setVisibleRowCount(3);
+			JScrollPane scrollPane = new JScrollPane(il);
+			scrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
+			scrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+			GridBagConstraints gbc_list = new GridBagConstraints();
+			gbc_list.insets = new Insets(0, 0, 5, 5);
+			gbc_list.fill = GridBagConstraints.HORIZONTAL;
+			gbc_list.gridx = 1;
+			gbc_list.gridy = starty;
+			kp.add(scrollPane, gbc_list);
 		}
 		return il;
 	}
@@ -275,13 +322,16 @@ public class OrcaNodePropertyDialog extends ComponentDialog {
 			domList.setSelectedIndex(0);
 			domList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 			domList.setLayoutOrientation(JList.VERTICAL);
-			domList.setVisibleRowCount(1);
+			domList.setVisibleRowCount(3);
+			JScrollPane scrollPane = new JScrollPane(domList);
+			scrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
+			scrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
 			GridBagConstraints gbc_list = new GridBagConstraints();
 			gbc_list.insets = new Insets(0, 0, 5, 5);
 			gbc_list.fill = GridBagConstraints.HORIZONTAL;
 			gbc_list.gridx = 1;
 			gbc_list.gridy = starty;
-			kp.add(domList, gbc_list);
+			kp.add(scrollPane, gbc_list);
 		}
 		return domList;
 	}

@@ -111,10 +111,8 @@ public class GUI {
 				quit();
 			else if (e.getActionCommand().equals("open"))
 				;
-			else if (e.getActionCommand().equals("new")) { 
-				Set<OrcaNode> nodes = new HashSet<OrcaNode>(GUIState.getInstance().g.getVertices());
-				for (OrcaNode n: nodes)
-					GUIState.getInstance().g.removeVertex(n);
+			else if (e.getActionCommand().equals("new")) {
+				GUIState.getInstance().clear();
 				vv.repaint();
 			}
 			else if (e.getActionCommand().equals("save")) {
@@ -151,8 +149,7 @@ public class GUI {
 				GUIState.getInstance().rdd = new ReservationDetailsDialog(getFrame());
 				GUIState.getInstance().rdd.setFields(GUIState.getInstance().getVMImageInReservation(), 
 						GUIState.getInstance().getDomainInReservation(),
-						GUIState.getInstance().resStart, 
-						GUIState.getInstance().resEnd);
+						GUIState.getInstance().getTerm());
 				GUIState.getInstance().rdd.pack();
 				GUIState.getInstance().rdd.setVisible(true);
 			} else if (e.getActionCommand().equals("nodes")) {
@@ -246,8 +243,10 @@ public class GUI {
 		gm.remove(gm.getPopupEditingPlugin());  // Removes the existing popup editing plugin
 		gm.add(myPlugin);
 
-		// Add icon transformer
-		// TODO: we may need setVertexShapeTransformer as well to help selection
+		// Add icon and shape (so pickable areal roughly matches the icon) transformer
+		OrcaNode.OrcaNodeIconShapeTransformer st = new OrcaNode.OrcaNodeIconShapeTransformer();
+		vv.getRenderContext().setVertexShapeTransformer(st);
+		
 		OrcaNode.OrcaNodeIconTransformer it = new OrcaNode.OrcaNodeIconTransformer();
 		vv.getRenderContext().setVertexIconTransformer(it);
 		
@@ -265,9 +264,6 @@ public class GUI {
 	}
 	
 	private void aboutDialog() {
-//		JOptionPane.showMessageDialog(frmOrcaFlukes, 
-//				"FLUKES - ORCA NDL-OWL Network Editor v0.1\nVisit http://geni-orca.renci.org/trac/flukes",
-//				"About", JOptionPane.INFORMATION_MESSAGE);
 		try {
 			AboutFrame ab = new AboutFrame("About FLUKES", new URL(FLUKES_HREF_URL + ABOUT_DOC));
 			ab.setVisible(true);

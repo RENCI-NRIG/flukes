@@ -26,29 +26,36 @@ import java.awt.Component;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.awt.event.ActionEvent;
 import java.util.Calendar;
 import java.util.Date;
 
+import javax.swing.AbstractAction;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JList;
-import javax.swing.ListSelectionModel;
 
+import orca.flukes.ui.DurationField;
 import orca.flukes.ui.TimeField;
 
 import com.hyperrealm.kiwi.ui.DateChooserField;
+import com.hyperrealm.kiwi.ui.KCheckBox;
 import com.hyperrealm.kiwi.ui.KPanel;
 import com.hyperrealm.kiwi.ui.dialog.ComponentDialog;
-import com.hyperrealm.kiwi.ui.dialog.KMessageDialog;
 
 @SuppressWarnings("serial")
 public class ReservationDetailsDialog extends ComponentDialog {
 	private KPanel kp;
-	private TimeField stf, etf;
-	private DateChooserField sdcf, edcf;
+	private TimeField stf;
+	private DateChooserField sdcf;
+	private DurationField df;
 	private JList imageList, domainList;
-
+	private boolean isImmediate;
+	private KCheckBox immCb;
+	
 	private JFrame parent;
+	
+	private JLabel stLabel;
 	
 	/**
 	 * Create the dialog.
@@ -60,8 +67,9 @@ public class ReservationDetailsDialog extends ComponentDialog {
 		this.parent = parent;
 	}
 
-	public void setFields(String shortImageName, String domain, Date start, Date end) {
+	public void setFields(String shortImageName, String domain, OrcaReservationTerm term) {
 		int index = 0;
+		
 		if (shortImageName != null) {
 			for (String n: GUIState.getInstance().getImageShortNamesWithNone()) {
 				if (n.equals(shortImageName))
@@ -85,9 +93,21 @@ public class ReservationDetailsDialog extends ComponentDialog {
 			else
 				domainList.setSelectedIndex(index);
 		}
-		// set dates and times
-		setTimeDateField(stf, sdcf, GUIState.getInstance().resStart);
-		setTimeDateField(etf, edcf, GUIState.getInstance().resEnd);
+		
+		isImmediate = term.isImmediate();
+		immCb.setSelected(isImmediate);
+		if (!isImmediate) {
+			// set start dates and times
+			setTimeDateField(stf, sdcf, term.getStart());
+		}
+		
+		// set duration
+		df.setDurationField(term.getDurationDays(), term.getDurationHours(), term.getDurationMins());
+		
+		// adjust visibility based on initial setting
+		stf.setVisible(!isImmediate);
+		sdcf.setVisible(!isImmediate);
+		stLabel.setVisible(!isImmediate);
 	}
 	
 	private void setTimeDateField(TimeField tf, DateChooserField dcf, Date d) {
@@ -114,10 +134,9 @@ public class ReservationDetailsDialog extends ComponentDialog {
 		kp.setLayout(gbl_contentPanel);
 		int y = 0;
 		imageList = OrcaNodePropertyDialog.addImageList(kp, gbl_contentPanel, y++);
-		domainList = OrcaNodePropertyDialog.addDomainList(kp, gbl_contentPanel, y++);
-		
+		domainList = OrcaNodePropertyDialog.addDomainList(kp, gbl_contentPanel, y++);		
 		{
-			JLabel lblNewLabel = new JLabel("Start Time");
+			JLabel lblNewLabel = new JLabel("Immediate reservation:");
 			GridBagConstraints gbc_lblNewLabel = new GridBagConstraints();
 			gbc_lblNewLabel.anchor = GridBagConstraints.WEST;
 			gbc_lblNewLabel.insets = new Insets(0, 0, 5, 5);
@@ -126,49 +145,68 @@ public class ReservationDetailsDialog extends ComponentDialog {
 			kp.add(lblNewLabel, gbc_lblNewLabel);
 		}
 		{
+			immCb = new KCheckBox(new AbstractAction() {
+				
+				public void actionPerformed(ActionEvent e) {
+					isImmediate = !isImmediate;
+					// toggle the enable state for time components
+					stf.setVisible(!isImmediate);
+					sdcf.setVisible(!isImmediate);
+					stLabel.setVisible(!isImmediate);
+					// set initial time to now if not immediate
+					if (!isImmediate) {
+						setTimeDateField(stf, sdcf, Calendar.getInstance().getTime());
+					}
+				}
+			});
+			GridBagConstraints gbc_tf= new GridBagConstraints();
+			gbc_tf.anchor = GridBagConstraints.WEST;
+			gbc_tf.insets = new Insets(0, 0, 5, 5);
+			gbc_tf.gridx = 1;
+			gbc_tf.gridy = y++;
+			kp.add(immCb, gbc_tf);
+		}
+		{
+			stLabel = new JLabel("Start Time:");
+			GridBagConstraints gbc_lblNewLabel = new GridBagConstraints();
+			gbc_lblNewLabel.anchor = GridBagConstraints.WEST;
+			gbc_lblNewLabel.insets = new Insets(0, 0, 5, 5);
+			gbc_lblNewLabel.gridx = 0;
+			gbc_lblNewLabel.gridy = y;
+			kp.add(stLabel, gbc_lblNewLabel);
+		}
+		{
+			KPanel startDatePanel = new KPanel();
 			stf = new TimeField();
-			GridBagConstraints gbc_tf= new GridBagConstraints();
-			gbc_tf.anchor = GridBagConstraints.WEST;
-			gbc_tf.insets = new Insets(0, 0, 5, 5);
-			gbc_tf.gridx = 1;
-			gbc_tf.gridy = y;
-			kp.add(stf, gbc_tf);
-		}
-		{
+			startDatePanel.add(stf);
 			sdcf = new DateChooserField();
-			GridBagConstraints gbc_dcf= new GridBagConstraints();
-			gbc_dcf.anchor = GridBagConstraints.WEST;
-			gbc_dcf.insets = new Insets(0, 0, 5, 5);
-			gbc_dcf.gridx = 2;
-			gbc_dcf.gridy = y++;
-			kp.add(sdcf, gbc_dcf);
+			startDatePanel.add(sdcf);
+			GridBagConstraints gbc_lblNewLabel = new GridBagConstraints();
+			gbc_lblNewLabel.anchor = GridBagConstraints.WEST;
+			gbc_lblNewLabel.insets = new Insets(0, 0, 5, 5);
+			gbc_lblNewLabel.gridx = 1;
+			gbc_lblNewLabel.gridy = y++;
+			kp.add(startDatePanel, gbc_lblNewLabel);
 		}
+		
+		// duration field
 		{
-			JLabel lblNewLabel = new JLabel("End Time");
+			JLabel durLabel = new JLabel("Term Duration:");
 			GridBagConstraints gbc_lblNewLabel = new GridBagConstraints();
 			gbc_lblNewLabel.anchor = GridBagConstraints.WEST;
 			gbc_lblNewLabel.insets = new Insets(0, 0, 5, 5);
 			gbc_lblNewLabel.gridx = 0;
 			gbc_lblNewLabel.gridy = y;
-			kp.add(lblNewLabel, gbc_lblNewLabel);
+			kp.add(durLabel, gbc_lblNewLabel);
 		}
 		{
-			etf = new TimeField();
-			GridBagConstraints gbc_tf= new GridBagConstraints();
-			gbc_tf.anchor = GridBagConstraints.WEST;
-			gbc_tf.insets = new Insets(0, 0, 5, 5);
-			gbc_tf.gridx = 1;
-			gbc_tf.gridy = y;
-			kp.add(etf, gbc_tf);
-		}
-		{
-			edcf = new DateChooserField();
-			GridBagConstraints gbc_dcf= new GridBagConstraints();
-			gbc_dcf.anchor = GridBagConstraints.WEST;
-			gbc_dcf.insets = new Insets(0, 0, 5, 5);
-			gbc_dcf.gridx = 2;
-			gbc_dcf.gridy = y++;
-			kp.add(edcf, gbc_dcf);
+			df = new DurationField();
+			GridBagConstraints gbc_lblNewLabel = new GridBagConstraints();
+			gbc_lblNewLabel.anchor = GridBagConstraints.WEST;
+			gbc_lblNewLabel.insets = new Insets(0, 0, 5, 5);
+			gbc_lblNewLabel.gridx = 1;
+			gbc_lblNewLabel.gridy = y++;
+			kp.add(df, gbc_lblNewLabel);
 		}
 
 		return kp;
@@ -176,44 +214,31 @@ public class ReservationDetailsDialog extends ComponentDialog {
 	
 	@Override
 	protected boolean accept() {
-	
-		if (!stf.validateInput() || !etf.validateInput())
-			return false;
-		
-		// check that start/end time are proper, save the information
-		Date sDate = sdcf.getDate();
-		Date eDate = edcf.getDate();
-		
-		if (sDate.compareTo(eDate) > 0) {
-			KMessageDialog kmd = new KMessageDialog(GUI.getInstance().getFrame());
-			kmd.setMessage("Start date must be before end date!");
-			kmd.setLocationRelativeTo(parent);
-			kmd.setVisible(true);
-			return false;
-		}
-		
-		if (sDate.compareTo(eDate) == 0) {
-			// make sure start time is before end time
-			if (stf.getMinutes() > etf.getMinutes()) {
-				KMessageDialog kmd = new KMessageDialog(GUI.getInstance().getFrame());
-				kmd.setMessage("Start time must be before end time!");
-				kmd.setLocationRelativeTo(parent);
-				kmd.setVisible(true);
+
+		if (!isImmediate) {
+			// if not immediate reservation get start time/date
+			if (!stf.validateInput())
 				return false;
-			}
-		}
 		
-		Calendar lc = Calendar.getInstance();
-		lc.setTime(sDate);
-		lc.set(Calendar.HOUR_OF_DAY, stf.getHour());
-		lc.set(Calendar.MINUTE, stf.getMinute());
-		GUIState.getInstance().resStart = lc.getTime();
+			// check that start/end time are proper, save the information
+			Date sDate = sdcf.getDate();
+
+			Calendar lc = Calendar.getInstance();
+			lc.setTime(sDate);
+			lc.set(Calendar.HOUR_OF_DAY, stf.getHour());
+			lc.set(Calendar.MINUTE, stf.getMinute());
+			
+			// time before now is not allowed
+			Calendar tc = Calendar.getInstance();
+			if (lc.before(tc))
+				return false;
+			
+			GUIState.getInstance().getTerm().setStart(lc.getTime());
+		} else
+			GUIState.getInstance().getTerm().setStart(null);
 		
-		lc = Calendar.getInstance();
-		lc.setTime(eDate);
-		lc.set(Calendar.HOUR_OF_DAY, etf.getHour());
-		lc.set(Calendar.MINUTE, etf.getMinute());
-		GUIState.getInstance().resEnd = lc.getTime();
+		// get duration
+		GUIState.getInstance().getTerm().setDuration(df.getDays(), df.getHours(), df.getMinutes());
 		
 		// get the image short name
 		String curImName = GUIState.getNodeImageProper(GUIState.getInstance().getImageShortNamesWithNone()[imageList.getSelectedIndex()]);
