@@ -167,6 +167,7 @@ public class MouseMenus {
             this.add(new DeleteVertexMenuItem<OrcaNode, OrcaLink>(GUIState.getInstance()));
             this.add(new ImageDisplay());
             this.add(new DomainDisplay());
+            this.add(new NodeTypeDisplay());
             this.addSeparator();
             this.add(new NodePropItem(GUI.getInstance().getFrame()));
         }
@@ -189,6 +190,16 @@ public class MouseMenus {
     			this.setText("Domain: " + v.getDomain());
     		else
     			this.setText("Domain: " + GUIState.NO_DOMAIN_SELECT);
+    	}
+    }
+    
+    public static class NodeTypeDisplay extends JMenuItem implements NodeMenuListener<OrcaNode, OrcaLink> {
+    	public void setNodeAndView(OrcaNode v,
+    			VisualizationViewer<OrcaNode, OrcaLink> visView) {
+    		if ((v.getNodeType() != null) && (v.getNodeType().length() > 0))
+    			this.setText("Node type: " + v.getNodeType());
+    		else
+    			this.setText("Node type: " + GUIState.NODE_TYPE_SITE_DEFAULT);
     	}
     }
     

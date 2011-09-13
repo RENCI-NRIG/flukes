@@ -49,7 +49,7 @@ public class DeleteEdgeMenuItem<V, E> extends JMenuItem implements EdgeMenuListe
     public void setEdgeAndView(E edge, VisualizationViewer<V, E> visComp) {
         this.edge = edge;
         this.visComp = visComp;
-        this.setText("Delete Edge " + edge.toString());
+        this.setText("Delete " + edge.toString());
     }
     
 }

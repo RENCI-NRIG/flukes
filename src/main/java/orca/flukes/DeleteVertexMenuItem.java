@@ -29,7 +29,7 @@ public class DeleteVertexMenuItem<V, E> extends JMenuItem implements NodeMenuLis
     
     /** Creates a new instance of DeleteVertexMenuItem */
     public DeleteVertexMenuItem(IDeleteNodeCallBack<V> i) {
-        super("Delete Vertex");
+        super("Delete Node");
         ic = i;
         this.addActionListener(new ActionListener(){
             public void actionPerformed(ActionEvent e) {
@@ -49,7 +49,7 @@ public class DeleteVertexMenuItem<V, E> extends JMenuItem implements NodeMenuLis
     public void setNodeAndView(V v, VisualizationViewer<V, E> visComp) {
         this.vertex = v;
         this.visComp = visComp;
-        this.setText("Delete Vertex " + v.toString());
+        this.setText("Delete " + v.toString());
     }
     
 }

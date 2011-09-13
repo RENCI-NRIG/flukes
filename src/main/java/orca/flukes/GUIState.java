@@ -29,6 +29,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Set;
 
 import orca.flukes.ui.ChooserWithNewDialog;
@@ -43,6 +44,7 @@ import edu.uci.ics.jung.graph.util.Pair;
 public class GUIState implements IDeleteEdgeCallBack<OrcaLink>, IDeleteNodeCallBack<OrcaNode> {
 	public static final String NO_GLOBAL_IMAGE = "None";
 	public static final String NO_DOMAIN_SELECT = "System select";
+	public static final String NODE_TYPE_SITE_DEFAULT = "Site default";
 	public static final String NODE_ICON = "node-50.gif";
 	public static final String CLOUD_ICON = "cloud-50.gif";
 	
@@ -64,23 +66,26 @@ public class GUIState implements IDeleteEdgeCallBack<OrcaLink>, IDeleteNodeCallB
 	SparseMultigraph<OrcaNode, OrcaLink> g;
 	
 	// Reservation details
-	Date resStart = null, resEnd = null;
+	private OrcaReservationTerm term;
 	private String resImageName = null;
 	private String resDomainName = null;
 	
 	// true for nodes, false for clusters
 	boolean nodesOrClusters = true;
 	
+	// various node types
+	public static Map<String, Pair<String>> nodeTypes = new HashMap<String, Pair<String>>();
+	
 	private static void initialize() {
-		;
+		nodeTypes.put("Euca m1.small", new Pair<String>("eucalyptus", "EucaM1Small"));
+		nodeTypes.put("Euca c1.medium", new Pair<String>("eucalyptus", "EucaC1Medium"));
+		nodeTypes.put("Euca m1.large", new Pair<String>("eucalyptus", "EucaM1Large"));
+		nodeTypes.put("Euca m1.xlarge", new Pair<String>("eucalyptus", "EucaM1XLarge"));
+		nodeTypes.put("Euca c1.xlarge", new Pair<String>("eucalyptus", "EucaC1XLarge"));
 	}
 	
 	private GUIState() {
-		// start/end dates (+24 hours)
-		Calendar cl = Calendar.getInstance();
-		resStart = cl.getTime();
-		cl.add(Calendar.DAY_OF_MONTH, 1);
-		resEnd = cl.getTime();
+		term = new OrcaReservationTerm();
 	}
 	
 	static GUIState getInstance() {
@@ -89,6 +94,20 @@ public class GUIState implements IDeleteEdgeCallBack<OrcaLink>, IDeleteNodeCallB
 			instance = new GUIState();
 		}
 		return instance;
+	}
+	
+	public void clear() {
+		// clear the graph, reservation set else to defaults
+		Set<OrcaNode> nodes = new HashSet<OrcaNode>(g.getVertices());
+		for (OrcaNode n: nodes)
+			GUIState.getInstance().g.removeVertex(n);
+		resImageName = null;
+		resDomainName = null;
+		term = new OrcaReservationTerm();
+	}
+	
+	public OrcaReservationTerm getTerm() {
+		return term;
 	}
 	
 	public void setVMImageInReservation(String im) {
@@ -252,5 +271,26 @@ public class GUIState implements IDeleteEdgeCallBack<OrcaLink>, IDeleteNodeCallB
 			return null;
 		else
 			return domain;
+	}
+	
+	public static String getNodeTypeProper(String nodeType) {
+		if ((nodeType == null) || nodeType.equals(NODE_TYPE_SITE_DEFAULT))
+			return null;
+		else
+			return nodeType;
+	}
+	
+	public String[] getAvailableNodeTypes() {
+		Set<String> knownTypes = nodeTypes.keySet();
+		
+		String[] itemList = new String[knownTypes.size() + 1];
+		
+		int index = 0;
+		itemList[index] = NODE_TYPE_SITE_DEFAULT;
+		for (String s: knownTypes) {
+			itemList[++index] = s;
+		}
+		
+		return itemList;
 	}
 }

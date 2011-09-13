@@ -123,32 +123,26 @@ public class GraphSaver {
 		// this should never run in parallel anyway
 		synchronized(instance) {
 			try {
-//				if (!f.canWrite()) {
-//					KMessageDialog kmd = new KMessageDialog(GUI.getInstance().getFrame(), "File error", true);
-//					kmd.setMessage("Unable to save to file " + f.getAbsolutePath());
-//					kmd.setLocationRelativeTo(GUI.getInstance().getFrame());
-//					kmd.setVisible(true);
-//					return;
-//				}
-//				// non-modal to allow saving to proceed
-//				ProgressDialog pd = new ProgressDialog(GUI.getInstance().getFrame(), false);
-//				pd.setMessage("Saving graph...");
-//				pd.setLocationRelativeTo(GUI.getInstance().getFrame());
-//				pd.setVisible(true);
-//				pd.setProgress(10);
-				
 				if ((f == null) || (g == null))
 					return;
 				
 				ngen = new NdlGenerator(Logger.getLogger(this.getClass().getCanonicalName()));
 			
-				if ((GUIState.getInstance().resStart != null) && (GUIState.getInstance().resEnd != null))
-					reservation = ngen.declareReservation(GUIState.getInstance().resStart, 
-							GUIState.getInstance().resEnd);
-				else
-					reservation = ngen.declareReservation();
+				reservation = ngen.declareReservation();
+				Individual term = ngen.declareTerm();
+				// not an immediate reservation? declare term beginning
+				if (GUIState.getInstance().getTerm().getStart() != null) {
+					Individual tStart = ngen.declareTermBeginning(GUIState.getInstance().getTerm().getStart());
+					ngen.addBeginningToTerm(tStart, term);
+				}
+				// now duration
+				GUIState.getInstance().getTerm().normalizeDuration();
+				Individual duration = ngen.declareTermDuration(GUIState.getInstance().getTerm().getDurationDays(), 
+						GUIState.getInstance().getTerm().getDurationHours(), GUIState.getInstance().getTerm().getDurationMins());
+				ngen.addDurationToTerm(duration, term);
+				ngen.addTermToReservation(term, reservation);
 				
-				// decide whether we a global image
+				// decide whether we have a global image
 				boolean globalImage = false, globalDomain = false;
 				
 				// is image specified in the reservation?
@@ -159,8 +153,8 @@ public class GraphSaver {
 						// definitely an global image - attach it to the reservation
 						globalImage = true;
 						// TODO: check for zero length
-						Individual imI = ngen.declareVMImage(im.getUrl().toString(), im.getHash(), im.getShortName());
-						ngen.addVMImageToIndividual(imI, reservation);
+						Individual imI = ngen.declareDiskImage(im.getUrl().toString(), im.getHash(), im.getShortName());
+						ngen.addDiskImageToIndividual(imI, reservation);
 					}
 				}
 				
@@ -173,12 +167,12 @@ public class GraphSaver {
 				
 				// shove invidividual nodes onto the reservation
 				for (OrcaNode n: GUIState.getInstance().g.getVertices()) {
-					Individual ni = ngen.declareServer(n.getName());
+					Individual ni = ngen.declareComputeElement(n.getName());
 					ngen.addResourceToReservation(reservation, ni);
 					
 					// for clusters, add number of nodes, declare as cluster (VM domain)
 					if (!n.isNode()) {
-						ngen.addNumServersToCluster(n.getNodeCount(), ni);
+						ngen.addNumCEsToCluster(n.getNodeCount(), ni);
 						ngen.addVMDomainProperty(ni);
 					}
 					
@@ -187,8 +181,8 @@ public class GraphSaver {
 						// check if image is set in this node
 						OrcaImage im = GUIState.getInstance().definedImages.get(n.getImage());
 						if (im != null) {
-							Individual imI = ngen.declareVMImage(im.getUrl().toString(), im.getHash(), im.getShortName());
-							ngen.addVMImageToIndividual(imI, ni);
+							Individual imI = ngen.declareDiskImage(im.getUrl().toString(), im.getHash(), im.getShortName());
+							ngen.addDiskImageToIndividual(imI, ni);
 						}
 					}
 					
@@ -197,9 +191,13 @@ public class GraphSaver {
 						Individual domI = ngen.declareDomain(domainMap.get(n.getDomain()));
 						ngen.addNodeToDomain(domI, ni);
 					}
+					
+					// node type
+					if ((n.getNodeType() != null) && (GUIState.nodeTypes.get(n.getNodeType()) != null)) {
+						Pair<String> nt = GUIState.nodeTypes.get(n.getNodeType());
+						ngen.addNodeTypeToCE(nt.getFirst(), nt.getSecond(), ni);
+					}
 				}
-				
-
 				
 				if (GUIState.getInstance().g.getEdgeCount() == 0) {
 					// a bunch of disconnected nodes, no IP addresses 
@@ -210,11 +208,14 @@ public class GraphSaver {
 						Individual ei = ngen.declareNetworkConnection(e.getName());
 						ngen.addResourceToReservation(reservation, ei);
 
-						ngen.addBandwidthToConnection(ei, e.getBandwidth());
+						if (e.getBandwidth() > 0)
+							ngen.addBandwidthToConnection(ei, e.getBandwidth());
 						
-						// FIXME: deal with layers later
+						// TODO: deal with layers later
 						ngen.addLayerToConnection(ei, "ethernet", "EthernetNetworkElement");
 
+						// TODO: latency
+						
 						Pair<OrcaNode> pn = GUIState.getInstance().g.getEndpoints(e);
 						processNodeAndLink(pn.getFirst(), e, ei);
 						processNodeAndLink(pn.getSecond(), e, ei);

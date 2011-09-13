@@ -29,7 +29,7 @@ import java.util.regex.Pattern;
 import com.hyperrealm.kiwi.ui.DataField;
 
 /**
- * Parse time in a simple format HH:MM 
+ * Parse time in a simple format HH:MM (24hr system)
  * @author ibaldin
  *
  */
