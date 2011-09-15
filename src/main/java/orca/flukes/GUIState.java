@@ -23,9 +23,7 @@
 
 package orca.flukes;
 
-import java.util.Calendar;
 import java.util.Collection;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -52,9 +50,6 @@ public class GUIState implements IDeleteEdgeCallBack<OrcaLink>, IDeleteNodeCallB
 	
 	// VM images defined by the user
 	HashMap<String, OrcaImage> definedImages = new HashMap<String, OrcaImage>();
-
-	// domains available for binding
-	Set<String> availableDomains = new HashSet<String>();
 	
 	ChooserWithNewDialog<String> icd = null;
 	ReservationDetailsDialog rdd = null;
@@ -73,15 +68,8 @@ public class GUIState implements IDeleteEdgeCallBack<OrcaLink>, IDeleteNodeCallB
 	// true for nodes, false for clusters
 	boolean nodesOrClusters = true;
 	
-	// various node types
-	public static Map<String, Pair<String>> nodeTypes = new HashMap<String, Pair<String>>();
-	
 	private static void initialize() {
-		nodeTypes.put("Euca m1.small", new Pair<String>("eucalyptus", "EucaM1Small"));
-		nodeTypes.put("Euca c1.medium", new Pair<String>("eucalyptus", "EucaC1Medium"));
-		nodeTypes.put("Euca m1.large", new Pair<String>("eucalyptus", "EucaM1Large"));
-		nodeTypes.put("Euca m1.xlarge", new Pair<String>("eucalyptus", "EucaM1XLarge"));
-		nodeTypes.put("Euca c1.xlarge", new Pair<String>("eucalyptus", "EucaC1XLarge"));
+		;
 	}
 	
 	private GUIState() {
@@ -104,10 +92,16 @@ public class GUIState implements IDeleteEdgeCallBack<OrcaLink>, IDeleteNodeCallB
 		resImageName = null;
 		resDomainName = null;
 		term = new OrcaReservationTerm();
+		addingNewImage = false;
+		definedImages = new HashMap<String, OrcaImage>();
 	}
 	
 	public OrcaReservationTerm getTerm() {
 		return term;
+	}
+	
+	public void setTerm(OrcaReservationTerm t) {
+		term = t;
 	}
 	
 	public void setVMImageInReservation(String im) {
@@ -281,7 +275,7 @@ public class GUIState implements IDeleteEdgeCallBack<OrcaLink>, IDeleteNodeCallB
 	}
 	
 	public String[] getAvailableNodeTypes() {
-		Set<String> knownTypes = nodeTypes.keySet();
+		Set<String> knownTypes = GraphSaver.nodeTypes.keySet();
 		
 		String[] itemList = new String[knownTypes.size() + 1];
 		

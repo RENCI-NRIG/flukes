@@ -31,8 +31,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.HashSet;
-import java.util.Set;
 
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -56,6 +54,7 @@ import com.hyperrealm.kiwi.ui.dialog.KFileChooserDialog;
 import com.hyperrealm.kiwi.ui.dialog.KQuestionDialog;
 
 import edu.uci.ics.jung.algorithms.layout.Layout;
+import edu.uci.ics.jung.algorithms.layout.SpringLayout;
 import edu.uci.ics.jung.algorithms.layout.StaticLayout;
 import edu.uci.ics.jung.graph.SparseMultigraph;
 import edu.uci.ics.jung.visualization.VisualizationViewer;
@@ -63,7 +62,9 @@ import edu.uci.ics.jung.visualization.control.AbstractModalGraphMouse;
 import edu.uci.ics.jung.visualization.control.EditingModalGraphMouse;
 import edu.uci.ics.jung.visualization.control.ModalGraphMouse;
 import edu.uci.ics.jung.visualization.decorators.ToStringLabeller;
+import edu.uci.ics.jung.visualization.layout.LayoutTransition;
 import edu.uci.ics.jung.visualization.picking.PickedState;
+import edu.uci.ics.jung.visualization.util.Animator;
 
 public class GUI {
 
@@ -109,8 +110,23 @@ public class GUI {
 		public void actionPerformed(ActionEvent e) {
 			if (e.getActionCommand().equals("exit")) 
 				quit();
-			else if (e.getActionCommand().equals("open"))
-				;
+			else if (e.getActionCommand().equals("open")) {
+				GUIState.getInstance().clear();
+				KFileChooserDialog d = new KFileChooserDialog(getFrame(), "Load NDL", KFileChooser.OPEN_DIALOG);
+				d.setLocationRelativeTo(getFrame());
+				d.pack();
+				d.setVisible(true);
+				if (d.getSelectedFile() != null)
+					GraphLoader.getInstance().loadGraph(d.getSelectedFile());
+				// do a transition from static layout to some sane layout back to static
+				Layout<OrcaNode, OrcaLink> oldL = vv.getGraphLayout();
+				SpringLayout<OrcaNode, OrcaLink> newL = new SpringLayout<OrcaNode, OrcaLink>(GUIState.getInstance().g);
+				LayoutTransition<OrcaNode, OrcaLink> lt1 = new LayoutTransition<OrcaNode, OrcaLink>(vv, oldL, newL);
+				Animator an1 = new Animator(lt1);
+				an1.start();
+				vv.getRenderContext().getMultiLayerTransformer().setToIdentity();
+				vv.repaint();
+			}
 			else if (e.getActionCommand().equals("new")) {
 				GUIState.getInstance().clear();
 				vv.repaint();
