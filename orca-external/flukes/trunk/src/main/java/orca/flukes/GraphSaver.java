@@ -24,8 +24,10 @@
 package orca.flukes;
 
 import java.io.File;
-import java.io.FileWriter;
+import java.io.FileOutputStream;
+import java.io.OutputStreamWriter;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 
 import orca.ndl.NdlException;
@@ -34,6 +36,7 @@ import orca.ndl.NdlGenerator;
 import org.apache.log4j.Logger;
 
 import com.hp.hpl.jena.ontology.Individual;
+import com.hp.hpl.jena.rdf.model.Resource;
 import com.hyperrealm.kiwi.ui.dialog.ExceptionDialog;
 
 import edu.uci.ics.jung.graph.SparseMultigraph;
@@ -67,6 +70,16 @@ public class GraphSaver {
 		domainMap.put("Duke", "dukevmsite.rdf#dukevmsite");
 	}
 	
+	// various node types
+	public static final Map<String, Pair<String>> nodeTypes = new HashMap<String, Pair<String>>();
+	static {
+		nodeTypes.put("Euca m1.small", new Pair<String>("eucalyptus", "EucaM1Small"));
+		nodeTypes.put("Euca c1.medium", new Pair<String>("eucalyptus", "EucaC1Medium"));
+		nodeTypes.put("Euca m1.large", new Pair<String>("eucalyptus", "EucaM1Large"));
+		nodeTypes.put("Euca m1.xlarge", new Pair<String>("eucalyptus", "EucaM1XLarge"));
+		nodeTypes.put("Euca c1.xlarge", new Pair<String>("eucalyptus", "EucaC1XLarge"));
+	}
+	
 	public static GraphSaver getInstance() {
 		if (instance == null)
 			instance = new GraphSaver();
@@ -92,6 +105,33 @@ public class GraphSaver {
 	}
 	
 	/**
+	 * Convert netmask string to an integer (24-bit returned if no match)
+	 * @param nm
+	 * @return
+	 */
+	public static int netmaskStringToInt(String nm) {
+		int i = 1;
+		for(String s: netmaskConverter) {
+			if (s.equals(nm))
+				return i;
+			i++;
+		}
+		return 24;
+	}
+	
+	/**
+	 * Convert netmask int to string (255.255.255.0 returned if nm > 32 or nm < 1)
+	 * @param nm
+	 * @return
+	 */
+	public static String netmaskIntToString(int nm) {
+		if ((nm > 32) || (nm < 1)) 
+			return "255.255.255.0";
+		else
+			return netmaskConverter[nm - 1];
+	}
+	
+	/**
 	 * Link node to edge, create interface and process IP address 
 	 * @param n
 	 * @param e
@@ -110,7 +150,7 @@ public class GraphSaver {
 			// create IP object, attach to interface
 			ngen.addIPToIndividual(n.getIp(e), intI);
 			if (n.getNm(e) != null)
-				ngen.addNetmaskToIP(n.getIp(e), netmaskConverter[Integer.parseInt(n.getNm(e)) - 1]);
+				ngen.addNetmaskToIP(n.getIp(e), netmaskIntToString(Integer.parseInt(n.getNm(e))));
 		}
 	}
 	
@@ -193,8 +233,8 @@ public class GraphSaver {
 					}
 					
 					// node type
-					if ((n.getNodeType() != null) && (GUIState.nodeTypes.get(n.getNodeType()) != null)) {
-						Pair<String> nt = GUIState.nodeTypes.get(n.getNodeType());
+					if ((n.getNodeType() != null) && (nodeTypes.get(n.getNodeType()) != null)) {
+						Pair<String> nt = nodeTypes.get(n.getNodeType());
 						ngen.addNodeTypeToCE(nt.getFirst(), nt.getSecond(), ni);
 					}
 				}
@@ -224,9 +264,10 @@ public class GraphSaver {
 				
 				// save the contents
 				String res = getFormattedOutput(ngen, outputFormat);
-				FileWriter fsw = new FileWriter(f);
-				fsw.write(res);
-				fsw.close();
+				FileOutputStream fsw = new FileOutputStream(f);
+				OutputStreamWriter out = new OutputStreamWriter(fsw, "UTF-8");
+				out.write(res);
+				out.close();
 			} catch (Exception e) {
 				ExceptionDialog ed = new ExceptionDialog(GUI.getInstance().getFrame(), "Exception");
 				ed.setLocationRelativeTo(GUI.getInstance().getFrame());
@@ -240,4 +281,33 @@ public class GraphSaver {
 		return null;
 	}
 	
+	/**
+	 * Do a reverse lookip on domain (NDL -> short name)
+	 * @param dom
+	 * @return
+	 */
+	public static String reverseLookupDomain(Resource dom) {
+		if (dom == null)
+			return null;
+		for (Iterator<Map.Entry<String, String>> domName = domainMap.entrySet().iterator(); domName.hasNext();) {
+			Map.Entry<String, String> e = domName.next();
+			if (dom.getLocalName().equals(e.getValue()))
+				return e.getKey();
+		}
+		return null;
+	}
+	
+	/**
+	 * Do a reverse lookup on node type (NDL -> shortname )
+	 */
+	public static String reverseNodeTypeLookup(Resource nt) {
+		if (nt == null)
+			return null;
+		for (Iterator<Map.Entry<String, Pair<String>>> it = nodeTypes.entrySet().iterator(); it.hasNext();) {
+			Map.Entry<String, Pair<String>> e = it.next();
+			if (nt.getLocalName().equals(e.getValue()))
+				return e.getKey();
+		}
+		return null;
+	}
 }
