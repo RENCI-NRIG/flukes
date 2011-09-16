@@ -14,7 +14,7 @@
 
 <h3>User interface - Request pane</h3>
 
-<p>Request is created using the Request pane and can be saved/loaded into a NDL-formatted file that can be submitted to ORCA for provisioning.</p>
+<p>The Request is created using the Request pane and can be saved/loaded into a NDL-OWL formatted file that can be submitted to ORCA for provisioning (note that ORCA accepts only RDF-XML).</p>
 
 <p>There are 3 mouse modes accessible from the right-click menu anywhere:</p>
 <ul>
@@ -25,13 +25,13 @@
 
 <p>Right-clicking on node or edge shows a context menu that allows you to view and edit node and edge properties.</p>
 
-<p>In pick mode you can select multiple nodes and edit their common properties (e.g. image, domain binding etc) by right clicking 
+<p>In pick mode you can select multiple nodes (by clicking on a node or clicking and dragging to create a select area) and edit their common properties (e.g. image, domain binding etc) by right clicking 
 anywhere except node or edge and selecting 'Edit Selected Nodes'.</p>
 
 <h3>Node Types and IP address assignment</h3>
  
  <p>Two node types are possible - plain node (a VM with either a default image or an image specified by the user) or a cluster. A cluster is a set of 
- nodes in a bus configuration allocated from one site possibly connected to other sites over a Layer 2 connection (e.g. a VLAN). Similar parameters
+ nodes in a bus configuration usually allocated from one site possibly connected to other clusters or nodes over a Layer 2 connection (e.g. a VLAN). Similar parameters
  can be specified for nodes and clusters. For clusters, a number of nodes should be specified, also the 
  IP address specified is the address to be assigned to the <it>first node</it>, with other addresses sequentially selected from the same address set 
  limited by the netmask. E.g. if there are 3 nodes in a cluster and a user specifies 172.16.1.10/16 then the first node will 
@@ -53,9 +53,13 @@ in reservation and node properties.</p>
 If no image is specified in the reservation you can specify different images for individual nodes. Nodes for which an image is not specified
 will use the default image for the site at which the node is allocated.</p>
 
-
 <h3>User interface - Resources pane</h3>
  
 Allows to view available ORCA resources. To be implemented ...
+
+<h3>Graph Layouts</h3>
+
+There are several graph layouts available from a pull-down menu. When a graph is saved in NDL-OWL, its layout is not preserved, so this feature is provided as a convenience. After loading a graph a user can experiment with different layouts to find the most convenient one.
+
 </body>
 </html>
