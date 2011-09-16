@@ -53,18 +53,17 @@ import com.hyperrealm.kiwi.ui.UIChangeManager;
 import com.hyperrealm.kiwi.ui.dialog.KFileChooserDialog;
 import com.hyperrealm.kiwi.ui.dialog.KQuestionDialog;
 
+import edu.uci.ics.jung.algorithms.layout.FRLayout;
+import edu.uci.ics.jung.algorithms.layout.ISOMLayout;
+import edu.uci.ics.jung.algorithms.layout.KKLayout;
 import edu.uci.ics.jung.algorithms.layout.Layout;
-import edu.uci.ics.jung.algorithms.layout.SpringLayout;
-import edu.uci.ics.jung.algorithms.layout.StaticLayout;
 import edu.uci.ics.jung.graph.SparseMultigraph;
 import edu.uci.ics.jung.visualization.VisualizationViewer;
 import edu.uci.ics.jung.visualization.control.AbstractModalGraphMouse;
 import edu.uci.ics.jung.visualization.control.EditingModalGraphMouse;
 import edu.uci.ics.jung.visualization.control.ModalGraphMouse;
 import edu.uci.ics.jung.visualization.decorators.ToStringLabeller;
-import edu.uci.ics.jung.visualization.layout.LayoutTransition;
 import edu.uci.ics.jung.visualization.picking.PickedState;
-import edu.uci.ics.jung.visualization.util.Animator;
 
 public class GUI {
 
@@ -86,7 +85,7 @@ public class GUI {
 	private JMenuItem exitMenuItem;
 	private JButton reservationButton;
 	private Component horizontalStrut_1;
-	private JMenu mnNewMenu, outputMenu;
+	private JMenu mnNewMenu, outputMenu, layoutMenu;
 	private JMenuItem helpMenuItem;
 	private JMenuItem aboutMenuItem;
 	private JSeparator separator_1;
@@ -111,20 +110,25 @@ public class GUI {
 			if (e.getActionCommand().equals("exit")) 
 				quit();
 			else if (e.getActionCommand().equals("open")) {
+				// do a transition from static layout to some sane layout back to static
 				GUIState.getInstance().clear();
+				
+				Layout<OrcaNode, OrcaLink> oldL = vv.getGraphLayout();
+				Layout<OrcaNode, OrcaLink> newL = new FRLayout<OrcaNode, OrcaLink>(GUIState.getInstance().g);
+				vv.setGraphLayout(newL);
+				
 				KFileChooserDialog d = new KFileChooserDialog(getFrame(), "Load NDL", KFileChooser.OPEN_DIALOG);
 				d.setLocationRelativeTo(getFrame());
 				d.pack();
 				d.setVisible(true);
 				if (d.getSelectedFile() != null)
 					GraphLoader.getInstance().loadGraph(d.getSelectedFile());
-				// do a transition from static layout to some sane layout back to static
-				Layout<OrcaNode, OrcaLink> oldL = vv.getGraphLayout();
-				SpringLayout<OrcaNode, OrcaLink> newL = new SpringLayout<OrcaNode, OrcaLink>(GUIState.getInstance().g);
-				LayoutTransition<OrcaNode, OrcaLink> lt1 = new LayoutTransition<OrcaNode, OrcaLink>(vv, oldL, newL);
-				Animator an1 = new Animator(lt1);
-				an1.start();
-				vv.getRenderContext().getMultiLayerTransformer().setToIdentity();
+
+				//LayoutTransition<OrcaNode, OrcaLink> lt1 = new LayoutTransition<OrcaNode, OrcaLink>(vv, oldL, newL);
+				//Animator an1 = new Animator(lt1);
+				//an1.start();
+				//vv.getRenderContext().getMultiLayerTransformer().setToIdentity();
+
 				vv.repaint();
 			}
 			else if (e.getActionCommand().equals("new")) {
@@ -147,6 +151,19 @@ public class GUI {
 				GraphSaver.getInstance().setOutputFormat(GraphSaver.RDF_XML_FORMAT);
 			else if (e.getActionCommand().equals("n3"))
 				GraphSaver.getInstance().setOutputFormat(GraphSaver.N3_FORMAT);
+			else if (e.getActionCommand().equals("kklayout")) {
+				Layout<OrcaNode, OrcaLink> newL = new KKLayout<OrcaNode, OrcaLink>(GUIState.getInstance().g);
+				vv.setGraphLayout(newL);
+				vv.repaint();
+			} else if (e.getActionCommand().equals("frlayout")) {
+				Layout<OrcaNode, OrcaLink> newL = new FRLayout<OrcaNode, OrcaLink>(GUIState.getInstance().g);
+				vv.setGraphLayout(newL);
+				vv.repaint();
+			} else if (e.getActionCommand().equals("isomlayout")) {
+				Layout<OrcaNode, OrcaLink> newL = new ISOMLayout<OrcaNode, OrcaLink>(GUIState.getInstance().g);
+				vv.setGraphLayout(newL);
+				vv.repaint();
+			} 
 		}
 	}
 	
@@ -231,7 +248,8 @@ public class GUI {
 			new SparseMultigraph<OrcaNode, OrcaLink>();
 		// Layout<V, E>, VisualizationViewer<V,E>
 		//	        Map<OrcaNode,Point2D> vertexLocations = new HashMap<OrcaNode, Point2D>();
-		Layout<OrcaNode, OrcaLink> layout = new StaticLayout<OrcaNode, OrcaLink>(GUIState.getInstance().g);
+		
+		Layout<OrcaNode, OrcaLink> layout = new FRLayout<OrcaNode, OrcaLink>(GUIState.getInstance().g);
 		
 		//layout.setSize(new Dimension(1000,800));
 		vv = 
@@ -341,7 +359,7 @@ public class GUI {
 		modeMenu.setPreferredSize(new Dimension(120,20)); 
 		menuBar.add(modeMenu);*/
 		
-		// optput format selection
+		// output format selection
 		outputMenu = new JMenu("Output Format");
 		menuBar.add(outputMenu);
 		
@@ -359,6 +377,30 @@ public class GUI {
 		mi.addActionListener(mListener);
 		outputMenu.add(mi);	
 		obg.add(mi);
+		
+		layoutMenu = new JMenu("Graph Layout");
+		menuBar.add(layoutMenu);
+		
+		ButtonGroup lbg = new ButtonGroup();
+				
+		mi = new JRadioButtonMenuItem("Karmada-Kawai");
+		mi.setActionCommand("kklayout");
+		mi.addActionListener(mListener);
+		layoutMenu.add(mi);
+		lbg.add(mi);
+		
+		mi = new JRadioButtonMenuItem("Fruchterman-Rheingold");
+		mi.setActionCommand("frlayout");
+		mi.setSelected(true);
+		mi.addActionListener(mListener);
+		layoutMenu.add(mi);
+		lbg.add(mi);
+		
+		mi = new JRadioButtonMenuItem("Self-organizing");
+		mi.setActionCommand("isomlayout");
+		mi.addActionListener(mListener);
+		layoutMenu.add(mi);
+		lbg.add(mi);
 		
 		mnNewMenu = new JMenu("Help");
 		menuBar.add(mnNewMenu);
