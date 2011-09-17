@@ -77,7 +77,10 @@ public class OrcaLink {
         }
         
         public OrcaLink create() {
-            String name = "Link" + linkCount++;
+        	String name;
+        	do {
+        		name = "Link" + linkCount++;
+        	} while (!GUIState.getInstance().checkUniqueLinkName(null, name));
             OrcaLink link = new OrcaLink(name);
             link.setBandwidth(defaultBandwidth);
             link.setLatency(defaultLatency);

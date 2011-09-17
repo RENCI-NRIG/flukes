@@ -12,14 +12,16 @@ import java.util.List;
 import java.util.Map;
 
 import orca.ndl.INdlRequestModelListener;
+import orca.ndl.NdlCommons;
 import orca.ndl.NdlRequestParser;
+
+import org.apache.commons.lang.StringUtils;
 
 import com.hp.hpl.jena.ontology.OntModel;
 import com.hp.hpl.jena.rdf.model.Literal;
 import com.hp.hpl.jena.rdf.model.Resource;
 import com.hyperrealm.kiwi.ui.dialog.ExceptionDialog;
 
-import edu.uci.ics.jung.graph.SparseMultigraph;
 import edu.uci.ics.jung.graph.util.EdgeType;
 import edu.uci.ics.jung.graph.util.Pair;
 
@@ -30,7 +32,6 @@ public class GraphLoader implements INdlRequestModelListener {
 	private Map<String, OrcaNode> nodes = new HashMap<String, OrcaNode>();
 	private Map<String, OrcaLink> links = new HashMap<String, OrcaLink>();
 	private Map<String, OrcaNode> interfaceToNode = new HashMap<String, OrcaNode>();
-	private Map<String, OrcaLink> interfaceToLink = new HashMap<String, OrcaLink>();
 	
 	/**
 	 * Return singleton
@@ -42,7 +43,7 @@ public class GraphLoader implements INdlRequestModelListener {
 		return instance;
 	}
 	
-	public SparseMultigraph<OrcaNode, OrcaLink> loadGraph(File f) {
+	public boolean loadGraph(File f) {
 		BufferedReader bin = null; 
 		try {
 			FileInputStream is = new FileInputStream(f);
@@ -66,9 +67,10 @@ public class GraphLoader implements INdlRequestModelListener {
 			ed.setLocationRelativeTo(GUI.getInstance().getFrame());
 			ed.setException("Exception encountered while loading file " + f.getName() + ":", e);
 			ed.setVisible(true);
+			return false;
 		} 
 		
-		return null;
+		return true;
 	}
 	
 	public void ndlNodeDiskImage(Resource di, OntModel m, Resource node,
@@ -124,14 +126,6 @@ public class GraphLoader implements INdlRequestModelListener {
 
 	public void ndlComputeElement(Resource ce, OntModel om, boolean isNode, Resource domain, 
 			Resource ceType, int ceCount, List<Resource> interfaces) {
-//		System.out.println("Found ComputeElement " + ce + " is node: " + isNode);
-//		if (domain != null)
-//			System.out.println("   Element in domain " + domain);
-//		if (ceType != null)
-//			System.out.println("   Element of type " + ceType);
-//		if (ceCount > 0)
-//			System.out.println("   Non zero count " + ceCount);
-//		System.out.println("Interfaces " + interfaces);
 
 		if (ce == null)
 			return;
@@ -176,9 +170,6 @@ public class GraphLoader implements INdlRequestModelListener {
 			// the ends
 			Resource if1 = it.next(), if2 = it.next();
 			
-			interfaceToLink.put(if1.getLocalName(), ol);
-			interfaceToLink.put(if2.getLocalName(), ol);
-			
 			if ((if1 != null) && (if2 != null)) {
 				OrcaNode if1Node = interfaceToNode.get(if1.getLocalName());
 				OrcaNode if2Node = interfaceToNode.get(if2.getLocalName());
@@ -192,14 +183,16 @@ public class GraphLoader implements INdlRequestModelListener {
 			// multi-point link
 			
 		}
+		links.put(l.getLocalName(), ol);
 	}
 
-	public void ndlInterface(Resource intf, OntModel om, String ip, String mask) {
+	public void ndlInterface(Resource intf, OntModel om, Resource conn, Resource node, String ip, String mask) {
 		// System.out.println("Interface " + l + " has IP/netmask" + ip + "/" + mask);
 		if (intf == null)
 			return;
-		OrcaNode on = interfaceToNode.get(intf.getLocalName());
-		OrcaLink ol = interfaceToLink.get(intf.getLocalName());
+
+		OrcaNode on = nodes.get(node.getLocalName());
+		OrcaLink ol = links.get(conn.getLocalName());
 		if ((on != null) && (ol != null))
 			on.setIp(ol, ip, "" + GraphSaver.netmaskStringToInt(mask));
 	}
@@ -216,6 +209,7 @@ public class GraphLoader implements INdlRequestModelListener {
 	public void ndlReservationDomain(Resource d, OntModel m) {
 		if (d == null)
 			return;
+		System.out.println("Setting reservation domain " + d + " " + GraphSaver.reverseLookupDomain(d));
 		// do reverse lookup in GraphSaver domain map
 		GUIState.getInstance().setDomainInReservation(GraphSaver.reverseLookupDomain(d));
 	}

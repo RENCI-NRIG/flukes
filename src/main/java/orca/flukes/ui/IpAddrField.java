@@ -35,6 +35,33 @@ public class IpAddrField extends KPanel {
 	private NumericField nm;
 	private String ipPattern = "[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}";
 	
+	private boolean checkOctetField(NumericField f) {
+		if (((int)f.getValue() < 0) || ((int)f.getValue() > 255))
+			return false;
+		return true;
+	}
+	
+	/**
+	 * Check that octets are between 0 and 255 and netmask between 1 and 32
+	 * @return
+	 */
+	public boolean inputValid() {
+		if (((int)nm.getValue() < 1) || ((int)nm.getValue() > 32))
+			return false;
+		
+		if (checkOctetField(o1) && checkOctetField(o2) && checkOctetField(o3) && checkOctetField(o4))
+			return true;
+		
+		return false;
+	}
+	
+	public boolean fieldEmpty() {
+		return (o1.getText().isEmpty() &&
+				o2.getText().isEmpty() &&
+				o3.getText().isEmpty() &&
+				o4.getText().isEmpty() &&
+				nm.getText().isEmpty());
+	}
 	public String getAddress() {
 		// 0 in first octet is meaningless
 		if ((int)o1.getValue() == 0)
@@ -47,6 +74,38 @@ public class IpAddrField extends KPanel {
 		if (((int)nm.getValue() < 1) || ((int)nm.getValue() > 32))
 			return null;
 		return "" + (int)nm.getValue();
+	}
+	
+	public long getNetmaskAsLong() {
+		long nml = (1L << 32) - 1;
+		long nmlm = (1L << (32 - (int)nm.getValue())) - 1;
+		
+		return nml - nmlm;
+	}
+	
+	/**
+	 * get X.X.X.0 address (apply netmask)
+	 * @return
+	 */
+	public long getSubnetAsLong() {
+		return getAddressAsLong() & getNetmaskAsLong();
+	}
+	
+	/**
+	 * get X.X.X.255 address
+	 * @return
+	 */
+	public long getBroadcastAsLong() {
+		return getSubnetAsLong() + (1L << (32 - (int)nm.getValue())) - 1;
+	}
+	
+	public long getAddressAsLong() {
+		long o1l = (long)o1.getValue();
+		long o2l = (long)o2.getValue();
+		long o3l = (long)o3.getValue();
+		long o4l = (long)o4.getValue();
+		
+		return (o1l << 24) + (o2l << 16) + (o3l << 8) + o4l; 
 	}
 	
 	public void setAddress(String s, String maskString) {

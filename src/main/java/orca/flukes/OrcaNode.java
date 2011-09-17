@@ -213,10 +213,12 @@ public class OrcaNode {
         public OrcaNode create() {
         	synchronized(instance) {
         		String name;
-        		if (GUIState.getInstance().nodesOrClusters)
-        			name = "Node" + nodeCount++;
-        		else
-        			name = "Cluster" + clusterCount++;
+        		do {
+        			if (GUIState.getInstance().nodesOrClusters)
+        				name = "Node" + nodeCount++;
+        			else
+        				name = "Cluster" + clusterCount++;
+        		} while (!GUIState.getInstance().checkUniqueNodeName(null, name));
         		return new OrcaNode(name, GUIState.getInstance().nodesOrClusters);
         	}
         }       
