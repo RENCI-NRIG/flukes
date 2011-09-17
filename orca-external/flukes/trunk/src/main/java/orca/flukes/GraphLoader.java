@@ -29,6 +29,7 @@ public class GraphLoader implements INdlRequestModelListener {
 
 	private static GraphLoader instance;
 	private OrcaReservationTerm term = new OrcaReservationTerm();
+	private String reservationDiskImage = null, reservationDomain = null;
 	private Map<String, OrcaNode> nodes = new HashMap<String, OrcaNode>();
 	private Map<String, OrcaLink> links = new HashMap<String, OrcaLink>();
 	private Map<String, OrcaNode> interfaceToNode = new HashMap<String, OrcaNode>();
@@ -104,7 +105,7 @@ public class GraphLoader implements INdlRequestModelListener {
 		try {
 			GUIState.getInstance().addImage(new OrcaImage(di.getLocalName(), new URL(url), hash), null);
 			// assign image to reservation
-			GUIState.getInstance().setVMImageInReservation(di.getLocalName());
+			reservationDiskImage = di.getLocalName();
 		} catch (Exception e) {
 			// FIXME: ?
 			;
@@ -204,14 +205,15 @@ public class GraphLoader implements INdlRequestModelListener {
 	public void ndlParseComplete() {
 		// set term etc
 		GUIState.getInstance().setTerm(term);
+		GUIState.getInstance().setDomainInReservation(reservationDomain);
+		GUIState.getInstance().setVMImageInReservation(reservationDiskImage);
 	}
 	
 	public void ndlReservationDomain(Resource d, OntModel m) {
 		if (d == null)
 			return;
-		System.out.println("Setting reservation domain " + d + " " + GraphSaver.reverseLookupDomain(d));
 		// do reverse lookup in GraphSaver domain map
-		GUIState.getInstance().setDomainInReservation(GraphSaver.reverseLookupDomain(d));
+		reservationDomain = GraphSaver.reverseLookupDomain(d);
 	}
 
 }

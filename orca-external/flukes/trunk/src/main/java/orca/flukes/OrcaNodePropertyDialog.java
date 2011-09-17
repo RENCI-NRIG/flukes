@@ -87,7 +87,13 @@ public class OrcaNodePropertyDialog extends ComponentDialog {
 			addNumServersField();
 	}
 	
-	private void setListSelectedIndex(JList list, String[] options, String item) {
+	/**
+	 * set the index of the selected item in a list. 
+	 * @param list
+	 * @param options
+	 * @param item
+	 */
+	public static void setListSelectedIndex(JList list, String[] options, String item) {
 		int index = 0;
 		for (String i: options) {
 			if (i.equals(item))
@@ -96,8 +102,10 @@ public class OrcaNodePropertyDialog extends ComponentDialog {
 		}
 		if (index == options.length)
 			list.setSelectedIndex(0);
-		else
+		else {
 			list.setSelectedIndex(index);
+			list.ensureIndexIsVisible(index);
+		}
 	}
 	
 	private void inputErrorDialog(String title, String message) {

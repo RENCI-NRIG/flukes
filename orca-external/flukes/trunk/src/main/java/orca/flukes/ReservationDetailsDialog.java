@@ -70,30 +70,32 @@ public class ReservationDetailsDialog extends ComponentDialog {
 	public void setFields(String shortImageName, String domain, OrcaReservationTerm term) {
 		int index = 0;
 		
-		if (shortImageName != null) {
-			for (String n: GUIState.getInstance().getImageShortNamesWithNone()) {
-				if (n.equals(shortImageName))
-					break;
-				index++;
-			}
-			if (index == GUIState.getInstance().getImageShortNamesWithNone().length)
-				imageList.setSelectedIndex(0);
-			else
-				imageList.setSelectedIndex(index);
-		}
-		
-		if (domain !=null) {
-			for (String n: GUIState.getInstance().getAvailableDomains()) {
-				if (n.equals(domain))
-					break;
-				index++;
-			}
-			if (index == GUIState.getInstance().getAvailableDomains().length)
-				domainList.setSelectedIndex(0);
-			else
-				domainList.setSelectedIndex(index);
-		}
-		
+//		if (shortImageName != null) {
+//			for (String n: GUIState.getInstance().getImageShortNamesWithNone()) {
+//				if (n.equals(shortImageName))
+//					break;
+//				index++;
+//			}
+//			if (index == GUIState.getInstance().getImageShortNamesWithNone().length)
+//				imageList.setSelectedIndex(0);
+//			else
+//				imageList.setSelectedIndex(index);
+//		}
+		OrcaNodePropertyDialog.setListSelectedIndex(imageList, 
+				GUIState.getInstance().getImageShortNamesWithNone(), shortImageName);
+//		if (domain !=null) {
+//			for (String n: GUIState.getInstance().getAvailableDomains()) {
+//				if (n.equals(domain))
+//					break;
+//				index++;
+//			}
+//			if (index == GUIState.getInstance().getAvailableDomains().length)
+//				domainList.setSelectedIndex(0);
+//			else
+//				domainList.setSelectedIndex(index);
+//		}
+		OrcaNodePropertyDialog.setListSelectedIndex(domainList, 
+				GUIState.getInstance().getAvailableDomains(), domain);
 		isImmediate = term.isImmediate();
 		immCb.setSelected(isImmediate);
 		if (!isImmediate) {
