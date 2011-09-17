@@ -30,9 +30,11 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
+import orca.ndl.NdlCommons;
 import orca.ndl.NdlException;
 import orca.ndl.NdlGenerator;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
 import com.hp.hpl.jena.ontology.Individual;
@@ -43,6 +45,7 @@ import edu.uci.ics.jung.graph.SparseMultigraph;
 import edu.uci.ics.jung.graph.util.Pair;
 
 public class GraphSaver {
+	private static final String EUCALYPTUS_NS = "eucalyptus";
 	public static final String DOT_FORMAT = "DOT";
 	public static final String N3_FORMAT = "N3";
 	public static final String RDF_XML_FORMAT = "RDF-XML";
@@ -73,11 +76,11 @@ public class GraphSaver {
 	// various node types
 	public static final Map<String, Pair<String>> nodeTypes = new HashMap<String, Pair<String>>();
 	static {
-		nodeTypes.put("Euca m1.small", new Pair<String>("eucalyptus", "EucaM1Small"));
-		nodeTypes.put("Euca c1.medium", new Pair<String>("eucalyptus", "EucaC1Medium"));
-		nodeTypes.put("Euca m1.large", new Pair<String>("eucalyptus", "EucaM1Large"));
-		nodeTypes.put("Euca m1.xlarge", new Pair<String>("eucalyptus", "EucaM1XLarge"));
-		nodeTypes.put("Euca c1.xlarge", new Pair<String>("eucalyptus", "EucaC1XLarge"));
+		nodeTypes.put("Euca m1.small", new Pair<String>(EUCALYPTUS_NS, "EucaM1Small"));
+		nodeTypes.put("Euca c1.medium", new Pair<String>(EUCALYPTUS_NS, "EucaC1Medium"));
+		nodeTypes.put("Euca m1.large", new Pair<String>(EUCALYPTUS_NS, "EucaM1Large"));
+		nodeTypes.put("Euca m1.xlarge", new Pair<String>(EUCALYPTUS_NS, "EucaM1XLarge"));
+		nodeTypes.put("Euca c1.xlarge", new Pair<String>(EUCALYPTUS_NS, "EucaC1XLarge"));
 	}
 	
 	public static GraphSaver getInstance() {
@@ -159,12 +162,12 @@ public class GraphSaver {
 	 * @param f
 	 * @param g
 	 */
-	public void saveGraph(File f, SparseMultigraph<OrcaNode, OrcaLink> g) {
+	public boolean saveGraph(File f, SparseMultigraph<OrcaNode, OrcaLink> g) {
 		// this should never run in parallel anyway
 		synchronized(instance) {
 			try {
 				if ((f == null) || (g == null))
-					return;
+					return false;
 				
 				ngen = new NdlGenerator(Logger.getLogger(this.getClass().getCanonicalName()));
 			
@@ -201,13 +204,17 @@ public class GraphSaver {
 				// is domain specified in the reservation?
 				if (GUIState.getInstance().getDomainInReservation() != null) {
 					globalDomain = true;
-					Individual domI = ngen.declareDomain(GUIState.getInstance().getDomainInReservation());
+					Individual domI = ngen.declareDomain(domainMap.get(GUIState.getInstance().getDomainInReservation()));
 					ngen.addDomainToIndividual(domI, reservation);
 				}
 				
 				// shove invidividual nodes onto the reservation
 				for (OrcaNode n: GUIState.getInstance().g.getVertices()) {
-					Individual ni = ngen.declareComputeElement(n.getName());
+					Individual ni;
+					if (n.isNode())
+						ni = ngen.declareComputeElement(n.getName());
+					else
+						ni = ngen.declareServerCloud(n.getName());
 					ngen.addResourceToReservation(reservation, ni);
 					
 					// for clusters, add number of nodes, declare as cluster (VM domain)
@@ -273,8 +280,10 @@ public class GraphSaver {
 				ed.setLocationRelativeTo(GUI.getInstance().getFrame());
 				ed.setException("Exception encountered while saving file", e);
 				ed.setVisible(true);
+				return false;
 			}
 		}
+		return true;
 	}
 
 	public SparseMultigraph<OrcaNode, OrcaLink> loadGraph(File f) {
@@ -289,9 +298,12 @@ public class GraphSaver {
 	public static String reverseLookupDomain(Resource dom) {
 		if (dom == null)
 			return null;
+		// strip off name space and "/Domain"
+		String domainName = StringUtils.removeStart(dom.getURI(), NdlCommons.ORCA_NS);
+		domainName = StringUtils.removeEnd(domainName, "/Domain");
 		for (Iterator<Map.Entry<String, String>> domName = domainMap.entrySet().iterator(); domName.hasNext();) {
 			Map.Entry<String, String> e = domName.next();
-			if (dom.getLocalName().equals(e.getValue()))
+			if (domainName.equals(e.getValue()))
 				return e.getKey();
 		}
 		return null;
@@ -305,7 +317,9 @@ public class GraphSaver {
 			return null;
 		for (Iterator<Map.Entry<String, Pair<String>>> it = nodeTypes.entrySet().iterator(); it.hasNext();) {
 			Map.Entry<String, Pair<String>> e = it.next();
-			if (nt.getLocalName().equals(e.getValue()))
+			// convert to namespace and type in a pair
+			// WARNING: this checks only the type, not the namespace.
+			if (nt.getLocalName().equals(e.getValue().getSecond()))
 				return e.getKey();
 		}
 		return null;

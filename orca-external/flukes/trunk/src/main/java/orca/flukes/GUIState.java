@@ -202,8 +202,12 @@ public class GUIState implements IDeleteEdgeCallBack<OrcaLink>, IDeleteNodeCallB
 		Collection<OrcaLink> edges = g.getEdges();
 		for (OrcaLink e: edges) {
 			// check that some other edge doesn't have this name
-			if ((e != edge) &&(e.getName().equals(nm)))
-				return false;
+			if (edge != null) {
+				if ((e != edge) &&(e.getName().equals(nm)))
+					return false;
+			} else
+				if (e.getName().equals(nm))
+					return false;
 		}
 		return true;
 	}
@@ -219,8 +223,13 @@ public class GUIState implements IDeleteEdgeCallBack<OrcaLink>, IDeleteNodeCallB
 		Collection<OrcaNode> nodes = g.getVertices();
 		for (OrcaNode n: nodes) {
 			// check that some other edge doesn't have this name
-			if ((n != node) &&(n.getName().equals(nm)))
-				return false;
+			if (node != null) {
+				if ((n != node) &&(n.getName().equals(nm)))
+					return false;
+			} else
+				if (n.getName().equals(nm))
+					return false;
+			
 		}
 		return true;
 	}

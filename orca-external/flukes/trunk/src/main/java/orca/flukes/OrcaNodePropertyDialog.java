@@ -70,27 +70,13 @@ public class OrcaNodePropertyDialog extends ComponentDialog {
 		if (n != null) {
 			name.setObject(n.getName());
 			// set what image it is using
-			int index = 0;
-			for (String i: GUIState.getInstance().getImageShortNamesWithNone()) {
-				if (i.equals(n.getImage()))
-					break;
-				index++;
-			}
-			if (index == GUIState.getInstance().getImageShortNamesWithNone().length)
-				imageList.setSelectedIndex(0);
-			else
-				imageList.setSelectedIndex(index);
+			setListSelectedIndex(imageList, GUIState.getInstance().getImageShortNamesWithNone(), n.getImage());
+
 			// set what domain it is assigned to
-			index = 0;
-			for (String i: GUIState.getInstance().getAvailableDomains()) {
-				if (i.equals(n.getDomain()))
-					break;
-				index++;
-			}
-			if (index == GUIState.getInstance().getAvailableDomains().length)
-				domainList.setSelectedIndex(0);
-			else
-				domainList.setSelectedIndex(index);
+			setListSelectedIndex(domainList, GUIState.getInstance().getAvailableDomains(), n.getDomain());
+			
+			// set node type
+			setListSelectedIndex(typeList, GUIState.getInstance().getAvailableNodeTypes(), n.getNodeType());
 		}
 		ipFields = new HashMap<OrcaLink, IpAddrField>();
 		
@@ -101,15 +87,65 @@ public class OrcaNodePropertyDialog extends ComponentDialog {
 			addNumServersField();
 	}
 	
+	private void setListSelectedIndex(JList list, String[] options, String item) {
+		int index = 0;
+		for (String i: options) {
+			if (i.equals(item))
+				break;
+			index++;
+		}
+		if (index == options.length)
+			list.setSelectedIndex(0);
+		else
+			list.setSelectedIndex(index);
+	}
+	
+	private void inputErrorDialog(String title, String message) {
+		KMessageDialog kmd = new KMessageDialog(parent, title, true);
+		kmd.setLocationRelativeTo(parent);
+		kmd.setMessage(message);
+		kmd.setVisible(true);
+	}
+	
 	@Override
 	public boolean accept() {
 		if (!GUIState.getInstance().checkUniqueNodeName(node, name.getObject())) {
-			KMessageDialog kmd = new KMessageDialog(parent, "Node name not unique", true);
-			kmd.setLocationRelativeTo(parent);
-			kmd.setMessage("Node Name " + name.getObject() + " is not unique");
-			kmd.setVisible(true);
+			inputErrorDialog("Node name is not unique", "Node name " + name.getObject() + " is not unique");
 			return false;
 		}
+		
+		// run the IP checks
+		for (Map.Entry<OrcaLink, IpAddrField> entry: ipFields.entrySet()) {
+			if (entry.getValue().fieldEmpty())
+				continue;
+			String title = "IP address assignment problem with " + entry.getValue().getAddress() + "/" + entry.getValue().getNetmask();
+			// check general validity
+			if (!entry.getValue().inputValid()) {
+				inputErrorDialog(title, "Check address and netmask fields!");
+				return false;
+			}
+			// check that .0 and .255 addresses are not taken
+			long startIP = entry.getValue().getAddressAsLong();
+			if (startIP != 0) {
+				if ((startIP == entry.getValue().getSubnetAsLong()) || (startIP == entry.getValue().getBroadcastAsLong())) {
+					inputErrorDialog(title, "Starting address matches subnet or broadcast address!");
+	 				return false;
+				}
+				// if not a node, check that the mask is wide enough to accommodate the requested number of servers
+				// check that the last address is not a .255
+				if (!node.isNode()) {
+					int nodeCount = (int)ns.getValue();
+					long endIP = startIP + nodeCount - 1;
+					long netmask = entry.getValue().getNetmaskAsLong();
+					if (((startIP & netmask) != (endIP & netmask)) || (endIP == entry.getValue().getBroadcastAsLong())) {
+						inputErrorDialog(title, "Number of nodes too large for this IP/netmask combination!");
+						return false;
+					}
+				}
+			}
+		}
+		
+		// node name
 		node.setName(name.getObject());
 		
 		// image
@@ -123,8 +159,11 @@ public class OrcaNodePropertyDialog extends ComponentDialog {
 		
 		// get IP addresses from GUI and set the on the node
 		for (Map.Entry<OrcaLink, IpAddrField> entry: ipFields.entrySet()) {
+			if (entry.getValue().fieldEmpty())
+				continue;
 			node.setIp(entry.getKey(), entry.getValue().getAddress(), entry.getValue().getNetmask());
 		}
+
 		
 		// if cluster, set node count
 		if (!node.isNode()) {

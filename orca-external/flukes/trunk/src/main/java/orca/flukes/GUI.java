@@ -29,8 +29,14 @@ import java.awt.Container;
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Calendar;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -46,6 +52,7 @@ import javax.swing.JSeparator;
 import javax.swing.JTabbedPane;
 import javax.swing.JToolBar;
 import javax.swing.SwingConstants;
+import javax.swing.filechooser.FileFilter;
 
 import com.hyperrealm.kiwi.ui.AboutFrame;
 import com.hyperrealm.kiwi.ui.KFileChooser;
@@ -57,16 +64,20 @@ import edu.uci.ics.jung.algorithms.layout.FRLayout;
 import edu.uci.ics.jung.algorithms.layout.ISOMLayout;
 import edu.uci.ics.jung.algorithms.layout.KKLayout;
 import edu.uci.ics.jung.algorithms.layout.Layout;
+import edu.uci.ics.jung.algorithms.layout.StaticLayout;
 import edu.uci.ics.jung.graph.SparseMultigraph;
 import edu.uci.ics.jung.visualization.VisualizationViewer;
 import edu.uci.ics.jung.visualization.control.AbstractModalGraphMouse;
 import edu.uci.ics.jung.visualization.control.EditingModalGraphMouse;
 import edu.uci.ics.jung.visualization.control.ModalGraphMouse;
 import edu.uci.ics.jung.visualization.decorators.ToStringLabeller;
+import edu.uci.ics.jung.visualization.layout.LayoutTransition;
 import edu.uci.ics.jung.visualization.picking.PickedState;
+import edu.uci.ics.jung.visualization.util.Animator;
 
 public class GUI {
 
+	private static final String FRAME_TITLE = "ORCA FLUKES - The ORCA Network Editor";
 	private static final String FLUKES_HREF_URL = "http://geni-images.renci.org/webstart/";
 	private static final String ABOUT_DOC = "html/about.html";
 	private static final String HELP_DOC = "html/help.html";
@@ -100,6 +111,45 @@ public class GUI {
 	private JButton imageButton;
 	private Component horizontalStrut_3;
 	
+	public static final Set<String> NDL_EXTENSIONS = new HashSet<String>();
+	static {
+		NDL_EXTENSIONS.add("ndl");
+		NDL_EXTENSIONS.add("rdf");
+		NDL_EXTENSIONS.add("n3");
+	}
+	// file fiter
+	public class NdlFileFilter extends FileFilter {
+		
+	    //Accept all directories and all gif, jpg, tiff, or png files.
+	    public boolean accept(File f) {
+	        if (f.isDirectory()) {
+	            return true;
+	        }
+
+	        String extension = getExtension(f);
+	        if (NDL_EXTENSIONS.contains(extension))
+	        	return true;
+
+	        return false;
+	    }
+
+	    //The description of this filter
+	    public String getDescription() {
+	        return "NDL Files";
+	    }
+	    
+	    private String getExtension(File f) {
+	        String ext = null;
+	        String s = f.getName();
+	        int i = s.lastIndexOf('.');
+
+	        if (i > 0 &&  i < s.length() - 1) {
+	            ext = s.substring(i+1).toLowerCase();
+	        }
+	        return ext;
+	    }
+	}
+	
 	// All menu actions here
 	/**
 	 * Menu actions
@@ -110,38 +160,44 @@ public class GUI {
 			if (e.getActionCommand().equals("exit")) 
 				quit();
 			else if (e.getActionCommand().equals("open")) {
-				// do a transition from static layout to some sane layout back to static
-				GUIState.getInstance().clear();
-				
-				Layout<OrcaNode, OrcaLink> oldL = vv.getGraphLayout();
-				Layout<OrcaNode, OrcaLink> newL = new FRLayout<OrcaNode, OrcaLink>(GUIState.getInstance().g);
-				vv.setGraphLayout(newL);
-				
 				KFileChooserDialog d = new KFileChooserDialog(getFrame(), "Load NDL", KFileChooser.OPEN_DIALOG);
 				d.setLocationRelativeTo(getFrame());
+				d.getFileChooser().setAcceptAllFileFilterUsed(true);
+				d.getFileChooser().addChoosableFileFilter(new NdlFileFilter());
 				d.pack();
 				d.setVisible(true);
-				if (d.getSelectedFile() != null)
-					GraphLoader.getInstance().loadGraph(d.getSelectedFile());
+				if (d.getSelectedFile() != null) {
+					GUIState.getInstance().clear();
+					if (GraphLoader.getInstance().loadGraph(d.getSelectedFile()))
+						frmOrcaFlukes.setTitle(FRAME_TITLE + " : " + d.getSelectedFile().getName());
+				}
+				Layout<OrcaNode, OrcaLink> newL = new FRLayout<OrcaNode, OrcaLink>(GUIState.getInstance().g);
+                newL.setInitializer(vv.getGraphLayout());
+                newL.setSize(vv.getSize());
 
-				//LayoutTransition<OrcaNode, OrcaLink> lt1 = new LayoutTransition<OrcaNode, OrcaLink>(vv, oldL, newL);
-				//Animator an1 = new Animator(lt1);
-				//an1.start();
-				//vv.getRenderContext().getMultiLayerTransformer().setToIdentity();
-
+                LayoutTransition<OrcaNode, OrcaLink> lt =
+                	new LayoutTransition<OrcaNode, OrcaLink>(vv, vv.getGraphLayout(), newL);
+                Animator animator = new Animator(lt);
+                animator.start();
+                vv.getRenderContext().getMultiLayerTransformer().setToIdentity();
 				vv.repaint();
 			}
 			else if (e.getActionCommand().equals("new")) {
 				GUIState.getInstance().clear();
+				frmOrcaFlukes.setTitle(FRAME_TITLE);
 				vv.repaint();
 			}
 			else if (e.getActionCommand().equals("save")) {
 				KFileChooserDialog d = new KFileChooserDialog(getFrame(), "Save in NDL", KFileChooser.SAVE_DIALOG);
 				d.setLocationRelativeTo(getFrame());
+				d.getFileChooser().setAcceptAllFileFilterUsed(true);
+				d.getFileChooser().addChoosableFileFilter(new NdlFileFilter());
 				d.pack();
 				d.setVisible(true);
-				if (d.getSelectedFile() != null)
-					GraphSaver.getInstance().saveGraph(d.getSelectedFile(), GUIState.getInstance().g);
+				if (d.getSelectedFile() != null) {
+					if (GraphSaver.getInstance().saveGraph(d.getSelectedFile(), GUIState.getInstance().g))
+						frmOrcaFlukes.setTitle(FRAME_TITLE + " : " + d.getSelectedFile().getName());
+				}
 			}
 			else if (e.getActionCommand().equals("help"))
 				helpDialog();
@@ -152,19 +208,34 @@ public class GUI {
 			else if (e.getActionCommand().equals("n3"))
 				GraphSaver.getInstance().setOutputFormat(GraphSaver.N3_FORMAT);
 			else if (e.getActionCommand().equals("kklayout")) {
-				Layout<OrcaNode, OrcaLink> newL = new KKLayout<OrcaNode, OrcaLink>(GUIState.getInstance().g);
-				vv.setGraphLayout(newL);
-				vv.repaint();
+				switchLayout(KKLayout.class);
 			} else if (e.getActionCommand().equals("frlayout")) {
-				Layout<OrcaNode, OrcaLink> newL = new FRLayout<OrcaNode, OrcaLink>(GUIState.getInstance().g);
-				vv.setGraphLayout(newL);
-				vv.repaint();
+				switchLayout(FRLayout.class);
 			} else if (e.getActionCommand().equals("isomlayout")) {
-				Layout<OrcaNode, OrcaLink> newL = new ISOMLayout<OrcaNode, OrcaLink>(GUIState.getInstance().g);
-				vv.setGraphLayout(newL);
-				vv.repaint();
+				switchLayout(ISOMLayout.class);
 			} 
 		}
+	}
+	
+	private void switchLayout(Class<?> clazz) {
+		//final Layout<OrcaNode, OrcaLink> oldL = vv.getGraphLayout();
+		Layout<OrcaNode, OrcaLink> newL = null;
+		
+		if (clazz.equals(FRLayout.class)) 
+			newL = new FRLayout<OrcaNode, OrcaLink>(GUIState.getInstance().g);
+		else if (clazz.equals(KKLayout.class))
+			newL = new KKLayout<OrcaNode, OrcaLink>(GUIState.getInstance().g);
+		else if (clazz.equals(ISOMLayout.class))
+			newL = new ISOMLayout<OrcaNode, OrcaLink>(GUIState.getInstance().g);
+		
+        newL.setInitializer(vv.getGraphLayout());
+        newL.setSize(vv.getSize());
+        LayoutTransition<OrcaNode, OrcaLink> lt =
+        	new LayoutTransition<OrcaNode, OrcaLink>(vv, vv.getGraphLayout(), newL);
+        Animator animator = new Animator(lt);
+        animator.start();
+        vv.getRenderContext().getMultiLayerTransformer().setToIdentity();
+		vv.repaint();
 	}
 	
 	/**
@@ -425,7 +496,7 @@ public class GUI {
 	 */
 	public void initialize() {
 		frmOrcaFlukes = new JFrame();
-		frmOrcaFlukes.setTitle("ORCA FLUKES - The ORCA Network Editor");
+		frmOrcaFlukes.setTitle(FRAME_TITLE);
 		//frmOrcaFlukes.getContentPane().setLayout(new BoxLayout(frmOrcaFlukes.getContentPane(), BoxLayout.X_AXIS));
 		frmOrcaFlukes.getContentPane().setLayout(new BorderLayout(0,0));
 		
