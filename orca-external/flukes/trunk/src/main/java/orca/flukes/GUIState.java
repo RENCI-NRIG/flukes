@@ -43,6 +43,7 @@ public class GUIState implements IDeleteEdgeCallBack<OrcaLink>, IDeleteNodeCallB
 	public static final String NO_GLOBAL_IMAGE = "None";
 	public static final String NO_DOMAIN_SELECT = "System select";
 	public static final String NODE_TYPE_SITE_DEFAULT = "Site default";
+	public static final String NO_NODE_DEPS="No dependencies";
 	public static final String NODE_ICON = "node-50.gif";
 	public static final String CLOUD_ICON = "cloud-50.gif";
 	
@@ -295,5 +296,29 @@ public class GUIState implements IDeleteEdgeCallBack<OrcaLink>, IDeleteNodeCallB
 		}
 		
 		return itemList;
+	}
+	
+	public String[] getAvailableDependencies(OrcaNode subject) {
+		Collection<OrcaNode> knownNodes = g.getVertices();
+		String[] ret = new String[knownNodes.size()];
+		int i = 0;
+		for (OrcaNode n: knownNodes) {
+			if (!n.equals(subject)) {
+				ret[i] = n.getName();
+				i++;
+			}
+		}
+		return ret;
+	}
+	
+	public OrcaNode getNodeByName(String nm) {
+		if (nm == null)
+			return null;
+		
+		for (OrcaNode n: g.getVertices()) {
+			if (nm.equals(n.getName()))
+				return n;
+		}
+		return null;
 	}
 }

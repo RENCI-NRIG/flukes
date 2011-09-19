@@ -26,9 +26,13 @@ import java.awt.Component;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -51,9 +55,10 @@ public class OrcaNodePropertyDialog extends ComponentDialog {
 	private JFrame parent;
 	private OrcaNode node;
 	private KPanel kp;
+	private GridBagLayout gbl_contentPanel;
 	
 	private KTextField name;
-	private JList imageList, domainList, typeList;
+	private JList imageList, domainList, typeList, dependencyList;
 	NumericField ns;
 	private HashMap<OrcaLink, IpAddrField> ipFields;
 	int ycoord;
@@ -61,30 +66,63 @@ public class OrcaNodePropertyDialog extends ComponentDialog {
 	public OrcaNodePropertyDialog(JFrame parent, OrcaNode n) {
 		super(parent, "Node Properties", true);
 		super.setLocationRelativeTo(parent);
+
+		assert(n != null);
+
 		if (n.isNode())
 			setComment("Node " + n.getName() + " properties");
 		else
 			setComment("Domain " + n.getName() + " properties");
 		this.parent = parent;
 		this.node = n;
-		if (n != null) {
-			name.setObject(n.getName());
-			// set what image it is using
-			setListSelectedIndex(imageList, GUIState.getInstance().getImageShortNamesWithNone(), n.getImage());
 
-			// set what domain it is assigned to
-			setListSelectedIndex(domainList, GUIState.getInstance().getAvailableDomains(), n.getDomain());
-			
-			// set node type
-			setListSelectedIndex(typeList, GUIState.getInstance().getAvailableNodeTypes(), n.getNodeType());
-		}
+		ycoord = 1;
+		
+		typeList = addSelectList(kp, gbl_contentPanel, ycoord++, 
+				GUIState.getInstance().getAvailableNodeTypes(), "Select node type: ", false, 3);
+		imageList = addSelectList(kp, gbl_contentPanel, ycoord++, 
+				GUIState.getInstance().getImageShortNamesWithNone(), "Select image: ", false, 3);
+		domainList = addSelectList(kp, gbl_contentPanel, ycoord++, 
+				GUIState.getInstance().getAvailableDomains(), "Select domain: ", false, 3);
+		dependencyList = addSelectList(kp, gbl_contentPanel, ycoord++, 
+				GUIState.getInstance().getAvailableDependencies(node), "Select dependencies: ", true, 5);
+		
+		name.setObject(n.getName());
+
+		// set what image it is using
+		setListSelectedIndex(imageList, GUIState.getInstance().getImageShortNamesWithNone(), n.getImage());
+
+		// set what domain it is assigned to
+		setListSelectedIndex(domainList, GUIState.getInstance().getAvailableDomains(), n.getDomain());
+
+		// set node type
+		setListSelectedIndex(typeList, GUIState.getInstance().getAvailableNodeTypes(), n.getNodeType());
+		
+		// set dependencies
+		setListSelectedIndices(dependencyList, GUIState.getInstance().getAvailableDependencies(node), node.getDependencyNames());
+		
 		ipFields = new HashMap<OrcaLink, IpAddrField>();
 		
-		ycoord = 4;
 		// if a node, IP fields are meaningful
 		addIpFields();
 		if (!n.isNode())
-			addNumServersField();
+			addNumServersField(ycoord++);
+	}
+	
+	private static Set<String> getStringAsSet(String s) {
+		Set<String> myset = new HashSet<String>();
+		if (s == null)
+			return myset;
+		
+		myset.add(s);
+		return myset;
+	}
+	
+	public static void setListSelectedIndex(JList list, String[] options, String item) {
+		if (item == null)
+			list.setSelectedIndex(0);
+		else
+			setListSelectedIndices(list, options, getStringAsSet(item));
 	}
 	
 	/**
@@ -93,19 +131,20 @@ public class OrcaNodePropertyDialog extends ComponentDialog {
 	 * @param options
 	 * @param item
 	 */
-	public static void setListSelectedIndex(JList list, String[] options, String item) {
+	public static void setListSelectedIndices(JList list, String[] options, Set<String> items) {
+		if (items.size() == 0) {
+			return;
+		}
 		int index = 0;
+		int maxIndex = 0;
 		for (String i: options) {
-			if (i.equals(item))
-				break;
+			if (items.contains(i)) {
+				maxIndex = index;
+				list.addSelectionInterval(index, index);
+			}
 			index++;
 		}
-		if (index == options.length)
-			list.setSelectedIndex(0);
-		else {
-			list.setSelectedIndex(index);
-			list.ensureIndexIsVisible(index);
-		}
+		list.ensureIndexIsVisible(maxIndex);
 	}
 	
 	private void inputErrorDialog(String title, String message) {
@@ -165,6 +204,13 @@ public class OrcaNodePropertyDialog extends ComponentDialog {
 		// node type
 		node.setNodeType(GUIState.getNodeTypeProper(GUIState.getInstance().getAvailableNodeTypes()[typeList.getSelectedIndex()]));
 		
+		// dependencies 
+		Object[] deps = dependencyList.getSelectedValues();
+		node.clearDependencies();
+		for (Object depName: deps) {
+			node.addDependency(GUIState.getInstance().getNodeByName((String)depName));
+		}
+		
 		// get IP addresses from GUI and set the on the node
 		for (Map.Entry<OrcaLink, IpAddrField> entry: ipFields.entrySet()) {
 			if (entry.getValue().fieldEmpty())
@@ -214,14 +260,14 @@ public class OrcaNodePropertyDialog extends ComponentDialog {
 		}
 	}
 	
-	private void addNumServersField() {
+	private void addNumServersField(int y) {
 		{
 			JLabel lblNewLabel_1 = new JLabel("Number of servers: ");
 			GridBagConstraints gbc_lblNewLabel_1 = new GridBagConstraints();
 			gbc_lblNewLabel_1.anchor = GridBagConstraints.WEST;
 			gbc_lblNewLabel_1.insets = new Insets(0, 0, 5, 5);
 			gbc_lblNewLabel_1.gridx = 0;
-			gbc_lblNewLabel_1.gridy = ycoord;
+			gbc_lblNewLabel_1.gridy = y;
 			kp.add(lblNewLabel_1, gbc_lblNewLabel_1);
 		}
 		{
@@ -234,7 +280,7 @@ public class OrcaNodePropertyDialog extends ComponentDialog {
 			gbc_list.insets = new Insets(0, 0, 5, 5);
 			gbc_list.fill = GridBagConstraints.HORIZONTAL;
 			gbc_list.gridx = 1;
-			gbc_list.gridy = ycoord;
+			gbc_list.gridy = y;
 			kp.add(ns, gbc_list);
 		}
 	}
@@ -243,7 +289,7 @@ public class OrcaNodePropertyDialog extends ComponentDialog {
 	protected Component buildDialogUI() {
 		kp = new KPanel();
 		
-		GridBagLayout gbl_contentPanel = new GridBagLayout();
+		gbl_contentPanel = new GridBagLayout();
 		kp.setLayout(gbl_contentPanel);
 		{
 			JLabel lblNewLabel_1 = new JLabel("Name: ");
@@ -263,26 +309,14 @@ public class OrcaNodePropertyDialog extends ComponentDialog {
 			gbc_list.gridy = 0;
 			kp.add(name, gbc_list);
 		}
-		
-		
-		typeList = addTypeList(kp, gbl_contentPanel, 1);
-		imageList = addImageList(kp, gbl_contentPanel, 2);
-		domainList = addDomainList(kp, gbl_contentPanel, 3);
-		
+
 		return kp;
 	}
 
-	/**
-	 * Add an image list element (usable in other classes)
-	 * @param kp
-	 * @param l
-	 * @param starty
-	 * @return
-	 */
-	static JList addImageList(KPanel kp, GridBagLayout l, int starty) {
+	static JList addSelectList(KPanel kp, GridBagLayout l, int starty, String[] options, String label, boolean multi, int rows) {
 		JList il;
 		{
-			JLabel lblNewLabel_1 = new JLabel("Select image: ");
+			JLabel lblNewLabel_1 = new JLabel(label);
 			GridBagConstraints gbc_lblNewLabel_1 = new GridBagConstraints();
 			gbc_lblNewLabel_1.anchor = GridBagConstraints.WEST;
 			gbc_lblNewLabel_1.insets = new Insets(0, 0, 5, 5);
@@ -291,11 +325,13 @@ public class OrcaNodePropertyDialog extends ComponentDialog {
 			kp.add(lblNewLabel_1, gbc_lblNewLabel_1);
 		}
 		{
-			il = new JList(GUIState.getInstance().getImageShortNamesWithNone());
-			il.setSelectedIndex(0);
-			il.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+			il = new JList(options);
+			if (multi)
+				il.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
+			else
+				il.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 			il.setLayoutOrientation(JList.VERTICAL);
-			il.setVisibleRowCount(3);
+			il.setVisibleRowCount(rows);
 			JScrollPane scrollPane = new JScrollPane(il);
 			scrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
 			scrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
@@ -308,79 +344,4 @@ public class OrcaNodePropertyDialog extends ComponentDialog {
 		}
 		return il;
 	}
-	
-	/**
-	 * Add list of node types
-	 * @param kp
-	 * @param l
-	 * @param starty
-	 * @return
-	 */
-	static JList addTypeList(KPanel kp, GridBagLayout l, int starty) {
-		JList il;
-		{
-			JLabel lblNewLabel_1 = new JLabel("Select node type: ");
-			GridBagConstraints gbc_lblNewLabel_1 = new GridBagConstraints();
-			gbc_lblNewLabel_1.anchor = GridBagConstraints.WEST;
-			gbc_lblNewLabel_1.insets = new Insets(0, 0, 5, 5);
-			gbc_lblNewLabel_1.gridx = 0;
-			gbc_lblNewLabel_1.gridy = starty;
-			kp.add(lblNewLabel_1, gbc_lblNewLabel_1);
-		}
-		{
-			il = new JList(GUIState.getInstance().getAvailableNodeTypes());
-			il.setSelectedIndex(0);
-			il.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-			il.setLayoutOrientation(JList.VERTICAL);
-			il.setVisibleRowCount(3);
-			JScrollPane scrollPane = new JScrollPane(il);
-			scrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
-			scrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-			GridBagConstraints gbc_list = new GridBagConstraints();
-			gbc_list.insets = new Insets(0, 0, 5, 5);
-			gbc_list.fill = GridBagConstraints.HORIZONTAL;
-			gbc_list.gridx = 1;
-			gbc_list.gridy = starty;
-			kp.add(scrollPane, gbc_list);
-		}
-		return il;
-	}
-	
-	/**
-	 * Add a domain list element (usable in other classes)
-	 * @param kp
-	 * @param l
-	 * @param starty
-	 * @return
-	 */
-	static JList addDomainList(KPanel kp, GridBagLayout l, int starty) {
-		JList domList;
-		{
-			JLabel lblNewLabel_1 = new JLabel("Select domain: ");
-			GridBagConstraints gbc_lblNewLabel_1 = new GridBagConstraints();
-			gbc_lblNewLabel_1.anchor = GridBagConstraints.WEST;
-			gbc_lblNewLabel_1.insets = new Insets(0, 0, 5, 5);
-			gbc_lblNewLabel_1.gridx = 0;
-			gbc_lblNewLabel_1.gridy = starty;
-			kp.add(lblNewLabel_1, gbc_lblNewLabel_1);
-		}
-		{
-			domList = new JList(GUIState.getInstance().getAvailableDomains());
-			domList.setSelectedIndex(0);
-			domList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-			domList.setLayoutOrientation(JList.VERTICAL);
-			domList.setVisibleRowCount(3);
-			JScrollPane scrollPane = new JScrollPane(domList);
-			scrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
-			scrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-			GridBagConstraints gbc_list = new GridBagConstraints();
-			gbc_list.insets = new Insets(0, 0, 5, 5);
-			gbc_list.fill = GridBagConstraints.HORIZONTAL;
-			gbc_list.gridx = 1;
-			gbc_list.gridy = starty;
-			kp.add(scrollPane, gbc_list);
-		}
-		return domList;
-	}
-	
 }

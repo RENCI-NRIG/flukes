@@ -28,7 +28,8 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.geom.Ellipse2D;
 import java.util.HashMap;
-import java.util.Map;
+import java.util.HashSet;
+import java.util.Set;
 
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
@@ -43,17 +44,21 @@ import edu.uci.ics.jung.visualization.renderers.Checkmark;
 public class OrcaNode {
 
 	public static final String NODE_NETMASK="32";
-	private String name;
-	private String image = null;
-	private String domain = null;
+	protected String name;
+	protected String image = null;
+	protected String domain = null;
 	// Pair<String> first is IP, second is Netmask
-	private HashMap<OrcaLink, Pair<String>> addresses;
-	private final LayeredIcon icon;
-	private final boolean amNode;
-	private String nodeType = null;
+	protected HashMap<OrcaLink, Pair<String>> addresses;
+	protected final LayeredIcon icon;
+	protected final boolean amNode;
+	// specific node type 
+	protected String nodeType = null;
+	
+	protected Set<OrcaNode> dependencies = new HashSet<OrcaNode>();
+	
 	// if cloud. 
 	// TODO: probably need to have a class hierarchy here. 
-	private int nodeCount = 1;
+	protected int nodeCount = 1;
 	
 	// Icon transformer for GUI
 	public static class OrcaNodeIconTransformer implements Transformer<OrcaNode, Icon> {
@@ -188,6 +193,41 @@ public class OrcaNode {
 		if (e == null)
 			return;
 		addresses.remove(e);
+	}
+	
+	public void addDependency(OrcaNode n) {
+		if (n != null) 
+			dependencies.add(n);
+	}
+	
+	public void removeDependency(OrcaNode n) {
+		if (n != null)
+			dependencies.remove(n);
+	}
+	
+	public void clearDependencies() {
+		dependencies = new HashSet<OrcaNode>();
+	}
+	
+	public boolean isDependency(OrcaNode n) {
+		if (n == null)
+			return false;
+		return dependencies.contains(n);
+	}
+	
+	/**
+	 * returns empty set if no dependencies
+	 * @return
+	 */
+	public Set<String> getDependencyNames() { 
+		Set<String> ret = new HashSet<String>();
+		for(OrcaNode n: dependencies) 
+			ret.add(n.getName());
+		return ret;
+	}
+	
+	Set<OrcaNode> getDependencies() {
+		return dependencies;
 	}
 	
 	@Override

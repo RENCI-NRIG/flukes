@@ -10,12 +10,10 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import orca.ndl.INdlRequestModelListener;
-import orca.ndl.NdlCommons;
 import orca.ndl.NdlRequestParser;
-
-import org.apache.commons.lang.StringUtils;
 
 import com.hp.hpl.jena.ontology.OntModel;
 import com.hp.hpl.jena.rdf.model.Literal;
@@ -216,4 +214,14 @@ public class GraphLoader implements INdlRequestModelListener {
 		reservationDomain = GraphSaver.reverseLookupDomain(d);
 	}
 
+	public void ndlNodeDependencies(Resource ni, OntModel m, Set<Resource> dependencies) {
+		OrcaNode mainNode = nodes.get(ni.getLocalName());
+		if ((mainNode == null) || (dependencies == null))
+			return;
+		for(Resource r: dependencies) {
+			OrcaNode depNode = nodes.get(r.getLocalName());
+			if (depNode != null)
+				mainNode.addDependency(depNode);
+		}
+	}
 }
