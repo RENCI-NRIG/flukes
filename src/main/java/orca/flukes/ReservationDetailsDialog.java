@@ -23,6 +23,7 @@
 package orca.flukes;
 
 import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -45,13 +46,16 @@ import com.hyperrealm.kiwi.ui.dialog.ComponentDialog;
 
 @SuppressWarnings("serial")
 public class ReservationDetailsDialog extends ComponentDialog {
-	private KPanel kp;
+	private KPanel kp, startDatePanel;
 	private TimeField stf;
 	private DateChooserField sdcf;
 	private DurationField df;
 	private JList imageList, domainList;
 	private boolean isImmediate;
 	private KCheckBox immCb;
+	// we're doing a closure AbstractAction for checkbox and it needs access to 'this'
+	// without calling it 'this'
+	private ComponentDialog dialog;
 	
 	private JFrame parent;
 	
@@ -65,35 +69,15 @@ public class ReservationDetailsDialog extends ComponentDialog {
 		super.setLocationRelativeTo(parent);
 		setComment("Select reservation term, global image and other attributes:");
 		this.parent = parent;
+		this.dialog = this;
 	}
 
 	public void setFields(String shortImageName, String domain, OrcaReservationTerm term) {
 		int index = 0;
 		
-//		if (shortImageName != null) {
-//			for (String n: GUIState.getInstance().getImageShortNamesWithNone()) {
-//				if (n.equals(shortImageName))
-//					break;
-//				index++;
-//			}
-//			if (index == GUIState.getInstance().getImageShortNamesWithNone().length)
-//				imageList.setSelectedIndex(0);
-//			else
-//				imageList.setSelectedIndex(index);
-//		}
 		OrcaNodePropertyDialog.setListSelectedIndex(imageList, 
 				GUIState.getInstance().getImageShortNamesWithNone(), shortImageName);
-//		if (domain !=null) {
-//			for (String n: GUIState.getInstance().getAvailableDomains()) {
-//				if (n.equals(domain))
-//					break;
-//				index++;
-//			}
-//			if (index == GUIState.getInstance().getAvailableDomains().length)
-//				domainList.setSelectedIndex(0);
-//			else
-//				domainList.setSelectedIndex(index);
-//		}
+
 		OrcaNodePropertyDialog.setListSelectedIndex(domainList, 
 				GUIState.getInstance().getAvailableDomains(), domain);
 		isImmediate = term.isImmediate();
@@ -135,8 +119,10 @@ public class ReservationDetailsDialog extends ComponentDialog {
 //		gbl_contentPanel.rowWeights = new double[]{0.0, 1.0, 0.0, Double.MIN_VALUE};
 		kp.setLayout(gbl_contentPanel);
 		int y = 0;
-		imageList = OrcaNodePropertyDialog.addImageList(kp, gbl_contentPanel, y++);
-		domainList = OrcaNodePropertyDialog.addDomainList(kp, gbl_contentPanel, y++);		
+		imageList = OrcaNodePropertyDialog.addSelectList(kp, gbl_contentPanel, y++,
+				GUIState.getInstance().getImageShortNamesWithNone(), "Select image: ", false, 3);
+		domainList = OrcaNodePropertyDialog.addSelectList(kp, gbl_contentPanel, y++, 
+				GUIState.getInstance().getAvailableDomains(), "Select domain: ", false, 3);		
 		{
 			JLabel lblNewLabel = new JLabel("Immediate reservation:");
 			GridBagConstraints gbc_lblNewLabel = new GridBagConstraints();
@@ -150,15 +136,17 @@ public class ReservationDetailsDialog extends ComponentDialog {
 			immCb = new KCheckBox(new AbstractAction() {
 				
 				public void actionPerformed(ActionEvent e) {
-					isImmediate = !isImmediate;
 					// toggle the enable state for time components
-					stf.setVisible(!isImmediate);
-					sdcf.setVisible(!isImmediate);
-					stLabel.setVisible(!isImmediate);
+					stf.setVisible(isImmediate);
+					sdcf.setVisible(isImmediate);
+					stLabel.setVisible(isImmediate);
+					startDatePanel.setVisible(isImmediate);
 					// set initial time to now if not immediate
-					if (!isImmediate) {
+					if (isImmediate) { 
 						setTimeDateField(stf, sdcf, Calendar.getInstance().getTime());
 					}
+					dialog.pack();
+					isImmediate = !isImmediate;
 				}
 			});
 			GridBagConstraints gbc_tf= new GridBagConstraints();
@@ -178,7 +166,7 @@ public class ReservationDetailsDialog extends ComponentDialog {
 			kp.add(stLabel, gbc_lblNewLabel);
 		}
 		{
-			KPanel startDatePanel = new KPanel();
+			startDatePanel = new KPanel();
 			stf = new TimeField();
 			startDatePanel.add(stf);
 			sdcf = new DateChooserField();

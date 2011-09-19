@@ -244,6 +244,19 @@ public class GraphSaver {
 						Pair<String> nt = nodeTypes.get(n.getNodeType());
 						ngen.addNodeTypeToCE(nt.getFirst(), nt.getSecond(), ni);
 					}
+					
+
+				}
+				
+				// node dependencies (done afterwards to be sure all nodes are declared)
+				for (OrcaNode n: GUIState.getInstance().g.getVertices()) {
+					Individual ni = ngen.getRequestIndividual(n.getName());
+					for(OrcaNode dep: n.getDependencies()) {
+						Individual depI = ngen.getRequestIndividual(dep.getName());
+						if (depI != null) {
+							ngen.addDependOnToIndividual(depI, ni);
+						}
+					}
 				}
 				
 				if (GUIState.getInstance().g.getEdgeCount() == 0) {

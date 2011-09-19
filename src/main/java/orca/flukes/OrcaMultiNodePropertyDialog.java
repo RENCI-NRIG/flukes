@@ -72,8 +72,10 @@ public class OrcaMultiNodePropertyDialog extends ComponentDialog {
 		GridBagLayout gbl_contentPanel = new GridBagLayout();
 		kp.setLayout(gbl_contentPanel);
 		
-		imageList = OrcaNodePropertyDialog.addImageList(kp, gbl_contentPanel, 0);
-		domainList = OrcaNodePropertyDialog.addDomainList(kp, gbl_contentPanel, 1);
+		imageList = OrcaNodePropertyDialog.addSelectList(kp, gbl_contentPanel, 0, 
+				GUIState.getInstance().getImageShortNamesWithNone(), "Select image: ", false, 3);
+		domainList = OrcaNodePropertyDialog.addSelectList(kp, gbl_contentPanel, 1,
+				GUIState.getInstance().getAvailableDomains(), "Select domain: ", false, 3);
 		
 		return kp;
 	}
