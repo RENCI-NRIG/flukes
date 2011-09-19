@@ -67,7 +67,7 @@ public class GUIState implements IDeleteEdgeCallBack<OrcaLink>, IDeleteNodeCallB
 	private String resDomainName = null;
 	
 	// true for nodes, false for clusters
-	boolean nodesOrClusters = true;
+	boolean nodesOrGroups = true;
 	
 	private static void initialize() {
 		;

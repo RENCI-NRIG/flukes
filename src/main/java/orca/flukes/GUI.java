@@ -81,7 +81,7 @@ public class GUI {
 	private JPanel requestPanel, resourcePanel;
 	private JToolBar toolBar;
 	private JButton nodeButton;
-	private JButton clusterButton;
+	private JButton nodeGroupButton;
 	private Component horizontalStrut;
 	private JMenuBar menuBar;
 	private JMenu fileNewMenu;
@@ -253,9 +253,9 @@ public class GUI {
 				GUIState.getInstance().rdd.pack();
 				GUIState.getInstance().rdd.setVisible(true);
 			} else if (e.getActionCommand().equals("nodes")) {
-				GUIState.getInstance().nodesOrClusters = true;
-			} else if (e.getActionCommand().equals("clusters")) {
-				GUIState.getInstance().nodesOrClusters = false;
+				GUIState.getInstance().nodesOrGroups = true;
+			} else if (e.getActionCommand().equals("nodegroups")) {
+				GUIState.getInstance().nodesOrGroups = false;
 			}
 		}
 	}
@@ -528,12 +528,12 @@ public class GUI {
 		horizontalStrut = Box.createHorizontalStrut(10);
 		toolBar.add(horizontalStrut);
 		
-		clusterButton = new JButton("Add Clusters");
-		clusterButton.setToolTipText("Add new clusters");
-		clusterButton.setActionCommand("clusters");
-		clusterButton.addActionListener(rbl);
-		clusterButton.setVerticalAlignment(SwingConstants.TOP);
-		toolBar.add(clusterButton);
+		nodeGroupButton = new JButton("Add Node Groups");
+		nodeGroupButton.setToolTipText("Add new node groups");
+		nodeGroupButton.setActionCommand("nodegroups");
+		nodeGroupButton.addActionListener(rbl);
+		nodeGroupButton.setVerticalAlignment(SwingConstants.TOP);
+		toolBar.add(nodeGroupButton);
 		
 		horizontalStrut_1 = Box.createHorizontalStrut(10);
 		toolBar.add(horizontalStrut_1);
