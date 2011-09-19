@@ -3,6 +3,7 @@ package orca.flukes.ui;
 import java.awt.Component;
 
 import javax.swing.JFrame;
+import javax.swing.JScrollPane;
 
 import com.hyperrealm.kiwi.ui.KPanel;
 import com.hyperrealm.kiwi.ui.KTextArea;
@@ -30,8 +31,9 @@ public class TextAreaDialog extends ComponentDialog {
 		this.ts = ts;
 
 		ta = new KTextArea(rows, cols);
-		kp.add(ta);
-		
+		JScrollPane areaScrollPane = new JScrollPane(ta);
+		areaScrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+		kp.add(areaScrollPane);
 	}
 	
 	public KTextArea getTextArea() {
