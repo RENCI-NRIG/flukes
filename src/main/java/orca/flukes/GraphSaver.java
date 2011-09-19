@@ -245,7 +245,10 @@ public class GraphSaver {
 						ngen.addNodeTypeToCE(nt.getFirst(), nt.getSecond(), ni);
 					}
 					
-
+					// post boot script
+					if ((n.getPostBootScript() != null) && (n.getPostBootScript().length() > 0)) {
+						ngen.addPostBootScriptToCE(n.getPostBootScript(), ni);
+					}
 				}
 				
 				// node dependencies (done afterwards to be sure all nodes are declared)

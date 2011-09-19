@@ -224,4 +224,12 @@ public class GraphLoader implements INdlRequestModelListener {
 				mainNode.addDependency(depNode);
 		}
 	}
+
+	public void ndlNodePostBootScript(String script, OntModel m, Resource node) {
+		if ((script != null) && (script.length() > 0)) {
+			OrcaNode on = nodes.get(node.getLocalName());
+			if (on != null)
+				on.setPostBootScript(script);
+		}
+	}
 }

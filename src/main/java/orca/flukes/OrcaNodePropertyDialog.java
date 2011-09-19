@@ -26,14 +26,15 @@ import java.awt.Component;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
-import java.util.ArrayList;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.swing.AbstractAction;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JList;
@@ -42,8 +43,10 @@ import javax.swing.ListSelectionModel;
 import javax.swing.ScrollPaneConstants;
 
 import orca.flukes.ui.IpAddrField;
+import orca.flukes.ui.TextAreaDialog;
 
 import com.hyperrealm.kiwi.text.FormatConstants;
+import com.hyperrealm.kiwi.ui.KButton;
 import com.hyperrealm.kiwi.ui.KPanel;
 import com.hyperrealm.kiwi.ui.KTextField;
 import com.hyperrealm.kiwi.ui.NumericField;
@@ -51,14 +54,16 @@ import com.hyperrealm.kiwi.ui.dialog.ComponentDialog;
 import com.hyperrealm.kiwi.ui.dialog.KMessageDialog;
 
 @SuppressWarnings("serial")
-public class OrcaNodePropertyDialog extends ComponentDialog {
+public class OrcaNodePropertyDialog extends ComponentDialog implements ActionListener, TextAreaDialog.ITextSetter {
 	private JFrame parent;
 	private OrcaNode node;
 	private KPanel kp;
 	private GridBagLayout gbl_contentPanel;
+	private KButton postBootButton;
+	private TextAreaDialog postBootDialog;
 	
 	private KTextField name;
-	private JList imageList, domainList, typeList, dependencyList;
+	private JList imageList, domainList, typeList, dependencyList = null;
 	NumericField ns;
 	private HashMap<OrcaLink, IpAddrField> ipFields;
 	int ycoord;
@@ -84,8 +89,10 @@ public class OrcaNodePropertyDialog extends ComponentDialog {
 				GUIState.getInstance().getImageShortNamesWithNone(), "Select image: ", false, 3);
 		domainList = addSelectList(kp, gbl_contentPanel, ycoord++, 
 				GUIState.getInstance().getAvailableDomains(), "Select domain: ", false, 3);
-		dependencyList = addSelectList(kp, gbl_contentPanel, ycoord++, 
-				GUIState.getInstance().getAvailableDependencies(node), "Select dependencies: ", true, 5);
+		// don't show dependency list if not needed
+		if (GUIState.getInstance().getAvailableDependencies(node).length > 0)
+			dependencyList = addSelectList(kp, gbl_contentPanel, ycoord++, 
+					GUIState.getInstance().getAvailableDependencies(node), "Select dependencies: ", true, 5);
 		
 		name.setObject(n.getName());
 
@@ -99,7 +106,8 @@ public class OrcaNodePropertyDialog extends ComponentDialog {
 		setListSelectedIndex(typeList, GUIState.getInstance().getAvailableNodeTypes(), n.getNodeType());
 		
 		// set dependencies
-		setListSelectedIndices(dependencyList, GUIState.getInstance().getAvailableDependencies(node), node.getDependencyNames());
+		if (dependencyList != null)
+			setListSelectedIndices(dependencyList, GUIState.getInstance().getAvailableDependencies(node), node.getDependencyNames());
 		
 		ipFields = new HashMap<OrcaLink, IpAddrField>();
 		
@@ -107,6 +115,10 @@ public class OrcaNodePropertyDialog extends ComponentDialog {
 		addIpFields();
 		if (!n.isNode())
 			addNumServersField(ycoord++);
+		
+		// additional property dialog
+		// e.g. post boot script
+		addPropertyButtons(ycoord++);
 	}
 	
 	private static Set<String> getStringAsSet(String s) {
@@ -205,10 +217,12 @@ public class OrcaNodePropertyDialog extends ComponentDialog {
 		node.setNodeType(GUIState.getNodeTypeProper(GUIState.getInstance().getAvailableNodeTypes()[typeList.getSelectedIndex()]));
 		
 		// dependencies 
-		Object[] deps = dependencyList.getSelectedValues();
-		node.clearDependencies();
-		for (Object depName: deps) {
-			node.addDependency(GUIState.getInstance().getNodeByName((String)depName));
+		if (dependencyList != null) {
+			Object[] deps = dependencyList.getSelectedValues();
+			node.clearDependencies();
+			for (Object depName: deps) {
+				node.addDependency(GUIState.getInstance().getNodeByName((String)depName));
+			}
 		}
 		
 		// get IP addresses from GUI and set the on the node
@@ -343,5 +357,49 @@ public class OrcaNodePropertyDialog extends ComponentDialog {
 			kp.add(scrollPane, gbc_list);
 		}
 		return il;
+	}
+	
+	private void addPropertyButtons(int y) {
+		{
+			JLabel lblNewLabel_1 = new JLabel("Additional properties: ");
+			GridBagConstraints gbc_lblNewLabel_1 = new GridBagConstraints();
+			gbc_lblNewLabel_1.anchor = GridBagConstraints.WEST;
+			gbc_lblNewLabel_1.insets = new Insets(0, 0, 5, 5);
+			gbc_lblNewLabel_1.gridx = 0;
+			gbc_lblNewLabel_1.gridy = y;
+			kp.add(lblNewLabel_1, gbc_lblNewLabel_1);
+		}
+		{
+			KPanel innerPanel = new KPanel();
+			GridBagConstraints gbc_list = new GridBagConstraints();
+			gbc_list.insets = new Insets(0, 0, 5, 5);
+			gbc_list.fill = GridBagConstraints.HORIZONTAL;
+			gbc_list.gridx = 1;
+			gbc_list.gridy = y;
+			kp.add(innerPanel, gbc_list);
+		
+			postBootButton = new KButton("PostBoot Script");
+			postBootButton.setToolTipText("Edit post-boot script");
+			postBootButton.setActionCommand("pbscript");
+			postBootButton.addActionListener(this);
+			innerPanel.add(postBootButton);
+		}
+	}
+
+	public void actionPerformed(ActionEvent e) {
+		if (e.getActionCommand().equals("pbscript")) {
+			TextAreaDialog postBootDialog = new TextAreaDialog(parent, this, "Post Boot Script Editor for " + node.getName(), 
+					"Enter your post-boot script:", 20, 50);
+			postBootDialog.getTextArea().setText(node.getPostBootScript());
+			postBootDialog.pack();
+			postBootDialog.setVisible(true);
+		}
+	}
+
+	public void setText(String t) {
+		// set text from the post-boot script text area
+		if ((t != null) && (t.length() == 0))
+			node.setPostBootScript(null);
+		node.setPostBootScript(t);
 	}
 }
