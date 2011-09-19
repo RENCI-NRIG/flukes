@@ -300,7 +300,7 @@ public class GUIState implements IDeleteEdgeCallBack<OrcaLink>, IDeleteNodeCallB
 	
 	public String[] getAvailableDependencies(OrcaNode subject) {
 		Collection<OrcaNode> knownNodes = g.getVertices();
-		String[] ret = new String[knownNodes.size()];
+		String[] ret = new String[knownNodes.size() - 1];
 		int i = 0;
 		for (OrcaNode n: knownNodes) {
 			if (!n.equals(subject)) {

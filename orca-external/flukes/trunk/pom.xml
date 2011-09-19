@@ -36,6 +36,13 @@
 	</repository>
   </repositories>
 	<build>
+		<extensions>
+			<extension>
+				<groupId>org.apache.maven.wagon</groupId>
+				<artifactId>wagon-ssh</artifactId>
+				<version>1.0-beta-6</version>
+			</extension>
+		</extensions>
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
@@ -55,9 +62,9 @@
 				<executions>
         			<execution>
 					<id>pack-jnlp</id>
-        				<phase>deploy</phase>
+        				<phase>install</phase>
          				<goals>
-            				<goal>jnlp-single</goal> <!-- use jnlp, jnlp-inline or jnlp-single as appropriate -->
+            					<goal>jnlp-single</goal> <!-- use jnlp, jnlp-inline or jnlp-single as appropriate -->
           				</goals>
         			</execution>
        			</executions>
@@ -155,6 +162,26 @@
 					<source>1.6</source>
 					<target>1.6</target>
 				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>wagon-maven-plugin</artifactId>
+				<version>1.0-beta-3</version>
+				<executions>
+					<execution>
+						<id>upload-jnlp</id>
+						<phase>deploy</phase>
+						<goals>
+							<goal>upload</goal>
+						</goals>
+						<configuration>
+							<url>scp://geni-images.renci.org/</url>
+							<fromDir>target/jnlp</fromDir>
+							<includes>*</includes>
+							<toDir>images/webstart</toDir>
+						</configuration>
+					</execution>
+				</executions>
 			</plugin>
 		</plugins>
 	</build>

@@ -53,6 +53,8 @@ public class OrcaNode {
 	protected final boolean amNode;
 	// specific node type 
 	protected String nodeType = null;
+	// post-boot script
+	protected String postBootScript = null;
 	
 	protected Set<OrcaNode> dependencies = new HashSet<OrcaNode>();
 	
@@ -228,6 +230,14 @@ public class OrcaNode {
 	
 	Set<OrcaNode> getDependencies() {
 		return dependencies;
+	}
+	
+	public void setPostBootScript(String s) {
+		postBootScript = s;
+	}
+	
+	public String getPostBootScript() {
+		return postBootScript;
 	}
 	
 	@Override
