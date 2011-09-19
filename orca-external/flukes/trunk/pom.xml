@@ -15,7 +15,9 @@
   	<url>http://ci-dev.renci.org/hudson</url>
   </ciManagement>
   <scm>
-  	<url>https://geni-orca.renci.org/svn</url>
+  	<connection>scm:svn:https://geni-orca.renci.org/svn/orca-external/flukes</connection>
+  	<tag>HEAD</tag>
+  	<url>https://geni-orca.renci.org/svn/orca-external/flukes</url>
   </scm>
   <organization>
   	<name>RENCI, The University of North Carolina at Chapel Hill</name>
