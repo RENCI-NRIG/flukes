@@ -17,6 +17,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.JMenuItem;
 
+import com.hyperrealm.kiwi.ui.dialog.KQuestionDialog;
+
 /**
  * A class to implement the deletion of a vertex from within a 
  * PopupVertexEdgeMenuMousePlugin.
@@ -33,10 +35,16 @@ public class DeleteVertexMenuItem<V, E> extends JMenuItem implements NodeMenuLis
         ic = i;
         this.addActionListener(new ActionListener(){
             public void actionPerformed(ActionEvent e) {
-            	ic.deleteNodeCallBack(vertex);
-                visComp.getPickedVertexState().pick(vertex, false);
-                visComp.getGraphLayout().getGraph().removeVertex(vertex);
-                visComp.repaint();
+            	KQuestionDialog kqd = new KQuestionDialog(GUI.getInstance().getFrame(), "Exit", true);
+        		kqd.setMessage("Are you sure you want to delete node " + vertex.toString() + "?");
+        		kqd.setLocationRelativeTo(GUI.getInstance().getFrame());
+        		kqd.setVisible(true);
+        		if (kqd.getStatus()) {
+	            	ic.deleteNodeCallBack(vertex);
+	                visComp.getPickedVertexState().pick(vertex, false);
+	                visComp.getGraphLayout().getGraph().removeVertex(vertex);
+	                visComp.repaint();
+        		}
             }
         });
     }

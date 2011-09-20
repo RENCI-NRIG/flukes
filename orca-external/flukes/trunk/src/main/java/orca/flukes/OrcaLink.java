@@ -64,42 +64,38 @@ public class OrcaLink {
     
     public static class OrcaLinkFactory implements Factory<OrcaLink> {
         private static int linkCount = 0;
-        private static long defaultBandwidth;
-        private static long defaultLatency;
+        private long defaultBandwidth;
+        private long defaultLatency;
 
-        private static OrcaLinkFactory instance = new OrcaLinkFactory();
-        
-        private OrcaLinkFactory() {            
-        }
-        
-        public static OrcaLinkFactory getInstance() {
-            return instance;
+        public OrcaLinkFactory() {            
         }
         
         public OrcaLink create() {
-        	String name;
-        	do {
-        		name = "Link" + linkCount++;
-        	} while (!GUIState.getInstance().checkUniqueLinkName(null, name));
-            OrcaLink link = new OrcaLink(name);
-            link.setBandwidth(defaultBandwidth);
-            link.setLatency(defaultLatency);
-            return link;
+        	synchronized(this) {
+        		String name;
+        		do {
+        			name = "Link" + linkCount++;
+        		} while (!GUIRequestState.getInstance().checkUniqueLinkName(null, name));
+        		OrcaLink link = new OrcaLink(name);
+        		link.setBandwidth(defaultBandwidth);
+        		link.setLatency(defaultLatency);
+        		return link;
+        	}
         }    
 
-        public static long getDefaultLatency() {
+        public long getDefaultLatency() {
             return defaultLatency;
         }
 
-        public static void setDefaultLatency(long l) {
+        public void setDefaultLatency(long l) {
             defaultLatency = l;
         }
 
-        public static long getDefaultBandwidth() {
+        public long getDefaultBandwidth() {
             return defaultBandwidth;
         }
 
-        public static void setDefaultBandwidth(long bw) {
+        public void setDefaultBandwidth(long bw) {
             defaultBandwidth = bw;
         }   
     }  

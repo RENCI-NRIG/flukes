@@ -163,11 +163,11 @@ public class GUI {
 				d.pack();
 				d.setVisible(true);
 				if (d.getSelectedFile() != null) {
-					GUIState.getInstance().clear();
+					GUIRequestState.getInstance().clear();
 					if (GraphLoader.getInstance().loadGraph(d.getSelectedFile()))
 						frmOrcaFlukes.setTitle(FRAME_TITLE + " : " + d.getSelectedFile().getName());
 				}
-				Layout<OrcaNode, OrcaLink> newL = new FRLayout<OrcaNode, OrcaLink>(GUIState.getInstance().g);
+				Layout<OrcaNode, OrcaLink> newL = new FRLayout<OrcaNode, OrcaLink>(GUIRequestState.getInstance().requestGraph);
                 newL.setInitializer(vv.getGraphLayout());
                 newL.setSize(vv.getSize());
 
@@ -179,7 +179,7 @@ public class GUI {
 				vv.repaint();
 			}
 			else if (e.getActionCommand().equals("new")) {
-				GUIState.getInstance().clear();
+				GUIRequestState.getInstance().clear();
 				frmOrcaFlukes.setTitle(FRAME_TITLE);
 				vv.repaint();
 			}
@@ -191,7 +191,7 @@ public class GUI {
 				d.pack();
 				d.setVisible(true);
 				if (d.getSelectedFile() != null) {
-					if (GraphSaver.getInstance().saveGraph(d.getSelectedFile(), GUIState.getInstance().g))
+					if (GraphSaver.getInstance().saveGraph(d.getSelectedFile(), GUIRequestState.getInstance().requestGraph))
 						frmOrcaFlukes.setTitle(FRAME_TITLE + " : " + d.getSelectedFile().getName());
 				}
 			}
@@ -218,11 +218,11 @@ public class GUI {
 		Layout<OrcaNode, OrcaLink> newL = null;
 		
 		if (clazz.equals(FRLayout.class)) 
-			newL = new FRLayout<OrcaNode, OrcaLink>(GUIState.getInstance().g);
+			newL = new FRLayout<OrcaNode, OrcaLink>(GUIRequestState.getInstance().requestGraph);
 		else if (clazz.equals(KKLayout.class))
-			newL = new KKLayout<OrcaNode, OrcaLink>(GUIState.getInstance().g);
+			newL = new KKLayout<OrcaNode, OrcaLink>(GUIRequestState.getInstance().requestGraph);
 		else if (clazz.equals(ISOMLayout.class))
-			newL = new ISOMLayout<OrcaNode, OrcaLink>(GUIState.getInstance().g);
+			newL = new ISOMLayout<OrcaNode, OrcaLink>(GUIRequestState.getInstance().requestGraph);
 		
         newL.setInitializer(vv.getGraphLayout());
         newL.setSize(vv.getSize());
@@ -242,20 +242,20 @@ public class GUI {
 	public class RequestButtonListener implements ActionListener {
 		public void actionPerformed(ActionEvent e) {
 			if (e.getActionCommand().equals("images")) {
-				GUIState.getInstance().icd = new ImageChooserDialog(getFrame());
-				GUIState.getInstance().icd.pack();
-				GUIState.getInstance().icd.setVisible(true);
+				GUIRequestState.getInstance().icd = new ImageChooserDialog(getFrame());
+				GUIRequestState.getInstance().icd.pack();
+				GUIRequestState.getInstance().icd.setVisible(true);
 			} else if (e.getActionCommand().equals("reservation")) {
-				GUIState.getInstance().rdd = new ReservationDetailsDialog(getFrame());
-				GUIState.getInstance().rdd.setFields(GUIState.getInstance().getVMImageInReservation(), 
-						GUIState.getInstance().getDomainInReservation(),
-						GUIState.getInstance().getTerm());
-				GUIState.getInstance().rdd.pack();
-				GUIState.getInstance().rdd.setVisible(true);
+				GUIRequestState.getInstance().rdd = new ReservationDetailsDialog(getFrame());
+				GUIRequestState.getInstance().rdd.setFields(GUIRequestState.getInstance().getVMImageInReservation(), 
+						GUIRequestState.getInstance().getDomainInReservation(),
+						GUIRequestState.getInstance().getTerm());
+				GUIRequestState.getInstance().rdd.pack();
+				GUIRequestState.getInstance().rdd.setVisible(true);
 			} else if (e.getActionCommand().equals("nodes")) {
-				GUIState.getInstance().nodesOrGroups = true;
+				GUIRequestState.getInstance().nodesOrGroups = true;
 			} else if (e.getActionCommand().equals("nodegroups")) {
-				GUIState.getInstance().nodesOrGroups = false;
+				GUIRequestState.getInstance().nodesOrGroups = false;
 			}
 		}
 	}
@@ -311,12 +311,12 @@ public class GUI {
 	 * Initialize request pane 
 	 */
 	protected void requestPane(Container c) {
-		GUIState.getInstance().g = 
+		GUIRequestState.getInstance().requestGraph = 
 			new SparseMultigraph<OrcaNode, OrcaLink>();
 		// Layout<V, E>, VisualizationViewer<V,E>
 		//	        Map<OrcaNode,Point2D> vertexLocations = new HashMap<OrcaNode, Point2D>();
 		
-		Layout<OrcaNode, OrcaLink> layout = new FRLayout<OrcaNode, OrcaLink>(GUIState.getInstance().g);
+		Layout<OrcaNode, OrcaLink> layout = new FRLayout<OrcaNode, OrcaLink>(GUIRequestState.getInstance().requestGraph);
 		
 		//layout.setSize(new Dimension(1000,800));
 		vv = 
@@ -326,13 +326,14 @@ public class GUI {
 		vv.getRenderContext().setEdgeLabelTransformer(new ToStringLabeller<OrcaLink>());
 		
 		// Create a graph mouse and add it to the visualization viewer
+		OrcaNode.OrcaNodeFactory onf = new OrcaNode.OrcaNodeFactory(GUIRequestState.getInstance());
+		OrcaLink.OrcaLinkFactory olf = new OrcaLink.OrcaLinkFactory();
 		gm = new EditingModalGraphMouse<OrcaNode, OrcaLink>(vv.getRenderContext(), 
-				OrcaNode.OrcaNodeFactory.getInstance(),
-				OrcaLink.OrcaLinkFactory.getInstance()); 
+				onf, olf);
 		
 		// Set some defaults for the Edges...
-		OrcaLink.OrcaLinkFactory.setDefaultBandwidth(10000000);
-		OrcaLink.OrcaLinkFactory.setDefaultLatency(5000);
+		olf.setDefaultBandwidth(10000000);
+		olf.setDefaultLatency(5000);
 		
 		// add the plugin
 		PopupVertexEdgeMenuMousePlugin<OrcaNode, OrcaLink> myPlugin = new PopupVertexEdgeMenuMousePlugin<OrcaNode, OrcaLink>();

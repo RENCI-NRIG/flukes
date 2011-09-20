@@ -76,10 +76,10 @@ public class ReservationDetailsDialog extends ComponentDialog {
 		int index = 0;
 		
 		OrcaNodePropertyDialog.setListSelectedIndex(imageList, 
-				GUIState.getInstance().getImageShortNamesWithNone(), shortImageName);
+				GUIRequestState.getInstance().getImageShortNamesWithNone(), shortImageName);
 
 		OrcaNodePropertyDialog.setListSelectedIndex(domainList, 
-				GUIState.getInstance().getAvailableDomains(), domain);
+				GUIRequestState.getInstance().getAvailableDomains(), domain);
 		isImmediate = term.isImmediate();
 		immCb.setSelected(isImmediate);
 		if (!isImmediate) {
@@ -120,9 +120,9 @@ public class ReservationDetailsDialog extends ComponentDialog {
 		kp.setLayout(gbl_contentPanel);
 		int y = 0;
 		imageList = OrcaNodePropertyDialog.addSelectList(kp, gbl_contentPanel, y++,
-				GUIState.getInstance().getImageShortNamesWithNone(), "Select image: ", false, 3);
+				GUIRequestState.getInstance().getImageShortNamesWithNone(), "Select image: ", false, 3);
 		domainList = OrcaNodePropertyDialog.addSelectList(kp, gbl_contentPanel, y++, 
-				GUIState.getInstance().getAvailableDomains(), "Select domain: ", false, 3);		
+				GUIRequestState.getInstance().getAvailableDomains(), "Select domain: ", false, 3);		
 		{
 			JLabel lblNewLabel = new JLabel("Immediate reservation:");
 			GridBagConstraints gbc_lblNewLabel = new GridBagConstraints();
@@ -223,20 +223,20 @@ public class ReservationDetailsDialog extends ComponentDialog {
 			if (lc.before(tc))
 				return false;
 			
-			GUIState.getInstance().getTerm().setStart(lc.getTime());
+			GUIRequestState.getInstance().getTerm().setStart(lc.getTime());
 		} else
-			GUIState.getInstance().getTerm().setStart(null);
+			GUIRequestState.getInstance().getTerm().setStart(null);
 		
 		// get duration
-		GUIState.getInstance().getTerm().setDuration(df.getDays(), df.getHours(), df.getMinutes());
+		GUIRequestState.getInstance().getTerm().setDuration(df.getDays(), df.getHours(), df.getMinutes());
 		
 		// get the image short name
-		String curImName = GUIState.getNodeImageProper(GUIState.getInstance().getImageShortNamesWithNone()[imageList.getSelectedIndex()]);
-		GUIState.getInstance().setVMImageInReservation(curImName);
+		String curImName = GUIRequestState.getNodeImageProper(GUIRequestState.getInstance().getImageShortNamesWithNone()[imageList.getSelectedIndex()]);
+		GUIRequestState.getInstance().setVMImageInReservation(curImName);
 		
 		// get the domain for reservation
-		String domName = GUIState.getNodeDomainProper(GUIState.getInstance().getAvailableDomains()[domainList.getSelectedIndex()]);
-		GUIState.getInstance().setDomainInReservation(domName);
+		String domName = GUIRequestState.getNodeDomainProper(GUIRequestState.getInstance().getAvailableDomains()[domainList.getSelectedIndex()]);
+		GUIRequestState.getInstance().setDomainInReservation(domName);
 		
 		return true;
 	}
