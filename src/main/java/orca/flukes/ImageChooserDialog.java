@@ -33,7 +33,7 @@ import orca.flukes.ui.ChooserWithNewDialog;
 public class ImageChooserDialog extends ChooserWithNewDialog<String> implements ActionListener {
 	
 	public ImageChooserDialog(JFrame parent) {
-		super(parent, "Images", "Defined Images", GUIState.getInstance().getImageShortNamesIterator());
+		super(parent, "Images", "Defined Images", GUIRequestState.getInstance().getImageShortNamesIterator());
 		super.setLocationRelativeTo(parent);
 		setNewActionListener(this);
 	}
@@ -41,21 +41,21 @@ public class ImageChooserDialog extends ChooserWithNewDialog<String> implements 
 	public void actionPerformed(ActionEvent e) {
 		OrcaImageDialog oid = new OrcaImageDialog(GUI.getInstance().getFrame());
 		oid.pack();
-		GUIState.getInstance().addingNewImage = true;
+		GUIRequestState.getInstance().addingNewImage = true;
 		oid.setVisible(true);
 	}
 	
 	@Override
 	protected boolean accept() {
-		GUIState.getInstance().addingNewImage = false;
+		GUIRequestState.getInstance().addingNewImage = false;
 		String st = getSelectedItem();
 		
 		// open image dialog with image details
 		if (st != null) {
 			OrcaImageDialog oid = new OrcaImageDialog(GUI.getInstance().getFrame());
-			//oid.setFields(st, GUIState.getInstance().definedImages.get(st).getUrl(), 
-			//		GUIState.getInstance().definedImages.get(st).getHash());
-			oid.setImage(GUIState.getInstance().getImageByName(st));
+			//oid.setFields(st, GUIRequestState.getInstance().definedImages.get(st).getUrl(), 
+			//		GUIRequestState.getInstance().definedImages.get(st).getHash());
+			oid.setImage(GUIRequestState.getInstance().getImageByName(st));
 			oid.pack();
 			oid.setVisible(true);
 		}
@@ -66,6 +66,6 @@ public class ImageChooserDialog extends ChooserWithNewDialog<String> implements 
 	@Override
 	protected void cancel() {
 		super.cancel();
-		GUIState.getInstance().addingNewImage = false;
+		GUIRequestState.getInstance().addingNewImage = false;
 	}
 }

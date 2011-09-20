@@ -63,7 +63,7 @@ public class OrcaLinkPropertyDialog extends ComponentDialog {
 	public boolean accept() {
 		if ((name.getObject().length() == 0) || (!bandwidth.validateInput()) || (!latency.validateInput()))
 			return false;
-		if (!GUIState.getInstance().checkUniqueLinkName(edge, name.getObject())) {
+		if (!GUIRequestState.getInstance().checkUniqueLinkName(edge, name.getObject())) {
 			KMessageDialog kmd = new KMessageDialog(parent, "Link name not unique", true);
 			kmd.setLocationRelativeTo(parent);
 			kmd.setMessage("Link Name " + name.getObject() + " is not unique");

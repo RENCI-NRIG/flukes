@@ -77,7 +77,7 @@ public class GraphLoader implements INdlRequestModelListener {
 		if ((node == null) || (di == null))
 			return;
 		try {
-			GUIState.getInstance().addImage(new OrcaImage(di.getLocalName(), new URL(url), hash), null);
+			GUIRequestState.getInstance().addImage(new OrcaImage(di.getLocalName(), new URL(url), hash), null);
 			// get this node and assign image
 			if (!nodes.containsKey(node.getLocalName())) 
 				// node must exist
@@ -101,7 +101,7 @@ public class GraphLoader implements INdlRequestModelListener {
 		if ((di == null) || (res == null))
 			return;
 		try {
-			GUIState.getInstance().addImage(new OrcaImage(di.getLocalName(), new URL(url), hash), null);
+			GUIRequestState.getInstance().addImage(new OrcaImage(di.getLocalName(), new URL(url), hash), null);
 			// assign image to reservation
 			reservationDiskImage = di.getLocalName();
 		} catch (Exception e) {
@@ -128,13 +128,21 @@ public class GraphLoader implements INdlRequestModelListener {
 
 		if (ce == null)
 			return;
-		OrcaNode newNode = new OrcaNode(ce.getLocalName(), isNode);
+		OrcaNode newNode;
+		
+		if (isNode)
+			newNode = new OrcaNode(ce.getLocalName());
+		else {
+			OrcaNodeGroup newNodeGroup = new OrcaNodeGroup(ce.getLocalName());
+			if (ceCount > 0)
+				newNodeGroup.setNodeCount(ceCount);
+			newNode = newNodeGroup;
+		}
+		
 		if (domain != null)
 			newNode.setDomain(GraphSaver.reverseLookupDomain(domain));
 		if (ceType != null)
 			newNode.setNodeType(GraphSaver.reverseNodeTypeLookup(ceType));
-		if (ceCount > 0)
-			newNode.setNodeCount(ceCount);
 
 		// process interfaces
 		for (Iterator<Resource> it = interfaces.iterator(); it.hasNext();) {
@@ -146,7 +154,7 @@ public class GraphLoader implements INdlRequestModelListener {
 		nodes.put(ce.getLocalName(), newNode);
 		
 		// add nodes to the graph
-		GUIState.getInstance().g.addVertex(newNode);
+		GUIRequestState.getInstance().requestGraph.addVertex(newNode);
 	}
 
 	/**
@@ -175,7 +183,7 @@ public class GraphLoader implements INdlRequestModelListener {
 				
 				// have to be there
 				if ((if1Node != null) && (if2Node != null)) {
-					GUIState.getInstance().g.addEdge(ol, new Pair<OrcaNode>(if1Node, if2Node), EdgeType.UNDIRECTED);
+					GUIRequestState.getInstance().requestGraph.addEdge(ol, new Pair<OrcaNode>(if1Node, if2Node), EdgeType.UNDIRECTED);
 				}
 			}
 		} else {
@@ -189,11 +197,25 @@ public class GraphLoader implements INdlRequestModelListener {
 		// System.out.println("Interface " + l + " has IP/netmask" + ip + "/" + mask);
 		if (intf == null)
 			return;
-
-		OrcaNode on = nodes.get(node.getLocalName());
-		OrcaLink ol = links.get(conn.getLocalName());
-		if ((on != null) && (ol != null))
-			on.setIp(ol, ip, "" + GraphSaver.netmaskStringToInt(mask));
+		OrcaNode on = null;
+		OrcaLink ol = null;
+		if (node != null)
+			on = nodes.get(node.getLocalName());
+		if (conn != null)
+			ol = links.get(conn.getLocalName());
+		
+		if (on != null) {
+			if (ol != null)
+				on.setIp(ol, ip, "" + GraphSaver.netmaskStringToInt(mask));
+			else {
+				// this could be a disconnected node group
+				if (on instanceof OrcaNodeGroup) {
+					OrcaNodeGroup ong = (OrcaNodeGroup)on;
+					ong.setInternalIp(ip, "" + GraphSaver.netmaskStringToInt(mask));
+				}
+			}
+				
+		}
 	}
 
 	public void ndlReservationResources(List<Resource> res, OntModel m) {
@@ -202,9 +224,9 @@ public class GraphLoader implements INdlRequestModelListener {
 	
 	public void ndlParseComplete() {
 		// set term etc
-		GUIState.getInstance().setTerm(term);
-		GUIState.getInstance().setDomainInReservation(reservationDomain);
-		GUIState.getInstance().setVMImageInReservation(reservationDiskImage);
+		GUIRequestState.getInstance().setTerm(term);
+		GUIRequestState.getInstance().setDomainInReservation(reservationDomain);
+		GUIRequestState.getInstance().setVMImageInReservation(reservationDiskImage);
 	}
 	
 	public void ndlReservationDomain(Resource d, OntModel m) {

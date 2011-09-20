@@ -34,7 +34,6 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import javax.swing.AbstractAction;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JList;
@@ -60,12 +59,13 @@ public class OrcaNodePropertyDialog extends ComponentDialog implements ActionLis
 	private KPanel kp;
 	private GridBagLayout gbl_contentPanel;
 	private KButton postBootButton;
-	private TextAreaDialog postBootDialog;
 	
 	private KTextField name;
 	private JList imageList, domainList, typeList, dependencyList = null;
 	NumericField ns;
 	private HashMap<OrcaLink, IpAddrField> ipFields;
+	// address field for group's internal address
+	private IpAddrField internalIpf = null;
 	int ycoord;
 	
 	public OrcaNodePropertyDialog(JFrame parent, OrcaNode n) {
@@ -74,50 +74,51 @@ public class OrcaNodePropertyDialog extends ComponentDialog implements ActionLis
 
 		assert(n != null);
 
-		if (n.isNode())
-			setComment("Node " + n.getName() + " properties");
+		if (n instanceof OrcaNodeGroup)
+			setComment("Group " + n.getName() + " properties");
 		else
-			setComment("Domain " + n.getName() + " properties");
+			setComment("Node " + n.getName() + " properties");
+		
 		this.parent = parent;
 		this.node = n;
 
 		ycoord = 1;
 		
 		typeList = addSelectList(kp, gbl_contentPanel, ycoord++, 
-				GUIState.getInstance().getAvailableNodeTypes(), "Select node type: ", false, 3);
+				GUIRequestState.getInstance().getAvailableNodeTypes(), "Select node type: ", false, 3);
 		imageList = addSelectList(kp, gbl_contentPanel, ycoord++, 
-				GUIState.getInstance().getImageShortNamesWithNone(), "Select image: ", false, 3);
+				GUIRequestState.getInstance().getImageShortNamesWithNone(), "Select image: ", false, 3);
 		domainList = addSelectList(kp, gbl_contentPanel, ycoord++, 
-				GUIState.getInstance().getAvailableDomains(), "Select domain: ", false, 3);
+				GUIRequestState.getInstance().getAvailableDomains(), "Select domain: ", false, 3);
 		// don't show dependency list if not needed
-		if (GUIState.getInstance().getAvailableDependencies(node).length > 0)
+		if (GUIRequestState.getInstance().getAvailableDependencies(node).length > 0)
 			dependencyList = addSelectList(kp, gbl_contentPanel, ycoord++, 
-					GUIState.getInstance().getAvailableDependencies(node), "Select dependencies: ", true, 5);
+					GUIRequestState.getInstance().getAvailableDependencies(node), "Select dependencies: ", true, 5);
 		
 		name.setObject(n.getName());
 
 		// set what image it is using
-		setListSelectedIndex(imageList, GUIState.getInstance().getImageShortNamesWithNone(), n.getImage());
+		setListSelectedIndex(imageList, GUIRequestState.getInstance().getImageShortNamesWithNone(), n.getImage());
 
 		// set what domain it is assigned to
-		setListSelectedIndex(domainList, GUIState.getInstance().getAvailableDomains(), n.getDomain());
+		setListSelectedIndex(domainList, GUIRequestState.getInstance().getAvailableDomains(), n.getDomain());
 
 		// set node type
-		setListSelectedIndex(typeList, GUIState.getInstance().getAvailableNodeTypes(), n.getNodeType());
+		setListSelectedIndex(typeList, GUIRequestState.getInstance().getAvailableNodeTypes(), n.getNodeType());
 		
 		// set dependencies
 		if (dependencyList != null)
-			setListSelectedIndices(dependencyList, GUIState.getInstance().getAvailableDependencies(node), node.getDependencyNames());
+			setListSelectedIndices(dependencyList, GUIRequestState.getInstance().getAvailableDependencies(node), node.getDependencyNames());
 		
 		ipFields = new HashMap<OrcaLink, IpAddrField>();
 		
 		// if a node, IP fields are meaningful
 		addIpFields();
-		if (!n.isNode())
+		if (n instanceof OrcaNodeGroup)
 			addNumServersField(ycoord++);
 		
 		// additional property dialog
-		// e.g. post boot script
+		// e.requestGraph. post boot script
 		addPropertyButtons(ycoord++);
 	}
 	
@@ -166,9 +167,39 @@ public class OrcaNodePropertyDialog extends ComponentDialog implements ActionLis
 		kmd.setVisible(true);
 	}
 	
+	private boolean checkIPField(IpAddrField ipf) {
+		
+		String title = "IP address assignment problem with " + ipf.getAddress() + "/" + ipf.getNetmask();
+		// check general validity
+		if (!ipf.inputValid()) {
+			inputErrorDialog(title, "Check address and netmask fields!");
+			return false;
+		}
+		// check that .0 and .255 addresses are not taken
+		long startIP = ipf.getAddressAsLong();
+		if (startIP != 0) {
+			if ((startIP == ipf.getSubnetAsLong()) || (startIP == ipf.getBroadcastAsLong())) {
+				inputErrorDialog(title, "Starting address matches subnet or broadcast address!");
+ 				return false;
+			}
+			// if not a node, check that the mask is wide enough to accommodate the requested number of servers
+			// check that the last address is not a .255
+			if (node instanceof OrcaNodeGroup) {
+				int nodeCount = (int)ns.getValue();
+				long endIP = startIP + nodeCount - 1;
+				long netmask = ipf.getNetmaskAsLong();
+				if (((startIP & netmask) != (endIP & netmask)) || (endIP == ipf.getBroadcastAsLong())) {
+					inputErrorDialog(title, "Number of nodes too large for this IP/netmask combination!");
+					return false;
+				}
+			}
+		}
+		return true;
+	}
+	
 	@Override
 	public boolean accept() {
-		if (!GUIState.getInstance().checkUniqueNodeName(node, name.getObject())) {
+		if (!GUIRequestState.getInstance().checkUniqueNodeName(node, name.getObject())) {
 			inputErrorDialog("Node name is not unique", "Node name " + name.getObject() + " is not unique");
 			return false;
 		}
@@ -177,51 +208,33 @@ public class OrcaNodePropertyDialog extends ComponentDialog implements ActionLis
 		for (Map.Entry<OrcaLink, IpAddrField> entry: ipFields.entrySet()) {
 			if (entry.getValue().fieldEmpty())
 				continue;
-			String title = "IP address assignment problem with " + entry.getValue().getAddress() + "/" + entry.getValue().getNetmask();
-			// check general validity
-			if (!entry.getValue().inputValid()) {
-				inputErrorDialog(title, "Check address and netmask fields!");
+			if (!checkIPField(entry.getValue()))
 				return false;
-			}
-			// check that .0 and .255 addresses are not taken
-			long startIP = entry.getValue().getAddressAsLong();
-			if (startIP != 0) {
-				if ((startIP == entry.getValue().getSubnetAsLong()) || (startIP == entry.getValue().getBroadcastAsLong())) {
-					inputErrorDialog(title, "Starting address matches subnet or broadcast address!");
-	 				return false;
-				}
-				// if not a node, check that the mask is wide enough to accommodate the requested number of servers
-				// check that the last address is not a .255
-				if (!node.isNode()) {
-					int nodeCount = (int)ns.getValue();
-					long endIP = startIP + nodeCount - 1;
-					long netmask = entry.getValue().getNetmaskAsLong();
-					if (((startIP & netmask) != (endIP & netmask)) || (endIP == entry.getValue().getBroadcastAsLong())) {
-						inputErrorDialog(title, "Number of nodes too large for this IP/netmask combination!");
-						return false;
-					}
-				}
-			}
+		}
+		
+		if (node instanceof OrcaNodeGroup) {
+			if ((internalIpf != null) && !internalIpf.fieldEmpty() && !checkIPField(internalIpf))
+				return false;
 		}
 		
 		// node name
 		node.setName(name.getObject());
 		
 		// image
-		node.setImage(GUIState.getNodeImageProper(GUIState.getInstance().getImageShortNamesWithNone()[imageList.getSelectedIndex()]));
+		node.setImage(GUIRequestState.getNodeImageProper(GUIRequestState.getInstance().getImageShortNamesWithNone()[imageList.getSelectedIndex()]));
 
 		// domain
-		node.setDomain(GUIState.getNodeDomainProper(GUIState.getInstance().getAvailableDomains()[domainList.getSelectedIndex()]));
+		node.setDomain(GUIRequestState.getNodeDomainProper(GUIRequestState.getInstance().getAvailableDomains()[domainList.getSelectedIndex()]));
 
 		// node type
-		node.setNodeType(GUIState.getNodeTypeProper(GUIState.getInstance().getAvailableNodeTypes()[typeList.getSelectedIndex()]));
+		node.setNodeType(GUIRequestState.getNodeTypeProper(GUIRequestState.getInstance().getAvailableNodeTypes()[typeList.getSelectedIndex()]));
 		
 		// dependencies 
 		if (dependencyList != null) {
 			Object[] deps = dependencyList.getSelectedValues();
 			node.clearDependencies();
 			for (Object depName: deps) {
-				node.addDependency(GUIState.getInstance().getNodeByName((String)depName));
+				node.addDependency(GUIRequestState.getInstance().getNodeByName((String)depName));
 			}
 		}
 		
@@ -231,11 +244,21 @@ public class OrcaNodePropertyDialog extends ComponentDialog implements ActionLis
 				continue;
 			node.setIp(entry.getKey(), entry.getValue().getAddress(), entry.getValue().getNetmask());
 		}
-
 		
-		// if cluster, set node count
-		if (!node.isNode()) {
-			node.setNodeCount((int)ns.getValue());
+		if (node instanceof OrcaNodeGroup) {
+			OrcaNodeGroup ong = (OrcaNodeGroup)node;
+			if (internalIpf != null) {
+				if (!internalIpf.fieldEmpty())
+					ong.setInternalIp(internalIpf.getAddress(), internalIpf.getNetmask());
+			} else
+				// reset internal IP just in case (may have been specified earlier and then removed)
+				ong.removeInternalIp();
+		}
+		
+		// if node group, set node count
+		if (node instanceof OrcaNodeGroup) {
+			OrcaNodeGroup ong = (OrcaNodeGroup)node;
+			ong.setNodeCount((int)ns.getValue());
 		}
 		
 		return true;
@@ -244,7 +267,7 @@ public class OrcaNodePropertyDialog extends ComponentDialog implements ActionLis
 	private void addIpFields() {
 		// query the graph for edges incident on this node and create 
 		// labeled IP address fields; populate fields as needed
-		Collection<OrcaLink> nodeEdges = GUIState.getInstance().g.getIncidentEdges(node);
+		Collection<OrcaLink> nodeEdges = GUIRequestState.getInstance().requestGraph.getIncidentEdges(node);
 		if (nodeEdges == null) {
 			return;
 		}
@@ -272,6 +295,36 @@ public class OrcaNodePropertyDialog extends ComponentDialog implements ActionLis
 			}
 			ycoord++;
 		}
+		
+		// add internal field
+		if (node instanceof OrcaNodeGroup) {
+			OrcaNodeGroup ong = (OrcaNodeGroup)node;
+			if (nodeEdges.size() == 0) {
+				{
+					JLabel lblNewLabel_1 = new JLabel("Internal VLAN IP Address: ");
+					GridBagConstraints gbc_lblNewLabel_1 = new GridBagConstraints();
+					gbc_lblNewLabel_1.anchor = GridBagConstraints.WEST;
+					gbc_lblNewLabel_1.insets = new Insets(0, 0, 5, 5);
+					gbc_lblNewLabel_1.gridx = 0;
+					gbc_lblNewLabel_1.gridy = ycoord;
+					kp.add(lblNewLabel_1, gbc_lblNewLabel_1);
+				}
+				{
+					internalIpf = new IpAddrField();
+					internalIpf.setAddress(ong.getInternalIp(), ong.getInternalNm());
+					GridBagConstraints gbc_list = new GridBagConstraints();
+					gbc_list.insets = new Insets(0, 0, 5, 5);
+					gbc_list.fill = GridBagConstraints.HORIZONTAL;
+					gbc_list.gridx = 1;
+					gbc_list.gridy = ycoord;
+					kp.add(internalIpf, gbc_list);
+				}
+			ycoord++;
+			} else 
+				// zero out internal address
+				internalIpf = null;
+		} 
+			
 	}
 	
 	private void addNumServersField(int y) {
@@ -289,7 +342,8 @@ public class OrcaNodePropertyDialog extends ComponentDialog implements ActionLis
 			ns.setDecimals(0);
 			ns.setType(FormatConstants.INTEGER_FORMAT);
 			ns.setMinValue(1);
-			ns.setValue(node.getNodeCount());
+			OrcaNodeGroup ong = (OrcaNodeGroup)node;
+			ns.setValue(ong.getNodeCount());
 			GridBagConstraints gbc_list = new GridBagConstraints();
 			gbc_list.insets = new Insets(0, 0, 5, 5);
 			gbc_list.fill = GridBagConstraints.HORIZONTAL;

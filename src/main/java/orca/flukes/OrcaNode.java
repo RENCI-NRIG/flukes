@@ -29,6 +29,7 @@ import java.awt.event.ItemListener;
 import java.awt.geom.Ellipse2D;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 import javax.swing.Icon;
@@ -49,8 +50,9 @@ public class OrcaNode {
 	protected String domain = null;
 	// Pair<String> first is IP, second is Netmask
 	protected HashMap<OrcaLink, Pair<String>> addresses;
+	
 	protected final LayeredIcon icon;
-	protected final boolean amNode;
+
 	// specific node type 
 	protected String nodeType = null;
 	// post-boot script
@@ -58,9 +60,8 @@ public class OrcaNode {
 	
 	protected Set<OrcaNode> dependencies = new HashSet<OrcaNode>();
 	
-	// if cloud. 
-	// TODO: probably need to have a class hierarchy here. 
-	protected int nodeCount = 1;
+	// mapping from links to interfaces on those links (used for manifests)
+	protected Map<OrcaLink, String> interfaces = new HashMap<OrcaLink, String>();
 	
 	// Icon transformer for GUI
 	public static class OrcaNodeIconTransformer implements Transformer<OrcaNode, Icon> {
@@ -109,32 +110,18 @@ public class OrcaNode {
 	public OrcaNode(String name) {
 		this.name = name;
 		this.addresses = new HashMap<OrcaLink, Pair<String>>();
-		this.icon = new LayeredIcon(new ImageIcon(GUIState.class.getResource(GUIState.NODE_ICON)).getImage());
-		this.amNode = true;
+		this.icon = new LayeredIcon(new ImageIcon(GUIRequestState.class.getResource(GUIRequestState.NODE_ICON)).getImage());
 	}
 
-	public OrcaNode(String name, boolean amNode) {
+	/**
+	 * only subclasses can set the icon
+	 * @param name
+	 * @param icon
+	 */
+	protected OrcaNode(String name, LayeredIcon icon) {
 		this.name = name;
 		this.addresses = new HashMap<OrcaLink, Pair<String>>();
-		this.amNode = amNode;
-		if (amNode) 
-			this.icon = new LayeredIcon(new ImageIcon(GUIState.class.getResource(GUIState.NODE_ICON)).getImage());
-		else
-			this.icon = new LayeredIcon(new ImageIcon(GUIState.class.getResource(GUIState.CLOUD_ICON)).getImage());
-	}
-	
-	// is this a node or a cloud
-	public boolean isNode() {
-		return amNode;
-	}
-	
-	public int getNodeCount() {
-		return nodeCount;
-	}
-	
-	public void setNodeCount(int nc) {
-		if (nc > 1)
-			nodeCount = nc;
+		this.icon = icon;
 	}
 	
 	public String getName() {
@@ -240,38 +227,49 @@ public class OrcaNode {
 		return postBootScript;
 	}
 	
+	public String getInterfaceName(OrcaLink l) {
+		if (l != null)
+			return interfaces.get(l);
+		return null;
+	}
+	
+	public void setInterfaceName(OrcaLink l, String ifName) {
+		if ((l == null) || (ifName == null))
+			return;
+		
+		interfaces.put(l, ifName);
+	}
+	
 	@Override
 	public String toString() {
 		return name;
 	}
 	
+	public interface INodeCreator {
+		OrcaNode create();
+	}
+	
+	/**
+	 * Node factory for requests
+	 * @author ibaldin
+	 *
+	 */
     public static class OrcaNodeFactory implements Factory<OrcaNode> {
-        private static int nodeCount = 0;
-        private static int clusterCount = 0;
-        private static OrcaNodeFactory instance = new OrcaNodeFactory();
+        private INodeCreator inc = null;
         
-        private OrcaNodeFactory() {            
-        }
-        
-        public static OrcaNodeFactory getInstance() {
-            return instance;
+        public OrcaNodeFactory(INodeCreator i) {
+        	inc = i;
         }
         
         /**
          * Create a node or a cloud based on global GUI setting
          */
         public OrcaNode create() {
-        	synchronized(instance) {
-        		String name;
-        		do {
-        			if (GUIState.getInstance().nodesOrGroups)
-        				name = "Node" + nodeCount++;
-        			else
-        				name = "NodeGroup" + clusterCount++;
-        		} while (!GUIState.getInstance().checkUniqueNodeName(null, name));
-        		return new OrcaNode(name, GUIState.getInstance().nodesOrGroups);
+        	if (inc == null)
+        		return null;
+        	synchronized(inc) {
+        		return inc.create();
         	}
         }       
     }
-    
 }

@@ -20,59 +20,57 @@
 * OUT OF OR IN CONNECTION WITH THE WORK OR THE USE OR OTHER DEALINGS 
 * IN THE WORK.
 */
-package orca.flukes.ui;
+package orca.flukes;
 
-import java.awt.Component;
+import javax.swing.ImageIcon;
 
-import javax.swing.JFrame;
-import javax.swing.JScrollPane;
+import edu.uci.ics.jung.graph.util.Pair;
+import edu.uci.ics.jung.visualization.LayeredIcon;
 
-import com.hyperrealm.kiwi.ui.KPanel;
-import com.hyperrealm.kiwi.ui.KTextArea;
-import com.hyperrealm.kiwi.ui.dialog.ComponentDialog;
+public class OrcaNodeGroup extends OrcaNode {
+	Pair<String> internalVlanAddress = null;
+	protected int nodeCount = 1;
 
-@SuppressWarnings("serial")
-public class TextAreaDialog extends ComponentDialog {
-	KPanel kp;
-	final KTextArea ta;
-	int rows, cols;
-	ITextSetter ts;
-	
-	public interface ITextSetter {
-		public void setText(String t);
+	public OrcaNodeGroup(String name) {
+		super(name, 
+				new LayeredIcon(new ImageIcon(GUIRequestState.class.getResource(GUIRequestState.CLOUD_ICON)).getImage()));
+	}
+
+	public int getNodeCount() {
+		return nodeCount;
 	}
 	
-	public TextAreaDialog(JFrame parent, ITextSetter ts, String title, String message, int r, int c) {
-		super(parent, title, true);
-		super.setLocationRelativeTo(parent);
-		
-		setComment(message);
-		
-		this.rows = r;
-		this.cols = c;
-		this.ts = ts;
-
-		ta = new KTextArea(rows, cols);
-		JScrollPane areaScrollPane = new JScrollPane(ta);
-		areaScrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
-		kp.add(areaScrollPane);
+	public void setNodeCount(int nc) {
+		if (nc > 1)
+			nodeCount = nc;
 	}
 	
-	public KTextArea getTextArea() {
-		return ta;
+	/**
+	 * Node groups can have an internal bus with IP address
+	 * @param addr
+	 * @param nm
+	 */
+	public void setInternalIp(String addr, String nm) {
+		if (addr == null)
+			return;
+		if (nm == null)
+			nm = NODE_NETMASK;
+		internalVlanAddress = new Pair<String>(addr, nm);
 	}
 	
-	@Override
-	protected Component buildDialogUI() {
-		kp = new KPanel();
-		
-		return kp;
+	public String getInternalIp() {
+		if (internalVlanAddress != null)
+			return internalVlanAddress.getFirst();
+		return null;
 	}
 	
-	@Override
-	public boolean accept() {
-		
-		ts.setText(ta.getText());
-		return true;
+	public String getInternalNm() {
+		if (internalVlanAddress != null)
+			return internalVlanAddress.getSecond();
+		return null;
+	}
+	
+	public void removeInternalIp() {
+		internalVlanAddress = null;
 	}
 }

@@ -158,9 +158,26 @@ public class GraphSaver {
 	}
 	
 	/**
+	 * Disconnected node group requires special treatment
+	 * @param ong
+	 * @throws NdlException
+	 */
+	private void processSingleNodeGroup(OrcaNodeGroup ong) throws NdlException {
+		Individual intI = ngen.declareInterface("private-vlan-"+ong.getName());
+		Individual nodeI = ngen.getRequestIndividual(ong.getName());
+		ngen.addInterfaceToIndividual(intI, nodeI);
+		
+		if (ong.getInternalIp() != null) {
+			ngen.addIPToIndividual(ong.getInternalIp(), intI);
+			if (ong.getInternalNm() != null) 
+				ngen.addNetmaskToIP(ong.getInternalIp(), netmaskIntToString(Integer.parseInt(ong.getInternalNm())));
+		}
+	}
+	
+	/**
 	 * Save graph using NDL
 	 * @param f
-	 * @param g
+	 * @param requestGraph
 	 */
 	public boolean saveGraph(File f, SparseMultigraph<OrcaNode, OrcaLink> g) {
 		// this should never run in parallel anyway
@@ -174,14 +191,14 @@ public class GraphSaver {
 				reservation = ngen.declareReservation();
 				Individual term = ngen.declareTerm();
 				// not an immediate reservation? declare term beginning
-				if (GUIState.getInstance().getTerm().getStart() != null) {
-					Individual tStart = ngen.declareTermBeginning(GUIState.getInstance().getTerm().getStart());
+				if (GUIRequestState.getInstance().getTerm().getStart() != null) {
+					Individual tStart = ngen.declareTermBeginning(GUIRequestState.getInstance().getTerm().getStart());
 					ngen.addBeginningToTerm(tStart, term);
 				}
 				// now duration
-				GUIState.getInstance().getTerm().normalizeDuration();
-				Individual duration = ngen.declareTermDuration(GUIState.getInstance().getTerm().getDurationDays(), 
-						GUIState.getInstance().getTerm().getDurationHours(), GUIState.getInstance().getTerm().getDurationMins());
+				GUIRequestState.getInstance().getTerm().normalizeDuration();
+				Individual duration = ngen.declareTermDuration(GUIRequestState.getInstance().getTerm().getDurationDays(), 
+						GUIRequestState.getInstance().getTerm().getDurationHours(), GUIRequestState.getInstance().getTerm().getDurationMins());
 				ngen.addDurationToTerm(duration, term);
 				ngen.addTermToReservation(term, reservation);
 				
@@ -189,9 +206,9 @@ public class GraphSaver {
 				boolean globalImage = false, globalDomain = false;
 				
 				// is image specified in the reservation?
-				if (GUIState.getInstance().getVMImageInReservation() != null) {
+				if (GUIRequestState.getInstance().getVMImageInReservation() != null) {
 					// there is a global image (maybe)
-					OrcaImage im = GUIState.getInstance().definedImages.get(GUIState.getInstance().getVMImageInReservation());
+					OrcaImage im = GUIRequestState.getInstance().definedImages.get(GUIRequestState.getInstance().getVMImageInReservation());
 					if (im != null) {
 						// definitely an global image - attach it to the reservation
 						globalImage = true;
@@ -202,31 +219,37 @@ public class GraphSaver {
 				}
 				
 				// is domain specified in the reservation?
-				if (GUIState.getInstance().getDomainInReservation() != null) {
+				if (GUIRequestState.getInstance().getDomainInReservation() != null) {
 					globalDomain = true;
-					Individual domI = ngen.declareDomain(domainMap.get(GUIState.getInstance().getDomainInReservation()));
+					Individual domI = ngen.declareDomain(domainMap.get(GUIRequestState.getInstance().getDomainInReservation()));
 					ngen.addDomainToIndividual(domI, reservation);
 				}
 				
 				// shove invidividual nodes onto the reservation
-				for (OrcaNode n: GUIState.getInstance().g.getVertices()) {
+				for (OrcaNode n: GUIRequestState.getInstance().requestGraph.getVertices()) {
 					Individual ni;
-					if (n.isNode())
-						ni = ngen.declareComputeElement(n.getName());
-					else
+					if (n instanceof OrcaNodeGroup) {
 						ni = ngen.declareServerCloud(n.getName());
+						OrcaNodeGroup ong = (OrcaNodeGroup) n;
+						if (ong.getInternalIp() != null)
+							processSingleNodeGroup(ong);
+					}
+					else
+						ni = ngen.declareComputeElement(n.getName());
+					
 					ngen.addResourceToReservation(reservation, ni);
 					
 					// for clusters, add number of nodes, declare as cluster (VM domain)
-					if (!n.isNode()) {
-						ngen.addNumCEsToCluster(n.getNodeCount(), ni);
+					if (n instanceof OrcaNodeGroup) {
+						OrcaNodeGroup ong = (OrcaNodeGroup)n;
+						ngen.addNumCEsToCluster(ong.getNodeCount(), ni);
 						ngen.addVMDomainProperty(ni);
 					}
 					
 					// if no global image is set and a local image is set, add it to node
 					if (!globalImage && (n.getImage() != null)) {
 						// check if image is set in this node
-						OrcaImage im = GUIState.getInstance().definedImages.get(n.getImage());
+						OrcaImage im = GUIRequestState.getInstance().definedImages.get(n.getImage());
 						if (im != null) {
 							Individual imI = ngen.declareDiskImage(im.getUrl().toString(), im.getHash(), im.getShortName());
 							ngen.addDiskImageToIndividual(imI, ni);
@@ -252,7 +275,7 @@ public class GraphSaver {
 				}
 				
 				// node dependencies (done afterwards to be sure all nodes are declared)
-				for (OrcaNode n: GUIState.getInstance().g.getVertices()) {
+				for (OrcaNode n: GUIRequestState.getInstance().requestGraph.getVertices()) {
 					Individual ni = ngen.getRequestIndividual(n.getName());
 					for(OrcaNode dep: n.getDependencies()) {
 						Individual depI = ngen.getRequestIndividual(dep.getName());
@@ -262,12 +285,12 @@ public class GraphSaver {
 					}
 				}
 				
-				if (GUIState.getInstance().g.getEdgeCount() == 0) {
+				if (GUIRequestState.getInstance().requestGraph.getEdgeCount() == 0) {
 					// a bunch of disconnected nodes, no IP addresses 
 					
 				} else {
 					// edges, nodes, IP addresses oh my!
-					for (OrcaLink e: GUIState.getInstance().g.getEdges()) {
+					for (OrcaLink e: GUIRequestState.getInstance().requestGraph.getEdges()) {
 						Individual ei = ngen.declareNetworkConnection(e.getName());
 						ngen.addResourceToReservation(reservation, ei);
 
@@ -279,7 +302,7 @@ public class GraphSaver {
 
 						// TODO: latency
 						
-						Pair<OrcaNode> pn = GUIState.getInstance().g.getEndpoints(e);
+						Pair<OrcaNode> pn = GUIRequestState.getInstance().requestGraph.getEndpoints(e);
 						processNodeAndLink(pn.getFirst(), e, ei);
 						processNodeAndLink(pn.getSecond(), e, ei);
 					}

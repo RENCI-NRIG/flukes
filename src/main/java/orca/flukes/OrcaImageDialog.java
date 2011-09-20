@@ -147,14 +147,14 @@ public class OrcaImageDialog extends ComponentDialog {
 				(imageUrl.getObject() != null) && 
 				checkField(imageHash.getObject())) {
 			// disallow adding under same name
-			if (GUIState.getInstance().addingNewImage && GUIState.getInstance().definedImages.containsKey(shortName.getObject())) {
+			if (GUIRequestState.getInstance().addingNewImage && GUIRequestState.getInstance().definedImages.containsKey(shortName.getObject())) {
 				KMessageDialog kmd = new KMessageDialog(GUI.getInstance().getFrame());
 				kmd.setMessage("Image with short name " + shortName.getObject() + " already exists!");
 				kmd.setLocationRelativeTo(parent);
 				kmd.setVisible(true);
 				return false;
 			}
-			if (GUIState.getInstance().addingNewImage && shortName.getObject().equals(GUIState.NO_GLOBAL_IMAGE)) {
+			if (GUIRequestState.getInstance().addingNewImage && shortName.getObject().equals(GUIRequestState.NO_GLOBAL_IMAGE)) {
 				KMessageDialog kmd = new KMessageDialog(GUI.getInstance().getFrame());
 				kmd.setMessage("Short name \"None\" is reserved!");
 				kmd.setLocationRelativeTo(parent);
@@ -162,13 +162,13 @@ public class OrcaImageDialog extends ComponentDialog {
 				return false;
 			}
 			// add or replace image
-			GUIState.getInstance().addImage(new OrcaImage(shortName.getObject(), imageUrl.getObject(), imageHash.getObject()), oi);
-			//GUIState.getInstance().definedImages.put(shortName.getObject(), 
+			GUIRequestState.getInstance().addImage(new OrcaImage(shortName.getObject(), imageUrl.getObject(), imageHash.getObject()), oi);
+			//GUIRequestState.getInstance().definedImages.put(shortName.getObject(), 
 			//		new OrcaImage(shortName.getObject(), imageUrl.getObject(), imageHash.getObject()));
 			// TODO: repaint the dialog instead of killing it
-			GUIState.getInstance().icd.setVisible(false);
-			GUIState.getInstance().icd.destroy();
-			GUIState.getInstance().addingNewImage = false;
+			GUIRequestState.getInstance().icd.setVisible(false);
+			GUIRequestState.getInstance().icd.destroy();
+			GUIRequestState.getInstance().addingNewImage = false;
 			return true;
 		}
 		return false;

@@ -27,7 +27,6 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.Map;
 import java.util.Set;
 
 import orca.flukes.ui.ChooserWithNewDialog;
@@ -35,19 +34,23 @@ import edu.uci.ics.jung.graph.SparseMultigraph;
 import edu.uci.ics.jung.graph.util.Pair;
 
 /**
- * Singleton class that holds shared GUI state. Since dialogs are all modal, no need for locking for now.
+ * Singleton class that holds shared GUI request state. Since dialogs are all modal, no need for locking for now.
  * @author ibaldin
  *
  */
-public class GUIState implements IDeleteEdgeCallBack<OrcaLink>, IDeleteNodeCallBack<OrcaNode> {
+public class GUIRequestState implements IDeleteEdgeCallBack<OrcaLink>, IDeleteNodeCallBack<OrcaNode>, OrcaNode.INodeCreator {
 	public static final String NO_GLOBAL_IMAGE = "None";
 	public static final String NO_DOMAIN_SELECT = "System select";
 	public static final String NODE_TYPE_SITE_DEFAULT = "Site default";
 	public static final String NO_NODE_DEPS="No dependencies";
 	public static final String NODE_ICON = "node-50.gif";
 	public static final String CLOUD_ICON = "cloud-50.gif";
+	public static final String XCON_ICON = "crossconnect-50.gif";
 	
-	private static GUIState instance = null;
+    private static int nodeCount = 0;
+    private static int clusterCount = 0;
+	
+	private static GUIRequestState instance = null;
 	
 	// VM images defined by the user
 	HashMap<String, OrcaImage> definedImages = new HashMap<String, OrcaImage>();
@@ -58,8 +61,8 @@ public class GUIState implements IDeleteEdgeCallBack<OrcaLink>, IDeleteNodeCallB
 	// are we adding a new image definition or editing existing
 	boolean addingNewImage = false;
 	
-	// The graph object
-	SparseMultigraph<OrcaNode, OrcaLink> g;
+	// The graph objects
+	SparseMultigraph<OrcaNode, OrcaLink> requestGraph;
 	
 	// Reservation details
 	private OrcaReservationTerm term;
@@ -73,23 +76,23 @@ public class GUIState implements IDeleteEdgeCallBack<OrcaLink>, IDeleteNodeCallB
 		;
 	}
 	
-	private GUIState() {
+	private GUIRequestState() {
 		term = new OrcaReservationTerm();
 	}
 	
-	static GUIState getInstance() {
+	static GUIRequestState getInstance() {
 		if (instance == null) {
 			initialize();
-			instance = new GUIState();
+			instance = new GUIRequestState();
 		}
 		return instance;
 	}
 	
 	public void clear() {
 		// clear the graph, reservation set else to defaults
-		Set<OrcaNode> nodes = new HashSet<OrcaNode>(g.getVertices());
+		Set<OrcaNode> nodes = new HashSet<OrcaNode>(requestGraph.getVertices());
 		for (OrcaNode n: nodes)
-			GUIState.getInstance().g.removeVertex(n);
+			GUIRequestState.getInstance().requestGraph.removeVertex(n);
 		resImageName = null;
 		resDomainName = null;
 		term = new OrcaReservationTerm();
@@ -112,7 +115,7 @@ public class GUIState implements IDeleteEdgeCallBack<OrcaLink>, IDeleteNodeCallB
 			return;
 		if ((resImageName != null) && (resImageName.equals(im)))
 			return;
-		for (OrcaNode n: g.getVertices()) 
+		for (OrcaNode n: requestGraph.getVertices()) 
 			n.setImage(im);
 		resImageName = im;
 	}
@@ -128,7 +131,7 @@ public class GUIState implements IDeleteEdgeCallBack<OrcaLink>, IDeleteNodeCallB
 			return;
 		if ((resDomainName != null) && (resDomainName.equals(d)))
 			return;
-		for (OrcaNode n: g.getVertices()) 
+		for (OrcaNode n: requestGraph.getVertices()) 
 			n.setDomain(d);
 		resDomainName = d;
 	}
@@ -175,7 +178,7 @@ public class GUIState implements IDeleteEdgeCallBack<OrcaLink>, IDeleteNodeCallB
 		if (e == null)
 			return;
 		// remove edge from node IP maps
-		Pair<OrcaNode> p = g.getEndpoints(e);
+		Pair<OrcaNode> p = requestGraph.getEndpoints(e);
 		p.getFirst().removeIp(e);
 		p.getSecond().removeIp(e);
 	}
@@ -187,7 +190,7 @@ public class GUIState implements IDeleteEdgeCallBack<OrcaLink>, IDeleteNodeCallB
 		if (n == null)
 			return;
 		// remove incident edges
-		Collection<OrcaLink> edges = g.getIncidentEdges(n);
+		Collection<OrcaLink> edges = requestGraph.getIncidentEdges(n);
 		for (OrcaLink e: edges) {
 			deleteEdgeCallBack(e);
 		}
@@ -200,7 +203,7 @@ public class GUIState implements IDeleteEdgeCallBack<OrcaLink>, IDeleteNodeCallB
 	 */
 	public boolean checkUniqueLinkName(OrcaLink edge, String nm) {
 		// check all edges in graph
-		Collection<OrcaLink> edges = g.getEdges();
+		Collection<OrcaLink> edges = requestGraph.getEdges();
 		for (OrcaLink e: edges) {
 			// check that some other edge doesn't have this name
 			if (edge != null) {
@@ -214,14 +217,14 @@ public class GUIState implements IDeleteEdgeCallBack<OrcaLink>, IDeleteNodeCallB
 	}
 	
 	/**
-	 * check if node name is unique
+	 * check if node name is unique. exclude a node if needed (or null)
 	 * @param node
 	 * @param nm
 	 * @return
 	 */
 	public boolean checkUniqueNodeName(OrcaNode node, String nm) {
 		// check all edges in graph
-		Collection<OrcaNode> nodes = g.getVertices();
+		Collection<OrcaNode> nodes = requestGraph.getVertices();
 		for (OrcaNode n: nodes) {
 			// check that some other edge doesn't have this name
 			if (node != null) {
@@ -299,7 +302,7 @@ public class GUIState implements IDeleteEdgeCallBack<OrcaLink>, IDeleteNodeCallB
 	}
 	
 	public String[] getAvailableDependencies(OrcaNode subject) {
-		Collection<OrcaNode> knownNodes = g.getVertices();
+		Collection<OrcaNode> knownNodes = requestGraph.getVertices();
 		String[] ret = new String[knownNodes.size() - 1];
 		int i = 0;
 		for (OrcaNode n: knownNodes) {
@@ -315,10 +318,26 @@ public class GUIState implements IDeleteEdgeCallBack<OrcaLink>, IDeleteNodeCallB
 		if (nm == null)
 			return null;
 		
-		for (OrcaNode n: g.getVertices()) {
+		for (OrcaNode n: requestGraph.getVertices()) {
 			if (nm.equals(n.getName()))
 				return n;
 		}
 		return null;
+	}
+
+	public OrcaNode create() {
+		OrcaNode node;
+		String name;
+		do {
+			if (nodesOrGroups) {
+				name = "Node" + nodeCount++;
+				node = new OrcaNode(name);
+			}
+			else {
+				name = "NodeGroup" + clusterCount++;
+				node = new OrcaNodeGroup(name);
+			}
+		} while (!checkUniqueNodeName(null, name));
+		return node;
 	}
 }

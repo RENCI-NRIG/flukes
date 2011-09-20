@@ -112,7 +112,7 @@ public class MouseMenus {
         public EdgeMenu() {
             super("Edge Menu");
             // this.frame = frame;
-            this.add(new DeleteEdgeMenuItem<OrcaNode, OrcaLink>(GUIState.getInstance()));
+            this.add(new DeleteEdgeMenuItem<OrcaNode, OrcaLink>(GUIRequestState.getInstance()));
             this.addSeparator();
             this.add(new LatencyDisplay());
             this.add(new BandwidthDisplay());
@@ -164,7 +164,7 @@ public class MouseMenus {
     public static class NodeMenu extends JPopupMenu {
         public NodeMenu() {
             super("Node Menu");
-            this.add(new DeleteVertexMenuItem<OrcaNode, OrcaLink>(GUIState.getInstance()));
+            this.add(new DeleteVertexMenuItem<OrcaNode, OrcaLink>(GUIRequestState.getInstance()));
             this.add(new ImageDisplay());
             this.add(new DomainDisplay());
             this.add(new NodeTypeDisplay());
@@ -179,7 +179,7 @@ public class MouseMenus {
     		if ((v.getImage() != null) && (v.getImage().length() > 0))
     			this.setText("Image: " + v.getImage());
     		else
-    			this.setText("Image: " + GUIState.NO_GLOBAL_IMAGE);
+    			this.setText("Image: " + GUIRequestState.NO_GLOBAL_IMAGE);
     	}
     }
     
@@ -189,7 +189,7 @@ public class MouseMenus {
     		if ((v.getDomain() != null) && (v.getDomain().length() > 0))
     			this.setText("Domain: " + v.getDomain());
     		else
-    			this.setText("Domain: " + GUIState.NO_DOMAIN_SELECT);
+    			this.setText("Domain: " + GUIRequestState.NO_DOMAIN_SELECT);
     	}
     }
     
@@ -199,7 +199,7 @@ public class MouseMenus {
     		if ((v.getNodeType() != null) && (v.getNodeType().length() > 0))
     			this.setText("Node type: " + v.getNodeType());
     		else
-    			this.setText("Node type: " + GUIState.NODE_TYPE_SITE_DEFAULT);
+    			this.setText("Node type: " + GUIRequestState.NODE_TYPE_SITE_DEFAULT);
     	}
     }
     
