@@ -22,7 +22,9 @@
 */
 package orca.flukes.ui;
 
+import java.awt.BorderLayout;
 import java.awt.Component;
+import java.awt.Dimension;
 
 import javax.swing.JFrame;
 import javax.swing.JScrollPane;
@@ -52,10 +54,15 @@ public class TextAreaDialog extends ComponentDialog {
 		this.cols = c;
 		this.ts = ts;
 
-		ta = new KTextArea(rows, cols);
+		ta = new KTextArea();
+		ta.setRows(r);
+		ta.setColumns(c);
+		ta.setMinimumSize(new Dimension(500, 500));
 		JScrollPane areaScrollPane = new JScrollPane(ta);
 		areaScrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+		kp.setLayout(new BorderLayout(0,0));
 		kp.add(areaScrollPane);
+
 	}
 	
 	public KTextArea getTextArea() {

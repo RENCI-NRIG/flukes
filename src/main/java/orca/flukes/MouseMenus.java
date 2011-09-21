@@ -25,6 +25,7 @@ import javax.swing.JRadioButtonMenuItem;
 import com.hyperrealm.kiwi.ui.dialog.KMessageDialog;
 
 import edu.uci.ics.jung.visualization.VisualizationViewer;
+import edu.uci.ics.jung.visualization.control.AbstractModalGraphMouse;
 import edu.uci.ics.jung.visualization.control.ModalGraphMouse;
 
 /**
@@ -68,14 +69,30 @@ public class MouseMenus {
 		}
 		
 		public void actionPerformed(ActionEvent e) {
+			AbstractModalGraphMouse m = null;
+			
+			// which mouse?
+			switch(GUI.getInstance().activeTab()) {
+			case RESOURCE_VIEW:
+				break;
+			case REQUEST_VIEW:
+				m = GUIRequestState.getInstance().gm;
+				break;
+			case MANIFEST_VIEW:
+				m = GUIManifestState.getInstance().gm;
+				break;
+			}
+			if (m == null)
+				return;
+			
 			if (e.getActionCommand().equals("edit")) {
-				GUI.getInstance().getMouse().setMode(ModalGraphMouse.Mode.EDITING);
+				m.setMode(ModalGraphMouse.Mode.EDITING);
 			}
 			else if (e.getActionCommand().equals("pick")) {
-				GUI.getInstance().getMouse().setMode(ModalGraphMouse.Mode.PICKING);
+				m.setMode(ModalGraphMouse.Mode.PICKING);
 			}
 			else if (e.getActionCommand().equals("pan")) {
-				GUI.getInstance().getMouse().setMode(ModalGraphMouse.Mode.TRANSFORMING);
+				m.setMode(ModalGraphMouse.Mode.TRANSFORMING);
 			}
 		}
 	}
@@ -107,9 +124,9 @@ public class MouseMenus {
 		
 	}
 	
-    public static class EdgeMenu extends JPopupMenu {        
+    public static class RequestEdgeMenu extends JPopupMenu {        
         // private JFrame frame; 
-        public EdgeMenu() {
+        public RequestEdgeMenu() {
             super("Edge Menu");
             // this.frame = frame;
             this.add(new DeleteEdgeMenuItem<OrcaNode, OrcaLink>(GUIRequestState.getInstance()));
@@ -118,6 +135,18 @@ public class MouseMenus {
             this.add(new BandwidthDisplay());
             this.addSeparator();
             this.add(new EdgePropItem(GUI.getInstance().getFrame()));           
+        }
+        
+    }
+    
+    public static class ManifestEdgeMenu extends JPopupMenu {        
+        // private JFrame frame; 
+        public ManifestEdgeMenu() {
+            super("Edge Menu");
+            this.add(new LatencyDisplay());
+            this.add(new BandwidthDisplay());
+            this.addSeparator();
+            //this.add(new EdgePropItem(GUI.getInstance().getFrame()));           
         }
         
     }
@@ -161,8 +190,8 @@ public class MouseMenus {
         }
     }
     
-    public static class NodeMenu extends JPopupMenu {
-        public NodeMenu() {
+    public static class RequestNodeMenu extends JPopupMenu {
+        public RequestNodeMenu() {
             super("Node Menu");
             this.add(new DeleteVertexMenuItem<OrcaNode, OrcaLink>(GUIRequestState.getInstance()));
             this.add(new ImageDisplay());
@@ -170,6 +199,16 @@ public class MouseMenus {
             this.add(new NodeTypeDisplay());
             this.addSeparator();
             this.add(new NodePropItem(GUI.getInstance().getFrame()));
+        }
+    }
+    
+    public static class ManifestNodeMenu extends JPopupMenu {
+        public ManifestNodeMenu() {
+            super("Node Menu");
+            this.add(new DomainDisplay());
+            this.add(new NodeTypeDisplay());
+            this.addSeparator();
+            //this.add(new NodePropItem(GUI.getInstance().getFrame()));
         }
     }
     

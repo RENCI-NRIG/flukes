@@ -23,6 +23,7 @@
 
 package orca.flukes;
 
+import java.io.File;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -32,6 +33,8 @@ import java.util.Set;
 import orca.flukes.ui.ChooserWithNewDialog;
 import edu.uci.ics.jung.graph.SparseMultigraph;
 import edu.uci.ics.jung.graph.util.Pair;
+import edu.uci.ics.jung.visualization.VisualizationViewer;
+import edu.uci.ics.jung.visualization.control.EditingModalGraphMouse;
 
 /**
  * Singleton class that holds shared GUI request state. Since dialogs are all modal, no need for locking for now.
@@ -62,7 +65,13 @@ public class GUIRequestState implements IDeleteEdgeCallBack<OrcaLink>, IDeleteNo
 	boolean addingNewImage = false;
 	
 	// The graph objects
-	SparseMultigraph<OrcaNode, OrcaLink> requestGraph;
+	SparseMultigraph<OrcaNode, OrcaLink> requestGraph = null;
+	// Vis viewer for request
+	VisualizationViewer<OrcaNode,OrcaLink> vv = null;
+	// File in which we save
+	File saveFile = null;
+	// Mouse 
+	EditingModalGraphMouse<OrcaNode, OrcaLink> gm;
 	
 	// Reservation details
 	private OrcaReservationTerm term;
@@ -92,7 +101,7 @@ public class GUIRequestState implements IDeleteEdgeCallBack<OrcaLink>, IDeleteNo
 		// clear the graph, reservation set else to defaults
 		Set<OrcaNode> nodes = new HashSet<OrcaNode>(requestGraph.getVertices());
 		for (OrcaNode n: nodes)
-			GUIRequestState.getInstance().requestGraph.removeVertex(n);
+			requestGraph.removeVertex(n);
 		resImageName = null;
 		resDomainName = null;
 		term = new OrcaReservationTerm();
@@ -243,7 +252,7 @@ public class GUIRequestState implements IDeleteEdgeCallBack<OrcaLink>, IDeleteNo
 	 * @return
 	 */
 	public String[] getAvailableDomains() {
-		Set<String> knownDomains = GraphSaver.domainMap.keySet();
+		Set<String> knownDomains = RequestSaver.domainMap.keySet();
 		
 		String[] itemList = new String[knownDomains.size() + 1];
 		
@@ -288,7 +297,7 @@ public class GUIRequestState implements IDeleteEdgeCallBack<OrcaLink>, IDeleteNo
 	}
 	
 	public String[] getAvailableNodeTypes() {
-		Set<String> knownTypes = GraphSaver.nodeTypes.keySet();
+		Set<String> knownTypes = RequestSaver.nodeTypes.keySet();
 		
 		String[] itemList = new String[knownTypes.size() + 1];
 		

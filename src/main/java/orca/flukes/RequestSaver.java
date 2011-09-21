@@ -44,13 +44,13 @@ import com.hyperrealm.kiwi.ui.dialog.ExceptionDialog;
 import edu.uci.ics.jung.graph.SparseMultigraph;
 import edu.uci.ics.jung.graph.util.Pair;
 
-public class GraphSaver {
+public class RequestSaver {
 	private static final String EUCALYPTUS_NS = "eucalyptus";
 	public static final String DOT_FORMAT = "DOT";
 	public static final String N3_FORMAT = "N3";
 	public static final String RDF_XML_FORMAT = "RDF-XML";
 
-	private static GraphSaver instance = null;
+	private static RequestSaver instance = null;
 	public static final String defaultFormat = RDF_XML_FORMAT;
 	private NdlGenerator ngen = null;
 	private Individual reservation = null;
@@ -83,9 +83,9 @@ public class GraphSaver {
 		nodeTypes.put("Euca c1.xlarge", new Pair<String>(EUCALYPTUS_NS, "EucaC1XLarge"));
 	}
 	
-	public static GraphSaver getInstance() {
+	public static RequestSaver getInstance() {
 		if (instance == null)
-			instance = new GraphSaver();
+			instance = new RequestSaver();
 		return instance;
 	}
 	
