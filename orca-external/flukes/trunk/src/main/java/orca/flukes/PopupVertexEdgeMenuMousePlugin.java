@@ -31,7 +31,7 @@ import edu.uci.ics.jung.visualization.control.AbstractPopupGraphMousePlugin;
  * @author Dr. Greg M. Bernstein
  */
 public class PopupVertexEdgeMenuMousePlugin<V, E> extends AbstractPopupGraphMousePlugin {
-    private JPopupMenu edgePopup, vertexPopup, modePopup;
+    private JPopupMenu edgePopup = null, vertexPopup = null, modePopup = null;
     
     /** Creates a new instance of PopupVertexEdgeMenuMousePlugin */
     public PopupVertexEdgeMenuMousePlugin() {

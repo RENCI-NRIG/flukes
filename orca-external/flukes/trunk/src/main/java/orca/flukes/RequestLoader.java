@@ -12,7 +12,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.lang.StringUtils;
+
 import orca.ndl.INdlRequestModelListener;
+import orca.ndl.NdlCommons;
 import orca.ndl.NdlRequestParser;
 
 import com.hp.hpl.jena.ontology.OntModel;
@@ -23,9 +26,9 @@ import com.hyperrealm.kiwi.ui.dialog.ExceptionDialog;
 import edu.uci.ics.jung.graph.util.EdgeType;
 import edu.uci.ics.jung.graph.util.Pair;
 
-public class GraphLoader implements INdlRequestModelListener {
+public class RequestLoader implements INdlRequestModelListener {
 
-	private static GraphLoader instance;
+	private static RequestLoader instance;
 	private OrcaReservationTerm term = new OrcaReservationTerm();
 	private String reservationDiskImage = null, reservationDomain = null;
 	private Map<String, OrcaNode> nodes = new HashMap<String, OrcaNode>();
@@ -36,9 +39,9 @@ public class GraphLoader implements INdlRequestModelListener {
 	 * Return singleton
 	 * @return
 	 */
-	public static GraphLoader getInstance() {
+	public static RequestLoader getInstance() {
 		if (instance == null)
-			instance = new GraphLoader();
+			instance = new RequestLoader();
 		return instance;
 	}
 	
@@ -70,6 +73,14 @@ public class GraphLoader implements INdlRequestModelListener {
 		} 
 		
 		return true;
+	}
+	
+	// sometimes getLocalName is not good enough
+	private String getTrueName(Resource r) {
+		if (r == null)
+			return null;
+		
+		return StringUtils.removeStart(r.getURI(), NdlCommons.ORCA_NS);
 	}
 	
 	public void ndlNodeDiskImage(Resource di, OntModel m, Resource node,
@@ -123,26 +134,29 @@ public class GraphLoader implements INdlRequestModelListener {
 		term.setDuration(days, hours, minutes);
 	}
 
-	public void ndlComputeElement(Resource ce, OntModel om, boolean isNode, Resource domain, 
+	public void ndlNode(Resource ce, OntModel om, Resource ceClass, Resource domain, 
 			Resource ceType, int ceCount, List<Resource> interfaces) {
 
 		if (ce == null)
 			return;
 		OrcaNode newNode;
 		
-		if (isNode)
+		if (ceClass.equals(NdlCommons.computeElementClass))
 			newNode = new OrcaNode(ce.getLocalName());
-		else {
-			OrcaNodeGroup newNodeGroup = new OrcaNodeGroup(ce.getLocalName());
-			if (ceCount > 0)
-				newNodeGroup.setNodeCount(ceCount);
-			newNode = newNodeGroup;
+		else { 
+			if (ceClass.equals(NdlCommons.serverCloudClass)) {
+				OrcaNodeGroup newNodeGroup = new OrcaNodeGroup(ce.getLocalName());
+				if (ceCount > 0)
+					newNodeGroup.setNodeCount(ceCount);
+				newNode = newNodeGroup;
+			} else // default just a node
+				newNode = new OrcaNode(ce.getLocalName());
 		}
 		
 		if (domain != null)
-			newNode.setDomain(GraphSaver.reverseLookupDomain(domain));
+			newNode.setDomain(RequestSaver.reverseLookupDomain(domain));
 		if (ceType != null)
-			newNode.setNodeType(GraphSaver.reverseNodeTypeLookup(ceType));
+			newNode.setNodeType(RequestSaver.reverseNodeTypeLookup(ceType));
 
 		// process interfaces
 		for (Iterator<Resource> it = interfaces.iterator(); it.hasNext();) {
@@ -160,7 +174,7 @@ public class GraphLoader implements INdlRequestModelListener {
 	/**
 	 * For now deals only with p-to-p connections
 	 */
-	public void ndlConnection(Resource l, OntModel om, 
+	public void ndlNetworkConnection(Resource l, OntModel om, 
 			long bandwidth, long latency, List<Resource> interfaces) {
 		// System.out.println("Found connection " + l + " connecting " + interfaces + " with bandwidth " + bandwidth);
 		if (l == null)
@@ -205,13 +219,15 @@ public class GraphLoader implements INdlRequestModelListener {
 			ol = links.get(conn.getLocalName());
 		
 		if (on != null) {
-			if (ol != null)
-				on.setIp(ol, ip, "" + GraphSaver.netmaskStringToInt(mask));
+			if (ol != null) {
+				on.setIp(ol, ip, "" + RequestSaver.netmaskStringToInt(mask));
+				on.setInterfaceName(ol, getTrueName(intf));
+			}
 			else {
 				// this could be a disconnected node group
 				if (on instanceof OrcaNodeGroup) {
 					OrcaNodeGroup ong = (OrcaNodeGroup)on;
-					ong.setInternalIp(ip, "" + GraphSaver.netmaskStringToInt(mask));
+					ong.setInternalIp(ip, "" + RequestSaver.netmaskStringToInt(mask));
 				}
 			}
 				
@@ -232,8 +248,8 @@ public class GraphLoader implements INdlRequestModelListener {
 	public void ndlReservationDomain(Resource d, OntModel m) {
 		if (d == null)
 			return;
-		// do reverse lookup in GraphSaver domain map
-		reservationDomain = GraphSaver.reverseLookupDomain(d);
+		// do reverse lookup in RequestSaver domain map
+		reservationDomain = RequestSaver.reverseLookupDomain(d);
 	}
 
 	public void ndlNodeDependencies(Resource ni, OntModel m, Set<Resource> dependencies) {

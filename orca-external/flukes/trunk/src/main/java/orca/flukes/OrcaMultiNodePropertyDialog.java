@@ -77,6 +77,8 @@ public class OrcaMultiNodePropertyDialog extends ComponentDialog {
 		domainList = OrcaNodePropertyDialog.addSelectList(kp, gbl_contentPanel, 1,
 				GUIRequestState.getInstance().getAvailableDomains(), "Select domain: ", false, 3);
 		
+		imageList.setSelectedIndex(0);
+		domainList.setSelectedIndex(0);
 		return kp;
 	}
 

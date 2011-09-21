@@ -29,10 +29,15 @@ import java.awt.Container;
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ComponentEvent;
+import java.awt.event.ComponentListener;
 import java.io.File;
+import java.lang.reflect.Constructor;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 import javax.swing.Box;
@@ -51,6 +56,7 @@ import javax.swing.JToolBar;
 import javax.swing.SwingConstants;
 import javax.swing.filechooser.FileFilter;
 
+import com.hp.hpl.jena.graph.Graph;
 import com.hyperrealm.kiwi.ui.AboutFrame;
 import com.hyperrealm.kiwi.ui.KFileChooser;
 import com.hyperrealm.kiwi.ui.UIChangeManager;
@@ -63,7 +69,6 @@ import edu.uci.ics.jung.algorithms.layout.KKLayout;
 import edu.uci.ics.jung.algorithms.layout.Layout;
 import edu.uci.ics.jung.graph.SparseMultigraph;
 import edu.uci.ics.jung.visualization.VisualizationViewer;
-import edu.uci.ics.jung.visualization.control.AbstractModalGraphMouse;
 import edu.uci.ics.jung.visualization.control.EditingModalGraphMouse;
 import edu.uci.ics.jung.visualization.control.ModalGraphMouse;
 import edu.uci.ics.jung.visualization.decorators.ToStringLabeller;
@@ -71,14 +76,15 @@ import edu.uci.ics.jung.visualization.layout.LayoutTransition;
 import edu.uci.ics.jung.visualization.picking.PickedState;
 import edu.uci.ics.jung.visualization.util.Animator;
 
-public class GUI {
+public class GUI implements ComponentListener {
 
 	private static final String FRAME_TITLE = "ORCA FLUKES - The ORCA Network Editor";
 	private static final String FLUKES_HREF_URL = "http://geni-images.renci.org/webstart/";
 	private static final String ABOUT_DOC = "html/about.html";
 	private static final String HELP_DOC = "html/help.html";
 	private JFrame frmOrcaFlukes;
-	private JPanel requestPanel, resourcePanel;
+	private JTabbedPane tabbedPane;
+	private JPanel requestPanel, resourcePanel, manifestPanel;
 	private JToolBar toolBar;
 	private JButton nodeButton;
 	private JButton nodeGroupButton;
@@ -86,8 +92,8 @@ public class GUI {
 	private JMenuBar menuBar;
 	private JMenu fileNewMenu;
 	private JMenuItem newMenuItem;
-	private JMenuItem openMenuItem;
-	private JMenuItem saveMenuItem;
+	private JMenuItem openMenuItem, openManifestMenuItem;
+	private JMenuItem saveMenuItem, saveAsMenuItem;
 	private JSeparator separator;
 	private JMenuItem exitMenuItem;
 	private JButton reservationButton;
@@ -97,15 +103,17 @@ public class GUI {
 	private JMenuItem aboutMenuItem;
 	private JSeparator separator_1;
 	
-	private VisualizationViewer<OrcaNode,OrcaLink> vv;
-	
-	private EditingModalGraphMouse<OrcaNode, OrcaLink> gm;
 	private JButton attributesButton;
 	private Component horizontalStrut_2;
 
 	private static GUI instance = null;
 	private JButton imageButton;
 	private Component horizontalStrut_3;
+	
+	protected final MenuListener mListener = new MenuListener();
+	
+	// remember which layout was associated with which view
+	private Map<GuiTabs, GraphLayouts> savedLayout = new HashMap<GuiTabs, GraphLayouts>();
 	
 	public static final Set<String> NDL_EXTENSIONS = new HashSet<String>();
 	static {
@@ -156,7 +164,7 @@ public class GUI {
 			if (e.getActionCommand().equals("exit")) 
 				quit();
 			else if (e.getActionCommand().equals("open")) {
-				KFileChooserDialog d = new KFileChooserDialog(getFrame(), "Load NDL", KFileChooser.OPEN_DIALOG);
+				KFileChooserDialog d = new KFileChooserDialog(getFrame(), "Load NDL Request", KFileChooser.OPEN_DIALOG);
 				d.setLocationRelativeTo(getFrame());
 				d.getFileChooser().setAcceptAllFileFilterUsed(true);
 				d.getFileChooser().addChoosableFileFilter(new NdlFileFilter());
@@ -164,35 +172,51 @@ public class GUI {
 				d.setVisible(true);
 				if (d.getSelectedFile() != null) {
 					GUIRequestState.getInstance().clear();
-					if (GraphLoader.getInstance().loadGraph(d.getSelectedFile()))
+					if (RequestLoader.getInstance().loadGraph(d.getSelectedFile())) {
 						frmOrcaFlukes.setTitle(FRAME_TITLE + " : " + d.getSelectedFile().getName());
+						GUIRequestState.getInstance().saveFile = d.getSelectedFile();
+					}	
 				}
-				Layout<OrcaNode, OrcaLink> newL = new FRLayout<OrcaNode, OrcaLink>(GUIRequestState.getInstance().requestGraph);
-                newL.setInitializer(vv.getGraphLayout());
-                newL.setSize(vv.getSize());
-
-                LayoutTransition<OrcaNode, OrcaLink> lt =
-                	new LayoutTransition<OrcaNode, OrcaLink>(vv, vv.getGraphLayout(), newL);
-                Animator animator = new Animator(lt);
-                animator.start();
-                vv.getRenderContext().getMultiLayerTransformer().setToIdentity();
-				vv.repaint();
+				// kick the layout engine
+				switchLayout(savedLayout.get(GuiTabs.REQUEST_VIEW));
 			}
-			else if (e.getActionCommand().equals("new")) {
-				GUIRequestState.getInstance().clear();
-				frmOrcaFlukes.setTitle(FRAME_TITLE);
-				vv.repaint();
-			}
-			else if (e.getActionCommand().equals("save")) {
-				KFileChooserDialog d = new KFileChooserDialog(getFrame(), "Save in NDL", KFileChooser.SAVE_DIALOG);
+			else if (e.getActionCommand().equals("openmanifest")) {
+				KFileChooserDialog d = new KFileChooserDialog(getFrame(), "Load NDL manifest", KFileChooser.OPEN_DIALOG);
 				d.setLocationRelativeTo(getFrame());
 				d.getFileChooser().setAcceptAllFileFilterUsed(true);
 				d.getFileChooser().addChoosableFileFilter(new NdlFileFilter());
 				d.pack();
 				d.setVisible(true);
 				if (d.getSelectedFile() != null) {
-					if (GraphSaver.getInstance().saveGraph(d.getSelectedFile(), GUIRequestState.getInstance().requestGraph))
+					GUIManifestState.getInstance().clear();
+					ManifestLoader.getInstance().loadGraph(d.getSelectedFile());
+				}
+				// kick the layout engine
+				switchLayout(savedLayout.get(GuiTabs.MANIFEST_VIEW));
+			}
+			else if (e.getActionCommand().equals("new")) {
+				GUIRequestState.getInstance().clear();
+				frmOrcaFlukes.setTitle(FRAME_TITLE);
+				GUIRequestState.getInstance().vv.repaint();
+			}
+			else if (e.getActionCommand().equals("save")) {
+				if (GUIRequestState.getInstance().saveFile != null) {
+					RequestSaver.getInstance().saveGraph(GUIRequestState.getInstance().saveFile, 
+							GUIRequestState.getInstance().requestGraph);
+				}
+			}
+			else if (e.getActionCommand().equals("saveas")) {
+				KFileChooserDialog d = new KFileChooserDialog(getFrame(), "Save Request in NDL", KFileChooser.SAVE_DIALOG);
+				d.setLocationRelativeTo(getFrame());
+				d.getFileChooser().setAcceptAllFileFilterUsed(true);
+				d.getFileChooser().addChoosableFileFilter(new NdlFileFilter());
+				d.pack();
+				d.setVisible(true);
+				if (d.getSelectedFile() != null) {
+					if (RequestSaver.getInstance().saveGraph(d.getSelectedFile(), GUIRequestState.getInstance().requestGraph)) {
 						frmOrcaFlukes.setTitle(FRAME_TITLE + " : " + d.getSelectedFile().getName());
+						GUIRequestState.getInstance().saveFile = d.getSelectedFile();
+					}
 				}
 			}
 			else if (e.getActionCommand().equals("help"))
@@ -200,38 +224,71 @@ public class GUI {
 			else if (e.getActionCommand().equals("about"))
 				aboutDialog();
 			else if (e.getActionCommand().equals("xml"))
-				GraphSaver.getInstance().setOutputFormat(GraphSaver.RDF_XML_FORMAT);
+				RequestSaver.getInstance().setOutputFormat(RequestSaver.RDF_XML_FORMAT);
 			else if (e.getActionCommand().equals("n3"))
-				GraphSaver.getInstance().setOutputFormat(GraphSaver.N3_FORMAT);
-			else if (e.getActionCommand().equals("kklayout")) {
-				switchLayout(KKLayout.class);
-			} else if (e.getActionCommand().equals("frlayout")) {
-				switchLayout(FRLayout.class);
-			} else if (e.getActionCommand().equals("isomlayout")) {
-				switchLayout(ISOMLayout.class);
+				RequestSaver.getInstance().setOutputFormat(RequestSaver.N3_FORMAT);
+			else if (e.getActionCommand().equals(GraphLayouts.KK.getName())) {
+				switchLayout(GraphLayouts.KK);
+			} else if (e.getActionCommand().equals(GraphLayouts.FR.getName())) {
+				switchLayout(GraphLayouts.FR);
+			} else if (e.getActionCommand().equals(GraphLayouts.ISOM.getName())) {
+				switchLayout(GraphLayouts.ISOM);
 			} 
 		}
 	}
 	
-	private void switchLayout(Class<?> clazz) {
+	private void switchLayout(GraphLayouts l) {
 		//final Layout<OrcaNode, OrcaLink> oldL = vv.getGraphLayout();
 		Layout<OrcaNode, OrcaLink> newL = null;
 		
-		if (clazz.equals(FRLayout.class)) 
-			newL = new FRLayout<OrcaNode, OrcaLink>(GUIRequestState.getInstance().requestGraph);
-		else if (clazz.equals(KKLayout.class))
-			newL = new KKLayout<OrcaNode, OrcaLink>(GUIRequestState.getInstance().requestGraph);
-		else if (clazz.equals(ISOMLayout.class))
-			newL = new ISOMLayout<OrcaNode, OrcaLink>(GUIRequestState.getInstance().requestGraph);
+		VisualizationViewer<OrcaNode,OrcaLink> myVv = null;
+		SparseMultigraph<OrcaNode, OrcaLink> myGraph = null;
 		
-        newL.setInitializer(vv.getGraphLayout());
-        newL.setSize(vv.getSize());
+		GuiTabs at = activeTab();
+		switch(at) {
+		case RESOURCE_VIEW:
+			break;
+		case REQUEST_VIEW:
+			myVv = GUIRequestState.getInstance().vv;
+			myGraph = GUIRequestState.getInstance().requestGraph;
+			break;
+		case MANIFEST_VIEW:
+			myVv = GUIManifestState.getInstance().vv;
+			myGraph = GUIManifestState.getInstance().manifestGraph;
+			break;
+		}
+		
+		if ((myVv == null) || (myGraph == null))
+			return;
+		
+		if (myGraph.getVertexCount() == 0)
+			return;
+		
+		try {
+			Class<?> pars[] = new Class[1];
+			pars[0] = edu.uci.ics.jung.graph.Graph.class;
+			Constructor<?> ct = l.getClazz().getConstructor(pars);
+			Object args[] = new Object[1];
+			args[0] = myGraph;
+			newL = (Layout<OrcaNode, OrcaLink>)ct.newInstance(args);
+		} catch (Exception e) {
+			;
+		}
+		
+		if (newL == null)
+			return;
+		
+        newL.setInitializer(myVv.getGraphLayout());
+        newL.setSize(myVv.getSize());
         LayoutTransition<OrcaNode, OrcaLink> lt =
-        	new LayoutTransition<OrcaNode, OrcaLink>(vv, vv.getGraphLayout(), newL);
+        	new LayoutTransition<OrcaNode, OrcaLink>(myVv, myVv.getGraphLayout(), newL);
         Animator animator = new Animator(lt);
         animator.start();
-        vv.getRenderContext().getMultiLayerTransformer().setToIdentity();
-		vv.repaint();
+        myVv.getRenderContext().getMultiLayerTransformer().setToIdentity();
+		myVv.repaint();
+		
+		// save this layout for this view
+		savedLayout.put(activeTab(), l);
 	}
 	
 	/**
@@ -303,10 +360,6 @@ public class GUI {
 		return frmOrcaFlukes;
 	}
 	
-	public AbstractModalGraphMouse getMouse() {
-		return gm;
-	}
-	
 	/**
 	 * Initialize request pane 
 	 */
@@ -319,16 +372,16 @@ public class GUI {
 		Layout<OrcaNode, OrcaLink> layout = new FRLayout<OrcaNode, OrcaLink>(GUIRequestState.getInstance().requestGraph);
 		
 		//layout.setSize(new Dimension(1000,800));
-		vv = 
+		GUIRequestState.getInstance().vv = 
 			new VisualizationViewer<OrcaNode,OrcaLink>(layout);
 		// Show vertex and edge labels
-		vv.getRenderContext().setVertexLabelTransformer(new ToStringLabeller<OrcaNode>());
-		vv.getRenderContext().setEdgeLabelTransformer(new ToStringLabeller<OrcaLink>());
+		GUIRequestState.getInstance().vv.getRenderContext().setVertexLabelTransformer(new ToStringLabeller<OrcaNode>());
+		GUIRequestState.getInstance().vv.getRenderContext().setEdgeLabelTransformer(new ToStringLabeller<OrcaLink>());
 		
 		// Create a graph mouse and add it to the visualization viewer
 		OrcaNode.OrcaNodeFactory onf = new OrcaNode.OrcaNodeFactory(GUIRequestState.getInstance());
 		OrcaLink.OrcaLinkFactory olf = new OrcaLink.OrcaLinkFactory();
-		gm = new EditingModalGraphMouse<OrcaNode, OrcaLink>(vv.getRenderContext(), 
+		GUIRequestState.getInstance().gm = new EditingModalGraphMouse<OrcaNode, OrcaLink>(GUIRequestState.getInstance().vv.getRenderContext(), 
 				onf, olf);
 		
 		// Set some defaults for the Edges...
@@ -339,30 +392,84 @@ public class GUI {
 		PopupVertexEdgeMenuMousePlugin<OrcaNode, OrcaLink> myPlugin = new PopupVertexEdgeMenuMousePlugin<OrcaNode, OrcaLink>();
 		
 		// Add some popup menus for the edges and vertices to our mouse plugin.
-		myPlugin.setEdgePopup(new MouseMenus.EdgeMenu());
-		myPlugin.setVertexPopup(new MouseMenus.NodeMenu());
+		myPlugin.setEdgePopup(new MouseMenus.RequestEdgeMenu());
+		myPlugin.setVertexPopup(new MouseMenus.RequestNodeMenu());
 		myPlugin.setModePopup(new MouseMenus.ModeMenu());
-		gm.remove(gm.getPopupEditingPlugin());  // Removes the existing popup editing plugin
-		gm.add(myPlugin);
+		GUIRequestState.getInstance().gm.remove(GUIRequestState.getInstance().gm.getPopupEditingPlugin());  // Removes the existing popup editing plugin
+		GUIRequestState.getInstance().gm.add(myPlugin);
 
 		// Add icon and shape (so pickable areal roughly matches the icon) transformer
 		OrcaNode.OrcaNodeIconShapeTransformer st = new OrcaNode.OrcaNodeIconShapeTransformer();
-		vv.getRenderContext().setVertexShapeTransformer(st);
+		GUIRequestState.getInstance().vv.getRenderContext().setVertexShapeTransformer(st);
 		
 		OrcaNode.OrcaNodeIconTransformer it = new OrcaNode.OrcaNodeIconTransformer();
-		vv.getRenderContext().setVertexIconTransformer(it);
+		GUIRequestState.getInstance().vv.getRenderContext().setVertexIconTransformer(it);
 		
 		// add listener to add/remove checkmarks on selected nodes
-		PickedState<OrcaNode> ps = vv.getPickedVertexState();
+		PickedState<OrcaNode> ps = GUIRequestState.getInstance().vv.getPickedVertexState();
         ps.addItemListener(new OrcaNode.PickWithIconListener(it));
 		
-		vv.setGraphMouse(gm);
+		GUIRequestState.getInstance().vv.setGraphMouse(GUIRequestState.getInstance().gm);
 
-		vv.setLayout(new BorderLayout(0,0));
+		GUIRequestState.getInstance().vv.setLayout(new BorderLayout(0,0));
 		
-		c.add(vv);
+		c.add(GUIRequestState.getInstance().vv);
 
-		gm.setMode(ModalGraphMouse.Mode.EDITING); // Start off in editing mode  
+		GUIRequestState.getInstance().gm.setMode(ModalGraphMouse.Mode.EDITING); // Start off in editing mode  
+	}
+	
+	/**
+	 * Initialize manifest pane
+	 * @param c
+	 */
+	protected void manifestPane(Container c) {
+		GUIManifestState.getInstance().manifestGraph = 
+			new SparseMultigraph<OrcaNode, OrcaLink>();
+		
+		Layout<OrcaNode, OrcaLink> layout = new FRLayout<OrcaNode, OrcaLink>(GUIManifestState.getInstance().manifestGraph);
+		
+		//layout.setSize(new Dimension(1000,800));
+		GUIManifestState.getInstance().vv = 
+			new VisualizationViewer<OrcaNode,OrcaLink>(layout);
+		// Show vertex and edge labels
+		GUIManifestState.getInstance().vv.getRenderContext().setVertexLabelTransformer(new ToStringLabeller<OrcaNode>());
+		GUIManifestState.getInstance().vv.getRenderContext().setEdgeLabelTransformer(new ToStringLabeller<OrcaLink>());
+		
+		// Create a graph mouse and add it to the visualization viewer
+		OrcaNode.OrcaNodeFactory onf = new OrcaNode.OrcaNodeFactory(GUIManifestState.getInstance());
+		OrcaLink.OrcaLinkFactory olf = new OrcaLink.OrcaLinkFactory();
+		GUIManifestState.getInstance().gm = new EditingModalGraphMouse<OrcaNode, OrcaLink>(GUIManifestState.getInstance().vv.getRenderContext(), 
+				onf, olf);
+		
+		// add the plugin
+		PopupVertexEdgeMenuMousePlugin<OrcaNode, OrcaLink> myPlugin = new PopupVertexEdgeMenuMousePlugin<OrcaNode, OrcaLink>();
+		
+		// Add some popup menus for the edges and vertices to our mouse plugin.
+		// mode menu is not set for manifests
+		myPlugin.setEdgePopup(new MouseMenus.ManifestEdgeMenu());
+		myPlugin.setVertexPopup(new MouseMenus.ManifestNodeMenu());
+		
+		GUIManifestState.getInstance().gm.remove(GUIManifestState.getInstance().gm.getPopupEditingPlugin());  // Removes the existing popup editing plugin
+		GUIManifestState.getInstance().gm.add(myPlugin);
+
+		// Add icon and shape (so pickable area roughly matches the icon) transformer
+		OrcaNode.OrcaNodeIconShapeTransformer st = new OrcaNode.OrcaNodeIconShapeTransformer();
+		GUIManifestState.getInstance().vv.getRenderContext().setVertexShapeTransformer(st);
+		
+		OrcaNode.OrcaNodeIconTransformer it = new OrcaNode.OrcaNodeIconTransformer();
+		GUIManifestState.getInstance().vv.getRenderContext().setVertexIconTransformer(it);
+		
+		// add listener to add/remove checkmarks on selected nodes
+		PickedState<OrcaNode> ps = GUIManifestState.getInstance().vv.getPickedVertexState();
+        ps.addItemListener(new OrcaNode.PickWithIconListener(it));
+		
+		GUIManifestState.getInstance().vv.setGraphMouse(GUIManifestState.getInstance().gm);
+
+		GUIManifestState.getInstance().vv.setLayout(new BorderLayout(0,0));
+		
+		c.add(GUIManifestState.getInstance().vv);
+
+		GUIManifestState.getInstance().gm.setMode(ModalGraphMouse.Mode.TRANSFORMING); // Start off in panning mode  
 	}
 	
 	private void aboutDialog() {
@@ -372,7 +479,6 @@ public class GUI {
 		} catch (MalformedURLException e) {
 			;
 		}
-		
 	}
 	
 	private void helpDialog() {
@@ -389,7 +495,6 @@ public class GUI {
 	 */
 	private void commonMenus() {
 		// create a common action
-		MenuListener mListener = new MenuListener();
 		
 		// populate the menu
 		menuBar = new JMenuBar();
@@ -402,16 +507,29 @@ public class GUI {
 		newMenuItem.setActionCommand("new");
 		newMenuItem.addActionListener(mListener);
 		fileNewMenu.add(newMenuItem);
+
+		openManifestMenuItem = new JMenuItem("Open Manifest...");
+		openManifestMenuItem.setActionCommand("openmanifest");
+		openManifestMenuItem.addActionListener(mListener);
+		fileNewMenu.add(openManifestMenuItem);
 		
-		openMenuItem = new JMenuItem("Open...");
+		JSeparator sep = new JSeparator();
+		fileNewMenu.add(sep);
+		
+		openMenuItem = new JMenuItem("Open Request...");
 		openMenuItem.setActionCommand("open");
 		openMenuItem.addActionListener(mListener);
 		fileNewMenu.add(openMenuItem);
 		
-		saveMenuItem = new JMenuItem("Save...");
+		saveMenuItem = new JMenuItem("Save Request");
 		saveMenuItem.setActionCommand("save");
 		saveMenuItem.addActionListener(mListener);
 		fileNewMenu.add(saveMenuItem);
+		
+		saveAsMenuItem = new JMenuItem("Save Request As...");
+		saveAsMenuItem.setActionCommand("saveas");
+		saveAsMenuItem.addActionListener(mListener);
+		fileNewMenu.add(saveAsMenuItem);
 		
 		separator = new JSeparator();
 		fileNewMenu.add(separator);
@@ -420,12 +538,6 @@ public class GUI {
 		exitMenuItem.setActionCommand("exit");
 		exitMenuItem.addActionListener(mListener);
 		fileNewMenu.add(exitMenuItem);
-		
-		// Let's add a menu for changing mouse modes
-		/*	JMenu modeMenu = gm.getModeMenu();
-		modeMenu.setText("Mouse Mode");
-		modeMenu.setPreferredSize(new Dimension(120,20)); 
-		menuBar.add(modeMenu);*/
 		
 		// output format selection
 		outputMenu = new JMenu("Output Format");
@@ -450,25 +562,12 @@ public class GUI {
 		menuBar.add(layoutMenu);
 		
 		ButtonGroup lbg = new ButtonGroup();
-				
-		mi = new JRadioButtonMenuItem("Karmada-Kawai");
-		mi.setActionCommand("kklayout");
-		mi.addActionListener(mListener);
-		layoutMenu.add(mi);
-		lbg.add(mi);
 		
-		mi = new JRadioButtonMenuItem("Fruchterman-Rheingold");
-		mi.setActionCommand("frlayout");
-		mi.setSelected(true);
-		mi.addActionListener(mListener);
-		layoutMenu.add(mi);
-		lbg.add(mi);
-		
-		mi = new JRadioButtonMenuItem("Self-organizing");
-		mi.setActionCommand("isomlayout");
-		mi.addActionListener(mListener);
-		layoutMenu.add(mi);
-		lbg.add(mi);
+		// all layouts (and their menu items)
+		for(GraphLayouts l: GraphLayouts.values()) {
+			layoutMenu.add(l.getItem());
+			lbg.add(l.getItem());
+		}
 		
 		mnNewMenu = new JMenu("Help");
 		menuBar.add(mnNewMenu);
@@ -488,6 +587,60 @@ public class GUI {
 			
 	}
 	
+	public enum GuiTabs {
+		RESOURCE_VIEW("Resource View"), 
+		REQUEST_VIEW("Request View"), 
+		MANIFEST_VIEW("Manifest View");
+		
+		private final String layoutName;
+		
+		GuiTabs(String n) {
+			layoutName = n;
+		}
+		public String getName() {
+			return layoutName;
+		}
+	}
+	
+	public GuiTabs activeTab() {
+		switch(tabbedPane.getSelectedIndex()) {
+		case 0: return GuiTabs.RESOURCE_VIEW;
+		case 1: return GuiTabs.REQUEST_VIEW;
+		case 2: return GuiTabs.MANIFEST_VIEW;
+		default: return GuiTabs.REQUEST_VIEW;
+		}
+	}
+	
+	public enum GraphLayouts {
+		KK("Karmada-Kawai", KKLayout.class),
+		FR("Fruchterman-Rheingold", FRLayout.class),
+		ISOM("Self-organizing", ISOMLayout.class);
+		
+		private final String name;
+		private final Class<?> clazz;
+		private final JRadioButtonMenuItem menuItem;
+		
+		GraphLayouts(String n, Class<?> s) {
+			name = n;
+			clazz = s;
+			menuItem = new JRadioButtonMenuItem(name);
+			menuItem.setActionCommand(name);
+			menuItem.addActionListener(GUI.getInstance().mListener);
+		}
+		
+		public String getName() {
+			return name;
+		}
+		
+		public Class<?> getClazz() {
+			return clazz;
+		}
+		
+		public JRadioButtonMenuItem getItem() {
+			return menuItem;
+		}
+	}
+	
 	/**
 	 * Initialize the contents of the frame.
 	 */
@@ -497,19 +650,26 @@ public class GUI {
 		//frmOrcaFlukes.getContentPane().setLayout(new BoxLayout(frmOrcaFlukes.getContentPane(), BoxLayout.X_AXIS));
 		frmOrcaFlukes.getContentPane().setLayout(new BorderLayout(0,0));
 		
-		JTabbedPane tabbedPane = new JTabbedPane(JTabbedPane.TOP);
+		tabbedPane = new JTabbedPane(JTabbedPane.TOP);
 		frmOrcaFlukes.getContentPane().add(tabbedPane);
 		
-		requestPanel = new JPanel();
-		tabbedPane.addTab("Request View", null, requestPanel, null);
-		
 		resourcePanel = new JPanel();
-		tabbedPane.addTab("Resource View", null, resourcePanel, null);
+		tabbedPane.addTab(GuiTabs.RESOURCE_VIEW.getName(), null, resourcePanel, null);
 		resourcePanel.setLayout(new BorderLayout(0, 0));
+		resourcePanel.addComponentListener(this);
+		
+		requestPanel = new JPanel();
+		tabbedPane.addTab(GuiTabs.REQUEST_VIEW.getName(), null, requestPanel, null);
+		requestPanel.setLayout(new BoxLayout(requestPanel, BoxLayout.PAGE_AXIS));
+		requestPanel.addComponentListener(this);
+
+		manifestPanel = new JPanel();
+		tabbedPane.addTab(GuiTabs.MANIFEST_VIEW.getName(), null, manifestPanel, null);
+		manifestPanel.setLayout(new BoxLayout(manifestPanel, BoxLayout.PAGE_AXIS));
+		manifestPanel.addComponentListener(this);
 		
 		frmOrcaFlukes.setBounds(100, 100, 1000, 800);
 		frmOrcaFlukes.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		requestPanel.setLayout(new BoxLayout(requestPanel, BoxLayout.PAGE_AXIS));
 
 		toolBar = new JToolBar();
 		toolBar.setFloatable(false);
@@ -538,7 +698,6 @@ public class GUI {
 		
 		horizontalStrut_1 = Box.createHorizontalStrut(10);
 		toolBar.add(horizontalStrut_1);
-
 		
 		imageButton = new JButton("Client Images");
 		imageButton.setToolTipText("Add or edit VM images");
@@ -562,9 +721,54 @@ public class GUI {
 //		toolBar.add(attributesButton);
 				
 		requestPane(requestPanel);
+		manifestPane(manifestPanel);
 
 		// now the menu
 		commonMenus();
+		
+		// populate default saved layouts
+		for (GuiTabs t: GuiTabs.values()) {
+			savedLayout.put(t, GraphLayouts.FR);
+		}
+		
+		tabbedPane.setSelectedComponent(requestPanel);
+	}
+
+	public void componentHidden(ComponentEvent arg0) {
+		;
+	}
+
+	public void componentMoved(ComponentEvent arg0) {
+		;
+	}
+
+	public void componentResized(ComponentEvent arg0) {
+		;
+	}
+
+	private void selectSavedLayout(GraphLayouts l) {
+		l.getItem().setSelected(true);
+	}
+	
+	// callback for switching between view tabs
+	public void componentShown(ComponentEvent arg0) {
+		// Track which tab is showing, adjust the layout menu
+		GuiTabs at = activeTab();
+
+		selectSavedLayout(savedLayout.get(at));
+		
+		switch(at) {
+		case RESOURCE_VIEW:
+
+			break;
+		case REQUEST_VIEW:
+			
+			break;
+		case MANIFEST_VIEW:
+			
+			break;
+		}
+		
 	}
 
 }
