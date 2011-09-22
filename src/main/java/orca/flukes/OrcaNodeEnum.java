@@ -22,12 +22,6 @@
 */
 package orca.flukes;
 
-import java.lang.reflect.Constructor;
-import java.util.Collection;
-
-import orca.flukes.OrcaNode.INodeCreator;
-import edu.uci.ics.jung.graph.SparseMultigraph;
-
 public enum OrcaNodeEnum {
 	CE(OrcaNode.class, "Node"), 
 	ServerCloud(OrcaNodeGroup.class, "NodeGroup"), 
