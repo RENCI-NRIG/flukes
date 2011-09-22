@@ -22,37 +22,35 @@
 */
 package orca.flukes;
 
-import javax.swing.ImageIcon;
+import java.lang.reflect.Constructor;
+import java.util.Collection;
 
-import edu.uci.ics.jung.visualization.LayeredIcon;
+import orca.flukes.OrcaNode.INodeCreator;
+import edu.uci.ics.jung.graph.SparseMultigraph;
 
-/**
- * A node representing a crossconnect
- * @author ibaldin
- *
- */
-public class OrcaCrossconnect extends OrcaNode {
-	String label = null;
-	long bandwidth;
+public enum OrcaNodeEnum {
+	CE(OrcaNode.class, "Node"), 
+	ServerCloud(OrcaNodeGroup.class, "NodeGroup"), 
+	CrossConnect(OrcaCrossconnect.class, "CrossConnect");
+	private int nodeCount;
+	private String namePrefix;
+	private Class<?> clazz;
 	
-	public OrcaCrossconnect(String name) {
-		super(name, 
-				new LayeredIcon(new ImageIcon(GUIRequestState.class.getResource(GUIRequestState.XCON_ICON)).getImage()));
-	}
-
-	public void setLabel(String s) {
-		label = s;
+	OrcaNodeEnum(Class<?> c, String pf) {
+		clazz = c;
+		nodeCount = 0;
+		namePrefix = pf;
 	}
 	
-	public String getLabel() {
-		return label;
+	public int getCount() {
+		return nodeCount++;
 	}
 	
-	public void setBandwidth(long b) {
-		bandwidth = b;
+	public String getName() {
+		return namePrefix;
 	}
 	
-	public long getBandwidth() {
-		return bandwidth;
+	public Class<?> getClazz() {
+		return clazz;
 	}
 }

@@ -56,7 +56,6 @@ import javax.swing.JToolBar;
 import javax.swing.SwingConstants;
 import javax.swing.filechooser.FileFilter;
 
-import com.hp.hpl.jena.graph.Graph;
 import com.hyperrealm.kiwi.ui.AboutFrame;
 import com.hyperrealm.kiwi.ui.KFileChooser;
 import com.hyperrealm.kiwi.ui.UIChangeManager;
@@ -178,7 +177,7 @@ public class GUI implements ComponentListener {
 					}	
 				}
 				// kick the layout engine
-				switchLayout(savedLayout.get(GuiTabs.REQUEST_VIEW));
+				switchLayout(GuiTabs.REQUEST_VIEW, savedLayout.get(GuiTabs.REQUEST_VIEW));
 			}
 			else if (e.getActionCommand().equals("openmanifest")) {
 				KFileChooserDialog d = new KFileChooserDialog(getFrame(), "Load NDL manifest", KFileChooser.OPEN_DIALOG);
@@ -192,7 +191,7 @@ public class GUI implements ComponentListener {
 					ManifestLoader.getInstance().loadGraph(d.getSelectedFile());
 				}
 				// kick the layout engine
-				switchLayout(savedLayout.get(GuiTabs.MANIFEST_VIEW));
+				switchLayout(GuiTabs.MANIFEST_VIEW, savedLayout.get(GuiTabs.MANIFEST_VIEW));
 			}
 			else if (e.getActionCommand().equals("new")) {
 				GUIRequestState.getInstance().clear();
@@ -202,7 +201,20 @@ public class GUI implements ComponentListener {
 			else if (e.getActionCommand().equals("save")) {
 				if (GUIRequestState.getInstance().saveFile != null) {
 					RequestSaver.getInstance().saveGraph(GUIRequestState.getInstance().saveFile, 
-							GUIRequestState.getInstance().requestGraph);
+							GUIRequestState.getInstance().g);
+				} else {
+					KFileChooserDialog d = new KFileChooserDialog(getFrame(), "Save Request in NDL", KFileChooser.SAVE_DIALOG);
+					d.setLocationRelativeTo(getFrame());
+					d.getFileChooser().setAcceptAllFileFilterUsed(true);
+					d.getFileChooser().addChoosableFileFilter(new NdlFileFilter());
+					d.pack();
+					d.setVisible(true);
+					if (d.getSelectedFile() != null) {
+						if (RequestSaver.getInstance().saveGraph(d.getSelectedFile(), GUIRequestState.getInstance().g)) {
+							frmOrcaFlukes.setTitle(FRAME_TITLE + " : " + d.getSelectedFile().getName());
+							GUIRequestState.getInstance().saveFile = d.getSelectedFile();
+						}
+					}
 				}
 			}
 			else if (e.getActionCommand().equals("saveas")) {
@@ -213,7 +225,7 @@ public class GUI implements ComponentListener {
 				d.pack();
 				d.setVisible(true);
 				if (d.getSelectedFile() != null) {
-					if (RequestSaver.getInstance().saveGraph(d.getSelectedFile(), GUIRequestState.getInstance().requestGraph)) {
+					if (RequestSaver.getInstance().saveGraph(d.getSelectedFile(), GUIRequestState.getInstance().g)) {
 						frmOrcaFlukes.setTitle(FRAME_TITLE + " : " + d.getSelectedFile().getName());
 						GUIRequestState.getInstance().saveFile = d.getSelectedFile();
 					}
@@ -228,33 +240,32 @@ public class GUI implements ComponentListener {
 			else if (e.getActionCommand().equals("n3"))
 				RequestSaver.getInstance().setOutputFormat(RequestSaver.N3_FORMAT);
 			else if (e.getActionCommand().equals(GraphLayouts.KK.getName())) {
-				switchLayout(GraphLayouts.KK);
+				switchLayout(activeTab(), GraphLayouts.KK);
 			} else if (e.getActionCommand().equals(GraphLayouts.FR.getName())) {
-				switchLayout(GraphLayouts.FR);
+				switchLayout(activeTab(), GraphLayouts.FR);
 			} else if (e.getActionCommand().equals(GraphLayouts.ISOM.getName())) {
-				switchLayout(GraphLayouts.ISOM);
+				switchLayout(activeTab(), GraphLayouts.ISOM);
 			} 
 		}
 	}
 	
-	private void switchLayout(GraphLayouts l) {
+	private void switchLayout(GuiTabs at, GraphLayouts l) {
 		//final Layout<OrcaNode, OrcaLink> oldL = vv.getGraphLayout();
 		Layout<OrcaNode, OrcaLink> newL = null;
 		
 		VisualizationViewer<OrcaNode,OrcaLink> myVv = null;
 		SparseMultigraph<OrcaNode, OrcaLink> myGraph = null;
 		
-		GuiTabs at = activeTab();
 		switch(at) {
 		case RESOURCE_VIEW:
 			break;
 		case REQUEST_VIEW:
 			myVv = GUIRequestState.getInstance().vv;
-			myGraph = GUIRequestState.getInstance().requestGraph;
+			myGraph = GUIRequestState.getInstance().g;
 			break;
 		case MANIFEST_VIEW:
 			myVv = GUIManifestState.getInstance().vv;
-			myGraph = GUIManifestState.getInstance().manifestGraph;
+			myGraph = GUIManifestState.getInstance().g;
 			break;
 		}
 		
@@ -310,9 +321,9 @@ public class GUI implements ComponentListener {
 				GUIRequestState.getInstance().rdd.pack();
 				GUIRequestState.getInstance().rdd.setVisible(true);
 			} else if (e.getActionCommand().equals("nodes")) {
-				GUIRequestState.getInstance().nodesOrGroups = true;
+				GUIRequestState.getInstance().nodeCreator.setCurrent(OrcaNodeEnum.CE);
 			} else if (e.getActionCommand().equals("nodegroups")) {
-				GUIRequestState.getInstance().nodesOrGroups = false;
+				GUIRequestState.getInstance().nodeCreator.setCurrent(OrcaNodeEnum.ServerCloud);
 			}
 		}
 	}
@@ -364,12 +375,11 @@ public class GUI implements ComponentListener {
 	 * Initialize request pane 
 	 */
 	protected void requestPane(Container c) {
-		GUIRequestState.getInstance().requestGraph = 
-			new SparseMultigraph<OrcaNode, OrcaLink>();
+
 		// Layout<V, E>, VisualizationViewer<V,E>
 		//	        Map<OrcaNode,Point2D> vertexLocations = new HashMap<OrcaNode, Point2D>();
 		
-		Layout<OrcaNode, OrcaLink> layout = new FRLayout<OrcaNode, OrcaLink>(GUIRequestState.getInstance().requestGraph);
+		Layout<OrcaNode, OrcaLink> layout = new FRLayout<OrcaNode, OrcaLink>(GUIRequestState.getInstance().g);
 		
 		//layout.setSize(new Dimension(1000,800));
 		GUIRequestState.getInstance().vv = 
@@ -379,14 +389,10 @@ public class GUI implements ComponentListener {
 		GUIRequestState.getInstance().vv.getRenderContext().setEdgeLabelTransformer(new ToStringLabeller<OrcaLink>());
 		
 		// Create a graph mouse and add it to the visualization viewer
-		OrcaNode.OrcaNodeFactory onf = new OrcaNode.OrcaNodeFactory(GUIRequestState.getInstance());
-		OrcaLink.OrcaLinkFactory olf = new OrcaLink.OrcaLinkFactory();
+		OrcaNode.OrcaNodeFactory onf = new OrcaNode.OrcaNodeFactory(GUIRequestState.getInstance().nodeCreator);
+		OrcaLink.OrcaLinkFactory olf = new OrcaLink.OrcaLinkFactory(GUIRequestState.getInstance().linkCreator);
 		GUIRequestState.getInstance().gm = new EditingModalGraphMouse<OrcaNode, OrcaLink>(GUIRequestState.getInstance().vv.getRenderContext(), 
 				onf, olf);
-		
-		// Set some defaults for the Edges...
-		olf.setDefaultBandwidth(10000000);
-		olf.setDefaultLatency(5000);
 		
 		// add the plugin
 		PopupVertexEdgeMenuMousePlugin<OrcaNode, OrcaLink> myPlugin = new PopupVertexEdgeMenuMousePlugin<OrcaNode, OrcaLink>();
@@ -422,11 +428,8 @@ public class GUI implements ComponentListener {
 	 * Initialize manifest pane
 	 * @param c
 	 */
-	protected void manifestPane(Container c) {
-		GUIManifestState.getInstance().manifestGraph = 
-			new SparseMultigraph<OrcaNode, OrcaLink>();
-		
-		Layout<OrcaNode, OrcaLink> layout = new FRLayout<OrcaNode, OrcaLink>(GUIManifestState.getInstance().manifestGraph);
+	protected void manifestPane(Container c) {		
+		Layout<OrcaNode, OrcaLink> layout = new FRLayout<OrcaNode, OrcaLink>(GUIManifestState.getInstance().g);
 		
 		//layout.setSize(new Dimension(1000,800));
 		GUIManifestState.getInstance().vv = 
@@ -436,8 +439,8 @@ public class GUI implements ComponentListener {
 		GUIManifestState.getInstance().vv.getRenderContext().setEdgeLabelTransformer(new ToStringLabeller<OrcaLink>());
 		
 		// Create a graph mouse and add it to the visualization viewer
-		OrcaNode.OrcaNodeFactory onf = new OrcaNode.OrcaNodeFactory(GUIManifestState.getInstance());
-		OrcaLink.OrcaLinkFactory olf = new OrcaLink.OrcaLinkFactory();
+		OrcaNode.OrcaNodeFactory onf = new OrcaNode.OrcaNodeFactory(GUIManifestState.getInstance().nodeCreator);
+		OrcaLink.OrcaLinkFactory olf = new OrcaLink.OrcaLinkFactory(GUIManifestState.getInstance().linkCreator);
 		GUIManifestState.getInstance().gm = new EditingModalGraphMouse<OrcaNode, OrcaLink>(GUIManifestState.getInstance().vv.getRenderContext(), 
 				onf, olf);
 		

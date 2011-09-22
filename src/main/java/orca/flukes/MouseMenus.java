@@ -22,6 +22,8 @@ import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.JRadioButtonMenuItem;
 
+import orca.ndl.ScaledFormatPrinter;
+
 import com.hyperrealm.kiwi.ui.dialog.KMessageDialog;
 
 import edu.uci.ics.jung.visualization.VisualizationViewer;
@@ -34,6 +36,13 @@ import edu.uci.ics.jung.visualization.control.ModalGraphMouse;
  * @author Dr. Greg M. Bernstein
  */
 public class MouseMenus {
+    
+    private static final String PREFIX_LATENCY = "Latency: ";
+    private static final String PREFIX_BANDWIDTH = "Bandwidth: ";
+	private static final String UNSPECIFIED = "unspecified";
+	private static final String PREFIX_IMAGE = "Image: ";
+	private static final String PREFIX_DOMAIN = "Domain: ";
+	private static final String PREFIX_NODE_TYPE = "Node Type: ";
     
 	public static class ModeMenu extends JPopupMenu implements ActionListener {
 		final ButtonGroup bg;
@@ -145,10 +154,9 @@ public class MouseMenus {
             super("Edge Menu");
             this.add(new LatencyDisplay());
             this.add(new BandwidthDisplay());
-            this.addSeparator();
+            //this.addSeparator();
             //this.add(new EdgePropItem(GUI.getInstance().getFrame()));           
         }
-        
     }
     
     public static class EdgePropItem extends JMenuItem implements EdgeMenuListener<OrcaNode, OrcaLink>,
@@ -179,14 +187,20 @@ public class MouseMenus {
         
     }
     public static class LatencyDisplay extends JMenuItem implements EdgeMenuListener<OrcaNode, OrcaLink> {
-        public void setEdgeAndView(OrcaLink e, VisualizationViewer<OrcaNode, OrcaLink> visComp) {
-            this.setText("Latency: " + e.getLatency());
+		public void setEdgeAndView(OrcaLink e, VisualizationViewer<OrcaNode, OrcaLink> visComp) {
+        	if (e.getLatency() == 0)
+        		this.setText(PREFIX_LATENCY + UNSPECIFIED);
+        	else
+        		this.setText(PREFIX_LATENCY + new ScaledFormatPrinter(e.getLatency()/1e6,"us"));
         }
     }
     
     public static class BandwidthDisplay extends JMenuItem implements EdgeMenuListener<OrcaNode, OrcaLink> {
-        public void setEdgeAndView(OrcaLink e, VisualizationViewer<OrcaNode, OrcaLink> visComp) {
-            this.setText("Capacity: " + e.getBandwidth());
+		public void setEdgeAndView(OrcaLink e, VisualizationViewer<OrcaNode, OrcaLink> visComp) {
+        	if (e.getBandwidth() == 0)
+        		this.setText(PREFIX_BANDWIDTH + UNSPECIFIED);
+        	else
+        		this.setText(PREFIX_BANDWIDTH + new ScaledFormatPrinter(e.getBandwidth(), "bps"));
         }
     }
     
@@ -194,6 +208,7 @@ public class MouseMenus {
         public RequestNodeMenu() {
             super("Node Menu");
             this.add(new DeleteVertexMenuItem<OrcaNode, OrcaLink>(GUIRequestState.getInstance()));
+            this.addSeparator();
             this.add(new ImageDisplay());
             this.add(new DomainDisplay());
             this.add(new NodeTypeDisplay());
@@ -205,9 +220,10 @@ public class MouseMenus {
     public static class ManifestNodeMenu extends JPopupMenu {
         public ManifestNodeMenu() {
             super("Node Menu");
+            this.add(new ImageDisplay());
             this.add(new DomainDisplay());
             this.add(new NodeTypeDisplay());
-            this.addSeparator();
+            //this.addSeparator();
             //this.add(new NodePropItem(GUI.getInstance().getFrame()));
         }
     }
@@ -215,10 +231,15 @@ public class MouseMenus {
     public static class ImageDisplay extends JMenuItem implements NodeMenuListener<OrcaNode, OrcaLink> {
     	public void setNodeAndView(OrcaNode v,
 				VisualizationViewer<OrcaNode, OrcaLink> visView) {
-    		if ((v.getImage() != null) && (v.getImage().length() > 0))
-    			this.setText("Image: " + v.getImage());
-    		else
-    			this.setText("Image: " + GUIRequestState.NO_GLOBAL_IMAGE);
+    		if (v instanceof OrcaCrossconnect) {
+    			OrcaCrossconnect oc = (OrcaCrossconnect)v;
+    			this.setText(PREFIX_IMAGE + " none");
+    		} else {
+    			if ((v.getImage() != null) && (v.getImage().length() > 0))
+    				this.setText(PREFIX_IMAGE + v.getImage());
+    			else
+    				this.setText(PREFIX_IMAGE + GUIRequestState.NO_GLOBAL_IMAGE);
+    		}
     	}
     }
     
@@ -226,19 +247,25 @@ public class MouseMenus {
     	public void setNodeAndView(OrcaNode v,
 				VisualizationViewer<OrcaNode, OrcaLink> visView) {
     		if ((v.getDomain() != null) && (v.getDomain().length() > 0))
-    			this.setText("Domain: " + v.getDomain());
+    			this.setText(PREFIX_DOMAIN + v.getDomain());
     		else
-    			this.setText("Domain: " + GUIRequestState.NO_DOMAIN_SELECT);
+    			this.setText(PREFIX_DOMAIN + GUIRequestState.NO_DOMAIN_SELECT);
     	}
     }
     
     public static class NodeTypeDisplay extends JMenuItem implements NodeMenuListener<OrcaNode, OrcaLink> {
     	public void setNodeAndView(OrcaNode v,
     			VisualizationViewer<OrcaNode, OrcaLink> visView) {
-    		if ((v.getNodeType() != null) && (v.getNodeType().length() > 0))
-    			this.setText("Node type: " + v.getNodeType());
-    		else
-    			this.setText("Node type: " + GUIRequestState.NODE_TYPE_SITE_DEFAULT);
+    		
+    		if (v instanceof OrcaCrossconnect) {
+    			OrcaCrossconnect oc = (OrcaCrossconnect)v;
+    			this.setText(PREFIX_NODE_TYPE + "crossconnect/vlan tag " + oc.getLabel());
+    		} else {
+    			if ((v.getNodeType() != null) && (v.getNodeType().length() > 0))
+    				this.setText(PREFIX_NODE_TYPE + v.getNodeType());
+    			else
+    				this.setText(PREFIX_NODE_TYPE + GUIRequestState.NODE_TYPE_SITE_DEFAULT);
+    		}
     	}
     }
     

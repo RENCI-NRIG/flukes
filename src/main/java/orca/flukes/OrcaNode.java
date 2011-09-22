@@ -63,6 +63,24 @@ public class OrcaNode {
 	// mapping from links to interfaces on those links (used for manifests)
 	protected Map<OrcaLink, String> interfaces = new HashMap<OrcaLink, String>();
 	
+	interface INodeCreator {
+		public OrcaNode create();
+	}
+	
+
+	public String toStringLong() {
+		String ret =  name;
+		if (domain != null) 
+			ret += " in domain " + domain;
+		if (image != null)
+			ret += " with image " + image;
+		return ret;
+	}
+	
+	public String toString() {
+		return name;
+	}
+	
 	// Icon transformer for GUI
 	public static class OrcaNodeIconTransformer implements Transformer<OrcaNode, Icon> {
 
@@ -240,15 +258,6 @@ public class OrcaNode {
 		interfaces.put(l, ifName);
 	}
 	
-	@Override
-	public String toString() {
-		return name;
-	}
-	
-	public interface INodeCreator {
-		OrcaNode create();
-	}
-	
 	/**
 	 * Node factory for requests
 	 * @author ibaldin
@@ -262,7 +271,7 @@ public class OrcaNode {
         }
         
         /**
-         * Create a node or a cloud based on global GUI setting
+         * Create a node or a cloud based on some setting
          */
         public OrcaNode create() {
         	if (inc == null)

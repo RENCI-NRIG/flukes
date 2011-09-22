@@ -22,37 +22,25 @@
 */
 package orca.flukes;
 
-import javax.swing.ImageIcon;
+import java.awt.Component;
 
-import edu.uci.ics.jung.visualization.LayeredIcon;
+import javax.swing.JFrame;
 
-/**
- * A node representing a crossconnect
- * @author ibaldin
- *
- */
-public class OrcaCrossconnect extends OrcaNode {
-	String label = null;
-	long bandwidth;
+import com.hyperrealm.kiwi.ui.dialog.ComponentDialog;
+
+public class ManifestNodePropertyDialog extends ComponentDialog {
+
+	public ManifestNodePropertyDialog(JFrame parent, OrcaNode n) {
+		super(parent, "Node Properties", true);
+		super.setLocationRelativeTo(parent);
+
+		assert(n != null);
+	}
 	
-	public OrcaCrossconnect(String name) {
-		super(name, 
-				new LayeredIcon(new ImageIcon(GUIRequestState.class.getResource(GUIRequestState.XCON_ICON)).getImage()));
+	@Override
+	protected Component buildDialogUI() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
-	public void setLabel(String s) {
-		label = s;
-	}
-	
-	public String getLabel() {
-		return label;
-	}
-	
-	public void setBandwidth(long b) {
-		bandwidth = b;
-	}
-	
-	public long getBandwidth() {
-		return bandwidth;
-	}
 }

@@ -22,37 +22,23 @@
 */
 package orca.flukes;
 
-import javax.swing.ImageIcon;
-
-import edu.uci.ics.jung.visualization.LayeredIcon;
+import edu.uci.ics.jung.graph.SparseMultigraph;
+import edu.uci.ics.jung.visualization.VisualizationViewer;
+import edu.uci.ics.jung.visualization.control.EditingModalGraphMouse;
 
 /**
- * A node representing a crossconnect
+ * holds common state for GUI panes
  * @author ibaldin
  *
  */
-public class OrcaCrossconnect extends OrcaNode {
-	String label = null;
-	long bandwidth;
-	
-	public OrcaCrossconnect(String name) {
-		super(name, 
-				new LayeredIcon(new ImageIcon(GUIRequestState.class.getResource(GUIRequestState.XCON_ICON)).getImage()));
-	}
+public abstract class GUICommonState {
+	SparseMultigraph<OrcaNode, OrcaLink> g = new SparseMultigraph<OrcaNode, OrcaLink>();
+	OrcaNodeCreator nodeCreator = new OrcaNodeCreator(g);
+	OrcaLinkCreator linkCreator = new OrcaLinkCreator(g);
 
-	public void setLabel(String s) {
-		label = s;
-	}
+	EditingModalGraphMouse<OrcaNode, OrcaLink> gm = null;
 	
-	public String getLabel() {
-		return label;
-	}
+	// Vis viewer 
+	VisualizationViewer<OrcaNode,OrcaLink> vv = null;
 	
-	public void setBandwidth(long b) {
-		bandwidth = b;
-	}
-	
-	public long getBandwidth() {
-		return bandwidth;
-	}
 }
