@@ -168,7 +168,7 @@ public class RequestLoader implements INdlRequestModelListener {
 		nodes.put(ce.getLocalName(), newNode);
 		
 		// add nodes to the graph
-		GUIRequestState.getInstance().requestGraph.addVertex(newNode);
+		GUIRequestState.getInstance().g.addVertex(newNode);
 	}
 
 	/**
@@ -197,7 +197,7 @@ public class RequestLoader implements INdlRequestModelListener {
 				
 				// have to be there
 				if ((if1Node != null) && (if2Node != null)) {
-					GUIRequestState.getInstance().requestGraph.addEdge(ol, new Pair<OrcaNode>(if1Node, if2Node), EdgeType.UNDIRECTED);
+					GUIRequestState.getInstance().g.addEdge(ol, new Pair<OrcaNode>(if1Node, if2Node), EdgeType.UNDIRECTED);
 				}
 			}
 		} else {

@@ -22,6 +22,8 @@
 */
 package orca.flukes;
 
+import orca.flukes.OrcaNode.INodeCreator;
+
 import org.apache.commons.collections15.Factory;
 
 public class OrcaLink {
@@ -31,6 +33,10 @@ public class OrcaLink {
 
     public OrcaLink(String name) {
         this.name = name;
+    }
+
+    interface ILinkCreator {
+    	public OrcaLink create();
     }
     
     public void setBandwidth(long bw) {
@@ -63,40 +69,18 @@ public class OrcaLink {
     }
     
     public static class OrcaLinkFactory implements Factory<OrcaLink> {
-        private static int linkCount = 0;
-        private long defaultBandwidth;
-        private long defaultLatency;
-
-        public OrcaLinkFactory() {            
+       private ILinkCreator inc = null;
+        
+        public OrcaLinkFactory(ILinkCreator i) {
+        	inc = i;
         }
         
         public OrcaLink create() {
-        	synchronized(this) {
-        		String name;
-        		do {
-        			name = "Link" + linkCount++;
-        		} while (!GUIRequestState.getInstance().checkUniqueLinkName(null, name));
-        		OrcaLink link = new OrcaLink(name);
-        		link.setBandwidth(defaultBandwidth);
-        		link.setLatency(defaultLatency);
-        		return link;
+        	if (inc == null)
+        		return null;
+        	synchronized(inc) {
+        		return inc.create();
         	}
         }    
-
-        public long getDefaultLatency() {
-            return defaultLatency;
-        }
-
-        public void setDefaultLatency(long l) {
-            defaultLatency = l;
-        }
-
-        public long getDefaultBandwidth() {
-            return defaultBandwidth;
-        }
-
-        public void setDefaultBandwidth(long bw) {
-            defaultBandwidth = bw;
-        }   
     }  
 }

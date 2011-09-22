@@ -96,11 +96,28 @@ public class ManifestLoader implements INdlManifestModelListener {
 	}
 
 	// sometimes getLocalName is not good enough
+	// so we strip off orca name space and call it a day
 	private String getTrueName(Resource r) {
 		if (r == null)
 			return null;
 		
 		return StringUtils.removeStart(r.getURI(), NdlCommons.ORCA_NS);
+	}
+	
+	// get domain name from inter-domain resource name
+	private String getInterDomainName(Resource r) {
+		String trueName = getTrueName(r);
+		
+		if (r == null)
+			return null;
+		
+		String[] split = trueName.split("#");
+		if (split.length >= 2) {
+			String rem = split[1];
+			String[] split1 = rem.split("/");
+			return split1[0];
+		}	
+		return null;
 	}
 	
 	@Override
@@ -123,9 +140,22 @@ public class ManifestLoader implements INdlManifestModelListener {
 				OrcaNode if1Node = interfaceToNode.get(getTrueName(if1));
 				OrcaNode if2Node = interfaceToNode.get(getTrueName(if2));
 				
+				// get the bandwidth of crossconnects if possible
+				long bw1 = 0, bw2 = 0;
+				if (if1Node instanceof OrcaCrossconnect) {
+					OrcaCrossconnect oc = (OrcaCrossconnect)if1Node;
+					bw1 = oc.getBandwidth();
+				} 
+				if (if2Node instanceof OrcaCrossconnect) {
+					OrcaCrossconnect oc = (OrcaCrossconnect)if2Node;
+					bw2 = oc.getBandwidth();
+				}
+				ol.setBandwidth(bw1 > bw2 ? bw1 : bw2);
+				
 				// have to be there
 				if ((if1Node != null) && (if2Node != null)) {
-					GUIManifestState.getInstance().manifestGraph.addEdge(ol, new Pair<OrcaNode>(if1Node, if2Node), EdgeType.UNDIRECTED);
+					GUIManifestState.getInstance().g.addEdge(ol, new Pair<OrcaNode>(if1Node, if2Node), 
+							EdgeType.UNDIRECTED);
 				}
 			}
 		} else {
@@ -187,8 +217,14 @@ public class ManifestLoader implements INdlManifestModelListener {
 
 		OrcaCrossconnect oc = new OrcaCrossconnect(getTrueName(c));
 		
-		if (domain != null)
-			oc.setDomain(RequestSaver.reverseLookupDomain(domain));
+		// extract domain from the name: getTrueName gets us blah.rdf#domain-name/Domain/vlan
+		oc.setDomain(getInterDomainName(c));
+		
+		oc.setLabel(label);
+		
+		// later set bandwidth on adjacent links (crossconnects in NDL have
+		// bandwidth but for users we'll show it on the links)
+		oc.setBandwidth(bw);
 		
 		// process interfaces
 		for (Iterator<Resource> it = interfaces.iterator(); it.hasNext();) {
@@ -199,7 +235,7 @@ public class ManifestLoader implements INdlManifestModelListener {
 		nodes.put(getTrueName(c), oc);
 		
 		// add nodes to the graph
-		GUIManifestState.getInstance().manifestGraph.addVertex(oc);
+		GUIManifestState.getInstance().g.addVertex(oc);
 	}
 	
 	@Override
@@ -237,7 +273,7 @@ public class ManifestLoader implements INdlManifestModelListener {
 		nodes.put(getTrueName(ce), newNode);
 		
 		// add nodes to the graph
-		GUIManifestState.getInstance().manifestGraph.addVertex(newNode);
+		GUIManifestState.getInstance().g.addVertex(newNode);
 
 	}
 
@@ -245,6 +281,16 @@ public class ManifestLoader implements INdlManifestModelListener {
 	public void ndlParseComplete() {
 		// TODO Auto-generated method stub
 
+	}
+
+	@Override
+	public void ndlNodeDiskImage(Resource di, OntModel m, Resource node,
+			String url, String hash) {
+		// set the image to URL for clarity since names are just shortcuts
+		OrcaNode on = nodes.get(getTrueName(node));
+		
+		if (on != null)
+			on.setImage(url);
 	}
 
 }

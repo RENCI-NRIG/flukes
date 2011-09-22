@@ -31,17 +31,14 @@ import java.util.Iterator;
 import java.util.Set;
 
 import orca.flukes.ui.ChooserWithNewDialog;
-import edu.uci.ics.jung.graph.SparseMultigraph;
 import edu.uci.ics.jung.graph.util.Pair;
-import edu.uci.ics.jung.visualization.VisualizationViewer;
-import edu.uci.ics.jung.visualization.control.EditingModalGraphMouse;
 
 /**
  * Singleton class that holds shared GUI request state. Since dialogs are all modal, no need for locking for now.
  * @author ibaldin
  *
  */
-public class GUIRequestState implements IDeleteEdgeCallBack<OrcaLink>, IDeleteNodeCallBack<OrcaNode>, OrcaNode.INodeCreator {
+public class GUIRequestState extends GUICommonState implements IDeleteEdgeCallBack<OrcaLink>, IDeleteNodeCallBack<OrcaNode> {
 	public static final String NO_GLOBAL_IMAGE = "None";
 	public static final String NO_DOMAIN_SELECT = "System select";
 	public static final String NODE_TYPE_SITE_DEFAULT = "Site default";
@@ -50,36 +47,24 @@ public class GUIRequestState implements IDeleteEdgeCallBack<OrcaLink>, IDeleteNo
 	public static final String CLOUD_ICON = "cloud-50.gif";
 	public static final String XCON_ICON = "crossconnect-50.gif";
 	
-    private static int nodeCount = 0;
-    private static int clusterCount = 0;
-	
 	private static GUIRequestState instance = null;
 	
 	// VM images defined by the user
-	HashMap<String, OrcaImage> definedImages = new HashMap<String, OrcaImage>();
+	HashMap<String, OrcaImage> definedImages; 
 	
 	ChooserWithNewDialog<String> icd = null;
 	ReservationDetailsDialog rdd = null;
 	
 	// are we adding a new image definition or editing existing
 	boolean addingNewImage = false;
-	
-	// The graph objects
-	SparseMultigraph<OrcaNode, OrcaLink> requestGraph = null;
-	// Vis viewer for request
-	VisualizationViewer<OrcaNode,OrcaLink> vv = null;
+
 	// File in which we save
 	File saveFile = null;
-	// Mouse 
-	EditingModalGraphMouse<OrcaNode, OrcaLink> gm;
 	
 	// Reservation details
 	private OrcaReservationTerm term;
 	private String resImageName = null;
 	private String resDomainName = null;
-	
-	// true for nodes, false for clusters
-	boolean nodesOrGroups = true;
 	
 	private static void initialize() {
 		;
@@ -87,6 +72,10 @@ public class GUIRequestState implements IDeleteEdgeCallBack<OrcaLink>, IDeleteNo
 	
 	private GUIRequestState() {
 		term = new OrcaReservationTerm();
+		definedImages = new HashMap<String, OrcaImage>();
+		// Set some defaults for the Edges...
+		linkCreator.setDefaultBandwidth(10000000);
+		linkCreator.setDefaultLatency(5000);
 	}
 	
 	static GUIRequestState getInstance() {
@@ -99,9 +88,9 @@ public class GUIRequestState implements IDeleteEdgeCallBack<OrcaLink>, IDeleteNo
 	
 	public void clear() {
 		// clear the graph, reservation set else to defaults
-		Set<OrcaNode> nodes = new HashSet<OrcaNode>(requestGraph.getVertices());
+		Set<OrcaNode> nodes = new HashSet<OrcaNode>(g.getVertices());
 		for (OrcaNode n: nodes)
-			requestGraph.removeVertex(n);
+			g.removeVertex(n);
 		resImageName = null;
 		resDomainName = null;
 		term = new OrcaReservationTerm();
@@ -124,7 +113,7 @@ public class GUIRequestState implements IDeleteEdgeCallBack<OrcaLink>, IDeleteNo
 			return;
 		if ((resImageName != null) && (resImageName.equals(im)))
 			return;
-		for (OrcaNode n: requestGraph.getVertices()) 
+		for (OrcaNode n: g.getVertices()) 
 			n.setImage(im);
 		resImageName = im;
 	}
@@ -140,7 +129,7 @@ public class GUIRequestState implements IDeleteEdgeCallBack<OrcaLink>, IDeleteNo
 			return;
 		if ((resDomainName != null) && (resDomainName.equals(d)))
 			return;
-		for (OrcaNode n: requestGraph.getVertices()) 
+		for (OrcaNode n: g.getVertices()) 
 			n.setDomain(d);
 		resDomainName = d;
 	}
@@ -187,7 +176,7 @@ public class GUIRequestState implements IDeleteEdgeCallBack<OrcaLink>, IDeleteNo
 		if (e == null)
 			return;
 		// remove edge from node IP maps
-		Pair<OrcaNode> p = requestGraph.getEndpoints(e);
+		Pair<OrcaNode> p = g.getEndpoints(e);
 		p.getFirst().removeIp(e);
 		p.getSecond().removeIp(e);
 	}
@@ -199,52 +188,10 @@ public class GUIRequestState implements IDeleteEdgeCallBack<OrcaLink>, IDeleteNo
 		if (n == null)
 			return;
 		// remove incident edges
-		Collection<OrcaLink> edges = requestGraph.getIncidentEdges(n);
+		Collection<OrcaLink> edges = g.getIncidentEdges(n);
 		for (OrcaLink e: edges) {
 			deleteEdgeCallBack(e);
 		}
-	}
-	
-	/**
-	 * Check if the link name is unique
-	 * @param nm
-	 * @return
-	 */
-	public boolean checkUniqueLinkName(OrcaLink edge, String nm) {
-		// check all edges in graph
-		Collection<OrcaLink> edges = requestGraph.getEdges();
-		for (OrcaLink e: edges) {
-			// check that some other edge doesn't have this name
-			if (edge != null) {
-				if ((e != edge) &&(e.getName().equals(nm)))
-					return false;
-			} else
-				if (e.getName().equals(nm))
-					return false;
-		}
-		return true;
-	}
-	
-	/**
-	 * check if node name is unique. exclude a node if needed (or null)
-	 * @param node
-	 * @param nm
-	 * @return
-	 */
-	public boolean checkUniqueNodeName(OrcaNode node, String nm) {
-		// check all edges in graph
-		Collection<OrcaNode> nodes = requestGraph.getVertices();
-		for (OrcaNode n: nodes) {
-			// check that some other edge doesn't have this name
-			if (node != null) {
-				if ((n != node) &&(n.getName().equals(nm)))
-					return false;
-			} else
-				if (n.getName().equals(nm))
-					return false;
-			
-		}
-		return true;
 	}
 	
 	/**
@@ -311,7 +258,7 @@ public class GUIRequestState implements IDeleteEdgeCallBack<OrcaLink>, IDeleteNo
 	}
 	
 	public String[] getAvailableDependencies(OrcaNode subject) {
-		Collection<OrcaNode> knownNodes = requestGraph.getVertices();
+		Collection<OrcaNode> knownNodes = g.getVertices();
 		String[] ret = new String[knownNodes.size() - 1];
 		int i = 0;
 		for (OrcaNode n: knownNodes) {
@@ -327,26 +274,11 @@ public class GUIRequestState implements IDeleteEdgeCallBack<OrcaLink>, IDeleteNo
 		if (nm == null)
 			return null;
 		
-		for (OrcaNode n: requestGraph.getVertices()) {
+		for (OrcaNode n: g.getVertices()) {
 			if (nm.equals(n.getName()))
 				return n;
 		}
 		return null;
 	}
 
-	public OrcaNode create() {
-		OrcaNode node;
-		String name;
-		do {
-			if (nodesOrGroups) {
-				name = "Node" + nodeCount++;
-				node = new OrcaNode(name);
-			}
-			else {
-				name = "NodeGroup" + clusterCount++;
-				node = new OrcaNodeGroup(name);
-			}
-		} while (!checkUniqueNodeName(null, name));
-		return node;
-	}
 }

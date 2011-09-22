@@ -199,7 +199,7 @@ public class OrcaNodePropertyDialog extends ComponentDialog implements ActionLis
 	
 	@Override
 	public boolean accept() {
-		if (!GUIRequestState.getInstance().checkUniqueNodeName(node, name.getObject())) {
+		if (!GUIRequestState.getInstance().nodeCreator.checkUniqueNodeName(node, name.getObject())) {
 			inputErrorDialog("Node name is not unique", "Node name " + name.getObject() + " is not unique");
 			return false;
 		}
@@ -267,7 +267,7 @@ public class OrcaNodePropertyDialog extends ComponentDialog implements ActionLis
 	private void addIpFields() {
 		// query the graph for edges incident on this node and create 
 		// labeled IP address fields; populate fields as needed
-		Collection<OrcaLink> nodeEdges = GUIRequestState.getInstance().requestGraph.getIncidentEdges(node);
+		Collection<OrcaLink> nodeEdges = GUIRequestState.getInstance().g.getIncidentEdges(node);
 		if (nodeEdges == null) {
 			return;
 		}

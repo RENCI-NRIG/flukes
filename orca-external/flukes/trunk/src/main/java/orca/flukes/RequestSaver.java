@@ -226,7 +226,7 @@ public class RequestSaver {
 				}
 				
 				// shove invidividual nodes onto the reservation
-				for (OrcaNode n: GUIRequestState.getInstance().requestGraph.getVertices()) {
+				for (OrcaNode n: GUIRequestState.getInstance().g.getVertices()) {
 					Individual ni;
 					if (n instanceof OrcaNodeGroup) {
 						ni = ngen.declareServerCloud(n.getName());
@@ -275,7 +275,7 @@ public class RequestSaver {
 				}
 				
 				// node dependencies (done afterwards to be sure all nodes are declared)
-				for (OrcaNode n: GUIRequestState.getInstance().requestGraph.getVertices()) {
+				for (OrcaNode n: GUIRequestState.getInstance().g.getVertices()) {
 					Individual ni = ngen.getRequestIndividual(n.getName());
 					for(OrcaNode dep: n.getDependencies()) {
 						Individual depI = ngen.getRequestIndividual(dep.getName());
@@ -285,12 +285,12 @@ public class RequestSaver {
 					}
 				}
 				
-				if (GUIRequestState.getInstance().requestGraph.getEdgeCount() == 0) {
+				if (GUIRequestState.getInstance().g.getEdgeCount() == 0) {
 					// a bunch of disconnected nodes, no IP addresses 
 					
 				} else {
 					// edges, nodes, IP addresses oh my!
-					for (OrcaLink e: GUIRequestState.getInstance().requestGraph.getEdges()) {
+					for (OrcaLink e: GUIRequestState.getInstance().g.getEdges()) {
 						Individual ei = ngen.declareNetworkConnection(e.getName());
 						ngen.addResourceToReservation(reservation, ei);
 
@@ -302,7 +302,7 @@ public class RequestSaver {
 
 						// TODO: latency
 						
-						Pair<OrcaNode> pn = GUIRequestState.getInstance().requestGraph.getEndpoints(e);
+						Pair<OrcaNode> pn = GUIRequestState.getInstance().g.getEndpoints(e);
 						processNodeAndLink(pn.getFirst(), e, ei);
 						processNodeAndLink(pn.getSecond(), e, ei);
 					}

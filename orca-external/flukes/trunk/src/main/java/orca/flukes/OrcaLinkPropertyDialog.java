@@ -49,21 +49,22 @@ public class OrcaLinkPropertyDialog extends ComponentDialog {
 	public OrcaLinkPropertyDialog(JFrame parent, OrcaLink e) {
 		super(parent, "Edge Details", true);
 		super.setLocationRelativeTo(parent);
+		
+		assert(e != null);
+		
 		setComment("Edge " + e.getName() + " properties");
 		this.parent = parent;
 		this.edge = e;
-		if (e != null) {
-			name.setObject(e.getName());
-			bandwidth.setValue(e.getBandwidth());
-			latency.setValue(e.getLatency());
-		}
+		name.setObject(e.getName());
+		bandwidth.setValue(e.getBandwidth());
+		latency.setValue(e.getLatency());
 	}
 
 	@Override
 	public boolean accept() {
 		if ((name.getObject().length() == 0) || (!bandwidth.validateInput()) || (!latency.validateInput()))
 			return false;
-		if (!GUIRequestState.getInstance().checkUniqueLinkName(edge, name.getObject())) {
+		if (!GUIRequestState.getInstance().linkCreator.checkUniqueLinkName(edge, name.getObject())) {
 			KMessageDialog kmd = new KMessageDialog(parent, "Link name not unique", true);
 			kmd.setLocationRelativeTo(parent);
 			kmd.setMessage("Link Name " + name.getObject() + " is not unique");
