@@ -249,6 +249,11 @@ public class GUI implements ComponentListener {
 		}
 	}
 	
+	/**
+	 * switch layout at specific tab
+	 * @param at
+	 * @param l
+	 */
 	private void switchLayout(GuiTabs at, GraphLayouts l) {
 		//final Layout<OrcaNode, OrcaLink> oldL = vv.getGraphLayout();
 		Layout<OrcaNode, OrcaLink> newL = null;

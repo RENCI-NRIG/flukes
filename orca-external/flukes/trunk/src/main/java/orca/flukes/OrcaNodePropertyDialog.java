@@ -28,12 +28,14 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.Calendar;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import javax.swing.AbstractAction;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JList;
@@ -46,6 +48,7 @@ import orca.flukes.ui.TextAreaDialog;
 
 import com.hyperrealm.kiwi.text.FormatConstants;
 import com.hyperrealm.kiwi.ui.KButton;
+import com.hyperrealm.kiwi.ui.KCheckBox;
 import com.hyperrealm.kiwi.ui.KPanel;
 import com.hyperrealm.kiwi.ui.KTextField;
 import com.hyperrealm.kiwi.ui.NumericField;
@@ -62,16 +65,24 @@ public class OrcaNodePropertyDialog extends ComponentDialog implements ActionLis
 	
 	private KTextField name;
 	private JList imageList, domainList, typeList, dependencyList = null;
+	private KCheckBox splittableCb;
+	private boolean splittableState = false;
+	
 	NumericField ns;
 	private HashMap<OrcaLink, IpAddrField> ipFields;
 	// address field for group's internal address
 	private IpAddrField internalIpf = null;
 	int ycoord;
+	// we're doing a closure AbstractAction for checkbox and it needs access to 'this'
+	// without calling it 'this'
+	private ComponentDialog dialog;
 	
 	public OrcaNodePropertyDialog(JFrame parent, OrcaNode n) {
 		super(parent, "Node Properties", true);
 		super.setLocationRelativeTo(parent);
 
+		this.dialog = this;
+		
 		assert(n != null);
 
 		if (n instanceof OrcaNodeGroup)
@@ -88,8 +99,15 @@ public class OrcaNodePropertyDialog extends ComponentDialog implements ActionLis
 				GUIRequestState.getInstance().getAvailableNodeTypes(), "Select node type: ", false, 3);
 		imageList = addSelectList(kp, gbl_contentPanel, ycoord++, 
 				GUIRequestState.getInstance().getImageShortNamesWithNone(), "Select image: ", false, 3);
+		
 		domainList = addSelectList(kp, gbl_contentPanel, ycoord++, 
 				GUIRequestState.getInstance().getAvailableDomains(), "Select domain: ", false, 3);
+		
+		if (n instanceof OrcaNodeGroup) {
+			OrcaNodeGroup ong = (OrcaNodeGroup)n;
+			addSplittableCheck(ong.getSplittable(), ycoord++);
+		}
+		
 		// don't show dependency list if not needed
 		if (GUIRequestState.getInstance().getAvailableDependencies(node).length > 0)
 			dependencyList = addSelectList(kp, gbl_contentPanel, ycoord++, 
@@ -114,8 +132,11 @@ public class OrcaNodePropertyDialog extends ComponentDialog implements ActionLis
 		
 		// if a node, IP fields are meaningful
 		addIpFields();
-		if (n instanceof OrcaNodeGroup)
+		
+		// number of servers and splittable 
+		if (n instanceof OrcaNodeGroup) {
 			addNumServersField(ycoord++);
+		}
 		
 		// additional property dialog
 		// e.requestGraph. post boot script
@@ -224,7 +245,19 @@ public class OrcaNodePropertyDialog extends ComponentDialog implements ActionLis
 		node.setImage(GUIRequestState.getNodeImageProper(GUIRequestState.getInstance().getImageShortNamesWithNone()[imageList.getSelectedIndex()]));
 
 		// domain
-		node.setDomain(GUIRequestState.getNodeDomainProper(GUIRequestState.getInstance().getAvailableDomains()[domainList.getSelectedIndex()]));
+		if (node instanceof OrcaNodeGroup) {
+			// for splittable groups domain is meaningless
+			OrcaNodeGroup ong = (OrcaNodeGroup)node;
+			ong.setSplittable(splittableState);
+			if (splittableState)
+				// set to system select
+				node.setDomain(GUIRequestState.getNodeDomainProper(GUIRequestState.getInstance().getAvailableDomains()[0]));
+			else
+				node.setDomain(GUIRequestState.getNodeDomainProper(GUIRequestState.getInstance().getAvailableDomains()[domainList.getSelectedIndex()]));
+		} else {
+			// domain
+			node.setDomain(GUIRequestState.getNodeDomainProper(GUIRequestState.getInstance().getAvailableDomains()[domainList.getSelectedIndex()]));
+		}
 
 		// node type
 		node.setNodeType(GUIRequestState.getNodeTypeProper(GUIRequestState.getInstance().getAvailableNodeTypes()[typeList.getSelectedIndex()]));
@@ -350,6 +383,39 @@ public class OrcaNodePropertyDialog extends ComponentDialog implements ActionLis
 			gbc_list.gridx = 1;
 			gbc_list.gridy = y;
 			kp.add(ns, gbc_list);
+		}
+	}
+	
+	private void addSplittableCheck(boolean s, int y) {
+		splittableState = s;
+		domainList.setVisible(!splittableState);
+		{
+			JLabel lblNewLabel_1 = new JLabel("Splittable between domains: ");
+			GridBagConstraints gbc_lblNewLabel_1 = new GridBagConstraints();
+			gbc_lblNewLabel_1.anchor = GridBagConstraints.WEST;
+			gbc_lblNewLabel_1.insets = new Insets(0, 0, 5, 5);
+			gbc_lblNewLabel_1.gridx = 0;
+			gbc_lblNewLabel_1.gridy = y;
+			kp.add(lblNewLabel_1, gbc_lblNewLabel_1);
+		}
+		{
+			splittableCb = new KCheckBox(new AbstractAction() {
+				
+				public void actionPerformed(ActionEvent e) {
+					// toggle list of domains - if splittable,
+					// list is meaningless
+					splittableState = !splittableState;
+					domainList.setVisible(!splittableState);
+					dialog.pack();
+				}
+			});
+			splittableCb.setSelected(splittableState);
+			GridBagConstraints gbc_tf= new GridBagConstraints();
+			gbc_tf.anchor = GridBagConstraints.WEST;
+			gbc_tf.insets = new Insets(0, 0, 5, 5);
+			gbc_tf.gridx = 1;
+			gbc_tf.gridy = y;
+			kp.add(splittableCb, gbc_tf);
 		}
 	}
 	

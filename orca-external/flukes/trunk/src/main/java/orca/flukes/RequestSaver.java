@@ -229,8 +229,11 @@ public class RequestSaver {
 				for (OrcaNode n: GUIRequestState.getInstance().g.getVertices()) {
 					Individual ni;
 					if (n instanceof OrcaNodeGroup) {
-						ni = ngen.declareServerCloud(n.getName());
 						OrcaNodeGroup ong = (OrcaNodeGroup) n;
+						if (ong.getSplittable())
+							ni = ngen.declareServerCloud(ong.getName(), ong.getSplittable());
+						else
+							ni = ngen.declareServerCloud(ong.getName());
 						if (ong.getInternalIp() != null)
 							processSingleNodeGroup(ong);
 					}
