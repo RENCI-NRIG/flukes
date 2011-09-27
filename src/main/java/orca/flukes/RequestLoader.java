@@ -270,4 +270,14 @@ public class RequestLoader implements INdlRequestModelListener {
 				on.setPostBootScript(script);
 		}
 	}
+
+	@Override
+	public void ndlNodeSplittable(Resource ni, OntModel m, boolean declared,
+			boolean splittable) {
+		OrcaNode node = nodes.get(ni.getLocalName());
+		if (node instanceof OrcaNodeGroup) {
+			OrcaNodeGroup ong = (OrcaNodeGroup)node;
+			ong.setSplittable(splittable);
+		}
+	}
 }

@@ -30,6 +30,7 @@ import edu.uci.ics.jung.visualization.LayeredIcon;
 public class OrcaNodeGroup extends OrcaNode {
 	Pair<String> internalVlanAddress = null;
 	protected int nodeCount = 1;
+	protected boolean splittable = false;
 
 	public OrcaNodeGroup(String name) {
 		super(name, 
@@ -72,5 +73,13 @@ public class OrcaNodeGroup extends OrcaNode {
 	
 	public void removeInternalIp() {
 		internalVlanAddress = null;
+	}
+	
+	public void setSplittable(boolean f) {
+		splittable = f;
+	}
+	
+	public boolean getSplittable() {
+		return splittable;
 	}
 }
