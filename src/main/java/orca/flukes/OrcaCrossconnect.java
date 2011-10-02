@@ -22,6 +22,8 @@
 */
 package orca.flukes;
 
+import java.util.Map.Entry;
+
 import javax.swing.ImageIcon;
 
 import edu.uci.ics.jung.visualization.LayeredIcon;
@@ -54,5 +56,24 @@ public class OrcaCrossconnect extends OrcaNode {
 	
 	public long getBandwidth() {
 		return bandwidth;
+	}
+	
+	/** 
+	 * Create a detailed printout of properties
+	 * @return
+	 */
+	@Override
+	public String getViewerText() {
+		String viewText = "";
+		viewText += "Node name: " + getName();
+		if (label != null)
+			viewText += "\nLabel/Tag: " + label;
+		if (interfaces.size() > 0) {
+			viewText += "\nInterfaces: ";
+			for(Entry<OrcaLink, String> e: interfaces.entrySet()) {
+				viewText += "\n    " + e.getKey().getName() + " : " + e.getValue();
+			}
+		}
+		return viewText;
 	}
 }

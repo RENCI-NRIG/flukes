@@ -42,7 +42,7 @@ public class OrcaNodeGroup extends OrcaNode {
 	}
 	
 	public void setNodeCount(int nc) {
-		if (nc > 1)
+		if (nc >= 1)
 			nodeCount = nc;
 	}
 	

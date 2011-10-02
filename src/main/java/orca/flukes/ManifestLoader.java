@@ -26,6 +26,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStreamReader;
+import java.net.URL;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -39,6 +40,7 @@ import orca.ndl.NdlManifestParser;
 
 import com.hp.hpl.jena.ontology.OntModel;
 import com.hp.hpl.jena.rdf.model.Resource;
+import com.hp.hpl.jena.rdf.model.StmtIterator;
 import com.hyperrealm.kiwi.ui.dialog.ExceptionDialog;
 
 import edu.uci.ics.jung.graph.util.EdgeType;
@@ -51,19 +53,11 @@ import edu.uci.ics.jung.graph.util.Pair;
  */
 public class ManifestLoader implements INdlManifestModelListener {
 
-	private static ManifestLoader instance = null;
-	
 	private Map<String, OrcaNode> interfaceToNode = new HashMap<String, OrcaNode>();
 	private Map<String, OrcaNode> nodes = new HashMap<String, OrcaNode>();
 	private Map<String, OrcaLink> links = new HashMap<String, OrcaLink>();
 	
 	private static int lcount = 0;
-	
-	public static ManifestLoader getInstance() {
-		if (instance == null)
-			instance = new ManifestLoader();
-		return instance;
-	}
 	
 	public boolean loadGraph(File f) {
 		BufferedReader bin = null; 
@@ -209,7 +203,7 @@ public class ManifestLoader implements INdlManifestModelListener {
 	}
 
 	@Override
-	public void ndlCrossConnect(Resource c, OntModel m, Resource domain,
+	public void ndlCrossConnect(Resource c, OntModel m, 
 			long bw, String label, List<Resource> interfaces) {
 		
 		if (c == null)
@@ -240,17 +234,21 @@ public class ManifestLoader implements INdlManifestModelListener {
 	
 	@Override
 	public void ndlNode(Resource ce, OntModel om, Resource ceClass,
-			Resource domain, Resource ceType, int ceCount,
 			List<Resource> interfaces) {
 		if (ce == null)
 			return;
 		OrcaNode newNode;
 		
 		if (ceClass.equals(NdlCommons.computeElementClass))
-			newNode = new OrcaNode(getTrueName(ce));
+			// HACK! if it is a collection, it used to be ServerCloud
+			if (ce.hasProperty(NdlCommons.collectionElementProperty))
+				newNode = new OrcaCrossconnect(getTrueName(ce));
+			else
+				newNode = new OrcaNode(getTrueName(ce));
 		else { 
 			if (ceClass.equals(NdlCommons.serverCloudClass)) {
 				OrcaNodeGroup newNodeGroup = new OrcaNodeGroup(getTrueName(ce));
+				int ceCount = NdlCommons.getNumCE(ce);
 				if (ceCount > 0)
 					newNodeGroup.setNodeCount(ceCount);
 				newNode = newNodeGroup;
@@ -258,39 +256,77 @@ public class ManifestLoader implements INdlManifestModelListener {
 				newNode = new OrcaNode(getTrueName(ce));
 		}
 		
+		// domain
+		Resource domain = NdlCommons.getDomain(ce);
 		if (domain != null)
 			newNode.setDomain(RequestSaver.reverseLookupDomain(domain));
 		
+		// specific ce type
+		Resource ceType = NdlCommons.getSpecificCE(ce);
 		if (ceType != null)
 			newNode.setNodeType(RequestSaver.reverseNodeTypeLookup(ceType));
-
+		
+		// post boot script
+		String script = NdlCommons.getPostBootScript(ce);
+		if ((script != null) && (script.length() > 0)) {
+			newNode.setPostBootScript(script);
+		}
+		
 		// process interfaces
 		for (Iterator<Resource> it = interfaces.iterator(); it.hasNext();) {
 			Resource intR = it.next();
 			interfaceToNode.put(getTrueName(intR), newNode);
 		}
 		
+		// disk image
+		Resource di = NdlCommons.getDiskImage(ce);
+		if (di != null) {
+			try {
+				String imageURL = NdlCommons.getIndividualsImageURL(ce);
+				String imageHash = NdlCommons.getIndividualsImageHash(ce);
+				GUIRequestState.getInstance().addImage(new OrcaImage(di.getLocalName(), 
+						new URL(imageURL), imageHash), null);
+				newNode.setImage(di.getLocalName());
+			} catch (Exception e) {
+				// FIXME: ?
+				;
+			}
+		}
+		
 		nodes.put(getTrueName(ce), newNode);
 		
 		// add nodes to the graph
 		GUIManifestState.getInstance().g.addVertex(newNode);
-
+		
+		// are there nodes hanging off of it as elements? if so, link them in
+		processDomainVmElements(ce, om, newNode);
 	}
 
+	// add collection elements
+	private void processDomainVmElements(Resource vm, OntModel om, OrcaNode parent) {
+		
+		for (StmtIterator vmEl = vm.listProperties(NdlCommons.collectionElementProperty); vmEl.hasNext();) {
+			Resource tmpR = vmEl.next().getResource();
+			OrcaNode on = new OrcaNode(getTrueName(tmpR), parent);
+			nodes.put(getTrueName(tmpR), on);
+			GUIManifestState.getInstance().g.addVertex(on);
+			OrcaLink ol = GUIManifestState.getInstance().getLinkCreator().create();
+			links.put(ol.getName(), ol);
+			GUIManifestState.getInstance().g.addEdge(ol, new Pair<OrcaNode>(parent, on), 
+					EdgeType.UNDIRECTED);
+			// add various properties
+			// post boot script
+			on.setPostBootScript(NdlCommons.getPostBootScript(tmpR));
+			
+			// management IP/port
+			on.setManagementAccess(NdlCommons.getNodeSSHService(tmpR));
+		}
+	}
+	
 	@Override
 	public void ndlParseComplete() {
 		// TODO Auto-generated method stub
 
-	}
-
-	@Override
-	public void ndlNodeDiskImage(Resource di, OntModel m, Resource node,
-			String url, String hash) {
-		// set the image to URL for clarity since names are just shortcuts
-		OrcaNode on = nodes.get(getTrueName(node));
-		
-		if (on != null)
-			on.setImage(url);
 	}
 
 }

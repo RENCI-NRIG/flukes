@@ -113,8 +113,7 @@ public class GUIRequestState extends GUICommonState implements IDeleteEdgeCallBa
 			return;
 		if ((resImageName != null) && (resImageName.equals(im)))
 			return;
-		for (OrcaNode n: g.getVertices()) 
-			n.setImage(im);
+
 		resImageName = im;
 	}
 	
@@ -129,8 +128,7 @@ public class GUIRequestState extends GUICommonState implements IDeleteEdgeCallBa
 			return;
 		if ((resDomainName != null) && (resDomainName.equals(d)))
 			return;
-		for (OrcaNode n: g.getVertices()) 
-			n.setDomain(d);
+
 		resDomainName = d;
 	}
 	

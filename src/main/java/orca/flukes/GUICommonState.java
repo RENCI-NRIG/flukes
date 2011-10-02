@@ -41,4 +41,12 @@ public abstract class GUICommonState {
 	// Vis viewer 
 	VisualizationViewer<OrcaNode,OrcaLink> vv = null;
 	
+	OrcaLinkCreator getLinkCreator() {
+		return linkCreator;
+	}
+	
+	OrcaNodeCreator getNodeCreator() {
+		return nodeCreator;
+	}
+	
 }

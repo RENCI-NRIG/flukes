@@ -38,12 +38,22 @@ public class TextAreaDialog extends ComponentDialog {
 	KPanel kp;
 	final KTextArea ta;
 	int rows, cols;
-	ITextSetter ts;
+	ITextSetter ts = null;
 	
 	public interface ITextSetter {
 		public void setText(String t);
 	}
 	
+	/**
+	 * create editable text area
+	 * @param parent
+	 * @param ts
+	 * @param title
+	 * @param message
+	 * @param r
+	 * @param c
+	 * @param editable
+	 */
 	public TextAreaDialog(JFrame parent, ITextSetter ts, String title, String message, int r, int c) {
 		super(parent, title, true);
 		super.setLocationRelativeTo(parent);
@@ -58,11 +68,40 @@ public class TextAreaDialog extends ComponentDialog {
 		ta.setRows(r);
 		ta.setColumns(c);
 		ta.setMinimumSize(new Dimension(500, 500));
+		ta.setEditable(true);
 		JScrollPane areaScrollPane = new JScrollPane(ta);
 		areaScrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
 		kp.setLayout(new BorderLayout(0,0));
 		kp.add(areaScrollPane);
+	}
+	
+	/**
+	 * Create uneditable text area
+	 * @param parent
+	 * @param title
+	 * @param message
+	 * @param r
+	 * @param c
+	 */
+	public TextAreaDialog(JFrame parent, String title, String message, int r, int c) {
+		super(parent, title, true);
+		super.setLocationRelativeTo(parent);
+		
+		setComment(message);
+		
+		this.rows = r;
+		this.cols = c;
+		this.ts = null;
 
+		ta = new KTextArea();
+		ta.setRows(r);
+		ta.setColumns(c);
+		ta.setMinimumSize(new Dimension(500, 500));
+		ta.setEditable(false);
+		JScrollPane areaScrollPane = new JScrollPane(ta);
+		areaScrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+		kp.setLayout(new BorderLayout(0,0));
+		kp.add(areaScrollPane);
 	}
 	
 	public KTextArea getTextArea() {
@@ -79,7 +118,8 @@ public class TextAreaDialog extends ComponentDialog {
 	@Override
 	public boolean accept() {
 		
-		ts.setText(ta.getText());
+		if (ts != null)
+			ts.setText(ta.getText());
 		return true;
 	}
 }

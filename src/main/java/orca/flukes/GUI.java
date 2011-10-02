@@ -31,13 +31,18 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.lang.reflect.Constructor;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 
 import javax.swing.Box;
@@ -81,6 +86,7 @@ public class GUI implements ComponentListener {
 	private static final String FLUKES_HREF_URL = "http://geni-images.renci.org/webstart/";
 	private static final String ABOUT_DOC = "html/about.html";
 	private static final String HELP_DOC = "html/help.html";
+	private static final String PREF_FILE = ".flukes.properties";
 	private JFrame frmOrcaFlukes;
 	private JTabbedPane tabbedPane;
 	private JPanel requestPanel, resourcePanel, manifestPanel;
@@ -101,6 +107,8 @@ public class GUI implements ComponentListener {
 	private JMenuItem helpMenuItem;
 	private JMenuItem aboutMenuItem;
 	private JSeparator separator_1;
+	// preferences
+	private Properties prefProperties;
 	
 	private JButton attributesButton;
 	private Component horizontalStrut_2;
@@ -171,7 +179,8 @@ public class GUI implements ComponentListener {
 				d.setVisible(true);
 				if (d.getSelectedFile() != null) {
 					GUIRequestState.getInstance().clear();
-					if (RequestLoader.getInstance().loadGraph(d.getSelectedFile())) {
+					RequestLoader rl = new RequestLoader();
+					if (rl.loadGraph(d.getSelectedFile())) {
 						frmOrcaFlukes.setTitle(FRAME_TITLE + " : " + d.getSelectedFile().getName());
 						GUIRequestState.getInstance().saveFile = d.getSelectedFile();
 					}	
@@ -188,7 +197,8 @@ public class GUI implements ComponentListener {
 				d.setVisible(true);
 				if (d.getSelectedFile() != null) {
 					GUIManifestState.getInstance().clear();
-					ManifestLoader.getInstance().loadGraph(d.getSelectedFile());
+					ManifestLoader ml = new ManifestLoader();
+					ml.loadGraph(d.getSelectedFile());
 				}
 				// kick the layout engine
 				switchLayout(GuiTabs.MANIFEST_VIEW, savedLayout.get(GuiTabs.MANIFEST_VIEW));
@@ -351,6 +361,7 @@ public class GUI implements ComponentListener {
 				try {
 					GUI gui = GUI.getInstance();
 					gui.initialize();
+					gui.processPreferences();
 					gui.getFrame().setVisible(true);
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -776,7 +787,53 @@ public class GUI implements ComponentListener {
 			
 			break;
 		}
+	}
+	
+	/**
+	 * Return user preferences (if any)
+	 * @return
+	 */
+	public String getPreference(PrefsEnum e) {
+		return prefProperties.getProperty(e.getPropName());
+	}
+	
+	/**
+	 * Allowed properties
+	 * @author ibaldin
+	 *
+	 */
+	public enum PrefsEnum {
+		XTERM_PATH("xterm.path");
 		
+		private final String propName;
+		
+		PrefsEnum(String s) {
+			propName = s;
+		}
+		
+		public String getPropName() {
+			return propName;
+		}
+	}
+	
+	/**
+	 * Read and process preferences file
+	 */
+	private void processPreferences() {
+		Properties p = System.getProperties();
+		
+		String prefFilePath = "" + p.getProperty("user.home") + p.getProperty("file.separator") + PREF_FILE;
+		try {
+			File prefs = new File(prefFilePath);
+			FileInputStream is = new FileInputStream(prefs);
+			BufferedReader bin = new BufferedReader(new InputStreamReader(is, "UTF-8"));
+			
+			prefProperties = new Properties();
+			prefProperties.load(bin);
+			
+		} catch (IOException e) {
+			;
+		}
 	}
 
 }

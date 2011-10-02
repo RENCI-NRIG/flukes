@@ -28,23 +28,12 @@ import edu.uci.ics.jung.graph.util.Pair;
 
 public class RequestLoader implements INdlRequestModelListener {
 
-	private static RequestLoader instance;
 	private OrcaReservationTerm term = new OrcaReservationTerm();
 	private String reservationDiskImage = null, reservationDomain = null;
 	private Map<String, OrcaNode> nodes = new HashMap<String, OrcaNode>();
 	private Map<String, OrcaLink> links = new HashMap<String, OrcaLink>();
 	private Map<String, OrcaNode> interfaceToNode = new HashMap<String, OrcaNode>();
-	
-	/**
-	 * Return singleton
-	 * @return
-	 */
-	public static RequestLoader getInstance() {
-		if (instance == null)
-			instance = new RequestLoader();
-		return instance;
-	}
-	
+
 	public boolean loadGraph(File f) {
 		BufferedReader bin = null; 
 		try {
@@ -82,42 +71,27 @@ public class RequestLoader implements INdlRequestModelListener {
 		
 		return StringUtils.removeStart(r.getURI(), NdlCommons.ORCA_NS);
 	}
-	
-	public void ndlNodeDiskImage(Resource di, OntModel m, Resource node,
-			String url, String hash) {
-		if ((node == null) || (di == null))
-			return;
-		try {
-			GUIRequestState.getInstance().addImage(new OrcaImage(di.getLocalName(), new URL(url), hash), null);
-			// get this node and assign image
-			if (!nodes.containsKey(node.getLocalName())) 
-				// node must exist
-				return;
-			nodes.get(node.getLocalName()).setImage(di.getLocalName());
-		} catch (Exception e) {
-			// FIXME: ?
-			;
-		}
-		
-	}
 
 	public void ndlReservation(Resource i, final OntModel m) {
-		// Nothing to do
-		//System.out.println("Found reservation " + i.getLocalName() + " uri " + i.getURI());
-	}
 
-	public void ndlReservationDiskImage(Resource di, OntModel m,
-			Resource res, String url, String hash) {
-		//System.out.println("Disk image " + di.toString() + " " + url + " " + hash);
-		if ((di == null) || (res == null))
-			return;
-		try {
-			GUIRequestState.getInstance().addImage(new OrcaImage(di.getLocalName(), new URL(url), hash), null);
-			// assign image to reservation
-			reservationDiskImage = di.getLocalName();
-		} catch (Exception e) {
-			// FIXME: ?
-			;
+		if (i != null) {
+			reservationDomain = RequestSaver.reverseLookupDomain(NdlCommons.getDomain(i));
+			Resource di = NdlCommons.getDiskImage(i);
+			if (di != null) {
+				String imageURL = NdlCommons.getIndividualsImageURL(i);
+				String imageHash = NdlCommons.getIndividualsImageHash(i);
+				if ((imageURL != null) && (imageHash != null)) {
+					try {
+						GUIRequestState.getInstance().addImage(new OrcaImage(di.getLocalName(), new URL(imageURL), imageHash), null);
+						// assign image to reservation
+						reservationDiskImage = di.getLocalName();
+					} catch (Exception e) {
+						// FIXME: ?
+						;
+					}
+				}
+			}
+			
 		}
 	}
 
@@ -134,8 +108,7 @@ public class RequestLoader implements INdlRequestModelListener {
 		term.setDuration(days, hours, minutes);
 	}
 
-	public void ndlNode(Resource ce, OntModel om, Resource ceClass, Resource domain, 
-			Resource ceType, int ceCount, List<Resource> interfaces) {
+	public void ndlNode(Resource ce, OntModel om, Resource ceClass, List<Resource> interfaces) {
 
 		if (ce == null)
 			return;
@@ -146,15 +119,20 @@ public class RequestLoader implements INdlRequestModelListener {
 		else { 
 			if (ceClass.equals(NdlCommons.serverCloudClass)) {
 				OrcaNodeGroup newNodeGroup = new OrcaNodeGroup(ce.getLocalName());
+				int ceCount = NdlCommons.getNumCE(ce);
 				if (ceCount > 0)
 					newNodeGroup.setNodeCount(ceCount);
+				newNodeGroup.setSplittable(NdlCommons.isSplittable(ce));
 				newNode = newNodeGroup;
 			} else // default just a node
 				newNode = new OrcaNode(ce.getLocalName());
 		}
 		
+		Resource domain = NdlCommons.getDomain(ce);
 		if (domain != null)
 			newNode.setDomain(RequestSaver.reverseLookupDomain(domain));
+		
+		Resource ceType = NdlCommons.getSpecificCE(ce);
 		if (ceType != null)
 			newNode.setNodeType(RequestSaver.reverseNodeTypeLookup(ceType));
 
@@ -163,8 +141,28 @@ public class RequestLoader implements INdlRequestModelListener {
 			Resource intR = it.next();
 			interfaceToNode.put(intR.getLocalName(), newNode);
 		}
+
+		// disk image
+		Resource di = NdlCommons.getDiskImage(ce);
+		if (di != null) {
+			try {
+				String imageURL = NdlCommons.getIndividualsImageURL(ce);
+				String imageHash = NdlCommons.getIndividualsImageHash(ce);
+				GUIRequestState.getInstance().addImage(new OrcaImage(di.getLocalName(), 
+						new URL(imageURL), imageHash), null);
+				newNode.setImage(di.getLocalName());
+			} catch (Exception e) {
+				// FIXME: ?
+				;
+			}
+		}
 		
-		// should we do something with interfaces here? 
+		// post boot script
+		String script = NdlCommons.getPostBootScript(ce);
+		if ((script != null) && (script.length() > 0)) {
+			newNode.setPostBootScript(script);
+		}
+		
 		nodes.put(ce.getLocalName(), newNode);
 		
 		// add nodes to the graph
@@ -244,13 +242,6 @@ public class RequestLoader implements INdlRequestModelListener {
 		GUIRequestState.getInstance().setDomainInReservation(reservationDomain);
 		GUIRequestState.getInstance().setVMImageInReservation(reservationDiskImage);
 	}
-	
-	public void ndlReservationDomain(Resource d, OntModel m) {
-		if (d == null)
-			return;
-		// do reverse lookup in RequestSaver domain map
-		reservationDomain = RequestSaver.reverseLookupDomain(d);
-	}
 
 	public void ndlNodeDependencies(Resource ni, OntModel m, Set<Resource> dependencies) {
 		OrcaNode mainNode = nodes.get(ni.getLocalName());
@@ -260,24 +251,6 @@ public class RequestLoader implements INdlRequestModelListener {
 			OrcaNode depNode = nodes.get(r.getLocalName());
 			if (depNode != null)
 				mainNode.addDependency(depNode);
-		}
-	}
-
-	public void ndlNodePostBootScript(String script, OntModel m, Resource node) {
-		if ((script != null) && (script.length() > 0)) {
-			OrcaNode on = nodes.get(node.getLocalName());
-			if (on != null)
-				on.setPostBootScript(script);
-		}
-	}
-
-	@Override
-	public void ndlNodeSplittable(Resource ni, OntModel m, boolean declared,
-			boolean splittable) {
-		OrcaNode node = nodes.get(ni.getLocalName());
-		if (node instanceof OrcaNodeGroup) {
-			OrcaNodeGroup ong = (OrcaNodeGroup)node;
-			ong.setSplittable(splittable);
 		}
 	}
 }

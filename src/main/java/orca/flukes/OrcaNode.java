@@ -51,6 +51,8 @@ public class OrcaNode {
 	// Pair<String> first is IP, second is Netmask
 	protected HashMap<OrcaLink, Pair<String>> addresses;
 	
+	protected String managementAccess = null;
+	
 	protected final LayeredIcon icon;
 
 	// specific node type 
@@ -131,6 +133,17 @@ public class OrcaNode {
 		this.icon = new LayeredIcon(new ImageIcon(GUIRequestState.class.getResource(GUIRequestState.NODE_ICON)).getImage());
 	}
 
+	// inherit some properties from parent
+	public OrcaNode(String name, OrcaNode parent) {
+		this.name = name;
+		this.addresses = new HashMap<OrcaLink, Pair<String>>();
+		this.icon = new LayeredIcon(new ImageIcon(GUIRequestState.class.getResource(GUIRequestState.NODE_ICON)).getImage());
+		this.domain = parent.getDomain();
+		this.image = parent.getImage();
+		this.nodeType = parent.getNodeType();
+		this.dependencies = parent.getDependencies();
+	}
+	
 	/**
 	 * only subclasses can set the icon
 	 * @param name
@@ -258,6 +271,29 @@ public class OrcaNode {
 		interfaces.put(l, ifName);
 	}
 	
+	public void setManagementAccess(String s) {
+		managementAccess = s;
+	}
+	
+	public String getManagementAccess() {
+		return managementAccess;
+	}
+	
+	/** 
+	 * Create a detailed printout of properties
+	 * @return
+	 */
+	public String getViewerText() {
+		String viewText = "";
+		viewText += "Node name: " + getName();
+//		viewText += "\nNode Type: " + node.getNodeType();
+//		viewText += "\nImage: " + node.getImage();
+//		viewText += "\nDomain: " + node.getDomain();
+		viewText += "\n\nPost Boot Script: \n" + getPostBootScript();
+		viewText += "\n\nManagement access: \n" + getManagementAccess();
+		return viewText;
+	}
+	
 	/**
 	 * Node factory for requests
 	 * @author ibaldin
@@ -281,4 +317,5 @@ public class OrcaNode {
         	}
         }       
     }
+
 }
