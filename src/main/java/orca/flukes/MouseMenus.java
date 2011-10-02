@@ -14,6 +14,7 @@ package orca.flukes;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.geom.Point2D;
+import java.io.File;
 import java.io.IOException;
 import java.util.Set;
 
@@ -375,10 +376,20 @@ public class MouseMenus {
                 		String xtermCmd = "/usr/X11/bin/xterm";
                 		if (GUI.getInstance().getPreference(GUI.PrefsEnum.XTERM_PATH) != null)
                 			xtermCmd = GUI.getInstance().getPreference(GUI.PrefsEnum.XTERM_PATH);
-                		String command= xtermCmd + " -e " + mgt; 
-                		System.out.println("Command is " + command);
-                		Runtime rt = Runtime.getRuntime();      
-                		rt.exec(command);
+                		// check that xterm runs
+                		File xtermFile = new File(xtermCmd);
+                		if (!xtermFile.canExecute()) {
+                			KMessageDialog kqd = new KMessageDialog(GUI.getInstance().getFrame(), "Node login", true);
+                    		kqd.setMessage("Path to xterm " + xtermCmd + " is not valid. Please fix $HOME/.flukes.properties!");
+                    		kqd.setLocationRelativeTo(GUI.getInstance().getFrame());
+                    		kqd.setVisible(true);
+                			return;
+                		} else {
+                			// run xterm
+                			String command= xtermCmd + " -e " + mgt; 
+                			Runtime rt = Runtime.getRuntime();      
+                			rt.exec(command);
+                		}
                 	} catch (IOException ex) {
                 		;
                 	}
