@@ -22,15 +22,16 @@
 */
 package orca.flukes;
 
-import orca.flukes.OrcaNode.INodeCreator;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.apache.commons.collections15.Factory;
 
 public class OrcaLink {
-    private long bandwidth;
-    private long latency;
-    private String name;
-
+    protected long bandwidth;
+    protected long latency;
+    protected String name;
+    
     public OrcaLink(String name) {
         this.name = name;
     }
@@ -68,6 +69,25 @@ public class OrcaLink {
         return name;
     }
     
+    /**
+     * Get text for GUI viewer
+     * @return
+     */
+    public String getViewerText() {
+    	String viewText = "Link name: " + name;
+    	if (bandwidth == 0)
+    		viewText += "\nBandwidth: unspecified";
+    	else 
+    		viewText += "\nBandwidth: " + bandwidth;
+    	
+    	if (latency == 0) 
+    		viewText += "\nLatency: unspecified";
+    	else
+    		viewText += "\nLatency: " + latency;
+ 
+    	return viewText;
+    }
+    
     public static class OrcaLinkFactory implements Factory<OrcaLink> {
        private ILinkCreator inc = null;
         
@@ -82,5 +102,5 @@ public class OrcaLink {
         		return inc.create();
         	}
         }    
-    }  
+    }
 }

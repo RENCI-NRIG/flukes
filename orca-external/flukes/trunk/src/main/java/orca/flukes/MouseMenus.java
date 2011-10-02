@@ -14,6 +14,7 @@ package orca.flukes;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.geom.Point2D;
+import java.io.IOException;
 import java.util.Set;
 
 import javax.swing.ButtonGroup;
@@ -154,8 +155,8 @@ public class MouseMenus {
             super("Edge Menu");
             this.add(new LatencyDisplay());
             this.add(new BandwidthDisplay());
-            //this.addSeparator();
-            //this.add(new EdgePropItem(GUI.getInstance().getFrame()));           
+            this.addSeparator();
+            this.add(new EdgeViewerItem(GUI.getInstance().getFrame()));           
         }
     }
     
@@ -184,8 +185,36 @@ public class MouseMenus {
                 }
             });
         }
-        
     }
+    
+    public static class EdgeViewerItem extends JMenuItem implements EdgeMenuListener<OrcaNode, OrcaLink>,
+    MenuPointListener {
+    	OrcaLink edge;
+    	VisualizationViewer<OrcaNode, OrcaLink> visComp;
+    	Point2D point;
+
+    	public void setEdgeAndView(OrcaLink edge, VisualizationViewer<OrcaNode, OrcaLink> visComp) {
+    		this.edge = edge;
+    		this.visComp = visComp;
+    	}
+
+    	public void setPoint(Point2D point) {
+    		this.point = point;
+    	}
+
+    	public  EdgeViewerItem(final JFrame frame) {            
+    		super("View Link Properties...");
+    		this.addActionListener(new ActionListener() {
+    			public void actionPerformed(ActionEvent e) {
+    				OrcaLinkPropertyViewer dialog = new OrcaLinkPropertyViewer(frame, edge);
+    				dialog.pack();
+    				dialog.setVisible(true);
+    			}
+    		});
+    	}
+
+    }
+    
     public static class LatencyDisplay extends JMenuItem implements EdgeMenuListener<OrcaNode, OrcaLink> {
 		public void setEdgeAndView(OrcaLink e, VisualizationViewer<OrcaNode, OrcaLink> visComp) {
         	if (e.getLatency() == 0)
@@ -223,8 +252,9 @@ public class MouseMenus {
             this.add(new ImageDisplay());
             this.add(new DomainDisplay());
             this.add(new NodeTypeDisplay());
-            //this.addSeparator();
-            //this.add(new NodePropItem(GUI.getInstance().getFrame()));
+            this.addSeparator();
+            this.add(new NodeViewItem(GUI.getInstance().getFrame()));
+            this.add(new NodeLoginItem(GUI.getInstance().getFrame()));
         }
     }
     
@@ -294,5 +324,79 @@ public class MouseMenus {
 		public void setPoint(Point2D point) {
 			this.point = point;
 		}	
+    }
+    
+    public static class NodeViewItem extends JMenuItem implements NodeMenuListener<OrcaNode, OrcaLink>, MenuPointListener {
+        OrcaNode node;
+        VisualizationViewer<OrcaNode, OrcaLink> visComp;
+        Point2D point;
+        
+        public  NodeViewItem(final JFrame frame) {
+            super("View Node Properties...");
+            this.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    OrcaNodePropertyViewer dialog = new OrcaNodePropertyViewer(frame, node);
+                    dialog.pack();
+                    dialog.setVisible(true);
+                }
+            });
+        }
+        
+		public void setNodeAndView(OrcaNode v,
+				VisualizationViewer<OrcaNode, OrcaLink> visView) {
+			visComp = visView;
+			node = v;
+		}
+
+		public void setPoint(Point2D point) {
+			this.point = point;
+		}	
+    }
+    
+    public static class NodeLoginItem extends JMenuItem implements NodeMenuListener<OrcaNode, OrcaLink>, MenuPointListener {
+        OrcaNode node;
+        VisualizationViewer<OrcaNode, OrcaLink> visComp;
+        Point2D point;
+        
+        public  NodeLoginItem(final JFrame frame) {
+            super("Login to Node ...");
+            this.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                	try {
+                		String mgt = node.getManagementAccess();
+                		if (mgt == null) {
+                			KMessageDialog kqd = new KMessageDialog(GUI.getInstance().getFrame(), "Node login", true);
+                    		kqd.setMessage("Node " + node.getName() + " does not allow user logins.");
+                    		kqd.setLocationRelativeTo(GUI.getInstance().getFrame());
+                    		kqd.setVisible(true);
+                			return;
+                		}
+                		
+                		String xtermCmd = "/usr/X11/bin/xterm";
+                		if (GUI.getInstance().getPreference(GUI.PrefsEnum.XTERM_PATH) != null)
+                			xtermCmd = GUI.getInstance().getPreference(GUI.PrefsEnum.XTERM_PATH);
+                		String command= xtermCmd + " -e " + mgt; 
+                		System.out.println("Command is " + command);
+                		Runtime rt = Runtime.getRuntime();      
+                		rt.exec(command);
+                	} catch (IOException ex) {
+                		;
+                	}
+                }
+            });
+        }
+        
+		@Override
+		public void setNodeAndView(OrcaNode v,
+				VisualizationViewer<OrcaNode, OrcaLink> visView) {
+			visComp = visView;
+			node = v;
+		}
+
+		@Override
+		public void setPoint(Point2D point) {
+			this.point = point;			
+		}
+    	
     }
 }
