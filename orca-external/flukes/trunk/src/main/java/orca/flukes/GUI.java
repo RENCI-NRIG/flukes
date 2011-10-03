@@ -27,10 +27,13 @@ import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.EventQueue;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
+import java.awt.geom.AffineTransform;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -48,6 +51,7 @@ import java.util.Set;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
@@ -71,7 +75,9 @@ import edu.uci.ics.jung.algorithms.layout.FRLayout;
 import edu.uci.ics.jung.algorithms.layout.ISOMLayout;
 import edu.uci.ics.jung.algorithms.layout.KKLayout;
 import edu.uci.ics.jung.algorithms.layout.Layout;
+import edu.uci.ics.jung.algorithms.layout.StaticLayout;
 import edu.uci.ics.jung.graph.SparseMultigraph;
+import edu.uci.ics.jung.visualization.Layer;
 import edu.uci.ics.jung.visualization.VisualizationViewer;
 import edu.uci.ics.jung.visualization.control.EditingModalGraphMouse;
 import edu.uci.ics.jung.visualization.control.ModalGraphMouse;
@@ -491,6 +497,85 @@ public class GUI implements ComponentListener {
 		GUIManifestState.getInstance().gm.setMode(ModalGraphMouse.Mode.TRANSFORMING); // Start off in panning mode  
 	}
 	
+	protected void resourcePane(Container c) {
+		Layout<OrcaNode, OrcaLink> layout = new StaticLayout<OrcaNode, OrcaLink>(GUIResourceState.getInstance().g);
+		
+		//layout.setSize(new Dimension(1000,800));
+		GUIResourceState.getInstance().vv = 
+			new VisualizationViewer<OrcaNode,OrcaLink>(layout);
+		// Show vertex and edge labels
+		GUIResourceState.getInstance().vv.getRenderContext().setVertexLabelTransformer(new ToStringLabeller<OrcaNode>());
+		GUIResourceState.getInstance().vv.getRenderContext().setEdgeLabelTransformer(new ToStringLabeller<OrcaLink>());
+		
+		// Create a graph mouse and add it to the visualization viewer
+		OrcaNode.OrcaNodeFactory onf = new OrcaNode.OrcaNodeFactory(GUIResourceState.getInstance().nodeCreator);
+		OrcaLink.OrcaLinkFactory olf = new OrcaLink.OrcaLinkFactory(GUIResourceState.getInstance().linkCreator);
+		GUIResourceState.getInstance().gm = new EditingModalGraphMouse<OrcaNode, OrcaLink>(GUIResourceState.getInstance().vv.getRenderContext(), 
+				onf, olf);
+		
+		// add the plugin
+		PopupVertexEdgeMenuMousePlugin<OrcaNode, OrcaLink> myPlugin = new PopupVertexEdgeMenuMousePlugin<OrcaNode, OrcaLink>();
+		
+		// Add some popup menus for the edges and vertices to our mouse plugin.
+		// mode menu is not set for manifests
+		//myPlugin.setEdgePopup(new MouseMenus.ManifestEdgeMenu());
+		//myPlugin.setVertexPopup(new MouseMenus.ManifestNodeMenu());
+		
+		// add map pre-renderer
+		ImageIcon mapIcon = null;
+        String imageLocation = GUIResourceState.WORLD_ICON;
+        try {
+            mapIcon = 
+                    new ImageIcon(GUIResourceState.class.getResource(imageLocation));
+        } catch(Exception ex) {
+            System.err.println("Can't load \""+imageLocation+"\"");
+        }
+        final ImageIcon icon = mapIcon;
+
+        GUIResourceState.getInstance().vv.addPreRenderPaintable(new VisualizationViewer.Paintable(){
+            public void paint(Graphics g) {
+                    Graphics2D g2d = (Graphics2D)g;
+                    AffineTransform oldXform = g2d.getTransform();
+                AffineTransform lat = 
+                    GUIResourceState.getInstance().vv.getRenderContext().getMultiLayerTransformer().getTransformer(Layer.LAYOUT).getTransform();
+                AffineTransform vat = 
+                    GUIResourceState.getInstance().vv.getRenderContext().getMultiLayerTransformer().getTransformer(Layer.VIEW).getTransform();
+                AffineTransform at = new AffineTransform();
+                at.concatenate(g2d.getTransform());
+                at.concatenate(vat);
+                at.concatenate(lat);
+                g2d.setTransform(at);
+                g.drawImage(icon.getImage(), 0, 0,
+                            icon.getIconWidth(),icon.getIconHeight(), GUIResourceState.getInstance().vv);
+                g2d.setTransform(oldXform);
+            }
+            public boolean useTransform() { return false; }
+        });
+
+		
+		GUIResourceState.getInstance().gm.remove(GUIResourceState.getInstance().gm.getPopupEditingPlugin());  // Removes the existing popup editing plugin
+		GUIResourceState.getInstance().gm.add(myPlugin);
+
+		// Add icon and shape (so pickable area roughly matches the icon) transformer
+		OrcaNode.OrcaNodeIconShapeTransformer st = new OrcaNode.OrcaNodeIconShapeTransformer();
+		GUIResourceState.getInstance().vv.getRenderContext().setVertexShapeTransformer(st);
+		
+		OrcaNode.OrcaNodeIconTransformer it = new OrcaNode.OrcaNodeIconTransformer();
+		GUIResourceState.getInstance().vv.getRenderContext().setVertexIconTransformer(it);
+		
+		// add listener to add/remove checkmarks on selected nodes
+		PickedState<OrcaNode> ps = GUIResourceState.getInstance().vv.getPickedVertexState();
+        ps.addItemListener(new OrcaNode.PickWithIconListener(it));
+		
+		GUIResourceState.getInstance().vv.setGraphMouse(GUIResourceState.getInstance().gm);
+
+		GUIResourceState.getInstance().vv.setLayout(new BorderLayout(0,0));
+		
+		c.add(GUIResourceState.getInstance().vv);
+
+		GUIResourceState.getInstance().gm.setMode(ModalGraphMouse.Mode.TRANSFORMING); // Start off in panning mode  
+	}
+	
 	private void aboutDialog() {
 		try {
 			AboutFrame ab = new AboutFrame("About FLUKES", new URL(FLUKES_HREF_URL + ABOUT_DOC));
@@ -738,7 +823,8 @@ public class GUI implements ComponentListener {
 //		
 //		attributesButton = new JButton("Edit Attributes");
 //		toolBar.add(attributesButton);
-				
+			
+		resourcePane(resourcePanel);
 		requestPane(requestPanel);
 		manifestPane(manifestPanel);
 
