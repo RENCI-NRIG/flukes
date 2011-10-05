@@ -880,6 +880,8 @@ public class GUI implements ComponentListener {
 	 * @return
 	 */
 	public String getPreference(PrefsEnum e) {
+		if (prefProperties == null)
+			return null;
 		return prefProperties.getProperty(e.getPropName());
 	}
 	

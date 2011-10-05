@@ -386,7 +386,8 @@ public class MouseMenus {
                 			return;
                 		} else {
                 			// run xterm
-                			String command= xtermCmd + " -e " + mgt; 
+                			String command= xtermCmd + " -T \"" + node.getName() + "\" -e " + mgt; 
+                			System.out.println("Command is " + command);
                 			Runtime rt = Runtime.getRuntime();      
                 			rt.exec(command);
                 		}

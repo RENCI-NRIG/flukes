@@ -68,9 +68,10 @@ public class RequestSaver {
 	static Map<String, String> domainMap;
 	static {
 		domainMap = new HashMap<String, String>();
-		domainMap.put("RENCI", "rencivmsite.rdf#rencivmsite");
-		domainMap.put("UNC", "uncvmsite.rdf#uncvmsite");
-		domainMap.put("Duke", "dukevmsite.rdf#dukevmsite");
+		domainMap.put("RENCI ACIS","acisrencivmsite.rdf#acisrencivmsite");
+		domainMap.put("RENCI BEN", "rencivmsite.rdf#rencivmsite");
+		domainMap.put("UNC BEN", "uncvmsite.rdf#uncvmsite");
+		domainMap.put("Duke CS", "dukevmsite.rdf#dukevmsite");
 	}
 	
 	// various node types
