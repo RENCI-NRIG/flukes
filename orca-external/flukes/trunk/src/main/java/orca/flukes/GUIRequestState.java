@@ -24,10 +24,13 @@
 package orca.flukes;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 
 import orca.flukes.ui.ChooserWithNewDialog;
@@ -197,7 +200,8 @@ public class GUIRequestState extends GUICommonState implements IDeleteEdgeCallBa
 	 * @return
 	 */
 	public String[] getAvailableDomains() {
-		Set<String> knownDomains = RequestSaver.domainMap.keySet();
+		List<String> knownDomains = new ArrayList(RequestSaver.domainMap.keySet());
+		Collections.sort(knownDomains);
 		
 		String[] itemList = new String[knownDomains.size() + 1];
 		
