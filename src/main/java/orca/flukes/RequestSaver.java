@@ -26,6 +26,7 @@ package orca.flukes;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStreamWriter;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -65,23 +66,27 @@ public class RequestSaver {
 	};
 		
 	// helper
-	static Map<String, String> domainMap;
+	public static final Map<String, String> domainMap;
 	static {
-		domainMap = new HashMap<String, String>();
-		domainMap.put("RENCI ACIS","acisrencivmsite.rdf#acisrencivmsite");
-		domainMap.put("RENCI BEN", "rencivmsite.rdf#rencivmsite");
-		domainMap.put("UNC BEN", "uncvmsite.rdf#uncvmsite");
-		domainMap.put("Duke CS", "dukevmsite.rdf#dukevmsite");
+		Map<String, String> dm = new HashMap<String, String>();
+		dm.put("RENCI ACIS","acisrencivmsite.rdf#acisrencivmsite");
+		dm.put("RENCI BEN", "rencivmsite.rdf#rencivmsite");
+		dm.put("UNC BEN", "uncvmsite.rdf#uncvmsite");
+		dm.put("Duke CS", "dukevmsite.rdf#dukevmsite");
+		dm.put("NERSC Dummy", "nerscvmsite.rdf#nerscvmsite");
+		domainMap = Collections.unmodifiableMap(dm);
 	}
 	
 	// various node types
-	public static final Map<String, Pair<String>> nodeTypes = new HashMap<String, Pair<String>>();
+	public static final Map<String, Pair<String>> nodeTypes;
 	static {
-		nodeTypes.put("Euca m1.small", new Pair<String>(EUCALYPTUS_NS, "EucaM1Small"));
-		nodeTypes.put("Euca c1.medium", new Pair<String>(EUCALYPTUS_NS, "EucaC1Medium"));
-		nodeTypes.put("Euca m1.large", new Pair<String>(EUCALYPTUS_NS, "EucaM1Large"));
-		nodeTypes.put("Euca m1.xlarge", new Pair<String>(EUCALYPTUS_NS, "EucaM1XLarge"));
-		nodeTypes.put("Euca c1.xlarge", new Pair<String>(EUCALYPTUS_NS, "EucaC1XLarge"));
+		Map<String, Pair<String>> nt = new HashMap<String, Pair<String>>();
+		nt.put("Euca m1.small", new Pair<String>(EUCALYPTUS_NS, "EucaM1Small"));
+		nt.put("Euca c1.medium", new Pair<String>(EUCALYPTUS_NS, "EucaC1Medium"));
+		nt.put("Euca m1.large", new Pair<String>(EUCALYPTUS_NS, "EucaM1Large"));
+		nt.put("Euca m1.xlarge", new Pair<String>(EUCALYPTUS_NS, "EucaM1XLarge"));
+		nt.put("Euca c1.xlarge", new Pair<String>(EUCALYPTUS_NS, "EucaC1XLarge"));
+		nodeTypes = Collections.unmodifiableMap(nt);
 	}
 	
 	public static RequestSaver getInstance() {
@@ -366,5 +371,20 @@ public class RequestSaver {
 				return e.getKey();
 		}
 		return null;
+	}
+	
+	/**
+	 * Post boot scripts need to be sanitized
+	 * @param s
+	 * @return
+	 */
+	public static String sanitizePostBootScript(String s) {
+		if (s == null)
+			return s;
+		String separator="#";
+		if (GUI.getInstance().getPreference(GUI.PrefsEnum.SCRIPT_COMMENT_SEPARATOR) != null)
+			separator = GUI.getInstance().getPreference(GUI.PrefsEnum.SCRIPT_COMMENT_SEPARATOR);
+		
+		return s.replaceAll("\n[\\s]*\n", "\n" + separator + "\n");
 	}
 }
