@@ -520,6 +520,6 @@ public class OrcaNodePropertyDialog extends ComponentDialog implements ActionLis
 		// set text from the post-boot script text area
 		if ((t != null) && (t.length() == 0))
 			node.setPostBootScript(null);
-		node.setPostBootScript(t);
+		node.setPostBootScript(RequestSaver.sanitizePostBootScript(t));
 	}
 }

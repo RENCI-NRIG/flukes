@@ -891,7 +891,7 @@ public class GUI implements ComponentListener {
 	 *
 	 */
 	public enum PrefsEnum {
-		XTERM_PATH("xterm.path");
+		XTERM_PATH("xterm.path"), SCRIPT_COMMENT_SEPARATOR("script.comment.separator");
 		
 		private final String propName;
 		
