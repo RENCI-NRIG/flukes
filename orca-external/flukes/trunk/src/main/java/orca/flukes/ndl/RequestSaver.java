@@ -21,7 +21,7 @@
 * IN THE WORK.
 */
 
-package orca.flukes;
+package orca.flukes.ndl;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -31,6 +31,13 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
+import orca.flukes.GUI;
+import orca.flukes.GUIRequestState;
+import orca.flukes.OrcaImage;
+import orca.flukes.OrcaLink;
+import orca.flukes.OrcaNode;
+import orca.flukes.OrcaNodeGroup;
+import orca.flukes.GUI.PrefsEnum;
 import orca.ndl.NdlCommons;
 import orca.ndl.NdlException;
 import orca.ndl.NdlGenerator;
@@ -214,7 +221,7 @@ public class RequestSaver {
 				// is image specified in the reservation?
 				if (GUIRequestState.getInstance().getVMImageInReservation() != null) {
 					// there is a global image (maybe)
-					OrcaImage im = GUIRequestState.getInstance().definedImages.get(GUIRequestState.getInstance().getVMImageInReservation());
+					OrcaImage im = GUIRequestState.getInstance().getImageByName(GUIRequestState.getInstance().getVMImageInReservation());
 					if (im != null) {
 						// definitely an global image - attach it to the reservation
 						globalImage = true;
@@ -232,7 +239,7 @@ public class RequestSaver {
 				}
 				
 				// shove invidividual nodes onto the reservation
-				for (OrcaNode n: GUIRequestState.getInstance().g.getVertices()) {
+				for (OrcaNode n: GUIRequestState.getInstance().getGraph().getVertices()) {
 					Individual ni;
 					if (n instanceof OrcaNodeGroup) {
 						OrcaNodeGroup ong = (OrcaNodeGroup) n;
@@ -258,7 +265,7 @@ public class RequestSaver {
 					// if no global image is set and a local image is set, add it to node
 					if (!globalImage && (n.getImage() != null)) {
 						// check if image is set in this node
-						OrcaImage im = GUIRequestState.getInstance().definedImages.get(n.getImage());
+						OrcaImage im = GUIRequestState.getInstance().getImageByName(n.getImage());
 						if (im != null) {
 							Individual imI = ngen.declareDiskImage(im.getUrl().toString(), im.getHash(), im.getShortName());
 							ngen.addDiskImageToIndividual(imI, ni);
@@ -284,7 +291,7 @@ public class RequestSaver {
 				}
 				
 				// node dependencies (done afterwards to be sure all nodes are declared)
-				for (OrcaNode n: GUIRequestState.getInstance().g.getVertices()) {
+				for (OrcaNode n: GUIRequestState.getInstance().getGraph().getVertices()) {
 					Individual ni = ngen.getRequestIndividual(n.getName());
 					for(OrcaNode dep: n.getDependencies()) {
 						Individual depI = ngen.getRequestIndividual(dep.getName());
@@ -294,12 +301,12 @@ public class RequestSaver {
 					}
 				}
 				
-				if (GUIRequestState.getInstance().g.getEdgeCount() == 0) {
+				if (GUIRequestState.getInstance().getGraph().getEdgeCount() == 0) {
 					// a bunch of disconnected nodes, no IP addresses 
 					
 				} else {
 					// edges, nodes, IP addresses oh my!
-					for (OrcaLink e: GUIRequestState.getInstance().g.getEdges()) {
+					for (OrcaLink e: GUIRequestState.getInstance().getGraph().getEdges()) {
 						Individual ei = ngen.declareNetworkConnection(e.getName());
 						ngen.addResourceToReservation(reservation, ei);
 
@@ -311,7 +318,7 @@ public class RequestSaver {
 
 						// TODO: latency
 						
-						Pair<OrcaNode> pn = GUIRequestState.getInstance().g.getEndpoints(e);
+						Pair<OrcaNode> pn = GUIRequestState.getInstance().getGraph().getEndpoints(e);
 						processNodeAndLink(pn.getFirst(), e, ei);
 						processNodeAndLink(pn.getSecond(), e, ei);
 					}

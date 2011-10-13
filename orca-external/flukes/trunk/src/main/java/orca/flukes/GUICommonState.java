@@ -41,12 +41,16 @@ public abstract class GUICommonState {
 	// Vis viewer 
 	VisualizationViewer<OrcaNode,OrcaLink> vv = null;
 	
-	OrcaLinkCreator getLinkCreator() {
+	public OrcaLinkCreator getLinkCreator() {
 		return linkCreator;
 	}
 	
-	OrcaNodeCreator getNodeCreator() {
+	public OrcaNodeCreator getNodeCreator() {
 		return nodeCreator;
+	}
+	
+	public SparseMultigraph<OrcaNode, OrcaLink> getGraph() {
+		return g;
 	}
 	
 }

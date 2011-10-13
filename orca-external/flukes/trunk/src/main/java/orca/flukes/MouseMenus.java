@@ -364,7 +364,7 @@ public class MouseMenus {
             this.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
                 	try {
-                		String mgt = node.getManagementAccess();
+                		String mgt = node.getSSHManagementAccess();
                 		if (mgt == null) {
                 			KMessageDialog kqd = new KMessageDialog(GUI.getInstance().getFrame(), "Node login", true);
                     		kqd.setMessage("Node " + node.getName() + " does not allow user logins.");
@@ -372,7 +372,9 @@ public class MouseMenus {
                     		kqd.setVisible(true);
                 			return;
                 		}
-                		
+                		// parse the URI
+                		mgt = mgt.replaceAll("://", " ");
+                		mgt = mgt.replaceAll(":", " -p ");
                 		String xtermCmd = "/usr/X11/bin/xterm";
                 		if (GUI.getInstance().getPreference(GUI.PrefsEnum.XTERM_PATH) != null)
                 			xtermCmd = GUI.getInstance().getPreference(GUI.PrefsEnum.XTERM_PATH);

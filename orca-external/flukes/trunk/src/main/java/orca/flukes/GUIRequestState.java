@@ -33,6 +33,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
+import orca.flukes.ndl.RequestSaver;
 import orca.flukes.ui.ChooserWithNewDialog;
 import edu.uci.ics.jung.graph.util.Pair;
 
@@ -81,7 +82,7 @@ public class GUIRequestState extends GUICommonState implements IDeleteEdgeCallBa
 		linkCreator.setDefaultLatency(5000);
 	}
 	
-	static GUIRequestState getInstance() {
+	public static GUIRequestState getInstance() {
 		if (instance == null) {
 			initialize();
 			instance = new GUIRequestState();

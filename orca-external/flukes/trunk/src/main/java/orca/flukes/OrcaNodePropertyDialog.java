@@ -43,6 +43,7 @@ import javax.swing.JScrollPane;
 import javax.swing.ListSelectionModel;
 import javax.swing.ScrollPaneConstants;
 
+import orca.flukes.ndl.RequestSaver;
 import orca.flukes.ui.IpAddrField;
 import orca.flukes.ui.TextAreaDialog;
 

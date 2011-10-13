@@ -29,6 +29,7 @@ import java.awt.event.ItemListener;
 import java.awt.geom.Ellipse2D;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -51,7 +52,7 @@ public class OrcaNode {
 	// Pair<String> first is IP, second is Netmask
 	protected HashMap<OrcaLink, Pair<String>> addresses;
 	
-	protected String managementAccess = null;
+	protected List<String> managementAccess = null;
 	
 	protected final LayeredIcon icon;
 
@@ -246,7 +247,7 @@ public class OrcaNode {
 		return ret;
 	}
 	
-	Set<OrcaNode> getDependencies() {
+	public Set<OrcaNode> getDependencies() {
 		return dependencies;
 	}
 	
@@ -271,12 +272,22 @@ public class OrcaNode {
 		interfaces.put(l, ifName);
 	}
 	
-	public void setManagementAccess(String s) {
+	public void setManagementAccess(List<String> s) {
 		managementAccess = s;
 	}
 	
-	public String getManagementAccess() {
+	public List<String> getManagementAccess() {
 		return managementAccess;
+	}
+	
+	// if ssh is available
+	public String getSSHManagementAccess() {
+		for (String service: managementAccess) {
+			if (service.startsWith("ssh://")) {
+				return service;
+			}
+		}
+		return null;
 	}
 	
 	/** 
@@ -290,7 +301,10 @@ public class OrcaNode {
 //		viewText += "\nImage: " + node.getImage();
 //		viewText += "\nDomain: " + node.getDomain();
 		viewText += "\n\nPost Boot Script: \n" + getPostBootScript();
-		viewText += "\n\nManagement access: \n" + getManagementAccess();
+		viewText += "\n\nManagement access: \n";
+		for (String service: getManagementAccess()) {
+			viewText += service + "\n";
+		}
 		return viewText;
 	}
 	
