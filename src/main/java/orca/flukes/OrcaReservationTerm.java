@@ -38,13 +38,13 @@ public class OrcaReservationTerm {
 	/**
 	 * Default is starting now for 24 hours
 	 */
-	OrcaReservationTerm() {
+	public OrcaReservationTerm() {
 		dDays = 0;
 		dHours = 24;
 		dMins = 0;
 	}
 	
-	OrcaReservationTerm(int d, int h, int m) {
+	public OrcaReservationTerm(int d, int h, int m) {
 		dDays = d;
 		dHours = h;
 		dMins = m;
@@ -52,7 +52,7 @@ public class OrcaReservationTerm {
 			dHours = 24;
 	}
 	
-	OrcaReservationTerm(Date s, int d, int h, int m) {
+	public OrcaReservationTerm(Date s, int d, int h, int m) {
 		start = s;
 		dDays = d;
 		dHours = h;

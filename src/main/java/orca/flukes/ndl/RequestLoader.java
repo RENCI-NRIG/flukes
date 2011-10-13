@@ -1,4 +1,4 @@
-package orca.flukes;
+package orca.flukes.ndl;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -14,6 +14,13 @@ import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
 
+import orca.flukes.GUI;
+import orca.flukes.GUIRequestState;
+import orca.flukes.OrcaImage;
+import orca.flukes.OrcaLink;
+import orca.flukes.OrcaNode;
+import orca.flukes.OrcaNodeGroup;
+import orca.flukes.OrcaReservationTerm;
 import orca.ndl.INdlRequestModelListener;
 import orca.ndl.NdlCommons;
 import orca.ndl.NdlRequestParser;
@@ -166,7 +173,7 @@ public class RequestLoader implements INdlRequestModelListener {
 		nodes.put(ce.getLocalName(), newNode);
 		
 		// add nodes to the graph
-		GUIRequestState.getInstance().g.addVertex(newNode);
+		GUIRequestState.getInstance().getGraph().addVertex(newNode);
 	}
 
 	/**
@@ -195,7 +202,7 @@ public class RequestLoader implements INdlRequestModelListener {
 				
 				// have to be there
 				if ((if1Node != null) && (if2Node != null)) {
-					GUIRequestState.getInstance().g.addEdge(ol, new Pair<OrcaNode>(if1Node, if2Node), EdgeType.UNDIRECTED);
+					GUIRequestState.getInstance().getGraph().addEdge(ol, new Pair<OrcaNode>(if1Node, if2Node), EdgeType.UNDIRECTED);
 				}
 			}
 		} else {

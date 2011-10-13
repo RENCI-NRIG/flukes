@@ -20,7 +20,7 @@
 * OUT OF OR IN CONNECTION WITH THE WORK OR THE USE OR OTHER DEALINGS 
 * IN THE WORK.
 */
-package orca.flukes;
+package orca.flukes.ndl;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -34,6 +34,14 @@ import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
 
+import orca.flukes.GUI;
+import orca.flukes.GUIManifestState;
+import orca.flukes.GUIRequestState;
+import orca.flukes.OrcaCrossconnect;
+import orca.flukes.OrcaImage;
+import orca.flukes.OrcaLink;
+import orca.flukes.OrcaNode;
+import orca.flukes.OrcaNodeGroup;
 import orca.ndl.INdlManifestModelListener;
 import orca.ndl.NdlCommons;
 import orca.ndl.NdlManifestParser;
@@ -148,7 +156,7 @@ public class ManifestLoader implements INdlManifestModelListener {
 				
 				// have to be there
 				if ((if1Node != null) && (if2Node != null)) {
-					GUIManifestState.getInstance().g.addEdge(ol, new Pair<OrcaNode>(if1Node, if2Node), 
+					GUIManifestState.getInstance().getGraph().addEdge(ol, new Pair<OrcaNode>(if1Node, if2Node), 
 							EdgeType.UNDIRECTED);
 				}
 			}
@@ -229,7 +237,7 @@ public class ManifestLoader implements INdlManifestModelListener {
 		nodes.put(getTrueName(c), oc);
 		
 		// add nodes to the graph
-		GUIManifestState.getInstance().g.addVertex(oc);
+		GUIManifestState.getInstance().getGraph().addVertex(oc);
 	}
 	
 	@Override
@@ -296,7 +304,7 @@ public class ManifestLoader implements INdlManifestModelListener {
 		nodes.put(getTrueName(ce), newNode);
 		
 		// add nodes to the graph
-		GUIManifestState.getInstance().g.addVertex(newNode);
+		GUIManifestState.getInstance().getGraph().addVertex(newNode);
 		
 		// are there nodes hanging off of it as elements? if so, link them in
 		processDomainVmElements(ce, om, newNode);
@@ -309,17 +317,17 @@ public class ManifestLoader implements INdlManifestModelListener {
 			Resource tmpR = vmEl.next().getResource();
 			OrcaNode on = new OrcaNode(getTrueName(tmpR), parent);
 			nodes.put(getTrueName(tmpR), on);
-			GUIManifestState.getInstance().g.addVertex(on);
+			GUIManifestState.getInstance().getGraph().addVertex(on);
 			OrcaLink ol = GUIManifestState.getInstance().getLinkCreator().create();
 			links.put(ol.getName(), ol);
-			GUIManifestState.getInstance().g.addEdge(ol, new Pair<OrcaNode>(parent, on), 
+			GUIManifestState.getInstance().getGraph().addEdge(ol, new Pair<OrcaNode>(parent, on), 
 					EdgeType.UNDIRECTED);
 			// add various properties
 			// post boot script
 			on.setPostBootScript(NdlCommons.getPostBootScript(tmpR));
 			
-			// management IP/port
-			on.setManagementAccess(NdlCommons.getNodeSSHService(tmpR));
+			// management IP/port access
+			on.setManagementAccess(NdlCommons.getNodeServices(tmpR));
 		}
 	}
 	

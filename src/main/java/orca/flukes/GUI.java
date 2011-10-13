@@ -65,6 +65,10 @@ import javax.swing.JToolBar;
 import javax.swing.SwingConstants;
 import javax.swing.filechooser.FileFilter;
 
+import orca.flukes.ndl.ManifestLoader;
+import orca.flukes.ndl.RequestLoader;
+import orca.flukes.ndl.RequestSaver;
+
 import com.hyperrealm.kiwi.ui.AboutFrame;
 import com.hyperrealm.kiwi.ui.KFileChooser;
 import com.hyperrealm.kiwi.ui.UIChangeManager;
