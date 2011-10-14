@@ -68,9 +68,11 @@ import javax.swing.filechooser.FileFilter;
 import orca.flukes.ndl.ManifestLoader;
 import orca.flukes.ndl.RequestLoader;
 import orca.flukes.ndl.RequestSaver;
+import orca.flukes.ui.TextAreaDialog;
 
 import com.hyperrealm.kiwi.ui.AboutFrame;
 import com.hyperrealm.kiwi.ui.KFileChooser;
+import com.hyperrealm.kiwi.ui.KTextArea;
 import com.hyperrealm.kiwi.ui.UIChangeManager;
 import com.hyperrealm.kiwi.ui.dialog.KFileChooserDialog;
 import com.hyperrealm.kiwi.ui.dialog.KQuestionDialog;
@@ -115,8 +117,9 @@ public class GUI implements ComponentListener {
 	private Component horizontalStrut_1;
 	private JMenu mnNewMenu, outputMenu, layoutMenu;
 	private JMenuItem helpMenuItem;
+	private JMenuItem prefMenuItem;
 	private JMenuItem aboutMenuItem;
-	private JSeparator separator_1;
+	private JSeparator separator_1, separator_2;
 	// preferences
 	private Properties prefProperties;
 	
@@ -255,6 +258,8 @@ public class GUI implements ComponentListener {
 				helpDialog();
 			else if (e.getActionCommand().equals("about"))
 				aboutDialog();
+			else if (e.getActionCommand().equals("prefs"))
+				prefsDialog();
 			else if (e.getActionCommand().equals("xml"))
 				RequestSaver.getInstance().setOutputFormat(RequestSaver.RDF_XML_FORMAT);
 			else if (e.getActionCommand().equals("n3"))
@@ -598,6 +603,21 @@ public class GUI implements ComponentListener {
 		}
 	}
 	
+	private void prefsDialog() {
+		TextAreaDialog tad = new TextAreaDialog(frmOrcaFlukes, "Preference settings", 
+				"Current preference settings (edit $HOME/.flukes.properties and restart to change)", PrefsEnum.values().length + 1, 50);
+		KTextArea ta = tad.getTextArea();
+		
+		String prefs = "";
+		for (int i = 0; i < PrefsEnum.values().length; i++) {
+			PrefsEnum e = PrefsEnum.values()[i];
+			prefs += "\n" + e.getPropName() + ": " + getPreference(e);
+		}
+		ta.setText(prefs);
+		tad.pack();
+        tad.setVisible(true);
+	}
+	
 	/*
 	 * Common menus between tabs
 	 */
@@ -679,6 +699,14 @@ public class GUI implements ComponentListener {
 		
 		mnNewMenu = new JMenu("Help");
 		menuBar.add(mnNewMenu);
+		
+		prefMenuItem = new JMenuItem("Preference settings");
+		prefMenuItem.setActionCommand("prefs");
+		prefMenuItem.addActionListener(mListener);
+		mnNewMenu.add(prefMenuItem);
+		
+		separator_2 = new JSeparator();
+		mnNewMenu.add(separator_2);
 		
 		helpMenuItem = new JMenuItem("Help Contents");
 		helpMenuItem.setActionCommand("help");
@@ -859,7 +887,7 @@ public class GUI implements ComponentListener {
 		l.getItem().setSelected(true);
 	}
 	
-	// callback for switching between view tabs
+	// callback for switching between view tabs and keeping layout
 	public void componentShown(ComponentEvent arg0) {
 		// Track which tab is showing, adjust the layout menu
 		GuiTabs at = activeTab();
@@ -880,13 +908,17 @@ public class GUI implements ComponentListener {
 	}
 	
 	/**
-	 * Return user preferences (if any)
+	 * Return user preferences specified in .flukes.properties or default value otherwise.
+	 * Never null;
 	 * @return
 	 */
 	public String getPreference(PrefsEnum e) {
 		if (prefProperties == null)
-			return null;
-		return prefProperties.getProperty(e.getPropName());
+			return e.getDefaultValue();
+		if (prefProperties.containsKey(e.getPropName()))
+			return prefProperties.getProperty(e.getPropName());
+		else
+			return e.getDefaultValue();
 	}
 	
 	/**
@@ -895,16 +927,24 @@ public class GUI implements ComponentListener {
 	 *
 	 */
 	public enum PrefsEnum {
-		XTERM_PATH("xterm.path"), SCRIPT_COMMENT_SEPARATOR("script.comment.separator");
+		XTERM_PATH("xterm.path", "/usr/X11/bin/xterm"), 
+		SCRIPT_COMMENT_SEPARATOR("script.comment.separator", "#"),
+		SSH_OPTIONS("ssh.options", "-o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no");
 		
 		private final String propName;
+		private final String defaultValue;
 		
-		PrefsEnum(String s) {
+		PrefsEnum(String s, String d) {
 			propName = s;
+			defaultValue = d;
 		}
 		
 		public String getPropName() {
 			return propName;
+		}
+		
+		public String getDefaultValue() {
+			return defaultValue;
 		}
 	}
 	
