@@ -373,11 +373,17 @@ public class MouseMenus {
                 			return;
                 		}
                 		// parse the URI
-                		mgt = mgt.replaceAll("://", " ");
-                		mgt = mgt.replaceAll(":", " -p ");
-                		String xtermCmd = "/usr/X11/bin/xterm";
-                		if (GUI.getInstance().getPreference(GUI.PrefsEnum.XTERM_PATH) != null)
-                			xtermCmd = GUI.getInstance().getPreference(GUI.PrefsEnum.XTERM_PATH);
+                		if (mgt.startsWith("ssh")) {                			
+                			mgt = mgt.replaceAll("://", " " + GUI.getInstance().getPreference(GUI.PrefsEnum.SSH_OPTIONS) + " ");
+                			mgt = mgt.replaceAll(":", " -p ");
+                		} else {
+                			KMessageDialog kqd = new KMessageDialog(GUI.getInstance().getFrame(), "Node login", true);
+                    		kqd.setMessage("Node " + node.getName() + " uses unsupported access method: " + mgt);
+                    		kqd.setLocationRelativeTo(GUI.getInstance().getFrame());
+                    		kqd.setVisible(true);
+                			return;
+                		}
+                		String xtermCmd = GUI.getInstance().getPreference(GUI.PrefsEnum.XTERM_PATH); 
                 		// check that xterm runs
                 		File xtermFile = new File(xtermCmd);
                 		if (!xtermFile.canExecute()) {
@@ -389,7 +395,6 @@ public class MouseMenus {
                 		} else {
                 			// run xterm
                 			String command= xtermCmd + " -T \"" + node.getName() + "\" -e " + mgt; 
-                			System.out.println("Command is " + command);
                 			Runtime rt = Runtime.getRuntime();      
                 			rt.exec(command);
                 		}

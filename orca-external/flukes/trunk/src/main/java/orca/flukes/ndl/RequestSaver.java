@@ -388,10 +388,7 @@ public class RequestSaver {
 	public static String sanitizePostBootScript(String s) {
 		if (s == null)
 			return s;
-		String separator="#";
-		if (GUI.getInstance().getPreference(GUI.PrefsEnum.SCRIPT_COMMENT_SEPARATOR) != null)
-			separator = GUI.getInstance().getPreference(GUI.PrefsEnum.SCRIPT_COMMENT_SEPARATOR);
 		
-		return s.replaceAll("\n[\\s]*\n", "\n" + separator + "\n");
+		return s.replaceAll("\n[\\s]*\n", "\n" + GUI.getInstance().getPreference(GUI.PrefsEnum.SCRIPT_COMMENT_SEPARATOR) + "\n");
 	}
 }
