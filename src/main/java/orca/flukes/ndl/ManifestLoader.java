@@ -224,6 +224,8 @@ public class ManifestLoader implements INdlManifestModelListener {
 		
 		oc.setLabel(label);
 		
+		oc.setState(NdlCommons.getResourceStateAsString(c));
+		
 		// later set bandwidth on adjacent links (crossconnects in NDL have
 		// bandwidth but for users we'll show it on the links)
 		oc.setBandwidth(bw);
@@ -248,7 +250,7 @@ public class ManifestLoader implements INdlManifestModelListener {
 		OrcaNode newNode;
 		
 		if (ceClass.equals(NdlCommons.computeElementClass))
-			// HACK! if it is a collection, it used to be ServerCloud
+			// HACK! if it is a collection, it used to be NODEGROUP
 			if (ce.hasProperty(NdlCommons.collectionElementProperty))
 				newNode = new OrcaCrossconnect(getTrueName(ce));
 			else
@@ -263,6 +265,9 @@ public class ManifestLoader implements INdlManifestModelListener {
 			} else // default just a node
 				newNode = new OrcaNode(getTrueName(ce));
 		}
+		
+		// state
+		newNode.setState(NdlCommons.getResourceStateAsString(ce));
 		
 		// domain
 		Resource domain = NdlCommons.getDomain(ce);

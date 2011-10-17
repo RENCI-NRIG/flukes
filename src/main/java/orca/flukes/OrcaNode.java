@@ -60,6 +60,8 @@ public class OrcaNode {
 	protected String nodeType = null;
 	// post-boot script
 	protected String postBootScript = null;
+	// reservation state
+	protected String state = null;
 	
 	protected Set<OrcaNode> dependencies = new HashSet<OrcaNode>();
 	
@@ -131,18 +133,19 @@ public class OrcaNode {
 	public OrcaNode(String name) {
 		this.name = name;
 		this.addresses = new HashMap<OrcaLink, Pair<String>>();
-		this.icon = new LayeredIcon(new ImageIcon(GUIRequestState.class.getResource(GUIRequestState.NODE_ICON)).getImage());
+		this.icon = new LayeredIcon(new ImageIcon(GUIRequestState.class.getResource(OrcaNodeEnum.CE.getIconName())).getImage());
 	}
 
 	// inherit some properties from parent
 	public OrcaNode(String name, OrcaNode parent) {
 		this.name = name;
 		this.addresses = new HashMap<OrcaLink, Pair<String>>();
-		this.icon = new LayeredIcon(new ImageIcon(GUIRequestState.class.getResource(GUIRequestState.NODE_ICON)).getImage());
+		this.icon = new LayeredIcon(new ImageIcon(GUIRequestState.class.getResource(OrcaNodeEnum.CE.getIconName())).getImage());
 		this.domain = parent.getDomain();
 		this.image = parent.getImage();
 		this.nodeType = parent.getNodeType();
 		this.dependencies = parent.getDependencies();
+		this.state = parent.state;
 	}
 	
 	/**
@@ -276,6 +279,7 @@ public class OrcaNode {
 		managementAccess = s;
 	}
 	
+	// all available access options
 	public List<String> getManagementAccess() {
 		return managementAccess;
 	}
@@ -290,17 +294,22 @@ public class OrcaNode {
 		return null;
 	}
 	
+	public void setState(String s) {
+		state = s;
+	}
+	
 	/** 
 	 * Create a detailed printout of properties
 	 * @return
 	 */
 	public String getViewerText() {
 		String viewText = "";
-		viewText += "Node name: " + getName();
+		viewText += "Node name: " + name;
+		viewText += "\nNode reservation state: " + state;
 //		viewText += "\nNode Type: " + node.getNodeType();
 //		viewText += "\nImage: " + node.getImage();
-//		viewText += "\nDomain: " + node.getDomain();
-		viewText += "\n\nPost Boot Script: \n" + getPostBootScript();
+//		viewText += "\nDomain: " + domain;
+		viewText += "\n\nPost Boot Script: \n" + (postBootScript == null ? "Not specified" : postBootScript);
 		viewText += "\n\nManagement access: \n";
 		for (String service: getManagementAccess()) {
 			viewText += service + "\n";
