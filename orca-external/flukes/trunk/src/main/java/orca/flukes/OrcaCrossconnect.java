@@ -39,7 +39,7 @@ public class OrcaCrossconnect extends OrcaNode {
 	
 	public OrcaCrossconnect(String name) {
 		super(name, 
-				new LayeredIcon(new ImageIcon(GUIRequestState.class.getResource(GUIRequestState.XCON_ICON)).getImage()));
+				new LayeredIcon(new ImageIcon(GUIRequestState.class.getResource(OrcaNodeEnum.CROSSCONNECT.getIconName())).getImage()));
 	}
 
 	public void setLabel(String s) {
@@ -65,7 +65,8 @@ public class OrcaCrossconnect extends OrcaNode {
 	@Override
 	public String getViewerText() {
 		String viewText = "";
-		viewText += "Node name: " + getName();
+		viewText += "Node name: " + name;
+		viewText += "\nNode reservation state: " + state;
 		if (label != null)
 			viewText += "\nLabel/Tag: " + label;
 		if (interfaces.size() > 0) {

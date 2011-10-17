@@ -333,7 +333,7 @@ public class OrcaNodePropertyDialog extends ComponentDialog implements ActionLis
 		// add internal field
 		if (node instanceof OrcaNodeGroup) {
 			OrcaNodeGroup ong = (OrcaNodeGroup)node;
-			if (nodeEdges.size() == 0) {
+			//if (nodeEdges.size() == 0) {
 				{
 					JLabel lblNewLabel_1 = new JLabel("Internal VLAN IP Address: ");
 					GridBagConstraints gbc_lblNewLabel_1 = new GridBagConstraints();
@@ -354,9 +354,9 @@ public class OrcaNodePropertyDialog extends ComponentDialog implements ActionLis
 					kp.add(internalIpf, gbc_list);
 				}
 			ycoord++;
-			} else 
-				// zero out internal address
-				internalIpf = null;
+			//} else 
+			//	// zero out internal address
+			//	internalIpf = null;
 		} 
 			
 	}

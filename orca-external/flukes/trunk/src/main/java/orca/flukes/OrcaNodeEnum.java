@@ -22,18 +22,26 @@
 */
 package orca.flukes;
 
+/**
+ * Enum defines various kinds of nodes
+ * @author ibaldin
+ *
+ */
 public enum OrcaNodeEnum {
-	CE(OrcaNode.class, "Node"), 
-	ServerCloud(OrcaNodeGroup.class, "NodeGroup"), 
-	CrossConnect(OrcaCrossconnect.class, "CrossConnect");
+	CE(OrcaNode.class, "Node", "node-50.gif"), 
+	NODEGROUP(OrcaNodeGroup.class, "NodeGroup", "server-stack-50.gif"), 
+	CROSSCONNECT(OrcaCrossconnect.class, "CrossConnect", "crossconnect-50.gif");
+	
 	private int nodeCount;
 	private String namePrefix;
 	private Class<?> clazz;
+	private String icon;
 	
-	OrcaNodeEnum(Class<?> c, String pf) {
+	OrcaNodeEnum(Class<?> c, String pf, String i) {
 		clazz = c;
 		nodeCount = 0;
 		namePrefix = pf;
+		icon = i;
 	}
 	
 	public int getCount() {
@@ -46,5 +54,9 @@ public enum OrcaNodeEnum {
 	
 	public Class<?> getClazz() {
 		return clazz;
+	}
+	
+	public String getIconName() {
+		return icon;
 	}
 }

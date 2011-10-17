@@ -353,7 +353,7 @@ public class GUI implements ComponentListener {
 			} else if (e.getActionCommand().equals("nodes")) {
 				GUIRequestState.getInstance().nodeCreator.setCurrent(OrcaNodeEnum.CE);
 			} else if (e.getActionCommand().equals("nodegroups")) {
-				GUIRequestState.getInstance().nodeCreator.setCurrent(OrcaNodeEnum.ServerCloud);
+				GUIRequestState.getInstance().nodeCreator.setCurrent(OrcaNodeEnum.NODEGROUP);
 			}
 		}
 	}

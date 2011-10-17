@@ -47,10 +47,6 @@ public class GUIRequestState extends GUICommonState implements IDeleteEdgeCallBa
 	public static final String NO_DOMAIN_SELECT = "System select";
 	public static final String NODE_TYPE_SITE_DEFAULT = "Site default";
 	public static final String NO_NODE_DEPS="No dependencies";
-	public static final String NODE_ICON = "node-50.gif";
-	public static final String CLOUD_ICON = "cloud-50.gif";
-	public static final String XCON_ICON = "crossconnect-50.gif";
-	
 	private static GUIRequestState instance = null;
 	
 	// VM images defined by the user

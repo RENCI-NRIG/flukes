@@ -80,7 +80,7 @@ public class RequestSaver {
 		dm.put("RENCI BEN", "rencivmsite.rdf#rencivmsite");
 		dm.put("UNC BEN", "uncvmsite.rdf#uncvmsite");
 		dm.put("Duke CS", "dukevmsite.rdf#dukevmsite");
-		dm.put("NERSC Dummy", "nerscvmsite.rdf#nerscvmsite");
+		dm.put("NERSC", "nerscvmsite.rdf#nerscvmsite");
 		domainMap = Collections.unmodifiableMap(dm);
 	}
 	
@@ -171,11 +171,11 @@ public class RequestSaver {
 	}
 	
 	/**
-	 * Disconnected node group requires special treatment
+	 * Special handling for node group internal vlan
 	 * @param ong
 	 * @throws NdlException
 	 */
-	private void processSingleNodeGroup(OrcaNodeGroup ong) throws NdlException {
+	private void processNodeGroupInternalVlan(OrcaNodeGroup ong) throws NdlException {
 		Individual intI = ngen.declareInterface("private-vlan-"+ong.getName());
 		Individual nodeI = ngen.getRequestIndividual(ong.getName());
 		ngen.addInterfaceToIndividual(intI, nodeI);
@@ -248,7 +248,7 @@ public class RequestSaver {
 						else
 							ni = ngen.declareServerCloud(ong.getName());
 						if (ong.getInternalIp() != null)
-							processSingleNodeGroup(ong);
+							processNodeGroupInternalVlan(ong);
 					}
 					else
 						ni = ngen.declareComputeElement(n.getName());

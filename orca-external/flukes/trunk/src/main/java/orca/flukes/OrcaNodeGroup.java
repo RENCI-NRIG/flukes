@@ -34,7 +34,7 @@ public class OrcaNodeGroup extends OrcaNode {
 
 	public OrcaNodeGroup(String name) {
 		super(name, 
-				new LayeredIcon(new ImageIcon(GUIRequestState.class.getResource(GUIRequestState.CLOUD_ICON)).getImage()));
+				new LayeredIcon(new ImageIcon(GUIRequestState.class.getResource(OrcaNodeEnum.NODEGROUP.getIconName())).getImage()));
 	}
 
 	public int getNodeCount() {
