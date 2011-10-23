@@ -26,6 +26,7 @@ package orca.flukes;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Container;
+import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -70,6 +71,9 @@ import orca.flukes.ndl.RequestLoader;
 import orca.flukes.ndl.RequestSaver;
 import orca.flukes.ui.TextAreaDialog;
 
+import org.apache.commons.collections15.Transformer;
+import org.apache.commons.collections15.functors.ChainedTransformer;
+
 import com.hyperrealm.kiwi.ui.AboutFrame;
 import com.hyperrealm.kiwi.ui.KFileChooser;
 import com.hyperrealm.kiwi.ui.KTextArea;
@@ -103,7 +107,7 @@ public class GUI implements ComponentListener {
 	private JTabbedPane tabbedPane;
 	private JPanel requestPanel, resourcePanel, manifestPanel;
 	private JToolBar toolBar;
-	private JButton nodeButton;
+	private JButton nodeButton, queryButton;
 	private JButton nodeGroupButton;
 	private Component horizontalStrut;
 	private JMenuBar menuBar;
@@ -145,7 +149,8 @@ public class GUI implements ComponentListener {
 	public class NdlFileFilter extends FileFilter {
 		
 	    //Accept all directories and all gif, jpg, tiff, or png files.
-	    public boolean accept(File f) {
+	    @Override
+		public boolean accept(File f) {
 	        if (f.isDirectory()) {
 	            return true;
 	        }
@@ -158,7 +163,8 @@ public class GUI implements ComponentListener {
 	    }
 
 	    //The description of this filter
-	    public String getDescription() {
+	    @Override
+		public String getDescription() {
 	        return "NDL Files";
 	    }
 	    
@@ -188,6 +194,8 @@ public class GUI implements ComponentListener {
 				d.setLocationRelativeTo(getFrame());
 				d.getFileChooser().setAcceptAllFileFilterUsed(true);
 				d.getFileChooser().addChoosableFileFilter(new NdlFileFilter());
+				if (GUIRequestState.getInstance().getSaveDir() != null)
+					d.setCurrentDirectory(new File(GUIRequestState.getInstance().getSaveDir()));
 				d.pack();
 				d.setVisible(true);
 				if (d.getSelectedFile() != null) {
@@ -195,7 +203,8 @@ public class GUI implements ComponentListener {
 					RequestLoader rl = new RequestLoader();
 					if (rl.loadGraph(d.getSelectedFile())) {
 						frmOrcaFlukes.setTitle(FRAME_TITLE + " : " + d.getSelectedFile().getName());
-						GUIRequestState.getInstance().saveFile = d.getSelectedFile();
+						GUIRequestState.getInstance().setSaveFile(d.getSelectedFile());
+						GUIRequestState.getInstance().setSaveDir(d.getSelectedFile().getParent());
 					}	
 				}
 				// kick the layout engine
@@ -205,6 +214,9 @@ public class GUI implements ComponentListener {
 				KFileChooserDialog d = new KFileChooserDialog(getFrame(), "Load NDL manifest", KFileChooser.OPEN_DIALOG);
 				d.setLocationRelativeTo(getFrame());
 				d.getFileChooser().setAcceptAllFileFilterUsed(true);
+				// see if we saved the directory
+				if (GUIManifestState.getInstance().getSaveDir() != null)
+					d.setCurrentDirectory(new File(GUIManifestState.getInstance().getSaveDir()));
 				d.getFileChooser().addChoosableFileFilter(new NdlFileFilter());
 				d.pack();
 				d.setVisible(true);
@@ -212,6 +224,8 @@ public class GUI implements ComponentListener {
 					GUIManifestState.getInstance().clear();
 					ManifestLoader ml = new ManifestLoader();
 					ml.loadGraph(d.getSelectedFile());
+					// save the directory
+					GUIManifestState.getInstance().setSaveDir(d.getSelectedFile().getParent());
 				}
 				// kick the layout engine
 				switchLayout(GuiTabs.MANIFEST_VIEW, savedLayout.get(GuiTabs.MANIFEST_VIEW));
@@ -222,20 +236,23 @@ public class GUI implements ComponentListener {
 				GUIRequestState.getInstance().vv.repaint();
 			}
 			else if (e.getActionCommand().equals("save")) {
-				if (GUIRequestState.getInstance().saveFile != null) {
-					RequestSaver.getInstance().saveGraph(GUIRequestState.getInstance().saveFile, 
+				if (GUIRequestState.getInstance().getSaveFile() != null) {
+					RequestSaver.getInstance().saveGraph(GUIRequestState.getInstance().getSaveFile(), 
 							GUIRequestState.getInstance().g);
 				} else {
 					KFileChooserDialog d = new KFileChooserDialog(getFrame(), "Save Request in NDL", KFileChooser.SAVE_DIALOG);
 					d.setLocationRelativeTo(getFrame());
 					d.getFileChooser().setAcceptAllFileFilterUsed(true);
 					d.getFileChooser().addChoosableFileFilter(new NdlFileFilter());
+					if (GUIRequestState.getInstance().getSaveDir() != null)
+						d.setCurrentDirectory(new File(GUIRequestState.getInstance().getSaveDir()));
 					d.pack();
 					d.setVisible(true);
 					if (d.getSelectedFile() != null) {
 						if (RequestSaver.getInstance().saveGraph(d.getSelectedFile(), GUIRequestState.getInstance().g)) {
 							frmOrcaFlukes.setTitle(FRAME_TITLE + " : " + d.getSelectedFile().getName());
-							GUIRequestState.getInstance().saveFile = d.getSelectedFile();
+							GUIRequestState.getInstance().setSaveFile(d.getSelectedFile());
+							GUIRequestState.getInstance().setSaveDir(d.getSelectedFile().getParent());
 						}
 					}
 				}
@@ -245,12 +262,15 @@ public class GUI implements ComponentListener {
 				d.setLocationRelativeTo(getFrame());
 				d.getFileChooser().setAcceptAllFileFilterUsed(true);
 				d.getFileChooser().addChoosableFileFilter(new NdlFileFilter());
+				if (GUIRequestState.getInstance().getSaveDir() != null)
+					d.setCurrentDirectory(new File(GUIRequestState.getInstance().getSaveDir()));
 				d.pack();
 				d.setVisible(true);
 				if (d.getSelectedFile() != null) {
 					if (RequestSaver.getInstance().saveGraph(d.getSelectedFile(), GUIRequestState.getInstance().g)) {
 						frmOrcaFlukes.setTitle(FRAME_TITLE + " : " + d.getSelectedFile().getName());
-						GUIRequestState.getInstance().saveFile = d.getSelectedFile();
+						GUIRequestState.getInstance().setSaveFile(d.getSelectedFile());
+						GUIRequestState.getInstance().setSaveDir(d.getSelectedFile().getParent());
 					}
 				}
 			}
@@ -279,6 +299,7 @@ public class GUI implements ComponentListener {
 	 * @param at
 	 * @param l
 	 */
+	@SuppressWarnings("unchecked")
 	private void switchLayout(GuiTabs at, GraphLayouts l) {
 		//final Layout<OrcaNode, OrcaLink> oldL = vv.getGraphLayout();
 		Layout<OrcaNode, OrcaLink> newL = null;
@@ -330,32 +351,6 @@ public class GUI implements ComponentListener {
 		
 		// save this layout for this view
 		savedLayout.put(activeTab(), l);
-	}
-	
-	/**
-	 * Request pane button actions
-	 * @author ibaldin
-	 *
-	 */
-	public class RequestButtonListener implements ActionListener {
-		public void actionPerformed(ActionEvent e) {
-			if (e.getActionCommand().equals("images")) {
-				GUIRequestState.getInstance().icd = new ImageChooserDialog(getFrame());
-				GUIRequestState.getInstance().icd.pack();
-				GUIRequestState.getInstance().icd.setVisible(true);
-			} else if (e.getActionCommand().equals("reservation")) {
-				GUIRequestState.getInstance().rdd = new ReservationDetailsDialog(getFrame());
-				GUIRequestState.getInstance().rdd.setFields(GUIRequestState.getInstance().getVMImageInReservation(), 
-						GUIRequestState.getInstance().getDomainInReservation(),
-						GUIRequestState.getInstance().getTerm());
-				GUIRequestState.getInstance().rdd.pack();
-				GUIRequestState.getInstance().rdd.setVisible(true);
-			} else if (e.getActionCommand().equals("nodes")) {
-				GUIRequestState.getInstance().nodeCreator.setCurrent(OrcaNodeEnum.CE);
-			} else if (e.getActionCommand().equals("nodegroups")) {
-				GUIRequestState.getInstance().nodeCreator.setCurrent(OrcaNodeEnum.NODEGROUP);
-			}
-		}
 	}
 	
 	private void quit() {
@@ -507,7 +502,13 @@ public class GUI implements ComponentListener {
 	}
 	
 	protected void resourcePane(Container c) {
-		Layout<OrcaNode, OrcaLink> layout = new StaticLayout<OrcaNode, OrcaLink>(GUIResourceState.getInstance().g);
+		//Layout<OrcaNode, OrcaLink> layout = new StaticLayout<OrcaNode, OrcaLink>(GUIResourceState.getInstance().g);
+		Layout<OrcaNode,OrcaLink> layout = new StaticLayout<OrcaNode,OrcaLink>(GUIResourceState.getInstance().g,
+				new ChainedTransformer(new Transformer[]{
+						new GUIResourceState.CityTransformer(GUIResourceState.getInstance().getMap()),
+						new GUIResourceState.LatLonPixelTransformer(new Dimension(5400,2700))
+				}));
+
 		
 		//layout.setSize(new Dimension(1000,800));
 		GUIResourceState.getInstance().vv = 
@@ -528,7 +529,7 @@ public class GUI implements ComponentListener {
 		// Add some popup menus for the edges and vertices to our mouse plugin.
 		// mode menu is not set for manifests
 		//myPlugin.setEdgePopup(new MouseMenus.ManifestEdgeMenu());
-		//myPlugin.setVertexPopup(new MouseMenus.ManifestNodeMenu());
+		myPlugin.setVertexPopup(new MouseMenus.ResourceNodeMenu());
 		
 		// add map pre-renderer
 		ImageIcon mapIcon = null;
@@ -560,7 +561,6 @@ public class GUI implements ComponentListener {
             }
             public boolean useTransform() { return false; }
         });
-
 		
 		GUIResourceState.getInstance().gm.remove(GUIResourceState.getInstance().gm.getPopupEditingPlugin());  // Removes the existing popup editing plugin
 		GUIResourceState.getInstance().gm.add(myPlugin);
@@ -583,6 +583,12 @@ public class GUI implements ComponentListener {
 		c.add(GUIResourceState.getInstance().vv);
 
 		GUIResourceState.getInstance().gm.setMode(ModalGraphMouse.Mode.TRANSFORMING); // Start off in panning mode  
+		
+		// temporary
+        for (String city : GUIResourceState.getInstance().getMap().keySet()) {
+            GUIResourceState.getInstance().getGraph().addVertex(new OrcaResourceSite(city));
+        }
+
 	}
 	
 	private void aboutDialog() {
@@ -605,13 +611,15 @@ public class GUI implements ComponentListener {
 	
 	private void prefsDialog() {
 		TextAreaDialog tad = new TextAreaDialog(frmOrcaFlukes, "Preference settings", 
-				"Current preference settings (edit $HOME/.flukes.properties and restart to change)", PrefsEnum.values().length + 1, 50);
+				"Current preference settings (cut and paste into $HOME/.flukes.properties, modify and restart to change)", 
+				PrefsEnum.values().length*2 + 2, 50);
 		KTextArea ta = tad.getTextArea();
 		
 		String prefs = "";
 		for (int i = 0; i < PrefsEnum.values().length; i++) {
 			PrefsEnum e = PrefsEnum.values()[i];
-			prefs += "\n" + e.getPropName() + ": " + getPreference(e);
+			prefs += "\n# " + e.getComment();
+			prefs += "\n" + e.getPropName() + "=" + getPreference(e);
 		}
 		ta.setText(prefs);
 		tad.pack();
@@ -791,7 +799,7 @@ public class GUI implements ComponentListener {
 		
 		resourcePanel = new JPanel();
 		tabbedPane.addTab(GuiTabs.RESOURCE_VIEW.getName(), null, resourcePanel, null);
-		resourcePanel.setLayout(new BorderLayout(0, 0));
+		resourcePanel.setLayout(new BoxLayout(resourcePanel, BoxLayout.PAGE_AXIS));
 		resourcePanel.addComponentListener(this);
 		
 		requestPanel = new JPanel();
@@ -806,14 +814,33 @@ public class GUI implements ComponentListener {
 		
 		frmOrcaFlukes.setBounds(100, 100, 1000, 800);
 		frmOrcaFlukes.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-
+		
+		// add button panel to resource pane
+		toolBar = new JToolBar();
+		toolBar.setFloatable(false);
+		toolBar.setAlignmentX(Component.LEFT_ALIGNMENT);
+		toolBar.setAlignmentY(Component.CENTER_ALIGNMENT);
+		resourcePanel.add(toolBar);
+		
+		// add buttons to resource pane toolbar
+		ActionListener rbl = GUIResourceState.getInstance().getActionListener();
+		
+		queryButton = new JButton("Query Registry");
+		queryButton.setToolTipText("Query Actor Registry");
+		queryButton.setActionCommand("query");
+		queryButton.addActionListener(rbl);
+		queryButton.setVerticalAlignment(SwingConstants.TOP);
+		toolBar.add(queryButton);
+		
+		// add button panel to request pane
 		toolBar = new JToolBar();
 		toolBar.setFloatable(false);
 		toolBar.setAlignmentX(Component.LEFT_ALIGNMENT);
 		toolBar.setAlignmentY(Component.CENTER_ALIGNMENT);
 		requestPanel.add(toolBar);
 		
-		RequestButtonListener rbl = new RequestButtonListener();
+		// add buttons to request pane toolbar
+		rbl = GUIRequestState.getInstance().getActionListener();
 		
 		nodeButton = new JButton("Add Nodes");
 		nodeButton.setToolTipText("Add new nodes");
@@ -927,16 +954,25 @@ public class GUI implements ComponentListener {
 	 *
 	 */
 	public enum PrefsEnum {
-		XTERM_PATH("xterm.path", "/usr/X11/bin/xterm"), 
-		SCRIPT_COMMENT_SEPARATOR("script.comment.separator", "#"),
-		SSH_OPTIONS("ssh.options", "-o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no");
+		XTERM_PATH("xterm.path", "/usr/X11/bin/xterm", 
+				"Path to XTerm executable on your system"), 
+		SCRIPT_COMMENT_SEPARATOR("script.comment.separator", "#", 
+				"Default comment character used in post-boot scripts"),
+		SSH_OPTIONS("ssh.options", "-o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no", 
+				"Options for invoking SSH (the default set turns off checking .ssh/known_hosts"),
+		ORCA_REGISTRY("orca.registry.url", "https://geni.renci.org:12443/registry/",
+				"URL of the ORCA actor registry to query"),
+		ORCA_REGISTRY_CERT_FINGERPRINT("orca.registry.certfingerprint", "49:67:81:66:C0:BA:CC:82:7A:94:2B:B9:EC:00:4D:98",
+				"MD5 fingerprint of the certificate used by the registry");
 		
 		private final String propName;
 		private final String defaultValue;
+		private final String comment;
 		
-		PrefsEnum(String s, String d) {
+		PrefsEnum(String s, String d, String c) {
 			propName = s;
 			defaultValue = d;
+			comment = c;
 		}
 		
 		public String getPropName() {
@@ -945,6 +981,10 @@ public class GUI implements ComponentListener {
 		
 		public String getDefaultValue() {
 			return defaultValue;
+		}
+		
+		public String getComment() {
+			return comment;
 		}
 	}
 	

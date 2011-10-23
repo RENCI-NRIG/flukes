@@ -22,6 +22,8 @@
 */
 package orca.flukes;
 
+import java.awt.event.ActionListener;
+
 import edu.uci.ics.jung.graph.SparseMultigraph;
 import edu.uci.ics.jung.visualization.VisualizationViewer;
 import edu.uci.ics.jung.visualization.control.EditingModalGraphMouse;
@@ -38,6 +40,9 @@ public abstract class GUICommonState {
 
 	EditingModalGraphMouse<OrcaNode, OrcaLink> gm = null;
 	
+	// where are we saving
+	String saveDirectory = null;
+	
 	// Vis viewer 
 	VisualizationViewer<OrcaNode,OrcaLink> vv = null;
 	
@@ -52,5 +57,15 @@ public abstract class GUICommonState {
 	public SparseMultigraph<OrcaNode, OrcaLink> getGraph() {
 		return g;
 	}
+
+	public void setSaveDir(String s) {
+		saveDirectory = s;
+	}
 	
+	public String getSaveDir() {
+		return saveDirectory;
+	}
+	
+	// a pane may have an action listener (e.g. for internal buttons)
+	abstract public ActionListener getActionListener();
 }

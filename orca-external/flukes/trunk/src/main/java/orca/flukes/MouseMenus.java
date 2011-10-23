@@ -259,6 +259,13 @@ public class MouseMenus {
         }
     }
     
+    public static class ResourceNodeMenu extends JPopupMenu {
+        public ResourceNodeMenu() {
+            super("Site Menu");
+            this.add(new DomainDisplay());
+        }
+    }
+    
     public static class ImageDisplay extends JMenuItem implements NodeMenuListener<OrcaNode, OrcaLink> {
     	public void setNodeAndView(OrcaNode v,
 				VisualizationViewer<OrcaNode, OrcaLink> visView) {
