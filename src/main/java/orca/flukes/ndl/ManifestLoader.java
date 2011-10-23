@@ -170,7 +170,7 @@ public class ManifestLoader implements INdlManifestModelListener {
 
 	@Override
 	public void ndlReservation(Resource i, OntModel m) {
-		// TODO Auto-generated method stub
+		// nothing to do in this case
 
 	}
 
@@ -206,7 +206,7 @@ public class ManifestLoader implements INdlManifestModelListener {
 	@Override
 	public void ndlNetworkConnection(Resource l, OntModel om, long bandwidth,
 			long latency, List<Resource> interfaces) {
-		// TODO Auto-generated method stub
+		// nothing to do in this case
 
 	}
 
@@ -280,10 +280,10 @@ public class ManifestLoader implements INdlManifestModelListener {
 			newNode.setNodeType(RequestSaver.reverseNodeTypeLookup(ceType));
 		
 		// post boot script
-		String script = NdlCommons.getPostBootScript(ce);
-		if ((script != null) && (script.length() > 0)) {
-			newNode.setPostBootScript(script);
-		}
+		newNode.setPostBootScript(NdlCommons.getPostBootScript(ce));
+
+		// management IP/port access
+		newNode.setManagementAccess(NdlCommons.getNodeServices(ce));
 		
 		// process interfaces
 		for (Iterator<Resource> it = interfaces.iterator(); it.hasNext();) {
@@ -338,8 +338,15 @@ public class ManifestLoader implements INdlManifestModelListener {
 	
 	@Override
 	public void ndlParseComplete() {
-		// TODO Auto-generated method stub
+		// nothing to do in this case
 
+	}
+
+	@Override
+	public void ndlNetworkConnectionPath(Resource c, OntModel m,
+			List<Resource> path) {
+		// nothing to do in this case
+		
 	}
 
 }

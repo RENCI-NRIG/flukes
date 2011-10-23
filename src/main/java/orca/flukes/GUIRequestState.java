@@ -23,6 +23,8 @@
 
 package orca.flukes;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -279,5 +281,53 @@ public class GUIRequestState extends GUICommonState implements IDeleteEdgeCallBa
 		}
 		return null;
 	}
-
+	
+	/**
+	 * set the saved file object
+	 * @param f
+	 */
+	public void setSaveFile(File f) {
+		saveFile = f;
+	}
+	
+	/**
+	 * retrieve saved file object
+	 * @param f
+	 * @return
+	 */
+	public File getSaveFile() {
+		return saveFile;
+	}
+	
+	/**
+	 * Request pane button actions
+	 * @author ibaldin
+	 *
+	 */
+	public class RequestButtonListener implements ActionListener {
+		public void actionPerformed(ActionEvent e) {
+			if (e.getActionCommand().equals("images")) {
+				icd = new ImageChooserDialog(GUI.getInstance().getFrame());
+				icd.pack();
+				icd.setVisible(true);
+			} else if (e.getActionCommand().equals("reservation")) {
+				rdd = new ReservationDetailsDialog(GUI.getInstance().getFrame());
+				rdd.setFields(getVMImageInReservation(), 
+						getDomainInReservation(),
+						getTerm());
+				rdd.pack();
+				rdd.setVisible(true);
+			} else if (e.getActionCommand().equals("nodes")) {
+				nodeCreator.setCurrent(OrcaNodeEnum.CE);
+			} else if (e.getActionCommand().equals("nodegroups")) {
+				nodeCreator.setCurrent(OrcaNodeEnum.NODEGROUP);
+			}
+		}
+	}
+	
+	// we just need one action listener
+	ActionListener al = new RequestButtonListener();
+	public ActionListener getActionListener() {
+		return al;
+	}
 }

@@ -96,13 +96,16 @@ public class OrcaNode {
 	
 	// Icon shape transformer for GUI (to make sure icon clickable shape roughly matches the icon)
 	public static class OrcaNodeIconShapeTransformer implements Transformer<OrcaNode, Shape> {
-//		        private final Shape[] styles = {
+		private static final int ICON_HEIGHT = 30;
+		private static final int ICON_WIDTH = 50;
+
+				//		        private final Shape[] styles = {
 //		            new Rectangle(-20, -10, 40, 20),
 //		            new Ellipse2D.Double(-25, -10, 50, 20),
 //		            new Arc2D.Double(-30, -15, 60, 30, 30, 30,
 //		                Arc2D.PIE) };
 		        public Shape transform(OrcaNode i) {
-		            return new Ellipse2D.Double(-25, -15, 50, 30);
+		            return new Ellipse2D.Double(-ICON_WIDTH/2, -ICON_HEIGHT/2, ICON_WIDTH, ICON_HEIGHT);
 		        }
 		    }
 
