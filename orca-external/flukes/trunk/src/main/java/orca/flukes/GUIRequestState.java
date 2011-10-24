@@ -23,6 +23,8 @@
 
 package orca.flukes;
 
+import java.awt.BorderLayout;
+import java.awt.Container;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
@@ -37,7 +39,14 @@ import java.util.Set;
 
 import orca.flukes.ndl.RequestSaver;
 import orca.flukes.ui.ChooserWithNewDialog;
+import edu.uci.ics.jung.algorithms.layout.FRLayout;
+import edu.uci.ics.jung.algorithms.layout.Layout;
 import edu.uci.ics.jung.graph.util.Pair;
+import edu.uci.ics.jung.visualization.VisualizationViewer;
+import edu.uci.ics.jung.visualization.control.EditingModalGraphMouse;
+import edu.uci.ics.jung.visualization.control.ModalGraphMouse;
+import edu.uci.ics.jung.visualization.decorators.ToStringLabeller;
+import edu.uci.ics.jung.visualization.picking.PickedState;
 
 /**
  * Singleton class that holds shared GUI request state. Since dialogs are all modal, no need for locking for now.
@@ -330,4 +339,60 @@ public class GUIRequestState extends GUICommonState implements IDeleteEdgeCallBa
 	public ActionListener getActionListener() {
 		return al;
 	}
+	
+	/**
+	 * Initialize request pane 
+	 */
+	@Override
+	public void addPane(Container c) {
+
+		// Layout<V, E>, VisualizationViewer<V,E>
+		//	        Map<OrcaNode,Point2D> vertexLocations = new HashMap<OrcaNode, Point2D>();
+		
+		Layout<OrcaNode, OrcaLink> layout = new FRLayout<OrcaNode, OrcaLink>(g);
+		
+		//layout.setSize(new Dimension(1000,800));
+		vv = 
+			new VisualizationViewer<OrcaNode,OrcaLink>(layout);
+		// Show vertex and edge labels
+		vv.getRenderContext().setVertexLabelTransformer(new ToStringLabeller<OrcaNode>());
+		vv.getRenderContext().setEdgeLabelTransformer(new ToStringLabeller<OrcaLink>());
+		
+		// Create a graph mouse and add it to the visualization viewer
+		OrcaNode.OrcaNodeFactory onf = new OrcaNode.OrcaNodeFactory(nodeCreator);
+		OrcaLink.OrcaLinkFactory olf = new OrcaLink.OrcaLinkFactory(linkCreator);
+		gm = new EditingModalGraphMouse<OrcaNode, OrcaLink>(vv.getRenderContext(), 
+				onf, olf);
+		
+		// add the plugin
+		PopupVertexEdgeMenuMousePlugin<OrcaNode, OrcaLink> myPlugin = new PopupVertexEdgeMenuMousePlugin<OrcaNode, OrcaLink>();
+		
+		// Add some popup menus for the edges and vertices to our mouse plugin.
+		myPlugin.setEdgePopup(new MouseMenus.RequestEdgeMenu());
+		myPlugin.setVertexPopup(new MouseMenus.RequestNodeMenu());
+		myPlugin.setModePopup(new MouseMenus.ModeMenu());
+		gm.remove(gm.getPopupEditingPlugin());  // Removes the existing popup editing plugin
+		gm.add(myPlugin);
+
+		// Add icon and shape (so pickable areal roughly matches the icon) transformer
+		OrcaNode.OrcaNodeIconShapeTransformer st = new OrcaNode.OrcaNodeIconShapeTransformer();
+		vv.getRenderContext().setVertexShapeTransformer(st);
+		
+		OrcaNode.OrcaNodeIconTransformer it = new OrcaNode.OrcaNodeIconTransformer();
+		vv.getRenderContext().setVertexIconTransformer(it);
+		
+		// add listener to add/remove checkmarks on selected nodes
+		PickedState<OrcaNode> ps = vv.getPickedVertexState();
+        ps.addItemListener(new OrcaNode.PickWithIconListener(it));
+		
+		vv.setGraphMouse(gm);
+
+		vv.setLayout(new BorderLayout(0,0));
+		
+		c.add(vv);
+
+		gm.setMode(ModalGraphMouse.Mode.EDITING); // Start off in editing mode  
+	}
+	
+	
 }

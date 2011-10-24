@@ -22,6 +22,7 @@
 */
 package orca.flukes;
 
+import java.awt.Container;
 import java.awt.event.ActionListener;
 
 import edu.uci.ics.jung.graph.SparseMultigraph;
@@ -68,4 +69,6 @@ public abstract class GUICommonState {
 	
 	// a pane may have an action listener (e.g. for internal buttons)
 	abstract public ActionListener getActionListener();
+	
+	abstract public void addPane(Container c);
 }
