@@ -71,9 +71,6 @@ import orca.flukes.ndl.RequestLoader;
 import orca.flukes.ndl.RequestSaver;
 import orca.flukes.ui.TextAreaDialog;
 
-import org.apache.commons.collections15.Transformer;
-import org.apache.commons.collections15.functors.ChainedTransformer;
-
 import com.hyperrealm.kiwi.ui.AboutFrame;
 import com.hyperrealm.kiwi.ui.KFileChooser;
 import com.hyperrealm.kiwi.ui.KTextArea;
@@ -503,13 +500,10 @@ public class GUI implements ComponentListener {
 	
 	protected void resourcePane(Container c) {
 		//Layout<OrcaNode, OrcaLink> layout = new StaticLayout<OrcaNode, OrcaLink>(GUIResourceState.getInstance().g);
-		Layout<OrcaNode,OrcaLink> layout = new StaticLayout<OrcaNode,OrcaLink>(GUIResourceState.getInstance().g,
-				new ChainedTransformer(new Transformer[]{
-						new GUIResourceState.CityTransformer(GUIResourceState.getInstance().getMap()),
-						new GUIResourceState.LatLonPixelTransformer(new Dimension(5400,2700))
-				}));
+		Layout<OrcaNode,OrcaLink> layout = 
+			new StaticLayout<OrcaNode,OrcaLink>(GUIResourceState.getInstance().g,
+				new GUIResourceState.LatLonPixelTransformer(new Dimension(5400,2700)));
 
-		
 		//layout.setSize(new Dimension(1000,800));
 		GUIResourceState.getInstance().vv = 
 			new VisualizationViewer<OrcaNode,OrcaLink>(layout);
@@ -583,11 +577,6 @@ public class GUI implements ComponentListener {
 		c.add(GUIResourceState.getInstance().vv);
 
 		GUIResourceState.getInstance().gm.setMode(ModalGraphMouse.Mode.TRANSFORMING); // Start off in panning mode  
-		
-		// temporary
-        for (String city : GUIResourceState.getInstance().getMap().keySet()) {
-            GUIResourceState.getInstance().getGraph().addVertex(new OrcaResourceSite(city));
-        }
 
 	}
 	

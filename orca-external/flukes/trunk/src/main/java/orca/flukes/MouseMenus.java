@@ -262,7 +262,7 @@ public class MouseMenus {
     public static class ResourceNodeMenu extends JPopupMenu {
         public ResourceNodeMenu() {
             super("Site Menu");
-            this.add(new DomainDisplay());
+            this.add(new MultiDomainDisplay());
         }
     }
     
@@ -284,6 +284,24 @@ public class MouseMenus {
     public static class DomainDisplay extends JMenuItem implements NodeMenuListener<OrcaNode, OrcaLink> {
     	public void setNodeAndView(OrcaNode v,
 				VisualizationViewer<OrcaNode, OrcaLink> visView) {
+    		if ((v.getDomain() != null) && (v.getDomain().length() > 0))
+    			this.setText(PREFIX_DOMAIN + v.getDomain());
+    		else
+    			this.setText(PREFIX_DOMAIN + GUIRequestState.NO_DOMAIN_SELECT);
+    	}
+    }
+    
+    public static class MultiDomainDisplay extends JMenuItem implements NodeMenuListener<OrcaNode, OrcaLink> {
+    	public void setNodeAndView(OrcaNode v,
+				VisualizationViewer<OrcaNode, OrcaLink> visView) {
+			if (v instanceof OrcaResourceSite) {
+				OrcaResourceSite ors = (OrcaResourceSite)v;
+				String domains = "";
+				for (String dom: ors.getDomains()) {
+					domains += dom + ", ";
+				}
+				this.setText(PREFIX_DOMAIN + domains);
+			} else
     		if ((v.getDomain() != null) && (v.getDomain().length() > 0))
     			this.setText(PREFIX_DOMAIN + v.getDomain());
     		else
