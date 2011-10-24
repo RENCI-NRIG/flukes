@@ -33,6 +33,22 @@ import com.hyperrealm.kiwi.ui.dialog.ExceptionDialog;
 public class RegistryXMLRPCProxy {
 	private static final String GET_AMS = "registryService.getAMs";
 	
+	// fields returned by the registry for actors
+	public enum Field {
+		DESCRIPTION("DESC"),
+		FULLRDF("FULLRDF");
+		
+		private final String name;
+		
+		private Field (String n) {
+			name = n;
+		}
+		
+		public String getName() {
+			return name;
+		}
+	}
+	
 	private byte[] registryCertDigest;
 	
 	private RegistryXMLRPCProxy() {
@@ -131,5 +147,18 @@ public class RegistryXMLRPCProxy {
         	throw new Exception("Unable to contact registry " + GUI.getInstance().getPreference(GUI.PrefsEnum.ORCA_REGISTRY) + " due to " + e);
         }
 		return amData;
+	}
+	
+	/**
+	 * Get specific field from the map (field names guaranteed to be typo free, use values from RegistrXMLRPCProxy.Field enum)
+	 * @param k
+	 * @param m
+	 * @param f
+	 * @return
+	 */
+	public static String getField(String k, Map<String, Map< String, String>> m, Field f) {
+		if (!m.containsKey(k))
+			return null;
+		return m.get(k).get(f.getName());
 	}
 }
