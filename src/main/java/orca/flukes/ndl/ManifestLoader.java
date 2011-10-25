@@ -219,12 +219,7 @@ public class ManifestLoader implements INdlManifestModelListener {
 
 		OrcaCrossconnect oc = new OrcaCrossconnect(getTrueName(c));
 		
-		// extract domain from the name: getTrueName gets us blah.rdf#domain-name/Domain/vlan
-		oc.setDomain(getInterDomainName(c));
-		
-		oc.setLabel(label);
-		
-		oc.setState(NdlCommons.getResourceStateAsString(c));
+		setCommonNodeProperties(oc, c);
 		
 		// later set bandwidth on adjacent links (crossconnects in NDL have
 		// bandwidth but for users we'll show it on the links)
@@ -245,6 +240,7 @@ public class ManifestLoader implements INdlManifestModelListener {
 	@Override
 	public void ndlNode(Resource ce, OntModel om, Resource ceClass,
 			List<Resource> interfaces) {
+		
 		if (ce == null)
 			return;
 		OrcaNode newNode;
@@ -266,24 +262,8 @@ public class ManifestLoader implements INdlManifestModelListener {
 				newNode = new OrcaNode(getTrueName(ce));
 		}
 		
-		// state
-		newNode.setState(NdlCommons.getResourceStateAsString(ce));
-		
-		// domain
-		Resource domain = NdlCommons.getDomain(ce);
-		if (domain != null)
-			newNode.setDomain(RequestSaver.reverseLookupDomain(domain));
-		
-		// specific ce type
-		Resource ceType = NdlCommons.getSpecificCE(ce);
-		if (ceType != null)
-			newNode.setNodeType(RequestSaver.reverseNodeTypeLookup(ceType));
-		
-		// post boot script
-		newNode.setPostBootScript(NdlCommons.getPostBootScript(ce));
-
-		// management IP/port access
-		newNode.setManagementAccess(NdlCommons.getNodeServices(ce));
+		// set common properties
+		setCommonNodeProperties(newNode, ce);
 		
 		// process interfaces
 		for (Iterator<Resource> it = interfaces.iterator(); it.hasNext();) {
@@ -328,12 +308,33 @@ public class ManifestLoader implements INdlManifestModelListener {
 			GUIManifestState.getInstance().getGraph().addEdge(ol, new Pair<OrcaNode>(parent, on), 
 					EdgeType.UNDIRECTED);
 			// add various properties
-			// post boot script
-			on.setPostBootScript(NdlCommons.getPostBootScript(tmpR));
-			
-			// management IP/port access
-			on.setManagementAccess(NdlCommons.getNodeServices(tmpR));
+			setCommonNodeProperties(on, tmpR);
 		}
+	}
+	
+	// set common node properties from NDL
+	private void setCommonNodeProperties(OrcaNode on, Resource nr) {
+		// post boot script
+		on.setPostBootScript(NdlCommons.getPostBootScript(nr));
+		
+		// management IP/port access
+		on.setManagementAccess(NdlCommons.getNodeServices(nr));
+		
+		// state
+		on.setState(NdlCommons.getResourceStateAsString(nr));
+		
+		// reservation notice
+		on.setReservationNotice(NdlCommons.getResourceReservationNotice(nr));
+		
+		// domain
+		Resource domain = NdlCommons.getDomain(nr);
+		if (domain != null)
+			on.setDomain(RequestSaver.reverseLookupDomain(domain));
+		
+		// specific ce type
+		Resource ceType = NdlCommons.getSpecificCE(nr);
+		if (ceType != null)
+			on.setNodeType(RequestSaver.reverseNodeTypeLookup(ceType));
 	}
 	
 	@Override
