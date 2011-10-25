@@ -62,6 +62,8 @@ public class OrcaNode {
 	protected String postBootScript = null;
 	// reservation state
 	protected String state = null;
+	// reservation notice
+	protected String resNotice = null;
 	
 	protected Set<OrcaNode> dependencies = new HashSet<OrcaNode>();
 	
@@ -301,6 +303,11 @@ public class OrcaNode {
 		state = s;
 	}
 	
+	public void setReservationNotice(String n) {
+		resNotice = n;
+	}
+	
+	
 	/** 
 	 * Create a detailed printout of properties
 	 * @return
@@ -309,6 +316,7 @@ public class OrcaNode {
 		String viewText = "";
 		viewText += "Node name: " + name;
 		viewText += "\nNode reservation state: " + state;
+		viewText += "\nReservation notice: " + resNotice;
 //		viewText += "\nNode Type: " + node.getNodeType();
 //		viewText += "\nImage: " + node.getImage();
 //		viewText += "\nDomain: " + domain;
