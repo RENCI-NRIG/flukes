@@ -25,16 +25,11 @@ package orca.flukes;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
-import java.awt.Container;
-import java.awt.Dimension;
 import java.awt.EventQueue;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
-import java.awt.geom.AffineTransform;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -52,7 +47,6 @@ import java.util.Set;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
-import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
@@ -82,22 +76,19 @@ import edu.uci.ics.jung.algorithms.layout.FRLayout;
 import edu.uci.ics.jung.algorithms.layout.ISOMLayout;
 import edu.uci.ics.jung.algorithms.layout.KKLayout;
 import edu.uci.ics.jung.algorithms.layout.Layout;
-import edu.uci.ics.jung.algorithms.layout.StaticLayout;
 import edu.uci.ics.jung.graph.SparseMultigraph;
-import edu.uci.ics.jung.visualization.Layer;
 import edu.uci.ics.jung.visualization.VisualizationViewer;
-import edu.uci.ics.jung.visualization.control.EditingModalGraphMouse;
-import edu.uci.ics.jung.visualization.control.ModalGraphMouse;
-import edu.uci.ics.jung.visualization.decorators.ToStringLabeller;
 import edu.uci.ics.jung.visualization.layout.LayoutTransition;
-import edu.uci.ics.jung.visualization.picking.PickedState;
 import edu.uci.ics.jung.visualization.util.Animator;
 
 public class GUI implements ComponentListener {
 
+	public static final String buildVersion = GUI.class.getPackage().getImplementationVersion();
+	public static final String aboutText = "ORCA FLUKES " + (buildVersion == null? "" : buildVersion) + ": NDL-OWL network editor for ORCA (Open Resource Control Architecture)" +
+	"\nDeveloped using Jena Semantic Web Framework, JUNG Java Universal Network/Graph Framework and Kiwi Swing toolkit." +
+	"\n\nCopyright 2011 RENCI/UNC Chapel Hill";
 	private static final String FRAME_TITLE = "ORCA FLUKES - The ORCA Network Editor";
 	private static final String FLUKES_HREF_URL = "http://geni-images.renci.org/webstart/";
-	private static final String ABOUT_DOC = "html/about.html";
 	private static final String HELP_DOC = "html/help.html";
 	private static final String PREF_FILE = ".flukes.properties";
 	private JFrame frmOrcaFlukes;
@@ -396,12 +387,12 @@ public class GUI implements ComponentListener {
 	
 
 	private void aboutDialog() {
-		try {
-			AboutFrame ab = new AboutFrame("About FLUKES", new URL(FLUKES_HREF_URL + ABOUT_DOC));
-			ab.setVisible(true);
-		} catch (MalformedURLException e) {
-			;
-		}
+		TextAreaDialog tad = new TextAreaDialog(frmOrcaFlukes, "About FLUKES", "", 5,50);
+		KTextArea ta = tad.getTextArea();
+		
+		ta.setText(aboutText);
+		tad.pack();
+		tad.setVisible(true);
 	}
 	
 	private void helpDialog() {
