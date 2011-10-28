@@ -84,7 +84,7 @@ import edu.uci.ics.jung.visualization.util.Animator;
 public class GUI implements ComponentListener {
 
 	public static final String buildVersion = GUI.class.getPackage().getImplementationVersion();
-	public static final String aboutText = "ORCA FLUKES " + (buildVersion == null? "" : buildVersion) + ": NDL-OWL network editor for ORCA (Open Resource Control Architecture)" +
+	public static final String aboutText = "ORCA FLUKES " + (buildVersion == null? "" : buildVersion) + "\nNDL-OWL network editor for ORCA (Open Resource Control Architecture)" +
 	"\nDeveloped using Jena Semantic Web Framework, JUNG Java Universal Network/Graph Framework and Kiwi Swing toolkit." +
 	"\n\nCopyright 2011 RENCI/UNC Chapel Hill";
 	private static final String FRAME_TITLE = "ORCA FLUKES - The ORCA Network Editor";
@@ -387,7 +387,7 @@ public class GUI implements ComponentListener {
 	
 
 	private void aboutDialog() {
-		TextAreaDialog tad = new TextAreaDialog(frmOrcaFlukes, "About FLUKES", "", 5,50);
+		TextAreaDialog tad = new TextAreaDialog(frmOrcaFlukes, "About FLUKES", "", 8,50);
 		KTextArea ta = tad.getTextArea();
 		
 		ta.setText(aboutText);
@@ -397,7 +397,7 @@ public class GUI implements ComponentListener {
 	
 	private void helpDialog() {
 		try {
-			AboutFrame ab = new AboutFrame("About FLUKES", new URL(FLUKES_HREF_URL + HELP_DOC));
+			AboutFrame ab = new AboutFrame("FLUKES Help", new URL(FLUKES_HREF_URL + HELP_DOC));
 			ab.setVisible(true);
 		} catch (MalformedURLException e) {
 			;
@@ -758,7 +758,9 @@ public class GUI implements ComponentListener {
 		ORCA_REGISTRY("orca.registry.url", "https://geni.renci.org:12443/registry/",
 				"URL of the ORCA actor registry to query"),
 		ORCA_REGISTRY_CERT_FINGERPRINT("orca.registry.certfingerprint", "49:67:81:66:C0:BA:CC:82:7A:94:2B:B9:EC:00:4D:98",
-				"MD5 fingerprint of the certificate used by the registry");
+				"MD5 fingerprint of the certificate used by the registry"),
+		ORCA_XMLRPC_CONTROLLER("orca.xmlrpc.url", "http://localhost:11080/orca/xmlrpc", 
+				"URL of the ORCA XMLRPC controller");
 		
 		private final String propName;
 		private final String defaultValue;
