@@ -124,10 +124,10 @@ public class ManifestLoader implements INdlManifestModelListener {
 	
 	@Override
 	public void ndlLinkConnection(Resource l, OntModel m,
-			List<Resource> interfaces) {
-		// System.out.println("Found connection " + l + " connecting " + interfaces + " with bandwidth " + bandwidth);
-		if (l == null)
-			return;
+			List<Resource> interfaces, Resource parent) {
+		//System.out.println("Found link connection " + l + " connecting " + interfaces);
+		assert(l != null);
+		
 		OrcaLink ol = new OrcaLink("Link " + lcount++);
 		
 		// find what nodes it connects (should be two)
@@ -169,7 +169,7 @@ public class ManifestLoader implements INdlManifestModelListener {
 	}
 
 	@Override
-	public void ndlReservation(Resource i, OntModel m) {
+	public void ndlManifest(Resource i, OntModel m) {
 		// nothing to do in this case
 
 	}
@@ -212,7 +212,7 @@ public class ManifestLoader implements INdlManifestModelListener {
 
 	@Override
 	public void ndlCrossConnect(Resource c, OntModel m, 
-			long bw, String label, List<Resource> interfaces) {
+			long bw, String label, List<Resource> interfaces, Resource parent) {
 		
 		if (c == null)
 			return;
@@ -298,18 +298,34 @@ public class ManifestLoader implements INdlManifestModelListener {
 	// add collection elements
 	private void processDomainVmElements(Resource vm, OntModel om, OrcaNode parent) {
 		
+		// HACK - if we added real interfaces to inner nodes, we don't need link to parent
+		boolean linkedToParent = true;
+		
 		for (StmtIterator vmEl = vm.listProperties(NdlCommons.collectionElementProperty); vmEl.hasNext();) {
 			Resource tmpR = vmEl.next().getResource();
 			OrcaNode on = new OrcaNode(getTrueName(tmpR), parent);
 			nodes.put(getTrueName(tmpR), on);
 			GUIManifestState.getInstance().getGraph().addVertex(on);
 			OrcaLink ol = GUIManifestState.getInstance().getLinkCreator().create();
+			
+			// link to parent (a HACK)
 			links.put(ol.getName(), ol);
 			GUIManifestState.getInstance().getGraph().addEdge(ol, new Pair<OrcaNode>(parent, on), 
 					EdgeType.UNDIRECTED);
+			
 			// add various properties
 			setCommonNodeProperties(on, tmpR);
+			
+			// process interfaces
+			for (Resource intR: NdlCommons.getResourceInterfaces(tmpR)) {
+				interfaceToNode.put(getTrueName(intR), on);
+				linkedToParent = false;
+			}
 		}
+		
+		// Hack - remove parent if nodes are linked between themselves
+		if (!linkedToParent)
+			GUIManifestState.getInstance().getGraph().removeVertex(parent);
 	}
 	
 	// set common node properties from NDL

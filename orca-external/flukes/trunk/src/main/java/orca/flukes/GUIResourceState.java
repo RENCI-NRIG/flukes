@@ -28,11 +28,10 @@ import edu.uci.ics.jung.visualization.control.EditingModalGraphMouse;
 import edu.uci.ics.jung.visualization.control.ModalGraphMouse;
 import edu.uci.ics.jung.visualization.decorators.ToStringLabeller;
 import edu.uci.ics.jung.visualization.picking.PickedState;
-import edu.uci.ics.jung.visualization.transform.MutableTransformer;
 
 public class GUIResourceState extends GUICommonState {
 	
-	public static final String WORLD_ICON="worldmap.jpg";
+	public static final String WORLD_ICON="worldmap3.png";
 	
 	private static GUIResourceState instance = null;
 
@@ -67,7 +66,6 @@ public class GUIResourceState extends GUICommonState {
 		 }
 	}
 	
-	@SuppressWarnings("unchecked")
 	private GUIResourceState() {
 		;
 	}
@@ -118,6 +116,7 @@ public class GUIResourceState extends GUICommonState {
 	}
 	
 	private ActionListener al = new ResourceButtonListener();
+	@Override
 	public ActionListener getActionListener() {
 		return al;
 	}
@@ -164,7 +163,7 @@ public class GUIResourceState extends GUICommonState {
 		//Layout<OrcaNode, OrcaLink> layout = new StaticLayout<OrcaNode, OrcaLink>(g);
 		Layout<OrcaNode,OrcaLink> layout = 
 			new StaticLayout<OrcaNode,OrcaLink>(g,
-				new GUIResourceState.LatLonPixelTransformer(new Dimension(5400,2700)));
+				new GUIResourceState.LatLonPixelTransformer(new Dimension(7000,3500)));
 
 		//layout.setSize(new Dimension(1000,800));
 		vv = 

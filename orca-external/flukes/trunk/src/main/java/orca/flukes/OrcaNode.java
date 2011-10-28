@@ -45,6 +45,7 @@ import edu.uci.ics.jung.visualization.renderers.Checkmark;
 
 public class OrcaNode {
 
+	private static final String NOT_SPECIFIED = "Not specified";
 	public static final String NODE_NETMASK="32";
 	protected String name;
 	protected String image = null;
@@ -320,10 +321,13 @@ public class OrcaNode {
 //		viewText += "\nNode Type: " + node.getNodeType();
 //		viewText += "\nImage: " + node.getImage();
 //		viewText += "\nDomain: " + domain;
-		viewText += "\n\nPost Boot Script: \n" + (postBootScript == null ? "Not specified" : postBootScript);
+		viewText += "\n\nPost Boot Script: \n" + (postBootScript == null ? NOT_SPECIFIED : postBootScript);
 		viewText += "\n\nManagement access: \n";
 		for (String service: getManagementAccess()) {
 			viewText += service + "\n";
+		}
+		if (getManagementAccess().size() == 0) {
+			viewText += NOT_SPECIFIED + "\n";
 		}
 		return viewText;
 	}
