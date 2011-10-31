@@ -226,7 +226,7 @@ public class GUIResourceState extends GUICommonState {
 		gm.setMode(ModalGraphMouse.Mode.TRANSFORMING); // Start off in panning mode  
 		
 		// center over US
-		vv.getRenderContext().getMultiLayerTransformer().getTransformer(Layer.VIEW).setTranslate(-700, -500);
+		vv.getRenderContext().getMultiLayerTransformer().getTransformer(Layer.VIEW).setTranslate(-1100, -700);
 	}
 	
 }
