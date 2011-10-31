@@ -15,6 +15,7 @@ import com.hyperrealm.kiwi.ui.KTextArea;
 import com.hyperrealm.kiwi.ui.KTextField;
 import com.hyperrealm.kiwi.ui.dialog.ExceptionDialog;
 import com.hyperrealm.kiwi.ui.dialog.KMessageDialog;
+import com.hyperrealm.kiwi.ui.dialog.KQuestionDialog;
 
 import edu.uci.ics.jung.algorithms.layout.FRLayout;
 import edu.uci.ics.jung.algorithms.layout.Layout;
@@ -109,6 +110,13 @@ public class GUIManifestState extends GUICommonState {
 							kmd.setVisible(true);
 							return;
 						}
+						
+						KQuestionDialog kqd = new KQuestionDialog(GUI.getInstance().getFrame(), "Exit", true);
+		        		kqd.setMessage("Are you sure you want to delete slice " + sliceIdField.getText());
+		        		kqd.setLocationRelativeTo(GUI.getInstance().getFrame());
+		        		kqd.setVisible(true);
+		        		if (!kqd.getStatus()) 
+		        			return;
 						
 						try {
 							OrcaSMXMLRPCProxy.getInstance().deleteSliver(sliceIdField.getText());

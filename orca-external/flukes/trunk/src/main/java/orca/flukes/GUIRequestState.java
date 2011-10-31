@@ -346,6 +346,14 @@ public class GUIRequestState extends GUICommonState implements IDeleteEdgeCallBa
 			} else if (e.getActionCommand().equals("nodegroups")) {
 				nodeCreator.setCurrent(OrcaNodeEnum.NODEGROUP);
 			} else if (e.getActionCommand().equals("submit")) {
+				if ((sliceIdField.getText() == null) || 
+						(sliceIdField.getText().length() == 0)) {
+					KMessageDialog kmd = new KMessageDialog(GUI.getInstance().getFrame());
+					kmd.setMessage("You must specify a slice id");
+					kmd.setLocationRelativeTo(GUI.getInstance().getFrame());
+					kmd.setVisible(true);
+					return;
+				}
 				String ndl = RequestSaver.getInstance().convertGraphToNdl(g);
 				if ((ndl == null) ||
 						(ndl.length() == 0)) {
