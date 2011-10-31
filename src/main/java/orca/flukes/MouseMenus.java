@@ -399,7 +399,7 @@ public class MouseMenus {
                 		}
                 		// parse the URI
                 		if (mgt.startsWith("ssh")) {                			
-                			mgt = mgt.replaceAll("://", " " + GUI.getInstance().getPreference(GUI.PrefsEnum.SSH_OPTIONS) + " ");
+                			mgt = mgt.replaceAll("://", " " + " -i " + GUI.getInstance().getPreference(GUI.PrefsEnum.SSH_KEY) + " " + GUI.getInstance().getPreference(GUI.PrefsEnum.SSH_OPTIONS) + " ");
                 			mgt = mgt.replaceAll(":", " -p ");
                 		} else {
                 			KMessageDialog kqd = new KMessageDialog(GUI.getInstance().getFrame(), "Node login", true);
@@ -409,6 +409,7 @@ public class MouseMenus {
                 			return;
                 		}
                 		String xtermCmd = GUI.getInstance().getPreference(GUI.PrefsEnum.XTERM_PATH); 
+                		System.out.println("Management acces " + mgt);
                 		// check that xterm runs
                 		File xtermFile = new File(xtermCmd);
                 		if (!xtermFile.canExecute()) {

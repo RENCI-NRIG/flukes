@@ -37,8 +37,14 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
+import com.hyperrealm.kiwi.ui.KTextArea;
+import com.hyperrealm.kiwi.ui.dialog.ExceptionDialog;
+import com.hyperrealm.kiwi.ui.dialog.KMessageDialog;
+
 import orca.flukes.ndl.RequestSaver;
 import orca.flukes.ui.ChooserWithNewDialog;
+import orca.flukes.ui.TextAreaDialog;
+import orca.flukes.xmlrpc.OrcaSMXMLRPCProxy;
 import edu.uci.ics.jung.algorithms.layout.FRLayout;
 import edu.uci.ics.jung.algorithms.layout.Layout;
 import edu.uci.ics.jung.graph.util.Pair;
@@ -99,6 +105,9 @@ public class GUIRequestState extends GUICommonState implements IDeleteEdgeCallBa
 	
 	public void clear() {
 		// clear the graph, reservation set else to defaults
+		if (g == null)
+			return;
+		
 		Set<OrcaNode> nodes = new HashSet<OrcaNode>(g.getVertices());
 		for (OrcaNode n: nodes)
 			g.removeVertex(n);
@@ -336,6 +345,32 @@ public class GUIRequestState extends GUICommonState implements IDeleteEdgeCallBa
 				nodeCreator.setCurrent(OrcaNodeEnum.CE);
 			} else if (e.getActionCommand().equals("nodegroups")) {
 				nodeCreator.setCurrent(OrcaNodeEnum.NODEGROUP);
+			} else if (e.getActionCommand().equals("submit")) {
+				String ndl = RequestSaver.getInstance().convertGraphToNdl(g);
+				if ((ndl == null) ||
+						(ndl.length() == 0)) {
+					KMessageDialog kmd = new KMessageDialog(GUI.getInstance().getFrame());
+					kmd.setMessage("Unable to convert graph to NDL.");
+					kmd.setLocationRelativeTo(GUI.getInstance().getFrame());
+					kmd.setVisible(true);
+					return;
+				}
+				try {
+					String status = OrcaSMXMLRPCProxy.getInstance().createSliver(sliceIdField.getText(), ndl);
+					TextAreaDialog tad = new TextAreaDialog(GUI.getInstance().getFrame(), "ORCA Response", 
+							"ORCA Controller response", 
+							25, 50);
+					KTextArea ta = tad.getTextArea();
+					
+					ta.setText(status);
+					tad.pack();
+			        tad.setVisible(true);
+				} catch (Exception ex) {
+					ExceptionDialog ed = new ExceptionDialog(GUI.getInstance().getFrame(), "Exception");
+					ed.setLocationRelativeTo(GUI.getInstance().getFrame());
+					ed.setException("Exception encountered while querying ORCA for slice manifest: ", ex);
+					ed.setVisible(true);
+				}
 			}
 		}
 	}

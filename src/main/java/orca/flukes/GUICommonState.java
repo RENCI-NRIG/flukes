@@ -25,6 +25,8 @@ package orca.flukes;
 import java.awt.Container;
 import java.awt.event.ActionListener;
 
+import com.hyperrealm.kiwi.ui.KTextField;
+
 import edu.uci.ics.jung.graph.SparseMultigraph;
 import edu.uci.ics.jung.visualization.VisualizationViewer;
 import edu.uci.ics.jung.visualization.control.EditingModalGraphMouse;
@@ -38,7 +40,8 @@ public abstract class GUICommonState {
 	SparseMultigraph<OrcaNode, OrcaLink> g = new SparseMultigraph<OrcaNode, OrcaLink>();
 	OrcaNodeCreator nodeCreator = new OrcaNodeCreator(g);
 	OrcaLinkCreator linkCreator = new OrcaLinkCreator(g);
-
+	KTextField sliceIdField = null;
+	
 	EditingModalGraphMouse<OrcaNode, OrcaLink> gm = null;
 	
 	// where are we saving
@@ -65,6 +68,14 @@ public abstract class GUICommonState {
 	
 	public String getSaveDir() {
 		return saveDirectory;
+	}
+
+	public void setSliceIdField(KTextField ktf) {
+		sliceIdField = ktf;
+	}
+	
+	public void setSliceIdFieldText(String t) {
+		sliceIdField.setText(t);
 	}
 	
 	// a pane may have an action listener (e.g. for internal buttons)

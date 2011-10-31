@@ -93,7 +93,7 @@ public class GUIResourceState extends GUICommonState {
 				// run XMLRPC query
 
 				try {
-					final ProgressDialog pd = getProgressDialog("Contacting registry");
+					final ProgressDialog pd = GUI.getProgressDialog("Contacting registry");
 					pd.track(new Task (){
 
 						@Override
@@ -119,20 +119,6 @@ public class GUIResourceState extends GUICommonState {
 	@Override
 	public ActionListener getActionListener() {
 		return al;
-	}
-	
-	/**
-	 * Create a progress dialog
-	 * @param msg
-	 * @return
-	 */
-	ProgressDialog getProgressDialog(String msg) {
-		ProgressDialog pd = new ProgressDialog(GUI.getInstance().getFrame(), true);
-		pd.setLocationRelativeTo(GUI.getInstance().getFrame());
-		pd.setMessage(msg);
-		pd.pack();
-		
-		return pd;
 	}
 	
 	/**

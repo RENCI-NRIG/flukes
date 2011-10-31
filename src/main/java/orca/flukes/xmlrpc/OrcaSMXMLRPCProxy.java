@@ -99,24 +99,27 @@ public class OrcaSMXMLRPCProxy {
 	 */
 	public String createSliver(String sliceId, String resReq) throws Exception {
 		
-		String result = null;
-		
 		// collect user credentials from $HOME/.ssh
+		Properties p = System.getProperties();
 		
 		// create an array
 		List<Map<String, ?>> users = new ArrayList<Map<String, ?>>();
-		String userKey = getUserPubKey();
+		String keyPath = GUI.getInstance().getPreference(GUI.PrefsEnum.SSH_PUBKEY);
+		keyPath = keyPath.replaceAll("~", p.getProperty("user.home"));
 		
-		if (userKey != null) {
-			Map<String, Object> userEntry = new HashMap<String, Object>();
-			String userName = System.getProperties().getProperty("user.name");
-			userEntry.put("urn", (userName == null ? "authorized_user" : userName));
-			List<String> keys = new ArrayList<String>();
-			keys.add(userKey);
-			userEntry.put("keys", keys);
-			users.add(userEntry);
-		}
+		String userKey = getUserKeyFile(keyPath);
 		
+		if (userKey == null) 
+			throw new Exception("Unable to load user public ssh key " + keyPath);
+		
+		Map<String, Object> userEntry = new HashMap<String, Object>();
+		String userName = System.getProperties().getProperty("user.name");
+		userEntry.put("urn", (userName == null ? "authorized_user" : userName));
+		List<String> keys = new ArrayList<String>();
+		keys.add(userKey);
+		userEntry.put("keys", keys);
+		users.add(userEntry);
+
 		// submit the request
 		return createSliver(sliceId, resReq, users);
 	}
@@ -130,7 +133,7 @@ public class OrcaSMXMLRPCProxy {
 			XmlRpcClient client = new XmlRpcClient();
 			client.setConfig(config);
 			
-			// create sliver
+			// delete sliver
 			res = (Boolean)client.execute(DELETE_SLIVER, new Object[]{ sliceId, new Object[]{}});
         } catch (MalformedURLException e) {
         	throw new Exception("Please check the SM URL " + GUI.getInstance().getPreference(GUI.PrefsEnum.ORCA_XMLRPC_CONTROLLER));
@@ -152,7 +155,7 @@ public class OrcaSMXMLRPCProxy {
 			XmlRpcClient client = new XmlRpcClient();
 			client.setConfig(config);
 			
-			// create sliver
+			// sliver status
 			result = (String)client.execute(SLIVER_STATUS, new Object[]{ sliceId, new Object[]{}});
         } catch (MalformedURLException e) {
         	throw new Exception("Please check the SM URL " + GUI.getInstance().getPreference(GUI.PrefsEnum.ORCA_XMLRPC_CONTROLLER));
@@ -167,7 +170,7 @@ public class OrcaSMXMLRPCProxy {
 	 * Try to get a public key file, first DSA, then RSA
 	 * @return
 	 */
-	private String getUserPubKey() {
+	private String getAnyUserPubKey() {
 		Properties p = System.getProperties();
 		
 		String keyFilePath = "" + p.getProperty("user.home") + p.getProperty("file.separator") + ".ssh" +

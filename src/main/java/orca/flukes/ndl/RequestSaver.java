@@ -24,8 +24,11 @@
 package orca.flukes.ndl;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.OutputStreamWriter;
+import java.io.UnsupportedEncodingException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -37,7 +40,6 @@ import orca.flukes.OrcaImage;
 import orca.flukes.OrcaLink;
 import orca.flukes.OrcaNode;
 import orca.flukes.OrcaNodeGroup;
-import orca.flukes.GUI.PrefsEnum;
 import orca.ndl.NdlCommons;
 import orca.ndl.NdlException;
 import orca.ndl.NdlGenerator;
@@ -81,6 +83,7 @@ public class RequestSaver {
 		dm.put("UNC BEN", "uncvmsite.rdf#uncvmsite");
 		dm.put("Duke CS", "dukevmsite.rdf#dukevmsite");
 		dm.put("NERSC", "nerscvmsite.rdf#nerscvmsite");
+		dm.put("UH", "uhoustonvmsite.rdf#uhoustonvmsite");
 		domainMap = Collections.unmodifiableMap(dm);
 	}
 	
@@ -94,6 +97,10 @@ public class RequestSaver {
 		nt.put("Euca m1.xlarge", new Pair<String>(EUCALYPTUS_NS, "EucaM1XLarge"));
 		nt.put("Euca c1.xlarge", new Pair<String>(EUCALYPTUS_NS, "EucaC1XLarge"));
 		nodeTypes = Collections.unmodifiableMap(nt);
+	}
+	
+	private RequestSaver() {
+		
 	}
 	
 	public static RequestSaver getInstance() {
@@ -192,13 +199,13 @@ public class RequestSaver {
 	 * @param f
 	 * @param requestGraph
 	 */
-	public boolean saveGraph(File f, SparseMultigraph<OrcaNode, OrcaLink> g) {
+	public String convertGraphToNdl(SparseMultigraph<OrcaNode, OrcaLink> g) {
+		String res = null;
+		
+		assert(g != null);
 		// this should never run in parallel anyway
 		synchronized(instance) {
 			try {
-				if ((f == null) || (g == null))
-					return false;
-				
 				ngen = new NdlGenerator(Logger.getLogger(this.getClass().getCanonicalName()));
 			
 				reservation = ngen.declareReservation();
@@ -325,20 +332,38 @@ public class RequestSaver {
 				}
 				
 				// save the contents
-				String res = getFormattedOutput(ngen, outputFormat);
-				FileOutputStream fsw = new FileOutputStream(f);
-				OutputStreamWriter out = new OutputStreamWriter(fsw, "UTF-8");
-				out.write(res);
-				out.close();
+				res = getFormattedOutput(ngen, outputFormat);
+
 			} catch (Exception e) {
 				ExceptionDialog ed = new ExceptionDialog(GUI.getInstance().getFrame(), "Exception");
 				ed.setLocationRelativeTo(GUI.getInstance().getFrame());
 				ed.setException("Exception encountered while saving file", e);
 				ed.setVisible(true);
-				return false;
+				return null;
 			}
 		}
-		return true;
+		return res;
+	}
+	
+	public boolean saveGraph(File f, SparseMultigraph<OrcaNode, OrcaLink> g) {
+		assert(f != null);
+		String ndl = convertGraphToNdl(g);
+		if (ndl == null)
+			return false;
+		try{
+			FileOutputStream fsw = new FileOutputStream(f);
+			OutputStreamWriter out = new OutputStreamWriter(fsw, "UTF-8");
+			out.write(ndl);
+			out.close();
+			return true;
+		} catch(FileNotFoundException e) {
+			;
+		} catch(UnsupportedEncodingException ex) {
+			;
+		} catch(IOException ey) {
+			;
+		}
+		return false;
 	}
 
 	public SparseMultigraph<OrcaNode, OrcaLink> loadGraph(File f) {
