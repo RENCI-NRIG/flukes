@@ -83,6 +83,8 @@ public class ManifestLoader implements INdlManifestModelListener {
 			
 			bin.close();
 			
+			GUIManifestState.getInstance().setManifestString(sb.toString());
+			
 			NdlManifestParser nrp = new NdlManifestParser(sb.toString(), this);
 			nrp.processManifest();
 			
@@ -94,6 +96,20 @@ public class ManifestLoader implements INdlManifestModelListener {
 			return false;
 		} 
 		
+		return true;
+	}
+	
+	public boolean loadString(String s) {
+		try {
+			NdlManifestParser nrp = new NdlManifestParser(s, this);
+			nrp.processManifest();			
+		} catch (Exception e) {
+			ExceptionDialog ed = new ExceptionDialog(GUI.getInstance().getFrame(), "Exception");
+			ed.setLocationRelativeTo(GUI.getInstance().getFrame());
+			ed.setException("Exception encountered while parsing manifest: ", e);
+			ed.setVisible(true);
+			return false;
+		} 
 		return true;
 	}
 

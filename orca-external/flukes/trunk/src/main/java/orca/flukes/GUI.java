@@ -68,9 +68,11 @@ import orca.flukes.ui.TextAreaDialog;
 import com.hyperrealm.kiwi.ui.AboutFrame;
 import com.hyperrealm.kiwi.ui.KFileChooser;
 import com.hyperrealm.kiwi.ui.KTextArea;
+import com.hyperrealm.kiwi.ui.KTextField;
 import com.hyperrealm.kiwi.ui.UIChangeManager;
 import com.hyperrealm.kiwi.ui.dialog.KFileChooserDialog;
 import com.hyperrealm.kiwi.ui.dialog.KQuestionDialog;
+import com.hyperrealm.kiwi.ui.dialog.ProgressDialog;
 
 import edu.uci.ics.jung.algorithms.layout.FRLayout;
 import edu.uci.ics.jung.algorithms.layout.ISOMLayout;
@@ -94,10 +96,6 @@ public class GUI implements ComponentListener {
 	private JFrame frmOrcaFlukes;
 	private JTabbedPane tabbedPane;
 	private JPanel requestPanel, resourcePanel, manifestPanel;
-	private JToolBar toolBar;
-	private JButton nodeButton, queryButton;
-	private JButton nodeGroupButton;
-	private Component horizontalStrut;
 	private JMenuBar menuBar;
 	private JMenu fileNewMenu;
 	private JMenuItem newMenuItem;
@@ -105,8 +103,6 @@ public class GUI implements ComponentListener {
 	private JMenuItem saveMenuItem, saveAsMenuItem;
 	private JSeparator separator;
 	private JMenuItem exitMenuItem;
-	private JButton reservationButton;
-	private Component horizontalStrut_1;
 	private JMenu mnNewMenu, outputMenu, layoutMenu;
 	private JMenuItem helpMenuItem;
 	private JMenuItem prefMenuItem;
@@ -114,13 +110,7 @@ public class GUI implements ComponentListener {
 	private JSeparator separator_1, separator_2;
 	// preferences
 	private Properties prefProperties;
-	
-	private JButton attributesButton;
-	private Component horizontalStrut_2;
-
 	private static GUI instance = null;
-	private JButton imageButton;
-	private Component horizontalStrut_3;
 	
 	protected final MenuListener mListener = new MenuListener();
 	
@@ -610,78 +600,150 @@ public class GUI implements ComponentListener {
 		frmOrcaFlukes.setBounds(100, 100, 1000, 800);
 		frmOrcaFlukes.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		
-		// add button panel to resource pane
-		toolBar = new JToolBar();
-		toolBar.setFloatable(false);
-		toolBar.setAlignmentX(Component.LEFT_ALIGNMENT);
-		toolBar.setAlignmentY(Component.CENTER_ALIGNMENT);
-		resourcePanel.add(toolBar);
-		
-		// add buttons to resource pane toolbar
-		ActionListener rbl = GUIResourceState.getInstance().getActionListener();
-		
-		queryButton = new JButton("Query Registry");
-		queryButton.setToolTipText("Query Actor Registry");
-		queryButton.setActionCommand("query");
-		queryButton.addActionListener(rbl);
-		queryButton.setVerticalAlignment(SwingConstants.TOP);
-		toolBar.add(queryButton);
-		
-		// add button panel to request pane
-		toolBar = new JToolBar();
-		toolBar.setFloatable(false);
-		toolBar.setAlignmentX(Component.LEFT_ALIGNMENT);
-		toolBar.setAlignmentY(Component.CENTER_ALIGNMENT);
-		requestPanel.add(toolBar);
-		
-		// add buttons to request pane toolbar
-		rbl = GUIRequestState.getInstance().getActionListener();
-		
-		nodeButton = new JButton("Add Nodes");
-		nodeButton.setToolTipText("Add new nodes");
-		nodeButton.setActionCommand("nodes");
-		nodeButton.addActionListener(rbl);
-		nodeButton.setVerticalAlignment(SwingConstants.TOP);
-		toolBar.add(nodeButton);
-		
-		horizontalStrut = Box.createHorizontalStrut(10);
-		toolBar.add(horizontalStrut);
-		
-		nodeGroupButton = new JButton("Add Node Groups");
-		nodeGroupButton.setToolTipText("Add new node groups");
-		nodeGroupButton.setActionCommand("nodegroups");
-		nodeGroupButton.addActionListener(rbl);
-		nodeGroupButton.setVerticalAlignment(SwingConstants.TOP);
-		toolBar.add(nodeGroupButton);
-		
-		horizontalStrut_1 = Box.createHorizontalStrut(10);
-		toolBar.add(horizontalStrut_1);
-		
-		imageButton = new JButton("Client Images");
-		imageButton.setToolTipText("Add or edit VM images");
-		imageButton.setActionCommand("images");
-		imageButton.addActionListener(rbl);
-		toolBar.add(imageButton);
-		
-		horizontalStrut_3 = Box.createHorizontalStrut(10);
-		toolBar.add(horizontalStrut_3);
-		
-		reservationButton = new JButton("Edit Reservation");
-		reservationButton.setToolTipText("Edit reservation details");
-		reservationButton.setActionCommand("reservation");
-		reservationButton.addActionListener(rbl);
-		toolBar.add(reservationButton);
-		
-//		horizontalStrut_2 = Box.createHorizontalStrut(10);
-//		toolBar.add(horizontalStrut_2);
-//		
-//		attributesButton = new JButton("Edit Attributes");
-//		toolBar.add(attributesButton);
+		{
+			// add button panel to resource pane
+			JToolBar toolBar = new JToolBar();
+			toolBar.setFloatable(false);
+			toolBar.setAlignmentX(Component.LEFT_ALIGNMENT);
+			toolBar.setAlignmentY(Component.CENTER_ALIGNMENT);
+			resourcePanel.add(toolBar);
 			
+			// add buttons to resource pane toolbar
+			ActionListener rbl = GUIResourceState.getInstance().getActionListener();
+			
+			JButton queryButton = new JButton("Query Registry");
+			queryButton.setToolTipText("Query Actor Registry");
+			queryButton.setActionCommand("query");
+			queryButton.addActionListener(rbl);
+			queryButton.setVerticalAlignment(SwingConstants.TOP);
+			toolBar.add(queryButton);
+		}
+		
+		//
+		// add buttons to request pane
+		//
+		{
+			// add button panel to request pane
+			JToolBar toolBar = new JToolBar();
+			toolBar.setFloatable(false);
+			toolBar.setAlignmentX(Component.LEFT_ALIGNMENT);
+			toolBar.setAlignmentY(Component.CENTER_ALIGNMENT);
+			requestPanel.add(toolBar);
+			
+			// add buttons to request pane toolbar
+			ActionListener rbl = GUIRequestState.getInstance().getActionListener();
+			
+			JButton nodeButton = new JButton("Add Nodes");
+			nodeButton.setToolTipText("Add new nodes");
+			nodeButton.setActionCommand("nodes");
+			nodeButton.addActionListener(rbl);
+			nodeButton.setVerticalAlignment(SwingConstants.TOP);
+			toolBar.add(nodeButton);
+			
+			Component horizontalStrut = Box.createHorizontalStrut(10);
+			toolBar.add(horizontalStrut);
+			
+			JButton nodeGroupButton = new JButton("Add Node Groups");
+			nodeGroupButton.setToolTipText("Add new node groups");
+			nodeGroupButton.setActionCommand("nodegroups");
+			nodeGroupButton.addActionListener(rbl);
+			nodeGroupButton.setVerticalAlignment(SwingConstants.TOP);
+			toolBar.add(nodeGroupButton);
+			
+			horizontalStrut = Box.createHorizontalStrut(10);
+			toolBar.add(horizontalStrut);
+			
+			JButton imageButton = new JButton("Client Images");
+			imageButton.setToolTipText("Add or edit VM images");
+			imageButton.setActionCommand("images");
+			imageButton.addActionListener(rbl);
+			toolBar.add(imageButton);
+			
+			horizontalStrut = Box.createHorizontalStrut(10);
+			toolBar.add(horizontalStrut);
+			
+			JButton reservationButton = new JButton("Edit Reservation");
+			reservationButton.setToolTipText("Edit reservation details");
+			reservationButton.setActionCommand("reservation");
+			reservationButton.addActionListener(rbl);
+			toolBar.add(reservationButton);
+			
+			horizontalStrut = Box.createHorizontalStrut(10);
+			toolBar.add(horizontalStrut);
+			
+			JButton submitButton = new JButton("Submit Request");
+			submitButton.setToolTipText("Submit request to ORCA controller");
+			submitButton.setActionCommand("submit");
+			submitButton.addActionListener(rbl);
+			submitButton.setVerticalAlignment(SwingConstants.TOP);
+			toolBar.add(submitButton);
+			
+			horizontalStrut = Box.createHorizontalStrut(10);
+			toolBar.add(horizontalStrut);
+			
+			KTextField ktf = new KTextField(20);
+			GUIRequestState.getInstance().setSliceIdField(ktf);
+			ktf.setToolTipText("Enter slice id");
+			ktf.setMaximumSize(ktf.getMinimumSize());
+			toolBar.add(ktf);
+		} 
+		//
+		// add button panel to manifest pane
+		//
+		
+		{ 
+			JToolBar toolBar = new JToolBar();
+			toolBar.setFloatable(false);
+			toolBar.setAlignmentX(Component.LEFT_ALIGNMENT);
+			toolBar.setAlignmentY(Component.TOP_ALIGNMENT);
+			manifestPanel.add(toolBar);
+			
+			// add buttons to resource pane toolbar
+			ActionListener rbl = GUIManifestState.getInstance().getActionListener();
+			
+			JButton queryButton = new JButton("Get Slice Manifest");
+			queryButton.setToolTipText("Query ORCA for slice manifest");
+			queryButton.setActionCommand("manifest");
+			queryButton.addActionListener(rbl);
+			queryButton.setVerticalAlignment(SwingConstants.TOP);
+			toolBar.add(queryButton);
+			
+			Component horizontalStrut = Box.createHorizontalStrut(10);
+			toolBar.add(horizontalStrut);
+			
+			KTextField ktf = new KTextField(20);
+			// save the field
+			GUIManifestState.getInstance().setSliceIdField(ktf);
+			ktf.setToolTipText("Enter slice id");
+			ktf.setMaximumSize(ktf.getMinimumSize());
+			toolBar.add(ktf);
+			
+			horizontalStrut = Box.createHorizontalStrut(10);
+			toolBar.add(horizontalStrut);
+			
+			JButton rawButton = new JButton("Raw Response");
+			rawButton.setToolTipText("View raw controller response");
+			rawButton.setActionCommand("raw");
+			rawButton.addActionListener(rbl);
+			rawButton.setVerticalAlignment(SwingConstants.TOP);
+			toolBar.add(rawButton);
+			
+			horizontalStrut = Box.createHorizontalStrut(10);
+			toolBar.add(horizontalStrut);
+			
+			JButton deleteButton = new JButton("Delete slice");
+			deleteButton.setToolTipText("Delete slice");
+			deleteButton.setActionCommand("delete");
+			deleteButton.addActionListener(rbl);
+			deleteButton.setVerticalAlignment(SwingConstants.TOP);
+			toolBar.add(deleteButton);
+
+		} 
+		
 		GUIResourceState.getInstance().addPane(resourcePanel);
 		GUIRequestState.getInstance().addPane(requestPanel);
 		GUIManifestState.getInstance().addPane(manifestPanel);
-
+		
 		// now the menu
 		commonMenus();
 		
@@ -750,17 +812,20 @@ public class GUI implements ComponentListener {
 	 */
 	public enum PrefsEnum {
 		XTERM_PATH("xterm.path", "/usr/X11/bin/xterm", 
-				"Path to XTerm executable on your system"), 
+			"Path to XTerm executable on your system"), 
 		SCRIPT_COMMENT_SEPARATOR("script.comment.separator", "#", 
-				"Default comment character used in post-boot scripts"),
+			"Default comment character used in post-boot scripts"),
+		SSH_KEY("ssh.key", "~/.ssh/id_dsa", 
+			"SSH Key to use (public will be installed into instances). You can use ~ to denote user home directory."),
+		SSH_PUBKEY("ssh.pubkey", "~/.ssh/id_dsa.pub", "SSH public key to install into instances"),
 		SSH_OPTIONS("ssh.options", "-o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no", 
-				"Options for invoking SSH (the default set turns off checking .ssh/known_hosts"),
+			"Options for invoking SSH (the default set turns off checking .ssh/known_hosts"),
 		ORCA_REGISTRY("orca.registry.url", "https://geni.renci.org:12443/registry/",
-				"URL of the ORCA actor registry to query"),
+			"URL of the ORCA actor registry to query"),
 		ORCA_REGISTRY_CERT_FINGERPRINT("orca.registry.certfingerprint", "49:67:81:66:C0:BA:CC:82:7A:94:2B:B9:EC:00:4D:98",
-				"MD5 fingerprint of the certificate used by the registry"),
-		ORCA_XMLRPC_CONTROLLER("orca.xmlrpc.url", "http://localhost:11080/orca/xmlrpc", 
-				"URL of the ORCA XMLRPC controller");
+			"MD5 fingerprint of the certificate used by the registry"),
+		ORCA_XMLRPC_CONTROLLER("orca.xmlrpc.url", "http://geni.renci.org:11080/orca/xmlrpc", 
+			"URL of the ORCA XMLRPC controller");
 		
 		private final String propName;
 		private final String defaultValue;
@@ -803,6 +868,20 @@ public class GUI implements ComponentListener {
 		} catch (IOException e) {
 			;
 		}
+	}
+	
+	/**
+	 * Create a progress dialog
+	 * @param msg
+	 * @return
+	 */
+	static ProgressDialog getProgressDialog(String msg) {
+		ProgressDialog pd = new ProgressDialog(GUI.getInstance().getFrame(), true);
+		pd.setLocationRelativeTo(GUI.getInstance().getFrame());
+		pd.setMessage(msg);
+		pd.pack();
+		
+		return pd;
 	}
 
 }
