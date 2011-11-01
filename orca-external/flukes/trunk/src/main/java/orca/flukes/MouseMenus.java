@@ -409,7 +409,7 @@ public class MouseMenus {
                 			return;
                 		}
                 		String xtermCmd = GUI.getInstance().getPreference(GUI.PrefsEnum.XTERM_PATH); 
-                		System.out.println("Management acces " + mgt);
+                		//System.out.println("Management acces " + mgt);
                 		// check that xterm runs
                 		File xtermFile = new File(xtermCmd);
                 		if (!xtermFile.canExecute()) {
