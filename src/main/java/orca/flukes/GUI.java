@@ -185,8 +185,7 @@ public class GUI implements ComponentListener {
 						GUIRequestState.getInstance().setSaveDir(d.getSelectedFile().getParent());
 					}	
 				}
-				// kick the layout engine
-				switchLayout(GuiTabs.REQUEST_VIEW, savedLayout.get(GuiTabs.REQUEST_VIEW));
+				kickLayout(GuiTabs.REQUEST_VIEW);
 			}
 			else if (e.getActionCommand().equals("openmanifest")) {
 				KFileChooserDialog d = new KFileChooserDialog(getFrame(), "Load NDL manifest", KFileChooser.OPEN_DIALOG);
@@ -205,8 +204,7 @@ public class GUI implements ComponentListener {
 					// save the directory
 					GUIManifestState.getInstance().setSaveDir(d.getSelectedFile().getParent());
 				}
-				// kick the layout engine
-				switchLayout(GuiTabs.MANIFEST_VIEW, savedLayout.get(GuiTabs.MANIFEST_VIEW));
+				kickLayout(GuiTabs.MANIFEST_VIEW);
 			}
 			else if (e.getActionCommand().equals("new")) {
 				GUIRequestState.getInstance().clear();
@@ -279,6 +277,7 @@ public class GUI implements ComponentListener {
 	 */
 	@SuppressWarnings("unchecked")
 	private void switchLayout(GuiTabs at, GraphLayouts l) {
+
 		//final Layout<OrcaNode, OrcaLink> oldL = vv.getGraphLayout();
 		Layout<OrcaNode, OrcaLink> newL = null;
 		
@@ -300,9 +299,8 @@ public class GUI implements ComponentListener {
 		
 		if ((myVv == null) || (myGraph == null))
 			return;
-		
-		if (myGraph.getVertexCount() == 0)
-			return;
+
+		System.out.println("View is " + at.getName());
 		
 		try {
 			Class<?> pars[] = new Class[1];
@@ -329,6 +327,10 @@ public class GUI implements ComponentListener {
 		
 		// save this layout for this view
 		savedLayout.put(activeTab(), l);
+	}
+	
+	protected void kickLayout(GuiTabs tab) {
+		switchLayout(tab, savedLayout.get(tab));
 	}
 	
 	private void quit() {
@@ -701,7 +703,7 @@ public class GUI implements ComponentListener {
 			// add buttons to resource pane toolbar
 			ActionListener rbl = GUIManifestState.getInstance().getActionListener();
 			
-			JButton queryButton = new JButton("Get Slice Manifest");
+			JButton queryButton = new JButton("Query for Manifest");
 			queryButton.setToolTipText("Query ORCA for slice manifest");
 			queryButton.setActionCommand("manifest");
 			queryButton.addActionListener(rbl);
@@ -721,7 +723,7 @@ public class GUI implements ComponentListener {
 			horizontalStrut = Box.createHorizontalStrut(10);
 			toolBar.add(horizontalStrut);
 			
-			JButton rawButton = new JButton("Raw Response");
+			JButton rawButton = new JButton("View Raw Response");
 			rawButton.setToolTipText("View raw controller response");
 			rawButton.setActionCommand("raw");
 			rawButton.addActionListener(rbl);

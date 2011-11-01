@@ -7,6 +7,7 @@ import java.awt.event.ActionListener;
 import java.util.HashSet;
 import java.util.Set;
 
+import orca.flukes.GUI.GuiTabs;
 import orca.flukes.ndl.ManifestLoader;
 import orca.flukes.ui.TextAreaDialog;
 import orca.flukes.xmlrpc.OrcaSMXMLRPCProxy;
@@ -52,7 +53,7 @@ public class GUIManifestState extends GUICommonState {
 	public class ResourceButtonListener implements ActionListener {
 		public void actionPerformed(ActionEvent e) {
 			assert(sliceIdField != null);
-			
+
 			if (e.getActionCommand().equals("manifest")) {
 				// run request manifest from controller
 				if ((sliceIdField.getText() == null) || 
@@ -63,19 +64,20 @@ public class GUIManifestState extends GUICommonState {
 					kmd.setVisible(true);
 					return;
 				}
-				
+
 				try {
 					GUIManifestState.getInstance().clear();
-					
+
 					manifestString = OrcaSMXMLRPCProxy.getInstance().sliverStatus(sliceIdField.getText());
 
 					ManifestLoader ml = new ManifestLoader();
-					
+
 					// get rid of crud before <rdf:RDF
 					int ind = manifestString.indexOf("<rdf:RDF");
 					if (ind > 0) {
 						String realManifest = manifestString.substring(ind);
-						ml.loadString(realManifest);
+						if (ml.loadString(realManifest))
+							GUI.getInstance().kickLayout(GuiTabs.MANIFEST_VIEW);
 					} else {
 						KMessageDialog kmd = new KMessageDialog(GUI.getInstance().getFrame());
 						kmd.setMessage("Error has occurred, check raw controller response for details.");
@@ -95,11 +97,11 @@ public class GUIManifestState extends GUICommonState {
 							"Raw manifest", 
 							30, 50);
 					KTextArea ta = tad.getTextArea();
-					
+
 					if (manifestString != null)
 						ta.setText(manifestString);
 					tad.pack();
-			        tad.setVisible(true);
+					tad.setVisible(true);
 				} else 
 					if (e.getActionCommand().equals("delete")) {
 						if ((sliceIdField.getText() == null) || 
@@ -110,14 +112,14 @@ public class GUIManifestState extends GUICommonState {
 							kmd.setVisible(true);
 							return;
 						}
-						
+
 						KQuestionDialog kqd = new KQuestionDialog(GUI.getInstance().getFrame(), "Exit", true);
-		        		kqd.setMessage("Are you sure you want to delete slice " + sliceIdField.getText());
-		        		kqd.setLocationRelativeTo(GUI.getInstance().getFrame());
-		        		kqd.setVisible(true);
-		        		if (!kqd.getStatus()) 
-		        			return;
-						
+						kqd.setMessage("Are you sure you want to delete slice " + sliceIdField.getText());
+						kqd.setLocationRelativeTo(GUI.getInstance().getFrame());
+						kqd.setVisible(true);
+						if (!kqd.getStatus()) 
+							return;
+
 						try {
 							OrcaSMXMLRPCProxy.getInstance().deleteSliver(sliceIdField.getText());
 						} catch (Exception ex) {
@@ -126,7 +128,7 @@ public class GUIManifestState extends GUICommonState {
 							ed.setException("Exception encountered while deleting slice manifest: ", ex);
 							ed.setVisible(true);
 						}
-						
+
 					}
 		}
 	}

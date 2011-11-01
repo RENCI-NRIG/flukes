@@ -82,11 +82,10 @@ public class ManifestLoader implements INdlManifestModelListener {
 			}
 			
 			bin.close();
-			
-			GUIManifestState.getInstance().setManifestString(sb.toString());
-			
+
 			NdlManifestParser nrp = new NdlManifestParser(sb.toString(), this);
 			nrp.processManifest();
+			GUIManifestState.getInstance().setManifestString(sb.toString());
 			
 		} catch (Exception e) {
 			ExceptionDialog ed = new ExceptionDialog(GUI.getInstance().getFrame(), "Exception");
