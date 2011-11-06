@@ -300,8 +300,6 @@ public class GUI implements ComponentListener {
 		if ((myVv == null) || (myGraph == null))
 			return;
 
-		System.out.println("View is " + at.getName());
-		
 		try {
 			Class<?> pars[] = new Class[1];
 			pars[0] = edu.uci.ics.jung.graph.Graph.class;

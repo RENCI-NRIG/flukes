@@ -34,6 +34,7 @@ import edu.uci.ics.jung.visualization.LayeredIcon;
  *
  */
 public class OrcaCrossconnect extends OrcaNode {
+	// vlan or other path label
 	String label = null;
 	long bandwidth;
 	
