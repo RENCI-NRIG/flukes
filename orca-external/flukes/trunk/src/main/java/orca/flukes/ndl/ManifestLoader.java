@@ -232,9 +232,6 @@ public class ManifestLoader implements INdlManifestModelListener {
 		if (c == null)
 			return;
 
-		if (nodes.containsKey(getTrueName(c)))
-			return;
-		
 		OrcaCrossconnect oc = new OrcaCrossconnect(getTrueName(c));
 		oc.setLabel(label);
 		
@@ -263,9 +260,6 @@ public class ManifestLoader implements INdlManifestModelListener {
 		if (ce == null)
 			return;
 		OrcaNode newNode;
-		
-		if (nodes.containsKey(getTrueName(ce)))
-			return;
 		
 		if (ceClass.equals(NdlCommons.computeElementClass))
 			// HACK! if it is a collection, it used to be NODEGROUP
