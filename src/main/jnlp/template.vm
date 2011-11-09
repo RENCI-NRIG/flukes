@@ -8,7 +8,7 @@
 		<vendor>$project.Organization.Name</vendor>
 		<homepage href="$project.Organization.Url"/>
 		<description>$project.Description</description>
-		<icon kind="splash" href="$project.Url/html/icon.jpg"/>
+		<icon kind="splash" href="$project.Url/html/icon.png"/>
 		<icon href="$project.Url/html/icon.jpg"/>
 	</information>
 	<security>

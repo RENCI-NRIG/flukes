@@ -315,7 +315,7 @@ public class ManifestLoader implements INdlManifestModelListener {
 	private void processDomainVmElements(Resource vm, OntModel om, OrcaNode parent) {
 		
 		// HACK - if we added real interfaces to inner nodes, we don't need link to parent
-		boolean linkedToParent = true;
+		boolean innerNodeConnected = false;
 		
 		for (StmtIterator vmEl = vm.listProperties(NdlCommons.collectionElementProperty); vmEl.hasNext();) {
 			Resource tmpR = vmEl.next().getResource();
@@ -324,7 +324,7 @@ public class ManifestLoader implements INdlManifestModelListener {
 			GUIManifestState.getInstance().getGraph().addVertex(on);
 			OrcaLink ol = GUIManifestState.getInstance().getLinkCreator().create();
 			
-			// link to parent (a HACK)
+			// link to parent (a visual HACK)
 			links.put(ol.getName(), ol);
 			GUIManifestState.getInstance().getGraph().addEdge(ol, new Pair<OrcaNode>(parent, on), 
 					EdgeType.UNDIRECTED);
@@ -332,15 +332,20 @@ public class ManifestLoader implements INdlManifestModelListener {
 			// add various properties
 			setCommonNodeProperties(on, tmpR);
 			
-			// process interfaces
+			// process interfaces. if there is an interface that leads to
+			// a link, this is an intra-domain case, so we can delete the parent later
 			for (Resource intR: NdlCommons.getResourceInterfaces(tmpR)) {
 				interfaceToNode.put(getTrueName(intR), on);
-				linkedToParent = false;
+				// HACK: for now check that this interface connects to something
+				// and is not just hanging there with IP address
+				List<Resource> hasI = NdlCommons.getWhoHasInterface(intR, om);
+				if (hasI.size() > 1)
+					innerNodeConnected = true;
 			}
 		}
 		
 		// Hack - remove parent if nodes are linked between themselves
-		if (!linkedToParent)
+		if (innerNodeConnected)
 			GUIManifestState.getInstance().getGraph().removeVertex(parent);
 	}
 	
