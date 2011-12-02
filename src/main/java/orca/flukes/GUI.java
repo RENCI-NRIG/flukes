@@ -54,6 +54,7 @@ import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JRadioButtonMenuItem;
+import javax.swing.JRootPane;
 import javax.swing.JSeparator;
 import javax.swing.JTabbedPane;
 import javax.swing.JToolBar;
@@ -63,6 +64,7 @@ import javax.swing.filechooser.FileFilter;
 import orca.flukes.ndl.ManifestLoader;
 import orca.flukes.ndl.RequestLoader;
 import orca.flukes.ndl.RequestSaver;
+import orca.flukes.ui.KeystoreDialog;
 import orca.flukes.ui.TextAreaDialog;
 
 import com.hyperrealm.kiwi.ui.AboutFrame;
@@ -108,6 +110,9 @@ public class GUI implements ComponentListener {
 	private JMenuItem prefMenuItem;
 	private JMenuItem aboutMenuItem;
 	private JSeparator separator_1, separator_2;
+	
+	// alias and password within a keystore to be used for XMLRPC calls
+	private String keyAlias = null, keyPassword = null;
 	// preferences
 	private Properties prefProperties;
 	private static GUI instance = null;
@@ -156,6 +161,24 @@ public class GUI implements ComponentListener {
 	        }
 	        return ext;
 	    }
+	}
+	
+	// keystore identity
+	public String getKeystoreAlias() {
+		if ((keyAlias == null) || (keyPassword == null)) 
+			identityDialog();
+		return keyAlias;
+	}
+	
+	public String getKeystorePassword() {
+		if ((keyAlias == null) || (keyPassword == null)) 
+			identityDialog();
+		return keyPassword;
+	}
+	
+	public void resetKeystoreAliasAndPassword() {
+		keyAlias = null;
+		keyPassword = null;
 	}
 	
 	// All menu actions here
@@ -409,6 +432,17 @@ public class GUI implements ComponentListener {
 		ta.setText(prefs);
 		tad.pack();
         tad.setVisible(true);
+	}
+
+	private void identityDialog() {
+		KeystoreDialog ld = new KeystoreDialog(frmOrcaFlukes, 
+				"Enter key alias and key password to be used with " + getPreference(PrefsEnum.USER_KEYSTORE));
+		
+		ld.pack();
+		ld.setVisible(true);
+		
+		keyAlias = ld.getAlias();
+		keyPassword = ld.getPassword();
 	}
 	
 	/*
@@ -753,6 +787,7 @@ public class GUI implements ComponentListener {
 		}
 		
 		tabbedPane.setSelectedComponent(requestPanel);
+		
 	}
 
 	public void componentHidden(ComponentEvent arg0) {
@@ -816,16 +851,18 @@ public class GUI implements ComponentListener {
 		SCRIPT_COMMENT_SEPARATOR("script.comment.separator", "#", 
 			"Default comment character used in post-boot scripts"),
 		SSH_KEY("ssh.key", "~/.ssh/id_dsa", 
-			"SSH Key to use (public will be installed into instances). You can use ~ to denote user home directory."),
-		SSH_PUBKEY("ssh.pubkey", "~/.ssh/id_dsa.pub", "SSH public key to install into instances"),
+			"SSH Private Key to use to access VM instances(public will be installed into instances). You can use ~ to denote user home directory."),
+		SSH_PUBKEY("ssh.pubkey", "~/.ssh/id_dsa.pub", "SSH Public key to install into VM instances"),
 		SSH_OPTIONS("ssh.options", "-o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no", 
 			"Options for invoking SSH (the default set turns off checking .ssh/known_hosts"),
-		ORCA_REGISTRY("orca.registry.url", "https://geni.renci.org:12443/registry/",
+		ORCA_REGISTRY("orca.registry.url", "http://geni.renci.org:12080/registry/",
 			"URL of the ORCA actor registry to query"),
-		ORCA_REGISTRY_CERT_FINGERPRINT("orca.registry.certfingerprint", "49:67:81:66:C0:BA:CC:82:7A:94:2B:B9:EC:00:4D:98",
+		ORCA_REGISTRY_CERT_FINGERPRINT("orca.registry.certfingerprint", "78:B6:1A:F0:6C:F8:C7:0F:C0:05:10:13:06:79:E0:AC",
 			"MD5 fingerprint of the certificate used by the registry"),
-		ORCA_XMLRPC_CONTROLLER("orca.xmlrpc.url", "http://geni.renci.org:11080/orca/xmlrpc", 
-			"URL of the ORCA XMLRPC controller");
+		USER_KEYSTORE("user.keystore", "~/.ssl/user.jks", 
+				"Keystore containing your private key and certificate issued by GPO, Emulab or BEN"),
+		ORCA_XMLRPC_CONTROLLER("orca.xmlrpc.url", "https://some.hostname.org:11443/orca/xmlrpc", 
+			"URL of the ORCA XMLRPC controller where you are submitting the request");
 		
 		private final String propName;
 		private final String defaultValue;
@@ -883,5 +920,5 @@ public class GUI implements ComponentListener {
 		
 		return pd;
 	}
-
+	
 }

@@ -101,7 +101,7 @@ public class RegistryXMLRPCProxy {
      
         // Install the all-trusting trust manager
         try {
-        	SSLContext sc = SSLContext.getInstance("SSL");
+        	SSLContext sc = SSLContext.getInstance("TLS");
         	// Create empty HostnameVerifier
         	HostnameVerifier hv = new HostnameVerifier() {
         		public boolean verify(String arg0, SSLSession arg1) {
