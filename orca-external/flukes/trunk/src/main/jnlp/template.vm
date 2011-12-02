@@ -9,7 +9,7 @@
 		<homepage href="$project.Organization.Url"/>
 		<description>$project.Description</description>
 		<icon kind="splash" href="$project.Url/html/icon.png"/>
-		<icon href="$project.Url/html/icon.jpg"/>
+		<icon href="$project.Url/html/icon.png"/>
 	</information>
 	<security>
 		<all-permissions/>

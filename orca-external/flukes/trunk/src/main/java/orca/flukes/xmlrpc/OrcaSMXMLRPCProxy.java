@@ -7,6 +7,9 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.security.KeyStore;
+import java.security.PrivateKey;
+import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -14,23 +17,33 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.UUID;
 
-import javax.security.auth.login.CredentialException;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
 
 import orca.flukes.GUI;
+import orca.util.ssl.ContextualSSLProtocolSocketFactory;
+import orca.util.ssl.MultiKeyManager;
+import orca.util.ssl.MultiKeySSLContextFactory;
 
+import org.apache.commons.httpclient.protocol.Protocol;
+import org.apache.commons.httpclient.protocol.ProtocolSocketFactory;
 import org.apache.xmlrpc.XmlRpcException;
 import org.apache.xmlrpc.client.XmlRpcClient;
 import org.apache.xmlrpc.client.XmlRpcClientConfigImpl;
+import org.apache.xmlrpc.client.XmlRpcCommonsTransportFactory;
 
 import com.hyperrealm.kiwi.ui.dialog.KMessageDialog;
 
 public class OrcaSMXMLRPCProxy {
-	private static final String GET_VERSION = "geni.GetVersion";
-	private static final String SLIVER_STATUS = "geni.SliverStatus";
-	private static final String CREATE_SLIVER = "geni.CreateSliver";
-	private static final String DELETE_SLIVER = "geni.DeleteSliver";
+	private static final String GET_VERSION = "orca.getVersion";
+	private static final String SLIVER_STATUS = "orca.sliceStatus";
+	private static final String CREATE_SLIVER = "orca.createSlice";
+	private static final String DELETE_SLIVER = "orca.deleteSlice";
 	private static final String SSH_DSA_PUBKEY_FILE = "id_dsa.pub";
 	private static final String SSH_RSA_PUBKEY_FILE = "id_rsa.pub";
+	
+	private MultiKeyManager mkm = null;
+	private boolean sslIdentitySet = false;
 	
 	OrcaSMXMLRPCProxy() {
 		;
@@ -42,13 +55,95 @@ public class OrcaSMXMLRPCProxy {
 		return instance;
 	}
 	
+	TrustManager[] trustAllCerts = new TrustManager[] {
+			new X509TrustManager() {
+				public X509Certificate[] getAcceptedIssuers() {
+					// return 0 size array, not null, per spec
+					return null;
+				}
+
+				public void checkClientTrusted(X509Certificate[] certs, String authType) {
+					// Trust always
+				}
+
+				public void checkServerTrusted(X509Certificate[] certs, String authType) {
+					// Trust always
+					// FIXME: should check the cert of controller we're talking to
+				}
+
+			}
+	};
+	
+	/**
+	 * Set the identity for the communications to the XMLRPC controller. Eventually
+	 * we may talk to several controller with different identities. For now only
+	 * one is configured.
+	 */
+	private void setSSLIdentity() throws Exception {
+		
+		if (sslIdentitySet)
+			return;
+		
+		try {
+			// create multikeymanager
+			mkm = new MultiKeyManager();
+			URL ctrlrUrl = new URL(GUI.getInstance().getPreference(GUI.PrefsEnum.ORCA_XMLRPC_CONTROLLER));
+
+			// register a new protocol
+			ContextualSSLProtocolSocketFactory regSslFact = 
+				new ContextualSSLProtocolSocketFactory();
+
+			// add this multikey context factory for the controller host/port
+			regSslFact.addHostContextFactory(new MultiKeySSLContextFactory(mkm, trustAllCerts), 
+					ctrlrUrl.getHost(), ctrlrUrl.getPort());
+
+			// load keystore and get the right cert from it
+			String keyAlias = GUI.getInstance().getKeystoreAlias();
+			String keyPassword = GUI.getInstance().getKeystorePassword();
+
+			String keyStorePath = GUI.getInstance().getPreference(GUI.PrefsEnum.USER_KEYSTORE);
+			Properties p = System.getProperties();
+			keyStorePath = keyStorePath.replaceAll("~", p.getProperty("user.home"));
+			
+			FileInputStream fis = new FileInputStream(keyStorePath);
+
+			KeyStore ks = KeyStore.getInstance("jks");
+
+			ks.load(fis, keyPassword.toCharArray());
+			fis.close();
+
+			// add the identity into it
+			mkm.addPrivateKey(keyAlias, 
+					(PrivateKey)ks.getKey(keyAlias, keyPassword.toCharArray()), 
+					ks.getCertificate(keyAlias));
+
+			// before we do SSL to this controller, set our identity
+			mkm.setCurrentGuid(keyAlias);
+
+	    	// register the protocol (Note: All xmlrpc clients must use XmlRpcCommonsTransportFactory
+	    	// for this to work). See ContextualSSLProtocolSocketFactory.
+			Protocol reghhttps = new Protocol("https", (ProtocolSocketFactory)regSslFact, 443); 
+			Protocol.registerProtocol("https", reghhttps);
+			
+			sslIdentitySet = true;
+		} catch (Exception e) {
+			GUI.getInstance().resetKeystoreAliasAndPassword();
+			throw new Exception("Unable to load user private key and certificate from the keystore: " + e);
+		}
+	}
+	
 	public Map<String, Object> getVersion() throws Exception {
         Map<String, Object> versionMap = null;
+    	setSSLIdentity();
         try {
 			XmlRpcClientConfigImpl config = new XmlRpcClientConfigImpl();
 			config.setServerURL(new URL(GUI.getInstance().getPreference(GUI.PrefsEnum.ORCA_XMLRPC_CONTROLLER)));
 			XmlRpcClient client = new XmlRpcClient();
 			client.setConfig(config);
+			
+            // set this transport factory for host-specific SSLContexts to work
+            XmlRpcCommonsTransportFactory f = new XmlRpcCommonsTransportFactory(client);
+			client.setTransportFactory(f);
 			
 			// get verbose list of the AMs
 			versionMap = (Map<String, Object>)client.execute(GET_VERSION, new Object[]{});
@@ -67,17 +162,21 @@ public class OrcaSMXMLRPCProxy {
 	 * @param users
 	 * @return
 	 */
-	public String createSliver(String sliceId, String resReq, List<Map<String, ?>> users) throws Exception {
+	public String createSlice(String sliceId, String resReq, List<Map<String, ?>> users) throws Exception {
 		assert(sliceId != null);
 		assert(resReq != null);
 		
 		String result = null;
-		
+    	setSSLIdentity();
 		try {
 			XmlRpcClientConfigImpl config = new XmlRpcClientConfigImpl();
 			config.setServerURL(new URL(GUI.getInstance().getPreference(GUI.PrefsEnum.ORCA_XMLRPC_CONTROLLER)));
 			XmlRpcClient client = new XmlRpcClient();
 			client.setConfig(config);
+			
+            // set this transport factory for host-specific SSLContexts to work
+            XmlRpcCommonsTransportFactory f = new XmlRpcCommonsTransportFactory(client);
+			client.setTransportFactory(f);
 			
 			// create sliver
 			result = (String)client.execute(CREATE_SLIVER, new Object[]{ sliceId, new Object[]{}, resReq, users});
@@ -97,8 +196,9 @@ public class OrcaSMXMLRPCProxy {
 	 * @param users
 	 * @return
 	 */
-	public String createSliver(String sliceId, String resReq) throws Exception {
-		
+	public String createSlice(String sliceId, String resReq) throws Exception {
+    	setSSLIdentity();
+    	
 		// collect user credentials from $HOME/.ssh
 		Properties p = System.getProperties();
 		
@@ -121,17 +221,21 @@ public class OrcaSMXMLRPCProxy {
 		users.add(userEntry);
 
 		// submit the request
-		return createSliver(sliceId, resReq, users);
+		return createSlice(sliceId, resReq, users);
 	}
 	
-	public boolean deleteSliver(String sliceId)  throws Exception {
+	public boolean deleteSlice(String sliceId)  throws Exception {
 		boolean res = false;
-		
+    	setSSLIdentity();
 		try {
 			XmlRpcClientConfigImpl config = new XmlRpcClientConfigImpl();
 			config.setServerURL(new URL(GUI.getInstance().getPreference(GUI.PrefsEnum.ORCA_XMLRPC_CONTROLLER)));
 			XmlRpcClient client = new XmlRpcClient();
 			client.setConfig(config);
+			
+            // set this transport factory for host-specific SSLContexts to work
+            XmlRpcCommonsTransportFactory f = new XmlRpcCommonsTransportFactory(client);
+			client.setTransportFactory(f);
 			
 			// delete sliver
 			res = (Boolean)client.execute(DELETE_SLIVER, new Object[]{ sliceId, new Object[]{}});
@@ -144,16 +248,20 @@ public class OrcaSMXMLRPCProxy {
         return res;
 	}
 	
-	public String sliverStatus(String sliceId)  throws Exception {
+	public String sliceStatus(String sliceId)  throws Exception {
 		assert(sliceId != null);
 		
 		String result = null;
-		
+    	setSSLIdentity();
 		try {
 			XmlRpcClientConfigImpl config = new XmlRpcClientConfigImpl();
 			config.setServerURL(new URL(GUI.getInstance().getPreference(GUI.PrefsEnum.ORCA_XMLRPC_CONTROLLER)));
 			XmlRpcClient client = new XmlRpcClient();
 			client.setConfig(config);
+			
+            // set this transport factory for host-specific SSLContexts to work
+            XmlRpcCommonsTransportFactory f = new XmlRpcCommonsTransportFactory(client);
+			client.setTransportFactory(f);
 			
 			// sliver status
 			result = (String)client.execute(SLIVER_STATUS, new Object[]{ sliceId, new Object[]{}});
@@ -216,6 +324,10 @@ public class OrcaSMXMLRPCProxy {
 	}
 	
 	
+	/**
+	 * Test harness
+	 * @param args
+	 */
 	public static void main(String[] args) {
 		OrcaSMXMLRPCProxy p = OrcaSMXMLRPCProxy.getInstance();
 		
@@ -251,14 +363,14 @@ public class OrcaSMXMLRPCProxy {
 			System.out.println("Placing request against " + GUI.getInstance().getPreference(GUI.PrefsEnum.ORCA_XMLRPC_CONTROLLER));
 			String sliceId = UUID.randomUUID().toString();
 			System.out.println("Creating slice " + sliceId);
-			String result = p.createSliver(sliceId, sb.toString());
+			String result = p.createSlice(sliceId, sb.toString());
 			System.out.println("Result of create slice: " + result);
 			
 			System.out.println("Sleeping for 60sec");
 			Thread.sleep(60000);
 			
 			System.out.println("Requesting sliver status");
-			System.out.println("Status: " + p.sliverStatus(sliceId));
+			System.out.println("Status: " + p.sliceStatus(sliceId));
 			
 //			System.out.println("Deleting slice " + sliceId);
 //			System.out.println("Result of delete slice: " + p.deleteSliver(sliceId));

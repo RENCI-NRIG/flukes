@@ -68,7 +68,7 @@ public class GUIManifestState extends GUICommonState {
 				try {
 					GUIManifestState.getInstance().clear();
 
-					manifestString = OrcaSMXMLRPCProxy.getInstance().sliverStatus(sliceIdField.getText());
+					manifestString = OrcaSMXMLRPCProxy.getInstance().sliceStatus(sliceIdField.getText());
 
 					ManifestLoader ml = new ManifestLoader();
 
@@ -121,7 +121,7 @@ public class GUIManifestState extends GUICommonState {
 							return;
 
 						try {
-							OrcaSMXMLRPCProxy.getInstance().deleteSliver(sliceIdField.getText());
+							OrcaSMXMLRPCProxy.getInstance().deleteSlice(sliceIdField.getText());
 						} catch (Exception ex) {
 							ExceptionDialog ed = new ExceptionDialog(GUI.getInstance().getFrame(), "Exception");
 							ed.setLocationRelativeTo(GUI.getInstance().getFrame());

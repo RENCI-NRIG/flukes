@@ -364,7 +364,7 @@ public class GUIRequestState extends GUICommonState implements IDeleteEdgeCallBa
 					return;
 				}
 				try {
-					String status = OrcaSMXMLRPCProxy.getInstance().createSliver(sliceIdField.getText(), ndl);
+					String status = OrcaSMXMLRPCProxy.getInstance().createSlice(sliceIdField.getText(), ndl);
 					TextAreaDialog tad = new TextAreaDialog(GUI.getInstance().getFrame(), "ORCA Response", 
 							"ORCA Controller response", 
 							25, 50);
