@@ -8,3 +8,4 @@ NDL-OWL-enabled GUI based on
 'mvn webstart:jnlp' produces a zip file that contains JNLP that should be deployed at the URL specified in the POM (geni-images.renci.org/webstart).
 
 It also relies on orca:ndl and orca.core:util snapshots for NDL code and SSL code
+
