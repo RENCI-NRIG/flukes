@@ -30,6 +30,13 @@
       <url>https://ci-dev.renci.org/nexus/content/repositories/geni-orca-libs/</url>
     </repository>
   </distributionManagement>
+
+  <properties>
+	<!-- location of signing keystore for jnlp -->
+  	<keystorefile>/Users/ibaldin/.ssl/iliabaldine-allcerts.jks</keystorefile>
+	<keystorealias>iliabaldine-ben</keystorealias>
+  </properties>
+
   <repositories>
 	<repository>
 		<id>geni-orca-libs</id>
@@ -145,49 +152,62 @@
 	           			<mainClass>orca.flukes.GUI</mainClass>
          			</jnlp>
 
-
          			<!-- SIGNING -->
          			<!-- defining this will automatically sign the jar and its dependencies, if necessary -->
          			<sign>
          				<!-- we need to override passwords easily from the command line. ${keypass} -->
          				<!-- ${storepass} -->
 
-			        	<keystore>flukes</keystore>
-			            <keypass>flukespass</keypass>  
-			            <storepass>flukespass</storepass> 
-			            <storetype>JKS</storetype>
-			            <alias>IliaBaldine</alias>
-			            <validity>3650</validity>
+					<keystore>${keystorefile}</keystore>
+					<!-- assumes key and storepasses are same -->
+					<keypass>${keypass}</keypass>
+					<storepass>${keypass}</storepass>
+					<storetype>JKS</storetype>
+					<validity>3650</validity>
+					<alias>${keystorealias}</alias>
+				
+<!--
+				       	    <keystore>flukes</keystore>
+				            <keypass>flukespass</keypass>  
+				            <storepass>flukespass</storepass> 
+				            <storetype>JKS</storetype>
+				            <alias>IliaBaldine</alias>
+				            <validity>3650</validity>
+-->
 						
-			            <!-- only required for generating the keystore -->
-			            <dnameCn>Ilia Baldine</dnameCn>
-			            <dnameOu>NRIG</dnameOu>
-			            <dnameO>RENCI</dnameO>
-			            <dnameL>ChapelHill</dnameL>
-			            <dnameSt>NC</dnameSt>
-			            <dnameC>US</dnameC>
+				            <!-- only required for generating the keystore -->
+<!--
+				            <dnameCn>Ilia Baldine</dnameCn>
+				            <dnameOu>NRIG</dnameOu>
+				            <dnameO>RENCI</dnameO>
+				            <dnameL>ChapelHill</dnameL>
+				            <dnameSt>NC</dnameSt>
+				            <dnameC>US</dnameC>
+-->
 						
-						<!-- verify that the signing operation succeeded -->
-			            <verify>true</verify> 
-						
+					<!-- verify that the signing operation succeeded -->
+				            <verify>true</verify> 
+							
 			            <!-- KEYSTORE MANAGEMENT -->
+<!--
            				<keystoreConfig>
              				<delete>true</delete> 
              				<gen>true</gen>     
            				</keystoreConfig>
+-->
          			</sign>
 
-			        <!-- BUILDING PROCESS -->
-			
-			        <pack200>true</pack200>
-			        <!-- default force when pack200 false, true when pack200 selected ?? -->
-			 		<gzip>true</gzip> 
-			
-			   		<!-- causes a version attribute to be output in each jar resource element, optional, default is false -->
-					<outputJarVersions>false</outputJarVersions>
-			
-			  		<!--install>false</install--> <!-- not yet supported -->
-			  		<verbose>true</verbose>
+			       	<!-- BUILDING PROCESS -->
+		
+		        	<pack200>true</pack200>
+		        	<!-- default force when pack200 false, true when pack200 selected ?? -->
+				<gzip>true</gzip> 
+		
+		   		<!-- causes a version attribute to be output in each jar resource element, optional, default is false -->
+				<outputJarVersions>false</outputJarVersions>
+		
+		  		<!--install>false</install--> <!-- not yet supported -->
+		  		<verbose>true</verbose>
        			</configuration>
 			</plugin>
 			<plugin>
