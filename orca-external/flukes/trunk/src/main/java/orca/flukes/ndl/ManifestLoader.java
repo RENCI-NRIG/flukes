@@ -143,12 +143,11 @@ public class ManifestLoader implements INdlManifestModelListener {
 		//System.out.println("Found link connection " + l + " connecting " + interfaces);
 		assert(l != null);
 		
-		OrcaLink ol = new OrcaLink("Link " + lcount++);
-		
 		// find what nodes it connects (should be two)
 		Iterator<Resource> it = interfaces.iterator(); 
 		
 		if (interfaces.size() == 2) {
+			OrcaLink ol = new OrcaLink("Link " + lcount++);
 			// point-to-point link
 			// the ends
 			Resource if1 = it.next(), if2 = it.next();
@@ -175,12 +174,25 @@ public class ManifestLoader implements INdlManifestModelListener {
 							EdgeType.UNDIRECTED);
 				}
 			}
+			links.put(getTrueName(l), ol);
 		} else {
 			// multi-point link
+			// create a crossconnect then use interfaceToNode mapping to create links to it
+			OrcaCrossconnect ml = new OrcaCrossconnect(getTrueName(l));
 			
+			nodes.put(getTrueName(l), ml);
+			
+			// add crossconnect to the graph
+			GUIManifestState.getInstance().getGraph().addVertex(ml);
+			
+			// link nodes (we've already seen them) to it
+			for(Resource intf: interfaces) {
+				if (interfaceToNode.get(getTrueName(intf)) != null) {
+					OrcaLink ol = new OrcaLink("Link " + lcount++);
+					GUIManifestState.getInstance().getGraph().addEdge(ol, new Pair<OrcaNode>(ml, interfaceToNode.get(getTrueName(intf))), EdgeType.UNDIRECTED);
+				}
+			}
 		}
-		links.put(getTrueName(l), ol);
-
 	}
 
 	@Override

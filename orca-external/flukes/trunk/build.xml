@@ -1,6 +1,5 @@
 <project name="Flukes" default="install" basedir=".">
 <macrodef name="unsignjar">
-		
     <attribute name="jar"/>
     <sequential>
         <!-- Remove any existing signatures from a JAR file. -->
@@ -34,15 +33,16 @@
     </sequential>
 </macrodef>
 
-<target name="unsign">
+<target name="unsign" description="Unsign bouncycastle jars fetched automatically by maven. Use if jarsigned fails for 'mvn install'" >
 	<unsignjar jar="/Users/ibaldin/.m2/repository/org/bouncycastle/bcprov-ext-jdk15/1.45/bcprov-ext-jdk15-1.45.jar"/>
 	<unsignjar jar="/Users/ibaldin/.m2/repository/bouncycastle/bcprov-jdk16/bcprov-jdk16/145/bcprov-jdk16-145.jar"/>
 </target>
 
-<target name="install">
+<target name="install" description="Install flukes onto specified host and unpack for JNLP use">
 	<property name="flukes.zip" value="flukes-0.1-SNAPSHOT.zip"/>
 	<property name="flukes.host" value="geni-images.renci.org"/>
 	<property name="flukes.dir" value="/images/webstart"/>
+	<description>Install flukes onto ${flukes.host} and unpack for JNLP use</description>
 	<scp file="target/${flukes.zip}" todir="${user.name}@${flukes.host}:${flukes.dir}" keyfile="${user.home}/.ssh/id_dsa" />
 	<sshexec host="${flukes.host}" username="${user.name}" keyfile="${user.home}/.ssh/id_dsa" command="cd ${flukes.dir}; unzip -o ${flukes.zip}"/>
 </target>
