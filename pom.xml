@@ -91,7 +91,7 @@
 							<addDefaultImplementationEntries>true</addDefaultImplementationEntries>
 						</manifest>
 						<manifestEntries>
-							<Implementation-Version>v.${version}.build-${buildNumber}</Implementation-Version>
+							<Implementation-Version>v.${version}.build-${buildNumber}.ts-${timestamp}</Implementation-Version>
 						</manifestEntries>
 					</archive>
 				</configuration>

@@ -36,8 +36,6 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.lang.reflect.Constructor;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -54,7 +52,6 @@ import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JRadioButtonMenuItem;
-import javax.swing.JRootPane;
 import javax.swing.JSeparator;
 import javax.swing.JTabbedPane;
 import javax.swing.JToolBar;
@@ -67,7 +64,6 @@ import orca.flukes.ndl.RequestSaver;
 import orca.flukes.ui.KeystoreDialog;
 import orca.flukes.ui.TextAreaDialog;
 
-import com.hyperrealm.kiwi.ui.AboutFrame;
 import com.hyperrealm.kiwi.ui.KFileChooser;
 import com.hyperrealm.kiwi.ui.KTextArea;
 import com.hyperrealm.kiwi.ui.KTextField;
@@ -87,13 +83,12 @@ import edu.uci.ics.jung.visualization.util.Animator;
 
 public class GUI implements ComponentListener {
 
+	private static final String FLUKES_HELP_WIKI = "https://geni-orca.renci.org/trac/wiki/flukes";
 	public static final String buildVersion = GUI.class.getPackage().getImplementationVersion();
-	public static final String aboutText = "ORCA FLUKES " + (buildVersion == null? "" : buildVersion) + "\nNDL-OWL network editor for ORCA (Open Resource Control Architecture)" +
+	public static final String aboutText = "ORCA FLUKES " + (buildVersion == null? "Eclipse build" : buildVersion) + "\nNDL-OWL network editor for ORCA (Open Resource Control Architecture)" +
 	"\nDeveloped using Jena Semantic Web Framework, JUNG Java Universal Network/Graph Framework and Kiwi Swing toolkit." +
 	"\n\nCopyright 2011 RENCI/UNC Chapel Hill";
 	private static final String FRAME_TITLE = "ORCA FLUKES - The ORCA Network Editor";
-	private static final String FLUKES_HREF_URL = "http://geni-images.renci.org/webstart/";
-	private static final String HELP_DOC = "html/help.html";
 	private static final String PREF_FILE = ".flukes.properties";
 	private JFrame frmOrcaFlukes;
 	private JTabbedPane tabbedPane;
@@ -409,12 +404,19 @@ public class GUI implements ComponentListener {
 	}
 	
 	private void helpDialog() {
+
 		try {
-			AboutFrame ab = new AboutFrame("FLUKES Help", new URL(FLUKES_HREF_URL + HELP_DOC));
-			ab.setVisible(true);
-		} catch (MalformedURLException e) {
-			;
+			java.awt.Desktop.getDesktop().browse(java.net.URI.create(FLUKES_HELP_WIKI));
+		} catch (Exception e) {
+
 		}
+//		try {
+//			//AboutFrame ab = new AboutFrame("FLUKES Help", new URL(FLUKES_HREF_URL + HELP_DOC));
+//			AboutFrame ab = new AboutFrame("FLUKES Help", new URL("https://geni-orca.renci.org/trac/wiki/flukes"));
+//			ab.setVisible(true);
+//		} catch (MalformedURLException e) {
+//			;
+//		}
 	}
 	
 	private void prefsDialog() {
@@ -535,7 +537,7 @@ public class GUI implements ComponentListener {
 		separator_2 = new JSeparator();
 		mnNewMenu.add(separator_2);
 		
-		helpMenuItem = new JMenuItem("Help Contents");
+		helpMenuItem = new JMenuItem("Help Contents (opens in external browser)");
 		helpMenuItem.setActionCommand("help");
 		helpMenuItem.addActionListener(mListener);
 		mnNewMenu.add(helpMenuItem);
