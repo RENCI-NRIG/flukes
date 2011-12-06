@@ -146,6 +146,8 @@ public class ManifestLoader implements INdlManifestModelListener {
 		// find what nodes it connects (should be two)
 		Iterator<Resource> it = interfaces.iterator(); 
 		
+		String label = NdlCommons.getResourceLabel(l);
+		
 		if (interfaces.size() == 2) {
 			OrcaLink ol = new OrcaLink("Link " + lcount++);
 			// point-to-point link
@@ -179,6 +181,7 @@ public class ManifestLoader implements INdlManifestModelListener {
 			// multi-point link
 			// create a crossconnect then use interfaceToNode mapping to create links to it
 			OrcaCrossconnect ml = new OrcaCrossconnect(getTrueName(l));
+			ml.setLabel(label);
 			
 			nodes.put(getTrueName(l), ml);
 			
