@@ -5,7 +5,8 @@ NDL-OWL-enabled GUI based on
 - Java Swing 
 - Kiwi (http://www.hyperrealm.com/kiwi/docs/index.html, http://www.hyperrealm.com/main.php?s=kiwi)
 
-'mvn webstart:jnlp' produces a zip file that contains JNLP that should be deployed at the URL specified in the POM (geni-images.renci.org/webstart).
 
 It also relies on orca:ndl and orca.core:util snapshots for NDL code and SSL code
+
+See INSTALL for installation instructions
 
