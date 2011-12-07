@@ -1,0 +1,17 @@
+To create a jar run
+$ mvn clean package 
+To create a jnlp-launchable zip
+$ mvn clean install -Dkeypass=<your keystore password>
+To install the jnlp and unzip it on geni-images.renci.org run
+$ ant install
+
+NOTE: with the addition of orca.core:util, you should run 'ant unsign' *before* running 'mvn install' to remove signatures from bouncycastle jar prior to building jnlp zip, otherwise jarsigner verification fails. This should need to be done only infrequently when bouncycastle jar gets re-uploaded into the local maven cache. Definitely run it if you see jarsigner errors when running mvn install.
+
+NOTE1: to use the ant tasks needed to install jnlp into the destination host (this can also be done by hand, of course), you need to have optional ant tasks and jsch jar. Ant on MacOS does not include ant-jsch.jar for some reason - you may have to download a binary ant distribution matching your version, get the ant-jsch.jar from it and put it either under /usr/share/ant/lib ($ANT_HOME on macos) or $HOME/.ant/lib. You also need to get jsch-0.1.45.jar (or higher) put in the same place
+
+NOTE2: To install, copy the target/flukes-xxx.zip to the launch location (geni-images.renci.org:/images/webstart/) and unzip it there. To change the launch location requires changing the pom file as the launch URL is inferred from the URL tag in pom.
+
+NOTE3: for JNLP signing a keystore with at least one private key is required. It is specified as a property in the pom.xml along with the alias of the key. The pom file assumes keystore password and key passwords are the same and specified on the command line as -Dkeypass=<password>
+
+NOTE4: 'mvn webstart:jnlp' produces a zip file that contains JNLP that should be deployed at the URL specified in the POM (geni-images.renci.org/webstart).
+

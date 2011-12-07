@@ -1,0 +1,12 @@
+NDL-OWL-enabled GUI based on 
+
+- JUNG (http://jung.sourceforge.net/)
+- GWT WindowBuilder (http://code.google.com/javadevtools/wbpro/)
+- Java Swing 
+- Kiwi (http://www.hyperrealm.com/kiwi/docs/index.html, http://www.hyperrealm.com/main.php?s=kiwi)
+
+
+It also relies on orca:ndl and orca.core:util snapshots for NDL code and SSL code
+
+See INSTALL for installation instructions
+
