@@ -28,7 +28,6 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.Calendar;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -67,12 +66,18 @@ public class OrcaNodePropertyDialog extends ComponentDialog implements ActionLis
 	private KTextField name;
 	private JList imageList, domainList, typeList, dependencyList = null;
 	private KCheckBox splittableCb;
+	private KCheckBox internalVlanCb;
 	private boolean splittableState = false;
-	
-	NumericField ns;
-	private HashMap<OrcaLink, IpAddrField> ipFields;
+	private boolean internalVlanState = false;
+	private NumericField internalVlanBwField = null;
 	// address field for group's internal address
 	private IpAddrField internalIpf = null;
+	JLabel internalVlanBwLabel = null, internalVlanIpLabel = null;
+	
+	
+	private NumericField ns;
+	private HashMap<OrcaLink, IpAddrField> ipFields;
+
 	int ycoord;
 	// we're doing a closure AbstractAction for checkbox and it needs access to 'this'
 	// without calling it 'this'
@@ -235,7 +240,7 @@ public class OrcaNodePropertyDialog extends ComponentDialog implements ActionLis
 		}
 		
 		if (node instanceof OrcaNodeGroup) {
-			if ((internalIpf != null) && !internalIpf.fieldEmpty() && !checkIPField(internalIpf))
+			if (internalVlanState && (internalIpf != null) && !internalIpf.fieldEmpty() && !checkIPField(internalIpf))
 				return false;
 		}
 		
@@ -281,9 +286,16 @@ public class OrcaNodePropertyDialog extends ComponentDialog implements ActionLis
 		
 		if (node instanceof OrcaNodeGroup) {
 			OrcaNodeGroup ong = (OrcaNodeGroup)node;
-			if (internalIpf != null) {
+			ong.setInternalVlan(internalVlanState);
+			if (internalVlanState) 
+				ong.setInternalVlanBw((long)internalVlanBwField.getValue());
+			else
+				ong.setInternalVlanBw(0);
+			if (internalVlanState && internalIpf != null) {
 				if (!internalIpf.fieldEmpty())
 					ong.setInternalIp(internalIpf.getAddress(), internalIpf.getNetmask());
+				else
+					ong.removeInternalIp();
 			} else
 				// reset internal IP just in case (may have been specified earlier and then removed)
 				ong.removeInternalIp();
@@ -333,15 +345,76 @@ public class OrcaNodePropertyDialog extends ComponentDialog implements ActionLis
 		// add internal field
 		if (node instanceof OrcaNodeGroup) {
 			OrcaNodeGroup ong = (OrcaNodeGroup)node;
+			internalVlanState = ong.getInternalVlan();
+			
+			// add a check-button for internal vlan and a field for bandwidth
+			{
+				JLabel lblNewLabel_1 = new JLabel("Internal VLAN: ");
+				GridBagConstraints gbc_lblNewLabel_1 = new GridBagConstraints();
+				gbc_lblNewLabel_1.anchor = GridBagConstraints.WEST;
+				gbc_lblNewLabel_1.insets = new Insets(0, 0, 5, 5);
+				gbc_lblNewLabel_1.gridx = 0;
+				gbc_lblNewLabel_1.gridy = ycoord;
+				kp.add(lblNewLabel_1, gbc_lblNewLabel_1);
+			}
+			{
+				internalVlanCb = new KCheckBox(new AbstractAction() {
+					
+					public void actionPerformed(ActionEvent e) {
+						internalVlanState = !internalVlanState;
+						internalIpf.setVisible(internalVlanState);
+						internalVlanBwField.setVisible(internalVlanState);
+						internalVlanIpLabel.setVisible(internalVlanState);
+						internalVlanBwLabel.setVisible(internalVlanState);
+						dialog.pack();
+					}
+				});
+				internalVlanCb.setSelected(internalVlanState);
+				GridBagConstraints gbc_tf= new GridBagConstraints();
+				gbc_tf.anchor = GridBagConstraints.WEST;
+				gbc_tf.insets = new Insets(0, 0, 5, 5);
+				gbc_tf.gridx = 1;
+				gbc_tf.gridy = ycoord;
+				kp.add(internalVlanCb, gbc_tf);
+			}
+			ycoord++;
+			
+			{
+				internalVlanBwLabel = new JLabel("Internal VLAN bandwidth: ");
+				GridBagConstraints gbc_lblNewLabel_1 = new GridBagConstraints();
+				gbc_lblNewLabel_1.anchor = GridBagConstraints.WEST;
+				gbc_lblNewLabel_1.insets = new Insets(0, 0, 5, 5);
+				gbc_lblNewLabel_1.gridx = 0;
+				gbc_lblNewLabel_1.gridy = ycoord;
+				kp.add(internalVlanBwLabel, gbc_lblNewLabel_1);
+				internalVlanBwLabel.setVisible(internalVlanState);
+			}
+			{
+				internalVlanBwField = new NumericField(5);
+				internalVlanBwField.setDecimals(0);
+				internalVlanBwField.setType(FormatConstants.INTEGER_FORMAT);
+				internalVlanBwField.setMinValue(1);
+				internalVlanBwField.setValue(ong.getInternalVlanBw());
+				GridBagConstraints gbc_list = new GridBagConstraints();
+				gbc_list.insets = new Insets(0, 0, 5, 5);
+				gbc_list.fill = GridBagConstraints.HORIZONTAL;
+				gbc_list.gridx = 1;
+				gbc_list.gridy = ycoord;
+				kp.add(internalVlanBwField, gbc_list);
+				internalVlanBwField.setVisible(internalVlanState);
+			}
+			ycoord++;
+			
 			//if (nodeEdges.size() == 0) {
 				{
-					JLabel lblNewLabel_1 = new JLabel("Internal VLAN IP Address: ");
+					internalVlanIpLabel = new JLabel("Internal VLAN IP Address: ");
 					GridBagConstraints gbc_lblNewLabel_1 = new GridBagConstraints();
 					gbc_lblNewLabel_1.anchor = GridBagConstraints.WEST;
 					gbc_lblNewLabel_1.insets = new Insets(0, 0, 5, 5);
 					gbc_lblNewLabel_1.gridx = 0;
 					gbc_lblNewLabel_1.gridy = ycoord;
-					kp.add(lblNewLabel_1, gbc_lblNewLabel_1);
+					kp.add(internalVlanIpLabel, gbc_lblNewLabel_1);
+					internalVlanIpLabel.setVisible(internalVlanState);
 				}
 				{
 					internalIpf = new IpAddrField();
@@ -352,6 +425,7 @@ public class OrcaNodePropertyDialog extends ComponentDialog implements ActionLis
 					gbc_list.gridx = 1;
 					gbc_list.gridy = ycoord;
 					kp.add(internalIpf, gbc_list);
+					internalIpf.setVisible(internalVlanState);
 				}
 			ycoord++;
 			//} else 

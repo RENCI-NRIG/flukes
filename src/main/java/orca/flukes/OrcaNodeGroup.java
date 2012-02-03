@@ -31,6 +31,8 @@ public class OrcaNodeGroup extends OrcaNode {
 	Pair<String> internalVlanAddress = null;
 	protected int nodeCount = 1;
 	protected boolean splittable = false;
+	protected boolean internalVlan = false;
+	protected long internalVlanBw = 0;
 
 	public OrcaNodeGroup(String name) {
 		super(name, 
@@ -81,5 +83,21 @@ public class OrcaNodeGroup extends OrcaNode {
 	
 	public boolean getSplittable() {
 		return splittable;
+	}
+	
+	public void setInternalVlan(boolean f) {
+		internalVlan = f;
+	}
+	
+	public boolean getInternalVlan() {
+		return internalVlan;
+	}
+	
+	public void setInternalVlanBw(long bw) {
+		internalVlanBw = bw;
+	}
+	
+	public long getInternalVlanBw() {
+		return internalVlanBw;
 	}
 }
