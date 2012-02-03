@@ -115,7 +115,8 @@ public class GUIRequestState extends GUICommonState implements IDeleteEdgeCallBa
 		resDomainName = null;
 		term = new OrcaReservationTerm();
 		addingNewImage = false;
-		definedImages = new HashMap<String, OrcaImage>();
+		//definedImages = new HashMap<String, OrcaImage>();
+		GUI.getInstance().getImagesFromPreferences();
 	}
 	
 	public OrcaReservationTerm getTerm() {
