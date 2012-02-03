@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <jnlp
 		spec="1.0+"
-		codebase="$project.Url"
+		codebase="$project.Url/$project.Version"
 		href="$outputFile">
 	<information>
 		<title>$project.Name</title>
 		<vendor>$project.Organization.Name</vendor>
 		<homepage href="$project.Organization.Url"/>
 		<description>$project.Description</description>
-		<icon kind="splash" href="$project.Url/html/icon.png"/>
-		<icon href="$project.Url/html/icon.png"/>
+		<icon kind="splash" href="$project.Url/$project.Version/html/icon.png"/>
+		<icon href="$project.Url/$project.Version/html/icon.png"/>
 	</information>
 	<security>
 		<all-permissions/>

@@ -183,9 +183,17 @@ public class RequestSaver {
 	 * @throws NdlException
 	 */
 	private void processNodeGroupInternalVlan(OrcaNodeGroup ong) throws NdlException {
-		Individual intI = ngen.declareInterface("private-vlan-"+ong.getName());
+		Individual netI = ngen.declareNetworkConnection("private-vlan-" + ong.getName());
+		ngen.addLayerToConnection(netI, "ethernet", "EthernetNetworkElement");
+		
+		Individual intI = ngen.declareInterface("private-vlan-intf-" + ong.getName());
+		ngen.addInterfaceToIndividual(intI, netI);
+		
 		Individual nodeI = ngen.getRequestIndividual(ong.getName());
 		ngen.addInterfaceToIndividual(intI, nodeI);
+		
+		if (ong.getInternalVlanBw() > 0) 
+			ngen.addBandwidthToConnection(netI, ong.getInternalVlanBw());
 		
 		if (ong.getInternalIp() != null) {
 			ngen.addIPToIndividual(ong.getInternalIp(), intI);
@@ -254,7 +262,7 @@ public class RequestSaver {
 							ni = ngen.declareServerCloud(ong.getName(), ong.getSplittable());
 						else
 							ni = ngen.declareServerCloud(ong.getName());
-						if (ong.getInternalIp() != null)
+						if (ong.getInternalVlan())
 							processNodeGroupInternalVlan(ong);
 					}
 					else
