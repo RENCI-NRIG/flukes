@@ -36,8 +36,12 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.lang.reflect.Constructor;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
@@ -368,6 +372,7 @@ public class GUI implements ComponentListener {
 					GUI gui = GUI.getInstance();
 					gui.initialize();
 					gui.processPreferences();
+					gui.getImagesFromPreferences();
 					gui.getFrame().setVisible(true);
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -864,7 +869,13 @@ public class GUI implements ComponentListener {
 		USER_KEYSTORE("user.keystore", "~/.ssl/user.jks", 
 				"Keystore containing your private key and certificate issued by GPO, Emulab or BEN"),
 		ORCA_XMLRPC_CONTROLLER("orca.xmlrpc.url", "https://some.hostname.org:11443/orca/xmlrpc", 
-			"URL of the ORCA XMLRPC controller where you are submitting the request");
+			"URL of the ORCA XMLRPC controller where you are submitting the request"),
+		IMAGE_NAME("image.name", "regression-i386-debian", 
+				"Name of a known image, you can add more images by adding image1.name, image2.name etc."),
+		IMAGE_URL("image.url", "http://geni-images.renci.org/images/regression/regression-deb5-i386.xml", 
+				"URL of a known image description file, you can add more images by adding image1.url, image2.url etc."),
+		IMAGE_HASH("image.hash", "ea80af6601a2a000ec5b050d7e7701f26db096fc", 
+				"SHA-1 hash of the image description file, you can add more images by adding image1.hash, image2.hash etc.");
 		
 		private final String propName;
 		private final String defaultValue;
@@ -907,6 +918,46 @@ public class GUI implements ComponentListener {
 		} catch (IOException e) {
 			;
 		}
+	}
+	
+	/**
+	 * Get images from preferences imageX.name imageX.url and imageX.hash
+	 * @return list of OrcaImage beans
+	 */
+	void getImagesFromPreferences() {
+		List<OrcaImage> images = new ArrayList<OrcaImage>();
+		
+		// add the default
+		try {
+			images.add(new OrcaImage(getPreference(PrefsEnum.IMAGE_NAME), 
+					new URL(getPreference(PrefsEnum.IMAGE_URL)), getPreference(PrefsEnum.IMAGE_HASH)));
+		} catch (MalformedURLException ue) {
+			;
+		}
+		
+		// see if there are more
+		int i = 1;
+		while(true) {
+			String nmProp = "image" + i + ".name";
+			String urlProp = "image" + i + ".url";
+			String hashProp = "image" + i + ".hash";
+			
+			String nmPropVal = prefProperties.getProperty(nmProp);
+			String urlPropVal = prefProperties.getProperty(urlProp);
+			String hashPropVal = prefProperties.getProperty(hashProp);
+			if ((nmPropVal != null) && (urlPropVal != null) && (hashPropVal != null)) {
+				try {
+					if ((nmPropVal.trim().length() > 0) && (urlPropVal.trim().length() > 0) && (hashPropVal.trim().length() > 0))
+						images.add(new OrcaImage(nmPropVal.trim(), new URL(urlPropVal.trim()), hashPropVal.trim()));
+				} catch (MalformedURLException ue) {
+					;
+				}
+			} else
+				break;
+			i++;
+		}
+		
+		GUIRequestState.getInstance().addImages(images);
 	}
 	
 	/**

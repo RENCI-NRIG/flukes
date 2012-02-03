@@ -166,13 +166,29 @@ public class GUIRequestState extends GUICommonState implements IDeleteEdgeCallBa
 		return definedImages.get(nm);
 	}
 	
+	/**
+	 * add individual image with replacement option
+	 * @param newIm
+	 * @param oldIm
+	 */
 	public void addImage(OrcaImage newIm, OrcaImage oldIm) {
 		if (newIm == null)
 			return;
-		// if old image is not null, then we are replacing, so delete first
+		// if old image is not null (possible with a different name), 
+		// then we are replacing, so delete first
 		if (oldIm != null)
 			definedImages.remove(oldIm.getShortName());
 		definedImages.put(newIm.getShortName(), newIm);
+	}
+	
+	/**
+	 * Add images from a list (of preferences)
+	 * @param newIm
+	 */
+	public void addImages(List<OrcaImage> newIm) {
+		for (OrcaImage im: newIm) {
+			addImage(im, null);
+		}
 	}
 	
 	public Object[] getImageShortNames() {
@@ -376,7 +392,7 @@ public class GUIRequestState extends GUICommonState implements IDeleteEdgeCallBa
 				} catch (Exception ex) {
 					ExceptionDialog ed = new ExceptionDialog(GUI.getInstance().getFrame(), "Exception");
 					ed.setLocationRelativeTo(GUI.getInstance().getFrame());
-					ed.setException("Exception encountered while querying ORCA for slice manifest: ", ex);
+					ed.setException("Exception encountered while submitting slice request to ORCA: ", ex);
 					ed.setVisible(true);
 				}
 			}
