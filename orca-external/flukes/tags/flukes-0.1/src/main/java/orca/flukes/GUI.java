@@ -935,6 +935,9 @@ public class GUI implements ComponentListener {
 			;
 		}
 		
+		if (prefProperties == null)
+			return;
+		
 		// see if there are more
 		int i = 1;
 		while(true) {
