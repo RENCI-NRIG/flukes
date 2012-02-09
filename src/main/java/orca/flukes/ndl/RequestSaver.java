@@ -182,9 +182,10 @@ public class RequestSaver {
 	 * @param ong
 	 * @throws NdlException
 	 */
-	private void processNodeGroupInternalVlan(OrcaNodeGroup ong) throws NdlException {
+	private void processNodeGroupInternalVlan(Individual reservation, OrcaNodeGroup ong) throws NdlException {
 		Individual netI = ngen.declareNetworkConnection("private-vlan-" + ong.getName());
 		ngen.addLayerToConnection(netI, "ethernet", "EthernetNetworkElement");
+		ngen.addResourceToReservation(reservation, netI);
 		
 		Individual intI = ngen.declareInterface("private-vlan-intf-" + ong.getName());
 		ngen.addInterfaceToIndividual(intI, netI);
@@ -218,6 +219,7 @@ public class RequestSaver {
 			
 				reservation = ngen.declareReservation();
 				Individual term = ngen.declareTerm();
+				
 				// not an immediate reservation? declare term beginning
 				if (GUIRequestState.getInstance().getTerm().getStart() != null) {
 					Individual tStart = ngen.declareTermBeginning(GUIRequestState.getInstance().getTerm().getStart());
@@ -229,6 +231,9 @@ public class RequestSaver {
 						GUIRequestState.getInstance().getTerm().getDurationHours(), GUIRequestState.getInstance().getTerm().getDurationMins());
 				ngen.addDurationToTerm(duration, term);
 				ngen.addTermToReservation(term, reservation);
+				
+				// openflow
+				ngen.addOpenFlowCapable(reservation, GUIRequestState.getInstance().getOfNeededVersion());
 				
 				// decide whether we have a global image
 				boolean globalImage = false, globalDomain = false;
@@ -263,7 +268,7 @@ public class RequestSaver {
 						else
 							ni = ngen.declareServerCloud(ong.getName());
 						if (ong.getInternalVlan())
-							processNodeGroupInternalVlan(ong);
+							processNodeGroupInternalVlan(reservation, ong);
 					}
 					else
 						ni = ngen.declareComputeElement(n.getName());

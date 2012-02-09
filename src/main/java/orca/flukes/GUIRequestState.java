@@ -66,6 +66,9 @@ public class GUIRequestState extends GUICommonState implements IDeleteEdgeCallBa
 	public static final String NO_NODE_DEPS="No dependencies";
 	private static GUIRequestState instance = null;
 	
+	// is it openflow (and what version [null means non-of])
+	private String ofNeededVersion = null;
+	
 	// VM images defined by the user
 	HashMap<String, OrcaImage> definedImages; 
 	
@@ -115,6 +118,7 @@ public class GUIRequestState extends GUICommonState implements IDeleteEdgeCallBa
 		resDomainName = null;
 		term = new OrcaReservationTerm();
 		addingNewImage = false;
+		ofNeededVersion = null;
 		//definedImages = new HashMap<String, OrcaImage>();
 		GUI.getInstance().getImagesFromPreferences();
 	}
@@ -317,6 +321,32 @@ public class GUIRequestState extends GUICommonState implements IDeleteEdgeCallBa
 		return null;
 	}
 	
+	
+	public void setOF1_0() {
+		ofNeededVersion = "1.0";
+	}
+	
+	public void setOF1_1() {
+		ofNeededVersion = "1.1";
+	}
+	
+	public void setOF1_2() {
+		ofNeededVersion = "1.2";
+	}
+	
+	public void setNoOF() {
+		ofNeededVersion = null;
+	}
+	
+	public void setOFVersion(String v) {
+		if ("1.0".equals(v) || "1.1".equals(v) || "1.2".equals(v))
+			ofNeededVersion = v;
+	}
+	
+	public String getOfNeededVersion() {
+		return ofNeededVersion;
+	}
+	
 	/**
 	 * set the saved file object
 	 * @param f
@@ -349,7 +379,7 @@ public class GUIRequestState extends GUICommonState implements IDeleteEdgeCallBa
 				rdd = new ReservationDetailsDialog(GUI.getInstance().getFrame());
 				rdd.setFields(getVMImageInReservation(), 
 						getDomainInReservation(),
-						getTerm());
+						getTerm(), ofNeededVersion);
 				rdd.pack();
 				rdd.setVisible(true);
 			} else if (e.getActionCommand().equals("nodes")) {
