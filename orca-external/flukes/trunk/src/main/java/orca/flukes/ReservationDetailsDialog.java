@@ -23,7 +23,6 @@
 package orca.flukes;
 
 import java.awt.Component;
-import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -51,8 +50,8 @@ public class ReservationDetailsDialog extends ComponentDialog {
 	private DateChooserField sdcf;
 	private DurationField df;
 	private JList imageList, domainList;
-	private boolean isImmediate;
-	private KCheckBox immCb;
+	private boolean isImmediate, openflowEnabled;
+	private KCheckBox immCb, ofCb;
 	// we're doing a closure AbstractAction for checkbox and it needs access to 'this'
 	// without calling it 'this'
 	private ComponentDialog dialog;
@@ -72,8 +71,7 @@ public class ReservationDetailsDialog extends ComponentDialog {
 		this.dialog = this;
 	}
 
-	public void setFields(String shortImageName, String domain, OrcaReservationTerm term) {
-		int index = 0;
+	public void setFields(String shortImageName, String domain, OrcaReservationTerm term, String ofVersion) {
 		
 		OrcaNodePropertyDialog.setListSelectedIndex(imageList, 
 				GUIRequestState.getInstance().getImageShortNamesWithNone(), shortImageName);
@@ -86,6 +84,14 @@ public class ReservationDetailsDialog extends ComponentDialog {
 			// set start dates and times
 			setTimeDateField(stf, sdcf, term.getStart());
 		}
+		
+		if (ofVersion != null) {
+			openflowEnabled = true;
+		}
+		else {
+			openflowEnabled = false;
+		}
+		ofCb.setSelected(openflowEnabled);
 		
 		// set duration
 		df.setDurationField(term.getDurationDays(), term.getDurationHours(), term.getDurationMins());
@@ -123,6 +129,30 @@ public class ReservationDetailsDialog extends ComponentDialog {
 				GUIRequestState.getInstance().getImageShortNamesWithNone(), "Select image: ", false, 3);
 		domainList = OrcaNodePropertyDialog.addSelectList(kp, gbl_contentPanel, y++, 
 				GUIRequestState.getInstance().getAvailableDomains(), "Select domain: ", false, 3);		
+
+		{
+			JLabel lblNewLabel = new JLabel("Openflow reservation:");
+			GridBagConstraints gbc_lblNewLabel = new GridBagConstraints();
+			gbc_lblNewLabel.anchor = GridBagConstraints.WEST;
+			gbc_lblNewLabel.insets = new Insets(0, 0, 5, 5);
+			gbc_lblNewLabel.gridx = 0;
+			gbc_lblNewLabel.gridy = y;
+			kp.add(lblNewLabel, gbc_lblNewLabel);
+		}
+		{
+			ofCb = new KCheckBox(new AbstractAction() {
+				
+				public void actionPerformed(ActionEvent e) {
+					openflowEnabled = !openflowEnabled;
+				}
+			});
+			GridBagConstraints gbc_tf= new GridBagConstraints();
+			gbc_tf.anchor = GridBagConstraints.WEST;
+			gbc_tf.insets = new Insets(0, 0, 5, 5);
+			gbc_tf.gridx = 1;
+			gbc_tf.gridy = y++;
+			kp.add(ofCb, gbc_tf);
+		}
 		{
 			JLabel lblNewLabel = new JLabel("Immediate reservation:");
 			GridBagConstraints gbc_lblNewLabel = new GridBagConstraints();
@@ -226,6 +256,11 @@ public class ReservationDetailsDialog extends ComponentDialog {
 			GUIRequestState.getInstance().getTerm().setStart(lc.getTime());
 		} else
 			GUIRequestState.getInstance().getTerm().setStart(null);
+		
+		if (openflowEnabled) {
+			GUIRequestState.getInstance().setOF1_0();
+		} else
+			GUIRequestState.getInstance().setNoOF();
 		
 		// get duration
 		GUIRequestState.getInstance().getTerm().setDuration(df.getDays(), df.getHours(), df.getMinutes());

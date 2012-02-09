@@ -83,6 +83,7 @@ public class RequestLoader implements INdlRequestModelListener {
 
 		if (i != null) {
 			reservationDomain = RequestSaver.reverseLookupDomain(NdlCommons.getDomain(i));
+			GUIRequestState.getInstance().setOFVersion(NdlCommons.getOpenFlowVersion(i));
 			Resource di = NdlCommons.getDiskImage(i);
 			if (di != null) {
 				String imageURL = NdlCommons.getIndividualsImageURL(i);
@@ -184,14 +185,15 @@ public class RequestLoader implements INdlRequestModelListener {
 		// System.out.println("Found connection " + l + " connecting " + interfaces + " with bandwidth " + bandwidth);
 		if (l == null)
 			return;
-		OrcaLink ol = new OrcaLink(l.getLocalName());
-		ol.setBandwidth(bandwidth);
-		ol.setLatency(latency);
 		
 		// find what nodes it connects (should be two)
 		Iterator<Resource> it = interfaces.iterator(); 
 		
 		if (interfaces.size() == 2) {
+			OrcaLink ol = new OrcaLink(l.getLocalName());
+			ol.setBandwidth(bandwidth);
+			ol.setLatency(latency);
+			
 			// point-to-point link
 			// the ends
 			Resource if1 = it.next(), if2 = it.next();
@@ -205,11 +207,21 @@ public class RequestLoader implements INdlRequestModelListener {
 					GUIRequestState.getInstance().getGraph().addEdge(ol, new Pair<OrcaNode>(if1Node, if2Node), EdgeType.UNDIRECTED);
 				}
 			}
+			// for now save only p-to-p links
+			links.put(l.getLocalName(), ol);
 		} else {
-			// multi-point link
-			
+			// multi-point link or internal vlan of a node group
+			if (interfaces.size() == 1) {
+				// node group w/ internal vlan
+				OrcaNode ifNode = interfaceToNode.get(it.next().getLocalName());
+				if (ifNode instanceof OrcaNodeGroup) {
+					OrcaNodeGroup ong = (OrcaNodeGroup)ifNode;
+					ong.setInternalVlan(true);
+					ong.setInternalVlanBw(bandwidth);
+				}
+			}
 		}
-		links.put(l.getLocalName(), ol);
+
 	}
 
 	public void ndlInterface(Resource intf, OntModel om, Resource conn, Resource node, String ip, String mask) {
@@ -232,7 +244,8 @@ public class RequestLoader implements INdlRequestModelListener {
 				// this could be a disconnected node group
 				if (on instanceof OrcaNodeGroup) {
 					OrcaNodeGroup ong = (OrcaNodeGroup)on;
-					ong.setInternalIp(ip, "" + RequestSaver.netmaskStringToInt(mask));
+					if (ong.getInternalVlan())
+						ong.setInternalIp(ip, "" + RequestSaver.netmaskStringToInt(mask));
 				}
 			}
 				
