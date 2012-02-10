@@ -144,6 +144,17 @@ public class RequestLoader implements INdlRequestModelListener {
 		if (ceType != null)
 			newNode.setNodeType(RequestSaver.reverseNodeTypeLookup(ceType));
 
+		// get proxied ports
+		List<NdlCommons.ProxyFields> portList = NdlCommons.getNodeProxiedPorts(ce);
+		String portListString = "";
+		for (NdlCommons.ProxyFields pf: portList) {
+			portListString += pf.proxiedPort + ",";
+		}
+		if (portListString.length() > 0) {
+			portListString = portListString.substring(0, portListString.length() - 1);
+			newNode.setPortsList(portListString);
+		}
+		
 		// process interfaces
 		for (Iterator<Resource> it = interfaces.iterator(); it.hasNext();) {
 			Resource intR = it.next();

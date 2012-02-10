@@ -64,6 +64,7 @@ public class OrcaNodePropertyDialog extends ComponentDialog implements ActionLis
 	private KButton postBootButton;
 	
 	private KTextField name;
+	private KTextField openPortsList;
 	private JList imageList, domainList, typeList, dependencyList = null;
 	private KCheckBox splittableCb;
 	private KCheckBox internalVlanCb;
@@ -73,7 +74,6 @@ public class OrcaNodePropertyDialog extends ComponentDialog implements ActionLis
 	// address field for group's internal address
 	private IpAddrField internalIpf = null;
 	JLabel internalVlanBwLabel = null, internalVlanIpLabel = null;
-	
 	
 	private NumericField ns;
 	private HashMap<OrcaLink, IpAddrField> ipFields;
@@ -133,6 +133,9 @@ public class OrcaNodePropertyDialog extends ComponentDialog implements ActionLis
 		// set dependencies
 		if (dependencyList != null)
 			setListSelectedIndices(dependencyList, GUIRequestState.getInstance().getAvailableDependencies(node), node.getDependencyNames());
+		
+		// list of open ports on management network
+		addOpenPortsField(ycoord++);
 		
 		ipFields = new HashMap<OrcaLink, IpAddrField>();
 		
@@ -243,6 +246,9 @@ public class OrcaNodePropertyDialog extends ComponentDialog implements ActionLis
 			if (internalVlanState && (internalIpf != null) && !internalIpf.fieldEmpty() && !checkIPField(internalIpf))
 				return false;
 		}
+		
+		if (!node.setPortsList(openPortsList.getObject()))
+			return false;
 		
 		// node name
 		node.setName(name.getObject());
@@ -458,6 +464,28 @@ public class OrcaNodePropertyDialog extends ComponentDialog implements ActionLis
 			gbc_list.gridx = 1;
 			gbc_list.gridy = y;
 			kp.add(ns, gbc_list);
+		}
+	}
+	
+	private void addOpenPortsField(int y) {
+		{
+			JLabel lblNewLabel_1 = new JLabel("Additional ports to open (TCP and UDP): ");
+			GridBagConstraints gbc_lblNewLabel_1 = new GridBagConstraints();
+			gbc_lblNewLabel_1.anchor = GridBagConstraints.WEST;
+			gbc_lblNewLabel_1.insets = new Insets(0, 0, 5, 5);
+			gbc_lblNewLabel_1.gridx = 0;
+			gbc_lblNewLabel_1.gridy = y;
+			kp.add(lblNewLabel_1, gbc_lblNewLabel_1);
+		}
+		{
+			openPortsList = new KTextField();
+			openPortsList.setObject(node.getPortsList());
+			GridBagConstraints gbc_list = new GridBagConstraints();
+			gbc_list.insets = new Insets(0, 0, 5, 5);
+			gbc_list.fill = GridBagConstraints.HORIZONTAL;
+			gbc_list.gridx = 1;
+			gbc_list.gridy = y;
+			kp.add(openPortsList, gbc_list);
 		}
 	}
 	

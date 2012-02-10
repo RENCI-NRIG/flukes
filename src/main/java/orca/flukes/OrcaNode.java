@@ -65,6 +65,8 @@ public class OrcaNode {
 	protected String state = null;
 	// reservation notice
 	protected String resNotice = null;
+	// list of open ports
+	protected String openPorts = null;
 	
 	protected Set<OrcaNode> dependencies = new HashSet<OrcaNode>();
 	
@@ -74,7 +76,6 @@ public class OrcaNode {
 	interface INodeCreator {
 		public OrcaNode create();
 	}
-	
 
 	public String toStringLong() {
 		String ret =  name;
@@ -308,6 +309,25 @@ public class OrcaNode {
 		resNotice = n;
 	}
 	
+	public String getPortsList() {
+		return openPorts;
+	}
+	
+	public boolean setPortsList(String list) {
+		
+		String chkRegex = "(\\s*\\d+\\s*)(,(\\s*\\d+\\s*))*";
+		
+		if (list.matches(chkRegex)) { 
+			for(String port: list.split(",")) {
+				int portI = Integer.decode(port.trim());
+				if (portI > 65535)
+					return false;
+			}
+			openPorts = list;
+			return true;
+		}
+		return false;
+	}
 	
 	/** 
 	 * Create a detailed printout of properties
