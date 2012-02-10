@@ -304,6 +304,18 @@ public class RequestSaver {
 						ngen.addNodeTypeToCE(nt.getFirst(), nt.getSecond(), ni);
 					}
 					
+					// open ports
+					if (n.getPortsList() != null) {
+						// Say it's a TCPProxy with proxied port
+						String[] ports = n.getPortsList().split(",");
+						int pi = 0;
+						for (String port: ports) {
+							Individual prx = ngen.declareTCPProxy("prx-" + n.getName().replaceAll("[ \t#:/]", "-") + "-" + pi++);
+							ngen.addProxyToIndividual(prx, ni);
+							ngen.addPortToProxy(port.trim(), prx);
+						}
+					}
+					
 					// post boot script
 					if ((n.getPostBootScript() != null) && (n.getPostBootScript().length() > 0)) {
 						ngen.addPostBootScriptToCE(n.getPostBootScript(), ni);
