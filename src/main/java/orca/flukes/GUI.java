@@ -69,6 +69,9 @@ import orca.flukes.ui.KeystoreDialog;
 import orca.flukes.ui.TextAreaDialog;
 import orca.ndl.NdlCommons;
 
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
+
 import com.hyperrealm.kiwi.ui.KFileChooser;
 import com.hyperrealm.kiwi.ui.KTextArea;
 import com.hyperrealm.kiwi.ui.KTextField;
@@ -110,6 +113,7 @@ public class GUI implements ComponentListener {
 	private JMenuItem prefMenuItem;
 	private JMenuItem aboutMenuItem;
 	private JSeparator separator_1, separator_2;
+	private Logger logger;
 	
 	// alias and password within a keystore to be used for XMLRPC calls
 	private String keyAlias = null, keyPassword = null;
@@ -161,6 +165,14 @@ public class GUI implements ComponentListener {
 	        }
 	        return ext;
 	    }
+	}
+	
+	public Logger getLogger() {
+		return logger;
+	}
+	
+	public static Logger logger() {
+		return GUI.getInstance().getLogger();
 	}
 	
 	// keystore identity
@@ -388,6 +400,8 @@ public class GUI implements ComponentListener {
 	 * Create the application.
 	 */
 	private GUI() {
+		logger = Logger.getLogger(GUI.class.getCanonicalName());
+		logger.setLevel(Level.DEBUG);
 		UIChangeManager.setDefaultTexture(null);
 	}
 

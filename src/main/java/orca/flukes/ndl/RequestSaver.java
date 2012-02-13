@@ -45,7 +45,6 @@ import orca.ndl.NdlException;
 import orca.ndl.NdlGenerator;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
 
 import com.hp.hpl.jena.ontology.Individual;
 import com.hp.hpl.jena.rdf.model.Resource;
@@ -215,7 +214,7 @@ public class RequestSaver {
 		// this should never run in parallel anyway
 		synchronized(instance) {
 			try {
-				ngen = new NdlGenerator(Logger.getLogger(this.getClass().getCanonicalName()));
+				ngen = new NdlGenerator(GUI.logger());
 			
 				reservation = ngen.declareReservation();
 				Individual term = ngen.declareTerm();
