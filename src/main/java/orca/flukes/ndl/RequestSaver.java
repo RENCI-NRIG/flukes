@@ -235,6 +235,16 @@ public class RequestSaver {
 				// openflow
 				ngen.addOpenFlowCapable(reservation, GUIRequestState.getInstance().getOfNeededVersion());
 				
+				// add openflow details
+				if (GUIRequestState.getInstance().getOfNeededVersion() != null) {
+					Individual ofSliceI = ngen.declareOfSlice("of-slice");
+					ngen.addSliceToReservation(reservation, ofSliceI);
+					ngen.addOfPropertiesToSlice(GUIRequestState.getInstance().getOfUserEmail(), 
+							GUIRequestState.getInstance().getOfSlicePass(), 
+							GUIRequestState.getInstance().getOfCtrlUrl(), 
+							ofSliceI);
+				}
+				
 				// decide whether we have a global image
 				boolean globalImage = false, globalDomain = false;
 				

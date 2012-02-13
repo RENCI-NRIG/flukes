@@ -28,6 +28,7 @@ import java.awt.Container;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -37,14 +38,15 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
-import com.hyperrealm.kiwi.ui.KTextArea;
-import com.hyperrealm.kiwi.ui.dialog.ExceptionDialog;
-import com.hyperrealm.kiwi.ui.dialog.KMessageDialog;
-
 import orca.flukes.ndl.RequestSaver;
 import orca.flukes.ui.ChooserWithNewDialog;
 import orca.flukes.ui.TextAreaDialog;
 import orca.flukes.xmlrpc.OrcaSMXMLRPCProxy;
+
+import com.hyperrealm.kiwi.ui.KTextArea;
+import com.hyperrealm.kiwi.ui.dialog.ExceptionDialog;
+import com.hyperrealm.kiwi.ui.dialog.KMessageDialog;
+
 import edu.uci.ics.jung.algorithms.layout.FRLayout;
 import edu.uci.ics.jung.algorithms.layout.Layout;
 import edu.uci.ics.jung.graph.util.Pair;
@@ -68,6 +70,9 @@ public class GUIRequestState extends GUICommonState implements IDeleteEdgeCallBa
 	
 	// is it openflow (and what version [null means non-of])
 	private String ofNeededVersion = null;
+	private String ofUserEmail = null;
+	private String ofSlicePass = null;
+	private URL ofCtrlUrl = null;
 	
 	// VM images defined by the user
 	HashMap<String, OrcaImage> definedImages; 
@@ -119,6 +124,9 @@ public class GUIRequestState extends GUICommonState implements IDeleteEdgeCallBa
 		term = new OrcaReservationTerm();
 		addingNewImage = false;
 		ofNeededVersion = null;
+		ofUserEmail = null;
+		ofSlicePass = null;
+		ofCtrlUrl = null;
 		//definedImages = new HashMap<String, OrcaImage>();
 		GUI.getInstance().getImagesFromPreferences();
 	}
@@ -345,6 +353,30 @@ public class GUIRequestState extends GUICommonState implements IDeleteEdgeCallBa
 	
 	public String getOfNeededVersion() {
 		return ofNeededVersion;
+	}
+	
+	public void setOfUserEmail(String ue) {
+		ofUserEmail = ue;
+	}
+	
+	public String getOfUserEmail() {
+		return ofUserEmail;
+	}
+	
+	public void setOfSlicePass(String up) {
+		ofSlicePass = up;
+	}
+	
+	public String getOfSlicePass() {
+		return ofSlicePass;
+	}
+	
+	public void setOfCtrlUrl(URL cu) {
+		ofCtrlUrl = cu;
+	}
+	
+	public URL getOfCtrlUrl() {
+		return ofCtrlUrl;
 	}
 	
 	/**

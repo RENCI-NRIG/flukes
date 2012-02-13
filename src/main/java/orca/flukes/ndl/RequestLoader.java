@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStreamReader;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Date;
 import java.util.HashMap;
@@ -11,8 +12,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
-import org.apache.commons.lang.StringUtils;
 
 import orca.flukes.GUI;
 import orca.flukes.GUIRequestState;
@@ -24,6 +23,8 @@ import orca.flukes.OrcaReservationTerm;
 import orca.ndl.INdlRequestModelListener;
 import orca.ndl.NdlCommons;
 import orca.ndl.NdlRequestParser;
+
+import org.apache.commons.lang.StringUtils;
 
 import com.hp.hpl.jena.ontology.OntModel;
 import com.hp.hpl.jena.rdf.model.Literal;
@@ -261,6 +262,31 @@ public class RequestLoader implements INdlRequestModelListener {
 			}
 				
 		}
+	}
+	
+	public void ndlSlice(Resource sl, OntModel m) {
+		// check that this is an OpenFlow slice and get its details
+		if (sl.hasProperty(NdlCommons.RDF_TYPE, NdlCommons.ofSliceClass)) {
+			Resource ofCtrl = NdlCommons.getOfCtrl(sl);
+			if (ofCtrl == null)
+				return;
+			try {
+				GUIRequestState.getInstance().setOfCtrlUrl(new URL(NdlCommons.getURL(ofCtrl)));
+			} catch (MalformedURLException e) {
+				return;
+			}
+			GUIRequestState.getInstance().setOfUserEmail(NdlCommons.getEmail(sl));
+			GUIRequestState.getInstance().setOfSlicePass(NdlCommons.getSlicePassword(sl));
+			if ((GUIRequestState.getInstance().getOfUserEmail() == null) ||
+					(GUIRequestState.getInstance().getOfSlicePass() == null) ||
+					(GUIRequestState.getInstance().getOfCtrlUrl() == null)) {
+					// disable OF if invalid parameters
+					GUIRequestState.getInstance().setNoOF();
+					GUIRequestState.getInstance().setOfCtrlUrl(null);
+					GUIRequestState.getInstance().setOfSlicePass(null);
+					GUIRequestState.getInstance().setOfUserEmail(null);
+			}
+		}	
 	}
 
 	public void ndlReservationResources(List<Resource> res, OntModel m) {
