@@ -32,15 +32,18 @@ import java.util.Date;
 
 import javax.swing.AbstractAction;
 import javax.swing.JFrame;
-import javax.swing.JLabel;
 import javax.swing.JList;
+import javax.swing.JPasswordField;
 
 import orca.flukes.ui.DurationField;
 import orca.flukes.ui.TimeField;
 
 import com.hyperrealm.kiwi.ui.DateChooserField;
 import com.hyperrealm.kiwi.ui.KCheckBox;
+import com.hyperrealm.kiwi.ui.KLabel;
 import com.hyperrealm.kiwi.ui.KPanel;
+import com.hyperrealm.kiwi.ui.KTextField;
+import com.hyperrealm.kiwi.ui.URLField;
 import com.hyperrealm.kiwi.ui.dialog.ComponentDialog;
 
 @SuppressWarnings("serial")
@@ -52,13 +55,18 @@ public class ReservationDetailsDialog extends ComponentDialog {
 	private JList imageList, domainList;
 	private boolean isImmediate, openflowEnabled;
 	private KCheckBox immCb, ofCb;
+	private KTextField ofUserEmail;
+	private JPasswordField ofUserPass;
+	private URLField ofCtrlUrl;
+	private KLabel ofUserEmailLabel, ofUserPassLabel, ofCtrlUrlLabel;
+	
 	// we're doing a closure AbstractAction for checkbox and it needs access to 'this'
 	// without calling it 'this'
 	private ComponentDialog dialog;
 	
 	private JFrame parent;
 	
-	private JLabel stLabel;
+	private KLabel stLabel;
 	
 	/**
 	 * Create the dialog.
@@ -69,6 +77,20 @@ public class ReservationDetailsDialog extends ComponentDialog {
 		setComment("Select reservation term, global image and other attributes:");
 		this.parent = parent;
 		this.dialog = this;
+	}
+	
+	/**
+	 * Change visibility of openflow-related fields
+	 * @param v
+	 */
+	private void setOfVisible(boolean v) {
+		ofUserEmailLabel.setVisible(v);
+		ofUserPassLabel.setVisible(v);
+		ofCtrlUrlLabel.setVisible(v);
+		
+		ofUserEmail.setVisible(v);
+		ofUserPass.setVisible(v);
+		ofCtrlUrl.setVisible(v);
 	}
 
 	public void setFields(String shortImageName, String domain, OrcaReservationTerm term, String ofVersion) {
@@ -87,11 +109,15 @@ public class ReservationDetailsDialog extends ComponentDialog {
 		
 		if (ofVersion != null) {
 			openflowEnabled = true;
+			ofUserEmail.setObject(GUIRequestState.getInstance().getOfUserEmail());
+			ofUserPass.setText(GUIRequestState.getInstance().getOfSlicePass());
+			ofCtrlUrl.setObject(GUIRequestState.getInstance().getOfCtrlUrl());
 		}
 		else {
 			openflowEnabled = false;
 		}
 		ofCb.setSelected(openflowEnabled);
+		setOfVisible(openflowEnabled);
 		
 		// set duration
 		df.setDurationField(term.getDurationDays(), term.getDurationHours(), term.getDurationMins());
@@ -131,7 +157,7 @@ public class ReservationDetailsDialog extends ComponentDialog {
 				GUIRequestState.getInstance().getAvailableDomains(), "Select domain: ", false, 3);		
 
 		{
-			JLabel lblNewLabel = new JLabel("Openflow reservation:");
+			KLabel lblNewLabel = new KLabel("Openflow reservation:");
 			GridBagConstraints gbc_lblNewLabel = new GridBagConstraints();
 			gbc_lblNewLabel.anchor = GridBagConstraints.WEST;
 			gbc_lblNewLabel.insets = new Insets(0, 0, 5, 5);
@@ -144,6 +170,8 @@ public class ReservationDetailsDialog extends ComponentDialog {
 				
 				public void actionPerformed(ActionEvent e) {
 					openflowEnabled = !openflowEnabled;
+					setOfVisible(openflowEnabled);
+					dialog.pack();
 				}
 			});
 			GridBagConstraints gbc_tf= new GridBagConstraints();
@@ -153,8 +181,72 @@ public class ReservationDetailsDialog extends ComponentDialog {
 			gbc_tf.gridy = y++;
 			kp.add(ofCb, gbc_tf);
 		}
+		
 		{
-			JLabel lblNewLabel = new JLabel("Immediate reservation:");
+			ofUserEmailLabel = new KLabel("User email:");
+			GridBagConstraints gbc_lblNewLabel = new GridBagConstraints();
+			gbc_lblNewLabel.anchor = GridBagConstraints.WEST;
+			gbc_lblNewLabel.insets = new Insets(0, 0, 5, 5);
+			gbc_lblNewLabel.gridx = 0;
+			gbc_lblNewLabel.gridy = y;
+			kp.add(ofUserEmailLabel, gbc_lblNewLabel);
+		}
+		
+		{
+			ofUserEmail = new KTextField(25);
+			GridBagConstraints gbc_textField = new GridBagConstraints();
+			gbc_textField.fill = GridBagConstraints.HORIZONTAL;
+			gbc_textField.insets = new Insets(0, 0, 5, 5);
+			gbc_textField.gridwidth = 10;
+			gbc_textField.gridx = 1;
+			gbc_textField.gridy = y++;
+			kp.add(ofUserEmail, gbc_textField);
+		}
+		
+		{
+			ofUserPassLabel = new KLabel("Slice password:");
+			GridBagConstraints gbc_lblNewLabel = new GridBagConstraints();
+			gbc_lblNewLabel.anchor = GridBagConstraints.WEST;
+			gbc_lblNewLabel.insets = new Insets(0, 0, 5, 5);
+			gbc_lblNewLabel.gridx = 0;
+			gbc_lblNewLabel.gridy = y;
+			kp.add(ofUserPassLabel, gbc_lblNewLabel);
+		}
+		
+		{
+			ofUserPass = new JPasswordField(25);
+			GridBagConstraints gbc_textField = new GridBagConstraints();
+			gbc_textField.fill = GridBagConstraints.HORIZONTAL;
+			gbc_textField.insets = new Insets(0, 0, 5, 5);
+			gbc_textField.gridwidth = 10;
+			gbc_textField.gridx = 1;
+			gbc_textField.gridy = y++;
+			kp.add(ofUserPass, gbc_textField);
+		}
+		
+		{
+			ofCtrlUrlLabel = new KLabel("User controller URL:");
+			GridBagConstraints gbc_lblNewLabel = new GridBagConstraints();
+			gbc_lblNewLabel.anchor = GridBagConstraints.WEST;
+			gbc_lblNewLabel.insets = new Insets(0, 0, 5, 5);
+			gbc_lblNewLabel.gridx = 0;
+			gbc_lblNewLabel.gridy = y;
+			kp.add(ofCtrlUrlLabel, gbc_lblNewLabel);
+		}
+		
+		{
+			ofCtrlUrl = new URLField(25);
+			GridBagConstraints gbc_textField = new GridBagConstraints();
+			gbc_textField.fill = GridBagConstraints.HORIZONTAL;
+			gbc_textField.fill = GridBagConstraints.HORIZONTAL;
+			gbc_textField.gridwidth = 10;
+			gbc_textField.gridx = 1;
+			gbc_textField.gridy = y++;
+			kp.add(ofCtrlUrl, gbc_textField);
+		}
+		
+		{
+			KLabel lblNewLabel = new KLabel("Immediate reservation:");
 			GridBagConstraints gbc_lblNewLabel = new GridBagConstraints();
 			gbc_lblNewLabel.anchor = GridBagConstraints.WEST;
 			gbc_lblNewLabel.insets = new Insets(0, 0, 5, 5);
@@ -187,7 +279,7 @@ public class ReservationDetailsDialog extends ComponentDialog {
 			kp.add(immCb, gbc_tf);
 		}
 		{
-			stLabel = new JLabel("Start Time:");
+			stLabel = new KLabel("Start Time:");
 			GridBagConstraints gbc_lblNewLabel = new GridBagConstraints();
 			gbc_lblNewLabel.anchor = GridBagConstraints.WEST;
 			gbc_lblNewLabel.insets = new Insets(0, 0, 5, 5);
@@ -211,7 +303,7 @@ public class ReservationDetailsDialog extends ComponentDialog {
 		
 		// duration field
 		{
-			JLabel durLabel = new JLabel("Term Duration:");
+			KLabel durLabel = new KLabel("Term Duration:");
 			GridBagConstraints gbc_lblNewLabel = new GridBagConstraints();
 			gbc_lblNewLabel.anchor = GridBagConstraints.WEST;
 			gbc_lblNewLabel.insets = new Insets(0, 0, 5, 5);
@@ -230,6 +322,12 @@ public class ReservationDetailsDialog extends ComponentDialog {
 		}
 
 		return kp;
+	}
+	
+	private boolean checkField(String f) {
+		if ((f != null) && (f.length() != 0))
+			return true;
+		return false;
 	}
 	
 	@Override
@@ -259,6 +357,13 @@ public class ReservationDetailsDialog extends ComponentDialog {
 		
 		if (openflowEnabled) {
 			GUIRequestState.getInstance().setOF1_0();
+			if ((ofCtrlUrl.getObject() == null) ||
+					(!checkField(ofUserEmail.getObject())) ||
+							(!checkField(ofUserPass.getPassword().toString())))
+				return false;
+			GUIRequestState.getInstance().setOfUserEmail(ofUserEmail.getObject());
+			GUIRequestState.getInstance().setOfSlicePass(new String(ofUserPass.getPassword()));
+			GUIRequestState.getInstance().setOfCtrlUrl(ofCtrlUrl.getObject());
 		} else
 			GUIRequestState.getInstance().setNoOF();
 		
