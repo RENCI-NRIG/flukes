@@ -112,6 +112,9 @@ public class OrcaSMXMLRPCProxy {
 			ks.load(fis, keyPassword.toCharArray());
 			fis.close();
 
+			if (ks.getKey(keyAlias, keyPassword.toCharArray()) == null)
+				throw new Exception("Key with alias " + keyAlias + " does not exist in keystore " + keyStorePath + ".");
+			
 			// add the identity into it
 			mkm.addPrivateKey(keyAlias, 
 					(PrivateKey)ks.getKey(keyAlias, keyPassword.toCharArray()), 

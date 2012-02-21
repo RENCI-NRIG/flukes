@@ -31,6 +31,10 @@ public class OrcaLink {
     protected long bandwidth;
     protected long latency;
     protected String name;
+	// reservation state
+	protected String state = null;
+	// reservation notice
+	protected String resNotice = null;
     
     public OrcaLink(String name) {
         this.name = name;
@@ -62,7 +66,15 @@ public class OrcaLink {
 
     public void setName(String name) {
         this.name = name;
-    }             
+    }       
+    
+	public void setState(String s) {
+		state = s;
+	}
+	
+	public void setReservationNotice(String n) {
+		resNotice = n;
+	}
     
     @Override
     public String toString() {
@@ -85,6 +97,16 @@ public class OrcaLink {
     	else
     		viewText += "\nLatency: " + latency;
  
+    	if (state == null)
+    		viewText += "\nLink reservation state: unspecified";
+    	else
+    		viewText += "\nLink reservation state: " + state;
+    		
+    	if (resNotice == null)
+    		viewText += "\nReservation notice: unspecified";
+    	else
+    		viewText += "\nReservation notice: " + resNotice;
+    	
     	return viewText;
     }
     
