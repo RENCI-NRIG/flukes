@@ -75,6 +75,7 @@ public class OrcaNode {
 	
 	interface INodeCreator {
 		public OrcaNode create();
+		public void reset();
 	}
 
 	public String toStringLong() {
@@ -314,6 +315,9 @@ public class OrcaNode {
 	}
 	
 	public boolean setPortsList(String list) {
+		
+		if ((list == null) || (list.trim().length() == 0))
+			return true;
 		
 		String chkRegex = "(\\s*\\d+\\s*)(,(\\s*\\d+\\s*))*";
 		

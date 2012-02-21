@@ -60,4 +60,8 @@ public enum OrcaNodeEnum {
 	public String getIconName() {
 		return icon;
 	}
+	
+	public void resetCount() {
+		nodeCount = 0;
+	}
 }

@@ -84,4 +84,8 @@ public class OrcaNodeCreator implements INodeCreator {
 		}
 		return node;
 	}
+	
+	public void reset() {
+		currentSetting.resetCount();
+	}
 }

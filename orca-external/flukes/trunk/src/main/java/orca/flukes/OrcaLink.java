@@ -22,9 +22,6 @@
 */
 package orca.flukes;
 
-import java.util.HashSet;
-import java.util.Set;
-
 import org.apache.commons.collections15.Factory;
 
 public class OrcaLink {
@@ -42,6 +39,7 @@ public class OrcaLink {
 
     interface ILinkCreator {
     	public OrcaLink create();
+    	public void reset();
     }
     
     public void setBandwidth(long bw) {

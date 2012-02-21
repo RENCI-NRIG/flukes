@@ -230,7 +230,7 @@ public class OrcaNodePropertyDialog extends ComponentDialog implements ActionLis
 	@Override
 	public boolean accept() {
 		if (!GUIRequestState.getInstance().nodeCreator.checkUniqueNodeName(node, name.getObject())) {
-			inputErrorDialog("Node name is not unique", "Node name " + name.getObject() + " is not unique");
+			inputErrorDialog("Node name is not unique", "Node name " + name.getObject() + " is not unique.");
 			return false;
 		}
 		
@@ -238,17 +238,23 @@ public class OrcaNodePropertyDialog extends ComponentDialog implements ActionLis
 		for (Map.Entry<OrcaLink, IpAddrField> entry: ipFields.entrySet()) {
 			if (entry.getValue().fieldEmpty())
 				continue;
-			if (!checkIPField(entry.getValue()))
+			if (!checkIPField(entry.getValue())) {
+				inputErrorDialog("Check the IP addresses", "Check IP address specification.");
 				return false;
+			}
 		}
 		
 		if (node instanceof OrcaNodeGroup) {
-			if (internalVlanState && (internalIpf != null) && !internalIpf.fieldEmpty() && !checkIPField(internalIpf))
+			if (internalVlanState && (internalIpf != null) && !internalIpf.fieldEmpty() && !checkIPField(internalIpf)) {
+				inputErrorDialog("Check the internal VLAN IP addresses", "Check the IP address specification for internal VLAN.");
 				return false;
+			}
 		}
 		
-		if (!node.setPortsList(openPortsList.getObject()))
+		if (!node.setPortsList(openPortsList.getObject())) {
+			inputErrorDialog("Check port list specification", "Check the port list specification for this node.");
 			return false;
+		}
 		
 		// node name
 		node.setName(name.getObject());
@@ -399,7 +405,7 @@ public class OrcaNodePropertyDialog extends ComponentDialog implements ActionLis
 				internalVlanBwField = new NumericField(5);
 				internalVlanBwField.setDecimals(0);
 				internalVlanBwField.setType(FormatConstants.INTEGER_FORMAT);
-				internalVlanBwField.setMinValue(1);
+				internalVlanBwField.setMinValue(0);
 				internalVlanBwField.setValue(ong.getInternalVlanBw());
 				GridBagConstraints gbc_list = new GridBagConstraints();
 				gbc_list.insets = new Insets(0, 0, 5, 5);

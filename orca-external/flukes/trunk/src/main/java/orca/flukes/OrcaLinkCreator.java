@@ -71,6 +71,10 @@ public class OrcaLinkCreator implements ILinkCreator {
     	}
 	}
 	
+	public void reset() {
+		linkCount = 0;
+	}
+	
     public long getDefaultLatency() {
         return defaultLatency;
     }
