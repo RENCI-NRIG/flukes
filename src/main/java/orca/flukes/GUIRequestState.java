@@ -111,7 +111,9 @@ public class GUIRequestState extends GUICommonState implements IDeleteEdgeCallBa
 		return instance;
 	}
 	
+	@Override
 	public void clear() {
+		super.clear();
 		// clear the graph, reservation set else to defaults
 		if (g == null)
 			return;
@@ -127,6 +129,7 @@ public class GUIRequestState extends GUICommonState implements IDeleteEdgeCallBa
 		ofUserEmail = null;
 		ofSlicePass = null;
 		ofCtrlUrl = null;
+		
 		//definedImages = new HashMap<String, OrcaImage>();
 		GUI.getInstance().getImagesFromPreferences();
 	}

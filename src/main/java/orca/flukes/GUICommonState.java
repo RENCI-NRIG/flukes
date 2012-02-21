@@ -78,6 +78,11 @@ public abstract class GUICommonState {
 		sliceIdField.setText(t);
 	}
 	
+	public void clear() {
+		nodeCreator.reset();
+		linkCreator.reset();
+	}
+	
 	// a pane may have an action listener (e.g. for internal buttons)
 	abstract public ActionListener getActionListener();
 	

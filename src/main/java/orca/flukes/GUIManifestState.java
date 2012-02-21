@@ -41,7 +41,9 @@ public class GUIManifestState extends GUICommonState {
 	/**
 	 * clear the manifest
 	 */
+	@Override
 	public void clear() {
+		super.clear();
 		// clear the graph, 
 		if (g == null)
 			return;

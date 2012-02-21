@@ -170,9 +170,9 @@ public class RequestSaver {
 		// see if there is an IP address for this link on this node
 		if (n.getIp(e) != null) {
 			// create IP object, attach to interface
-			ngen.addIPToIndividual(n.getIp(e), intI);
+			Individual ipInd = ngen.addUniqueIPToIndividual(n.getIp(e), e.getName()+"-"+n.getName(), intI);
 			if (n.getNm(e) != null)
-				ngen.addNetmaskToIP(n.getIp(e), netmaskIntToString(Integer.parseInt(n.getNm(e))));
+				ngen.addNetmaskToIP(ipInd, netmaskIntToString(Integer.parseInt(n.getNm(e))));
 		}
 	}
 	
@@ -196,9 +196,9 @@ public class RequestSaver {
 			ngen.addBandwidthToConnection(netI, ong.getInternalVlanBw());
 		
 		if (ong.getInternalIp() != null) {
-			ngen.addIPToIndividual(ong.getInternalIp(), intI);
+			Individual ipInd = ngen.addUniqueIPToIndividual(ong.getInternalIp(), "private-vlan-intf-" + ong.getName(), intI);
 			if (ong.getInternalNm() != null) 
-				ngen.addNetmaskToIP(ong.getInternalIp(), netmaskIntToString(Integer.parseInt(ong.getInternalNm())));
+				ngen.addNetmaskToIP(ipInd, netmaskIntToString(Integer.parseInt(ong.getInternalNm())));
 		}
 	}
 	
