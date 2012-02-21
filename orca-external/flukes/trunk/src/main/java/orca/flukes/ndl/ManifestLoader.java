@@ -174,6 +174,7 @@ public class ManifestLoader implements INdlManifestModelListener {
 				
 				// have to be there
 				if ((if1Node != null) && (if2Node != null)) {
+					GUI.logger().debug("  Creating a link " + (lcount -1) + " from " + if1Node + " to " + if2Node);
 					GUIManifestState.getInstance().getGraph().addEdge(ol, new Pair<OrcaNode>(if1Node, if2Node), 
 							EdgeType.UNDIRECTED);
 				}
@@ -195,13 +196,16 @@ public class ManifestLoader implements INdlManifestModelListener {
 			// add crossconnect to the graph
 			GUIManifestState.getInstance().getGraph().addVertex(ml);
 			
+			// link to this later from interface information
+			
 			// link nodes (we've already seen them) to it
-			for(Resource intf: interfaces) {
-				if (interfaceToNode.get(getTrueName(intf)) != null) {
-					OrcaLink ol = new OrcaLink("Link " + lcount++);
-					GUIManifestState.getInstance().getGraph().addEdge(ol, new Pair<OrcaNode>(ml, interfaceToNode.get(getTrueName(intf))), EdgeType.UNDIRECTED);
-				}
-			}
+//			for(Resource intf: interfaces) {
+//				if (interfaceToNode.get(getTrueName(intf)) != null) {
+//					GUI.logger().debug("  Creating a link " + lcount + " from " + ml + " to " + interfaceToNode.get(getTrueName(intf)));
+//					OrcaLink ol = new OrcaLink("Link " + lcount++);
+//					GUIManifestState.getInstance().getGraph().addEdge(ol, new Pair<OrcaNode>(ml, interfaceToNode.get(getTrueName(intf))), EdgeType.UNDIRECTED);
+//				}
+//			}
 		}
 	}
 
@@ -215,7 +219,7 @@ public class ManifestLoader implements INdlManifestModelListener {
 	public void ndlInterface(Resource intf, OntModel om, Resource conn,
 			Resource node, String ip, String mask) {
 		// System.out.println("Interface " + l + " has IP/netmask" + ip + "/" + mask);
-		GUI.logger().debug("Interface " + intf + " has IP/netmask" + ip + "/" + mask);
+		GUI.logger().debug("Interface " + intf + " has IP/netmask " + ip + "/" + mask);
 		
 		if (intf == null)
 			return;
@@ -236,7 +240,8 @@ public class ManifestLoader implements INdlManifestModelListener {
 				on.setIp(ol, ip, "" + RequestSaver.netmaskStringToInt(mask));
 				on.setInterfaceName(ol, getTrueName(intf));
 			} else if (crs != null) {
-				// create link from node to crossconnect and assign IP 
+				// create link from node to crossconnect and assign IP if it doesn't exist
+				GUI.logger().debug("  Creating a link " + lcount + " from " + on + " to " + crs);
 				ol = new OrcaLink("Link " + lcount++);
 				GUIManifestState.getInstance().getGraph().addEdge(ol, new Pair<OrcaNode>(on, crs), 
 						EdgeType.UNDIRECTED);
