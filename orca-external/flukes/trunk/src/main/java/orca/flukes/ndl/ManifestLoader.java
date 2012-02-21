@@ -143,6 +143,8 @@ public class ManifestLoader implements INdlManifestModelListener {
 		//System.out.println("Found link connection " + l + " connecting " + interfaces);
 		assert(l != null);
 		
+		GUI.logger().debug("Link Connection: " + l);
+		
 		// find what nodes it connects (should be two)
 		Iterator<Resource> it = interfaces.iterator(); 
 		
@@ -176,6 +178,11 @@ public class ManifestLoader implements INdlManifestModelListener {
 							EdgeType.UNDIRECTED);
 				}
 			}
+			// state
+			ol.setState(NdlCommons.getResourceStateAsString(l));
+			
+			// reservation notice
+			ol.setReservationNotice(NdlCommons.getResourceReservationNotice(l));
 			links.put(getTrueName(l), ol);
 		} else {
 			// multi-point link
@@ -201,26 +208,39 @@ public class ManifestLoader implements INdlManifestModelListener {
 	@Override
 	public void ndlManifest(Resource i, OntModel m) {
 		// nothing to do in this case
-
+		GUI.logger().debug("Manifest: " + i);
 	}
 
 	@Override
 	public void ndlInterface(Resource intf, OntModel om, Resource conn,
 			Resource node, String ip, String mask) {
 		// System.out.println("Interface " + l + " has IP/netmask" + ip + "/" + mask);
+		GUI.logger().debug("Interface " + intf + " has IP/netmask" + ip + "/" + mask);
+		
 		if (intf == null)
 			return;
-		OrcaNode on = null;
+		OrcaNode on = null, crs = null;
 		OrcaLink ol = null;
 		if (node != null)
 			on = nodes.get(getTrueName(node));
-		if (conn != null)
+		
+		if (conn != null) {
 			ol = links.get(getTrueName(conn));
+			if (ol == null) 
+				// maybe it is a crossconnect and not a link connection
+				crs = nodes.get(getTrueName(conn));
+		}
 		
 		if (on != null) {
 			if (ol != null) {
 				on.setIp(ol, ip, "" + RequestSaver.netmaskStringToInt(mask));
 				on.setInterfaceName(ol, getTrueName(intf));
+			} else if (crs != null) {
+				// create link from node to crossconnect and assign IP 
+				ol = new OrcaLink("Link " + lcount++);
+				GUIManifestState.getInstance().getGraph().addEdge(ol, new Pair<OrcaNode>(on, crs), 
+						EdgeType.UNDIRECTED);
+				on.setIp(ol, ip, "" + RequestSaver.netmaskStringToInt(mask));
 			}
 			else {
 				// this could be a disconnected node group
@@ -229,7 +249,6 @@ public class ManifestLoader implements INdlManifestModelListener {
 					ong.setInternalIp(ip, "" + RequestSaver.netmaskStringToInt(mask));
 				}
 			}
-				
 		}
 	}
 
@@ -237,6 +256,7 @@ public class ManifestLoader implements INdlManifestModelListener {
 	public void ndlNetworkConnection(Resource l, OntModel om, long bandwidth,
 			long latency, List<Resource> interfaces) {
 		// nothing to do in this case
+		GUI.logger().debug("Network Connection: " + l);
 
 	}
 
@@ -247,6 +267,8 @@ public class ManifestLoader implements INdlManifestModelListener {
 		if (c == null)
 			return;
 
+		GUI.logger().debug("CrossConnect: " + c);
+		
 		OrcaCrossconnect oc = new OrcaCrossconnect(getTrueName(c));
 		oc.setLabel(label);
 		
@@ -274,6 +296,9 @@ public class ManifestLoader implements INdlManifestModelListener {
 		
 		if (ce == null)
 			return;
+		
+		GUI.logger().debug("Node: " + ce);
+		
 		OrcaNode newNode;
 		
 		if (ceClass.equals(NdlCommons.computeElementClass))
@@ -392,14 +417,14 @@ public class ManifestLoader implements INdlManifestModelListener {
 	@Override
 	public void ndlParseComplete() {
 		// nothing to do in this case
-
+		GUI.logger().debug("Parse complete.");
 	}
 
 	@Override
 	public void ndlNetworkConnectionPath(Resource c, OntModel m,
 			List<Resource> path) {
 		// nothing to do in this case
-		
+		GUI.logger().debug("Network Connection Path: " + c);
 	}
 
 }
