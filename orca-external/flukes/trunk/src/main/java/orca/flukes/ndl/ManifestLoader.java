@@ -151,6 +151,7 @@ public class ManifestLoader implements INdlManifestModelListener {
 		String label = NdlCommons.getResourceLabel(l);
 		
 		if (interfaces.size() == 2) {
+			GUI.logger().debug("  Adding p-to-p link" + lcount); 
 			OrcaLink ol = new OrcaLink("Link " + lcount++);
 			// point-to-point link
 			// the ends
@@ -186,12 +187,19 @@ public class ManifestLoader implements INdlManifestModelListener {
 			ol.setReservationNotice(NdlCommons.getResourceReservationNotice(l));
 			links.put(getTrueName(l), ol);
 		} else {
+			GUI.logger().debug("  Adding multi-point crossconnect " + getTrueName(l));
 			// multi-point link
 			// create a crossconnect then use interfaceToNode mapping to create links to it
 			OrcaCrossconnect ml = new OrcaCrossconnect(getTrueName(l));
 			ml.setLabel(label);
 			
 			nodes.put(getTrueName(l), ml);
+			
+			// remember the interfaces
+			while(it.hasNext()) {
+				Resource intR = it.next();
+				interfaceToNode.put(getTrueName(intR), ml);
+			}
 			
 			// add crossconnect to the graph
 			GUIManifestState.getInstance().getGraph().addVertex(ml);
@@ -219,12 +227,13 @@ public class ManifestLoader implements INdlManifestModelListener {
 	public void ndlInterface(Resource intf, OntModel om, Resource conn,
 			Resource node, String ip, String mask) {
 		// System.out.println("Interface " + l + " has IP/netmask" + ip + "/" + mask);
-		GUI.logger().debug("Interface " + intf + " has IP/netmask " + ip + "/" + mask);
+		GUI.logger().debug("Interface " + intf + " between " + node + " and " + conn + " has IP/netmask " + ip + "/" + mask);
 		
 		if (intf == null)
 			return;
-		OrcaNode on = null, crs = null;
+		OrcaNode on = null;
 		OrcaLink ol = null;
+		OrcaCrossconnect crs = null;
 		if (node != null)
 			on = nodes.get(getTrueName(node));
 		
@@ -232,7 +241,7 @@ public class ManifestLoader implements INdlManifestModelListener {
 			ol = links.get(getTrueName(conn));
 			if (ol == null) 
 				// maybe it is a crossconnect and not a link connection
-				crs = nodes.get(getTrueName(conn));
+				crs = (OrcaCrossconnect)nodes.get(getTrueName(conn));
 		}
 		
 		if (on != null) {
@@ -306,22 +315,24 @@ public class ManifestLoader implements INdlManifestModelListener {
 		
 		OrcaNode newNode;
 		
-		if (ceClass.equals(NdlCommons.computeElementClass))
-			// HACK! if it is a collection, it used to be NODEGROUP
-			if (ce.hasProperty(NdlCommons.collectionElementProperty))
-				newNode = new OrcaCrossconnect(getTrueName(ce));
-			else
-				newNode = new OrcaNode(getTrueName(ce));
-		else { 
-			if (ceClass.equals(NdlCommons.serverCloudClass)) {
-				OrcaNodeGroup newNodeGroup = new OrcaNodeGroup(getTrueName(ce));
-				int ceCount = NdlCommons.getNumCE(ce);
-				if (ceCount > 0)
-					newNodeGroup.setNodeCount(ceCount);
-				newNode = newNodeGroup;
-			} else // default just a node
-				newNode = new OrcaNode(getTrueName(ce));
-		}
+		newNode = new OrcaNode(getTrueName(ce));
+		
+//		if (ceClass.equals(NdlCommons.computeElementClass))
+//			// HACK! if it is a collection, it used to be NODEGROUP
+//			if (ce.hasProperty(NdlCommons.collectionElementProperty))
+//				newNode = new OrcaCrossconnect(getTrueName(ce));
+//			else
+//				newNode = new OrcaNode(getTrueName(ce));
+//		else { 
+//			if (ceClass.equals(NdlCommons.serverCloudClass)) {
+//				OrcaNodeGroup newNodeGroup = new OrcaNodeGroup(getTrueName(ce));
+//				int ceCount = NdlCommons.getNumCE(ce);
+//				if (ceCount > 0)
+//					newNodeGroup.setNodeCount(ceCount);
+//				newNode = newNodeGroup;
+//			} else // default just a node
+//				newNode = new OrcaNode(getTrueName(ce));
+//		}
 		
 		// set common properties
 		setCommonNodeProperties(newNode, ce);
