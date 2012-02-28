@@ -67,6 +67,7 @@ import orca.flukes.ndl.RequestLoader;
 import orca.flukes.ndl.RequestSaver;
 import orca.flukes.ui.KeystoreDialog;
 import orca.flukes.ui.TextAreaDialog;
+import orca.flukes.xmlrpc.OrcaSMXMLRPCProxy;
 import orca.ndl.NdlCommons;
 
 import org.apache.log4j.Level;
@@ -108,12 +109,14 @@ public class GUI implements ComponentListener {
 	private JMenuItem saveMenuItem, saveAsMenuItem;
 	private JSeparator separator;
 	private JMenuItem exitMenuItem;
-	private JMenu mnNewMenu, outputMenu, layoutMenu;
+	private JMenu mnNewMenu, controllerMenu, outputMenu, layoutMenu;
 	private JMenuItem helpMenuItem;
 	private JMenuItem prefMenuItem;
 	private JMenuItem aboutMenuItem;
 	private JSeparator separator_1, separator_2;
 	private Logger logger;
+	private String[] controllerUrls;
+	private String selectedControllerUrl;
 	
 	// alias and password within a keystore to be used for XMLRPC calls
 	private String keyAlias = null, keyPassword = null;
@@ -301,7 +304,14 @@ public class GUI implements ComponentListener {
 				switchLayout(activeTab(), GraphLayouts.FR);
 			} else if (e.getActionCommand().equals(GraphLayouts.ISOM.getName())) {
 				switchLayout(activeTab(), GraphLayouts.ISOM);
-			} 
+			} else if (e.getActionCommand().startsWith("url")) {
+				// controller url selection
+				int urlIndex = Integer.parseInt(e.getActionCommand().substring(3, e.getActionCommand().length()));
+				selectedControllerUrl = controllerUrls[urlIndex];
+				OrcaSMXMLRPCProxy.getInstance().resetSSLIdentity();
+				keyAlias = null;
+				keyPassword = null;
+			}
 		}
 	}
 	
@@ -385,9 +395,12 @@ public class GUI implements ComponentListener {
 			public void run() {
 				try {
 					GUI gui = GUI.getInstance();
-					gui.initialize();
+
 					gui.processPreferences();
 					gui.getImagesFromPreferences();
+					gui.getControllersFromPreferences();
+					
+					gui.initialize();
 					gui.getFrame().setVisible(true);
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -518,13 +531,35 @@ public class GUI implements ComponentListener {
 		exitMenuItem.addActionListener(mListener);
 		fileNewMenu.add(exitMenuItem);
 		
+		// controller selection
+		controllerMenu = new JMenu("Orca Controller");
+		menuBar.add(controllerMenu);
+		
+		ButtonGroup cbg = new ButtonGroup();
+		
+		JRadioButtonMenuItem mi;
+		
+		// loop through controllers
+		int i = 0;
+		for (String url: controllerUrls) {
+			mi = new JRadioButtonMenuItem(url);
+			mi.setActionCommand("url" + i++);
+			mi.addActionListener(mListener);
+			if (i == 1) {
+				mi.setSelected(true);
+				selectedControllerUrl = url;
+			}
+			controllerMenu.add(mi);
+			cbg.add(mi);
+		}
+		
 		// output format selection
 		outputMenu = new JMenu("Output Format");
 		menuBar.add(outputMenu);
 		
 		ButtonGroup obg = new ButtonGroup();
 
-		JRadioButtonMenuItem mi = new JRadioButtonMenuItem("RDF-XML");
+		mi = new JRadioButtonMenuItem("RDF-XML");
 		mi.setActionCommand("xml");
 		mi.addActionListener(mListener);
 		mi.setSelected(true);
@@ -886,7 +921,7 @@ public class GUI implements ComponentListener {
 		USER_KEYSTORE("user.keystore", "~/.ssl/user.jks", 
 			"Keystore containing your private key and certificate issued by GPO, Emulab or BEN"),
 		ORCA_XMLRPC_CONTROLLER("orca.xmlrpc.url", "https://some.hostname.org:11443/orca/xmlrpc", 
-			"URL of the ORCA XMLRPC controller where you are submitting the request"),
+			"Comma-separated list of URLs of the ORCA XMLRPC controllers where you can submit slice requests"),
 		IMAGE_NAME("image.name", "regression-i386-debian", 
 			"Name of a known image, you can add more images by adding image1.name, image2.name etc."),
 		IMAGE_URL("image.url", "http://geni-images.renci.org/images/regression/regression-deb5-i386.xml", 
@@ -980,6 +1015,14 @@ public class GUI implements ComponentListener {
 		GUIRequestState.getInstance().addImages(images);
 	}
 	
+	void getControllersFromPreferences() {
+		
+		controllerUrls = getPreference(PrefsEnum.ORCA_XMLRPC_CONTROLLER).split(",");
+		for (int index = 0; index < controllerUrls.length; index++) {
+			controllerUrls[index] = controllerUrls[index].trim();
+		}
+	}
+	
 	/**
 	 * Create a progress dialog
 	 * @param msg
@@ -994,4 +1037,7 @@ public class GUI implements ComponentListener {
 		return pd;
 	}
 	
+	public String getSelectedController() {
+		return selectedControllerUrl;
+	}
 }
