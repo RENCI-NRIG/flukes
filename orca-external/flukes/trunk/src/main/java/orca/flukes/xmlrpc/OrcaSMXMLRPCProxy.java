@@ -11,6 +11,7 @@ import java.security.KeyStore;
 import java.security.PrivateKey;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -74,6 +75,10 @@ public class OrcaSMXMLRPCProxy {
 			}
 	};
 	
+	public void resetSSLIdentity() {
+		sslIdentitySet = false;
+	}
+	
 	/**
 	 * Set the identity for the communications to the XMLRPC controller. Eventually
 	 * we may talk to several controller with different identities. For now only
@@ -87,7 +92,7 @@ public class OrcaSMXMLRPCProxy {
 		try {
 			// create multikeymanager
 			mkm = new MultiKeyManager();
-			URL ctrlrUrl = new URL(GUI.getInstance().getPreference(GUI.PrefsEnum.ORCA_XMLRPC_CONTROLLER));
+			URL ctrlrUrl = new URL(GUI.getInstance().getSelectedController());
 
 			// register a new protocol
 			ContextualSSLProtocolSocketFactory regSslFact = 
@@ -112,8 +117,27 @@ public class OrcaSMXMLRPCProxy {
 			ks.load(fis, keyPassword.toCharArray());
 			fis.close();
 
+			// check that the spelling of key alias is proper
+			Enumeration<String> as = ks.aliases();
+			while (as.hasMoreElements()) {
+				String a = as.nextElement();
+				if (keyAlias.toLowerCase().equals(a.toLowerCase())) {
+					keyAlias = a;
+					break;
+				}
+			}
+			
+			// alias has to exist and have a key and cert present
+			if (!ks.containsAlias(keyAlias)) {
+				throw new Exception("Alias " + keyAlias + " does not exist in keystore " + keyStorePath + ".");
+			}
+			
 			if (ks.getKey(keyAlias, keyPassword.toCharArray()) == null)
 				throw new Exception("Key with alias " + keyAlias + " does not exist in keystore " + keyStorePath + ".");
+			
+			if (ks.getCertificate(keyAlias) == null) {
+				throw new Exception("Certificate with alias " + keyAlias + " does not exist in keystore " + keyStorePath + ".");
+			}
 			
 			// add the identity into it
 			mkm.addPrivateKey(keyAlias, 
@@ -140,7 +164,7 @@ public class OrcaSMXMLRPCProxy {
     	setSSLIdentity();
         try {
 			XmlRpcClientConfigImpl config = new XmlRpcClientConfigImpl();
-			config.setServerURL(new URL(GUI.getInstance().getPreference(GUI.PrefsEnum.ORCA_XMLRPC_CONTROLLER)));
+			config.setServerURL(new URL(GUI.getInstance().getSelectedController()));
 			XmlRpcClient client = new XmlRpcClient();
 			client.setConfig(config);
 			
@@ -151,9 +175,9 @@ public class OrcaSMXMLRPCProxy {
 			// get verbose list of the AMs
 			versionMap = (Map<String, Object>)client.execute(GET_VERSION, new Object[]{});
         } catch (MalformedURLException e) {
-        	throw new Exception("Please check the SM URL " + GUI.getInstance().getPreference(GUI.PrefsEnum.ORCA_XMLRPC_CONTROLLER));
+        	throw new Exception("Please check the SM URL " + GUI.getInstance().getSelectedController());
         } catch (XmlRpcException e) {
-        	throw new Exception("Unable to contact SM " + GUI.getInstance().getPreference(GUI.PrefsEnum.ORCA_XMLRPC_CONTROLLER) + " due to " + e);
+        	throw new Exception("Unable to contact SM " + GUI.getInstance().getSelectedController() + " due to " + e);
         }
 		return versionMap;
 	}
@@ -173,7 +197,7 @@ public class OrcaSMXMLRPCProxy {
     	setSSLIdentity();
 		try {
 			XmlRpcClientConfigImpl config = new XmlRpcClientConfigImpl();
-			config.setServerURL(new URL(GUI.getInstance().getPreference(GUI.PrefsEnum.ORCA_XMLRPC_CONTROLLER)));
+			config.setServerURL(new URL(GUI.getInstance().getSelectedController()));
 			XmlRpcClient client = new XmlRpcClient();
 			client.setConfig(config);
 			
@@ -184,9 +208,9 @@ public class OrcaSMXMLRPCProxy {
 			// create sliver
 			result = (String)client.execute(CREATE_SLIVER, new Object[]{ sliceId, new Object[]{}, resReq, users});
         } catch (MalformedURLException e) {
-        	throw new Exception("Please check the SM URL " + GUI.getInstance().getPreference(GUI.PrefsEnum.ORCA_XMLRPC_CONTROLLER));
+        	throw new Exception("Please check the SM URL " + GUI.getInstance().getSelectedController());
         } catch (XmlRpcException e) {
-        	throw new Exception("Unable to contact SM " + GUI.getInstance().getPreference(GUI.PrefsEnum.ORCA_XMLRPC_CONTROLLER) + " due to " + e);
+        	throw new Exception("Unable to contact SM " + GUI.getInstance().getSelectedController() + " due to " + e);
         }
 		
 		return result;
@@ -232,7 +256,7 @@ public class OrcaSMXMLRPCProxy {
     	setSSLIdentity();
 		try {
 			XmlRpcClientConfigImpl config = new XmlRpcClientConfigImpl();
-			config.setServerURL(new URL(GUI.getInstance().getPreference(GUI.PrefsEnum.ORCA_XMLRPC_CONTROLLER)));
+			config.setServerURL(new URL(GUI.getInstance().getSelectedController()));
 			XmlRpcClient client = new XmlRpcClient();
 			client.setConfig(config);
 			
@@ -243,9 +267,9 @@ public class OrcaSMXMLRPCProxy {
 			// delete sliver
 			res = (Boolean)client.execute(DELETE_SLIVER, new Object[]{ sliceId, new Object[]{}});
         } catch (MalformedURLException e) {
-        	throw new Exception("Please check the SM URL " + GUI.getInstance().getPreference(GUI.PrefsEnum.ORCA_XMLRPC_CONTROLLER));
+        	throw new Exception("Please check the SM URL " + GUI.getInstance().getSelectedController());
         } catch (XmlRpcException e) {
-        	throw new Exception("Unable to contact SM " + GUI.getInstance().getPreference(GUI.PrefsEnum.ORCA_XMLRPC_CONTROLLER) + " due to " + e);
+        	throw new Exception("Unable to contact SM " + GUI.getInstance().getSelectedController() + " due to " + e);
         }
         
         return res;
@@ -258,7 +282,7 @@ public class OrcaSMXMLRPCProxy {
     	setSSLIdentity();
 		try {
 			XmlRpcClientConfigImpl config = new XmlRpcClientConfigImpl();
-			config.setServerURL(new URL(GUI.getInstance().getPreference(GUI.PrefsEnum.ORCA_XMLRPC_CONTROLLER)));
+			config.setServerURL(new URL(GUI.getInstance().getSelectedController()));
 			XmlRpcClient client = new XmlRpcClient();
 			client.setConfig(config);
 			
@@ -269,9 +293,9 @@ public class OrcaSMXMLRPCProxy {
 			// sliver status
 			result = (String)client.execute(SLIVER_STATUS, new Object[]{ sliceId, new Object[]{}});
         } catch (MalformedURLException e) {
-        	throw new Exception("Please check the SM URL " + GUI.getInstance().getPreference(GUI.PrefsEnum.ORCA_XMLRPC_CONTROLLER));
+        	throw new Exception("Please check the SM URL " + GUI.getInstance().getSelectedController());
         } catch (XmlRpcException e) {
-        	throw new Exception("Unable to contact SM " + GUI.getInstance().getPreference(GUI.PrefsEnum.ORCA_XMLRPC_CONTROLLER) + " due to " + e);
+        	throw new Exception("Unable to contact SM " + GUI.getInstance().getSelectedController() + " due to " + e);
         }
         
         return result;
@@ -363,7 +387,7 @@ public class OrcaSMXMLRPCProxy {
 		}
 		
 		try {
-			System.out.println("Placing request against " + GUI.getInstance().getPreference(GUI.PrefsEnum.ORCA_XMLRPC_CONTROLLER));
+			System.out.println("Placing request against " + GUI.getInstance().getSelectedController());
 			String sliceId = UUID.randomUUID().toString();
 			System.out.println("Creating slice " + sliceId);
 			String result = p.createSlice(sliceId, sb.toString());
