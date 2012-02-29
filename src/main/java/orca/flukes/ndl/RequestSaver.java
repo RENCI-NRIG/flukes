@@ -77,12 +77,15 @@ public class RequestSaver {
 	public static final Map<String, String> domainMap;
 	static {
 		Map<String, String> dm = new HashMap<String, String>();
+		dm.put("RENCI XO Rack", "rcivmsite.rdf#rcivmsite");
+		dm.put("BBN/GPO XO Rack", "bbnvmsite.rdf#bbnvmsite");
 		dm.put("RENCI ACIS","acisrencivmsite.rdf#acisrencivmsite");
-		dm.put("RENCI BEN", "rencivmsite.rdf#rencivmsite");
-		dm.put("UNC BEN", "uncvmsite.rdf#uncvmsite");
 		dm.put("Duke CS", "dukevmsite.rdf#dukevmsite");
-		dm.put("NERSC", "nerscvmsite.rdf#nerscvmsite");
-		dm.put("UH", "uhoustonvmsite.rdf#uhoustonvmsite");
+		dm.put("UNC BEN", "uncvmsite.rdf#uncvmsite");
+		dm.put("UH minirack", "uhoustonvmsite.rdf#uhoustonvmsite");
+		dm.put("RENCI BEN (not a GENI resource)", "rencivmsite.rdf#rencivmsite");
+		dm.put("NERSC (not a GENI resource)", "nerscvmsite.rdf#nerscvmsite");
+
 		domainMap = Collections.unmodifiableMap(dm);
 	}
 	
