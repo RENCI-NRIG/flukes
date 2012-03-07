@@ -443,14 +443,12 @@ public class RequestSaver {
 	}
 	
 	/**
-	 * Post boot scripts need to be sanitized
+	 * Post boot scripts need to be sanitized (deprecated)
 	 * @param s
 	 * @return
 	 */
 	public static String sanitizePostBootScript(String s) {
-		if (s == null)
-			return s;
-		
-		return s.replaceAll("\n[\\s]*\n", "\n" + GUI.getInstance().getPreference(GUI.PrefsEnum.SCRIPT_COMMENT_SEPARATOR) + "\n");
+		// no longer needed
+		return s;
 	}
 }
