@@ -57,7 +57,7 @@ public class ReservationDetailsDialog extends ComponentDialog {
 	private KCheckBox immCb, ofCb;
 	private KTextField ofUserEmail;
 	private JPasswordField ofUserPass;
-	private URLField ofCtrlUrl;
+	private KTextField ofCtrlUrl;
 	private KLabel ofUserEmailLabel, ofUserPassLabel, ofCtrlUrlLabel;
 	
 	// we're doing a closure AbstractAction for checkbox and it needs access to 'this'
@@ -111,7 +111,7 @@ public class ReservationDetailsDialog extends ComponentDialog {
 			openflowEnabled = true;
 			ofUserEmail.setObject(GUIRequestState.getInstance().getOfUserEmail());
 			ofUserPass.setText(GUIRequestState.getInstance().getOfSlicePass());
-			ofCtrlUrl.setObject(GUIRequestState.getInstance().getOfCtrlUrl());
+			ofCtrlUrl.setObject(GUIRequestState.getInstance().getOfCtrlUrl().toString());
 		}
 		else {
 			openflowEnabled = false;
@@ -235,7 +235,7 @@ public class ReservationDetailsDialog extends ComponentDialog {
 		}
 		
 		{
-			ofCtrlUrl = new URLField(25);
+			ofCtrlUrl = new KTextField(25);
 			GridBagConstraints gbc_textField = new GridBagConstraints();
 			gbc_textField.fill = GridBagConstraints.HORIZONTAL;
 			gbc_textField.fill = GridBagConstraints.HORIZONTAL;
@@ -357,7 +357,7 @@ public class ReservationDetailsDialog extends ComponentDialog {
 		
 		if (openflowEnabled) {
 			GUIRequestState.getInstance().setOF1_0();
-			if ((ofCtrlUrl.getObject() == null) ||
+			if ((!checkField(ofCtrlUrl.getObject())) ||
 					(!checkField(ofUserEmail.getObject())) ||
 							(!checkField(ofUserPass.getPassword().toString())))
 				return false;

@@ -72,7 +72,7 @@ public class GUIRequestState extends GUICommonState implements IDeleteEdgeCallBa
 	private String ofNeededVersion = null;
 	private String ofUserEmail = null;
 	private String ofSlicePass = null;
-	private URL ofCtrlUrl = null;
+	private String ofCtrlUrl = null;
 	
 	// VM images defined by the user
 	HashMap<String, OrcaImage> definedImages; 
@@ -374,11 +374,11 @@ public class GUIRequestState extends GUICommonState implements IDeleteEdgeCallBa
 		return ofSlicePass;
 	}
 	
-	public void setOfCtrlUrl(URL cu) {
+	public void setOfCtrlUrl(String cu) {
 		ofCtrlUrl = cu;
 	}
 	
-	public URL getOfCtrlUrl() {
+	public String getOfCtrlUrl() {
 		return ofCtrlUrl;
 	}
 	
