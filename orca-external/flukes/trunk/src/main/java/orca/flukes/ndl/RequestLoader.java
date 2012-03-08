@@ -274,11 +274,7 @@ public class RequestLoader implements INdlRequestModelListener {
 			Resource ofCtrl = NdlCommons.getOfCtrl(sl);
 			if (ofCtrl == null)
 				return;
-			try {
-				GUIRequestState.getInstance().setOfCtrlUrl(new URL(NdlCommons.getURL(ofCtrl)));
-			} catch (MalformedURLException e) {
-				return;
-			}
+			GUIRequestState.getInstance().setOfCtrlUrl(NdlCommons.getURL(ofCtrl));
 			GUIRequestState.getInstance().setOfUserEmail(NdlCommons.getEmail(sl));
 			GUIRequestState.getInstance().setOfSlicePass(NdlCommons.getSlicePassword(sl));
 			if ((GUIRequestState.getInstance().getOfUserEmail() == null) ||
