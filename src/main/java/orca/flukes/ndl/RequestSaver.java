@@ -282,8 +282,10 @@ public class RequestSaver {
 						if (ong.getInternalVlan())
 							processNodeGroupInternalVlan(reservation, ong);
 					}
-					else
+					else {
 						ni = ngen.declareComputeElement(n.getName());
+						ngen.addVMDomainProperty(ni);
+					}
 					
 					ngen.addResourceToReservation(reservation, ni);
 					
