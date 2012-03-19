@@ -1,0 +1,92 @@
+<html>
+<head>
+<title>FLUKES Help</title>
+</head>
+<body>
+<h2>FLUKES Help</h2>
+<img src="icon.jpg" align="left"/>
+<h3>Overview</h3>
+<p>FLUKES allows the user to graphically create the topology of the desired ORCA request, assign IP addresses, VM images to nodes and edit global reservation details. There are several tabs:</p>
+<ul>
+<li>Resources pane - for inspecting available resources</li>
+<li>Request pane - for creating the request graph for a slice</li>
+<li>Manifest pane - for inspecting the manifest of a slice</li>
+</ul>
+
+<h3>Preferences</h3>
+
+User preferences can be specified in $HOME/.flukes.properties. To check the current values of preferences, select Help|Preference settings. If any values should change, simply cut and paste into $HOME/.flukes.properties, modify and restart.
+<h3>User interface - Request pane</h3>
+
+<p>The Request is created using the Request pane and can be saved/loaded into a NDL-OWL formatted file that can be submitted to ORCA for provisioning (note that ORCA accepts only RDF-XML).</p>
+
+<p>There are 3 mouse modes accessible from the right-click menu anywhere:</p>
+<ul>
+<li>Edit - for creating nodes and edges</li>
+<li>Pick - for picking one or more nodes (holding the left mouse button while dragging selects multiple nodes)</li>
+<li>Pan - panning the graph image within the pane</li>
+</ul> 
+
+<p>Right-clicking on node or edge shows a context menu that allows the user to view and edit node and edge properties.</p>
+
+<p>In pick mode the user can select multiple nodes (by clicking on a node or clicking and dragging to create a select area) and edit their common properties (e.g. image, domain binding etc) by right clicking 
+anywhere except node or edge and selecting 'Edit Selected Nodes'.</p>
+
+<h3>Nodes, Node Types and IP address assignment</h3>
+ 
+<p>Nodes are a main element of the topology. Nodes can be simple or complex, bound to a specific domain or unbound. A node can have dependencies on other nodes (based on user preferences). Nodes can have a post-boot script.</p>
+
+<p>Nodes are accessed by users over the management IP network which has access to the public Internet. In addition nodes may have other interfaces connecting them to other nodes, which are bandwidth-provisioned from Layer 2 circuits either within one domain or between domains, depending on the requested topology. IP address assignment on the primary/management interfaces is the responsibility of the hosting domain and these IP addresses are reported as part of the manifest (they cannot be set or determined at request time). IP addresses for all other interfaces can be specified by the user. When IP addresses are left unspecified, the interfaces in the hosts are created, but remain unconfigured.</p>
+
+<p>Two node types are possible - plain node (a VM with either a default image or an image specified by the user) or a node group. A node group is a set of 
+nodes with common attributes (e.g. size, boot image, post boot script, binding). A node group can be connected to other node groups or individual nodes over a Layer 2 connection (e.g. a VLAN). A node group automatically acquires a bus configuration if IP addresses are specified (otherwise it is a set of disconnected VMs with only management IP access). </p>
+
+<p>Similar parameters
+can be specified for nodes and node groups. For node groups, the number of nodes should be specified. The 
+IP address specified for the node group is the address to be assigned to the <it>first node</it> in the node group, with other addresses sequentially selected from the same address set 
+limited by the netmask. E.g. if there are 3 nodes in a cluster and a user specifies 172.16.1.10/16 then the first node will 
+have 172.16.1.10/16, second 172.16.1.11/16 etc.</p>
+
+<h3>Dependencies</h3>
+
+<p>ORCA performs its own dependency analysis on resources to determine the specific order in which they need to be configured. In some cases additional dependencies can be introduced by the user to reflect e.g. the semantics of the application (for example an application may have a head node, which must be booted prior to worker nodes).</p>
+
+<p>Node properties dialog allows for these additional dependencies to be specified. A dependency implies that the dependent node will not boot until its dependency target has booted. Dependencies may span multiple domains.</p>
+
+<h3>Domain Binding</h3>
+
+<p>Nodes and node groups can be bound to resource provider domains by selecting one of the domains in the menu. Unbound nodes or domains in a bound reservation will be automatically bound to the selected domain.</p>
+
+<p>An unbound node group may be split by the system among multiple domains depending on the availability of resources. A bound node group is never split and is allocated from the specific domain. A user can explicitly declare a group unsplittable by checking the appropriate checkbox in the group properties dialog.</p>
+  
+<h3>Images</h3>
+
+<p>VM Images are defined using the 'Images' button. The user can add new images or edit the properties of existing images. Each image must have:</p>
+<ul>
+<li>A unique short name</li>
+<li>A URL of the ImageProxy metafile from which it can be downloaded</li>
+<li>A SHA-1 hash of the metafile</li>
+</ul>
+
+<p>Images can be specified per reservation (as part of reservation properties) or per node. 
+Images must first be defined using the 'Images|New' dialog and then can be used from pull down menus
+in reservation and node properties.</p>
+
+<p>If an image is selected for a reservation it takes on global significance and any images specified for nodes are ignored. 
+If no image is specified in the reservation the user can specify different images for individual nodes. Nodes for which an image is not specified
+will use the default image for the resource domain at which the node is allocated.</p>
+
+<h3>User interface - Manifest pane </h3>
+
+This pane allows the user to view the loaded manifest and inspect its properties. The user cannot modify or save the manifest. Users can login to resources that offer a login service. To inspect the properties of a resource (node or link) right click on it.
+
+<h3>User interface - Resources pane</h3>
+ 
+Allows to view available ORCA resources. Click the Query button to query the Orca Actor registry for location information of existing authorities.
+
+<h3>Graph Layouts</h3>
+
+There are several graph layouts available from a pull-down menu. When a graph is saved in NDL-OWL, its layout is not preserved, so this feature is provided as a convenience. After loading a graph a user can experiment with different layouts to find the most convenient one.
+
+</body>
+</html>
