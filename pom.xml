@@ -2,7 +2,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>orca</groupId>
   <artifactId>flukes</artifactId>
-  <version>0.2</version>
+  <version>0.3-SNAPSHOT</version>
   <name>FLUKES</name>
   <description>FLUKES - ORCA NDL graph editor</description>
   <url>http://geni-images.renci.org/webstart</url>
@@ -15,8 +15,8 @@
   	<url>http://ci-dev.renci.org/hudson</url>
   </ciManagement>
   <scm>
-  	<connection>scm:svn:https://geni-orca.renci.org/svn/orca-external/flukes/tags/flukes-0.2</connection>
-  	<url>https://geni-orca.renci.org/svn/orca-external/flukes/tags/flukes-0.2</url>
+  	<connection>scm:svn:https://geni-orca.renci.org/svn/orca-external/flukes/trunk</connection>
+  	<url>https://geni-orca.renci.org/svn/orca-external/flukes</url>
   </scm>
   <organization>
   	<name>RENCI, The University of North Carolina at Chapel Hill</name>
