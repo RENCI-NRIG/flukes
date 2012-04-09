@@ -85,6 +85,7 @@ public class RequestSaver {
 		dm.put("UH minirack", "uhoustonvmsite.rdf#uhoustonvmsite");
 		dm.put("RENCI BEN (not a GENI resource)", "rencivmsite.rdf#rencivmsite");
 		dm.put("NERSC (not a GENI resource)", "nerscvmsite.rdf#nerscvmsite");
+		dm.put("UMass Amherst (vlan 533)", "mass.rdf#mass");
 
 		domainMap = Collections.unmodifiableMap(dm);
 	}
