@@ -202,8 +202,10 @@ public class OrcaNode {
 	public void setIp(OrcaLink e, String addr, String nm) {
 		if (e == null)
 			return;
-		if (addr == null)
+		if ((addr == null) || (nm == null)) {
+			addresses.remove(e);
 			return;
+		}
 		if (nm == null)
 			nm = NODE_NETMASK;
 		addresses.put(e, new Pair<String>(addr, nm));
@@ -340,8 +342,8 @@ public class OrcaNode {
 	public String getViewerText() {
 		String viewText = "";
 		viewText += "Node name: " + name;
-		viewText += "\nNode reservation state: " + state;
-		viewText += "\nReservation notice: " + resNotice;
+		viewText += "\nNode reservation state: " + (state != null ? state : NOT_SPECIFIED);
+		viewText += "\nReservation notice: " + (resNotice != null ? resNotice : NOT_SPECIFIED);
 //		viewText += "\nNode Type: " + node.getNodeType();
 //		viewText += "\nImage: " + node.getImage();
 //		viewText += "\nDomain: " + domain;

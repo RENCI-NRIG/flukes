@@ -37,51 +37,47 @@ import com.hyperrealm.kiwi.ui.NumericField;
 import com.hyperrealm.kiwi.ui.dialog.ComponentDialog;
 import com.hyperrealm.kiwi.ui.dialog.KMessageDialog;
 
-public class OrcaLinkPropertyDialog extends ComponentDialog {
+public class OrcaBroadcastLinkPropertyDialog extends ComponentDialog {
 	JFrame parent;
-	OrcaLink edge;
+	OrcaCrossconnect edge;
 	
-	protected NumericField bandwidth, latency, label;
+	protected NumericField bandwidth, label;
 	protected KTextField name;
 	
 	KPanel kp;
 	
-	public OrcaLinkPropertyDialog(JFrame parent, OrcaLink e) {
+	public OrcaBroadcastLinkPropertyDialog(JFrame parent, OrcaCrossconnect c) {
 		super(parent, "Edge Details", true);
 		super.setLocationRelativeTo(parent);
 		
-		assert(e != null);
+		assert(c != null);
 		
-		setComment("Edge " + e.getName() + " properties");
+		setComment("Broadcast link " + c.getName() + " properties");
 		this.parent = parent;
-		this.edge = e;
-		name.setObject(e.getName());
-		bandwidth.setValue(e.getBandwidth());
-//		latency.setValue(e.getLatency());
-		if (e.getLabel() != null)
-			label.setValue(Integer.parseInt(e.getLabel()));
+		this.edge = c;
+		name.setObject(c.getName());
+		bandwidth.setValue(c.getBandwidth());
+		if (c.getLabel() != null)
+			label.setValue(Integer.parseInt(c.getLabel()));
 	}
 
 	@Override
 	public boolean accept() {
-		//if ((name.getObject().length() == 0) || (!bandwidth.validateInput()) || (!latency.validateInput()) || (!label.validateInput()))
 		if ((name.getObject().length() == 0) || (!bandwidth.validateInput()) || (!label.validateInput()))
 			return false;
-		if (!GUIRequestState.getInstance().linkCreator.checkUniqueLinkName(edge, name.getObject())) {
-			KMessageDialog kmd = new KMessageDialog(parent, "Link name not unique", true);
+		if (!GUIRequestState.getInstance().nodeCreator.checkUniqueNodeName(edge, name.getObject())) {
+			KMessageDialog kmd = new KMessageDialog(parent, "Broadcast Link name not unique", true);
 			kmd.setLocationRelativeTo(parent);
-			kmd.setMessage("Link Name " + name.getObject() + " is not unique");
+			kmd.setMessage("Broadcast link Name " + name.getObject() + " is not unique");
 			kmd.setVisible(true);
 			return false;
 		}
 		edge.setName(name.getObject());
 		edge.setBandwidth((long)bandwidth.getValue());
-		//edge.setLatency((long)latency.getValue());
 		if ((long)label.getValue() > 0)
 			edge.setLabel("" + (long)label.getValue());
 		else
 			edge.setLabel(null);
-		
 		return true;
 	}
 	
@@ -89,6 +85,7 @@ public class OrcaLinkPropertyDialog extends ComponentDialog {
 	protected Component buildDialogUI() {
 		kp = new KPanel();
 		int y = 0;
+		
 		GridBagLayout gbl_contentPanel = new GridBagLayout();
 		kp.setLayout(gbl_contentPanel);
 		{
@@ -109,7 +106,6 @@ public class OrcaLinkPropertyDialog extends ComponentDialog {
 			gbc_list.gridy = y++;
 			kp.add(name, gbc_list);
 		}
-		
 		
 		{
 			JLabel lblNewLabel_1 = new JLabel("Bandwidth: ");
@@ -133,27 +129,6 @@ public class OrcaLinkPropertyDialog extends ComponentDialog {
 			kp.add(bandwidth, gbc_list);
 		}
 		
-//		{
-//			JLabel lblNewLabel_1 = new JLabel("Latency: ");
-//			GridBagConstraints gbc_lblNewLabel_1 = new GridBagConstraints();
-//			gbc_lblNewLabel_1.anchor = GridBagConstraints.WEST;
-//			gbc_lblNewLabel_1.insets = new Insets(0, 0, 5, 5);
-//			gbc_lblNewLabel_1.gridx = 0;
-//			gbc_lblNewLabel_1.gridy = y;
-//			kp.add(lblNewLabel_1, gbc_lblNewLabel_1);
-//		}
-//		{
-//			latency = new NumericField(10);
-//			latency.setMinValue(0);
-//			latency.setType(FormatConstants.LONG);
-//			latency.setDecimals(0);
-//			GridBagConstraints gbc_list = new GridBagConstraints();
-//			gbc_list.insets = new Insets(0, 0, 5, 5);
-//			gbc_list.fill = GridBagConstraints.WEST;
-//			gbc_list.gridx = 1;
-//			gbc_list.gridy = y++;
-//			kp.add(latency, gbc_list);
-//		}
 		
 		{
 			JLabel lblNewLabel_1 = new JLabel("Label/Tag: ");
@@ -181,4 +156,5 @@ public class OrcaLinkPropertyDialog extends ComponentDialog {
 		return kp;
 	}
 
+	
 }

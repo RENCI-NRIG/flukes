@@ -313,7 +313,7 @@ public class GUIRequestState extends GUICommonState implements IDeleteEdgeCallBa
 		String[] ret = new String[knownNodes.size() - 1];
 		int i = 0;
 		for (OrcaNode n: knownNodes) {
-			if (!n.equals(subject)) {
+			if ((!n.equals(subject)) && !(n instanceof OrcaCrossconnect)) {
 				ret[i] = n.getName();
 				i++;
 			}
@@ -421,6 +421,8 @@ public class GUIRequestState extends GUICommonState implements IDeleteEdgeCallBa
 				nodeCreator.setCurrent(OrcaNodeEnum.CE);
 			} else if (e.getActionCommand().equals("nodegroups")) {
 				nodeCreator.setCurrent(OrcaNodeEnum.NODEGROUP);
+			} else if (e.getActionCommand().equals("bcastlinks")) {
+				nodeCreator.setCurrent(OrcaNodeEnum.CROSSCONNECT);
 			} else if (e.getActionCommand().equals("submit")) {
 				if ((sliceIdField.getText() == null) || 
 						(sliceIdField.getText().length() == 0)) {

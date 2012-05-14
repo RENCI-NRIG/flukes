@@ -30,7 +30,7 @@ package orca.flukes;
 public enum OrcaNodeEnum {
 	CE(OrcaNode.class, "Node", "node-50.gif"), 
 	NODEGROUP(OrcaNodeGroup.class, "NodeGroup", "server-stack-50.gif"), 
-	CROSSCONNECT(OrcaCrossconnect.class, "CrossConnect", "crossconnect-50.gif"),
+	CROSSCONNECT(OrcaCrossconnect.class, "VLAN", "crossconnect-50.gif"),
 	RESOURCESITE(OrcaResourceSite.class, "Resource Site", "resourcesite-50.gif");
 	
 	private int nodeCount;
