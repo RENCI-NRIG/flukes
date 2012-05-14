@@ -29,6 +29,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -36,6 +38,7 @@ import java.util.Map;
 
 import orca.flukes.GUI;
 import orca.flukes.GUIRequestState;
+import orca.flukes.OrcaCrossconnect;
 import orca.flukes.OrcaImage;
 import orca.flukes.OrcaLink;
 import orca.flukes.OrcaNode;
@@ -86,6 +89,7 @@ public class RequestSaver {
 		dm.put("RENCI BEN (not a GENI resource)", "rencivmsite.rdf#rencivmsite");
 		dm.put("NERSC (not a GENI resource)", "nerscvmsite.rdf#nerscvmsite");
 		dm.put("UMass Amherst (vlan 533)", "mass.rdf#mass");
+		dm.put("RENCI OSG (not a GENI resource)", "osgvmsite.rdf#osgvmsite");
 
 		domainMap = Collections.unmodifiableMap(dm);
 	}
@@ -199,10 +203,108 @@ public class RequestSaver {
 		if (ong.getInternalVlanBw() > 0) 
 			ngen.addBandwidthToConnection(netI, ong.getInternalVlanBw());
 		
+		if (ong.getInternalVlanLabel() != null)
+			ngen.addLabelToIndividual(netI, ong.getInternalVlanLabel());
+		
 		if (ong.getInternalIp() != null) {
 			Individual ipInd = ngen.addUniqueIPToIndividual(ong.getInternalIp(), "private-vlan-intf-" + ong.getName(), intI);
 			if (ong.getInternalNm() != null) 
 				ngen.addNetmaskToIP(ipInd, netmaskIntToString(Integer.parseInt(ong.getInternalNm())));
+		}
+	}
+	
+	private void checkLinkSanity(OrcaLink l) throws NdlException {
+		// sanity checks
+		// 1) if label is specified, nodes cannot be in different domains
+
+		Pair<OrcaNode> pn = GUIRequestState.getInstance().getGraph().getEndpoints(l);
+		
+		if ((l.getLabel() != null) && 
+				(((pn.getFirst().getDomain() != null) && 
+				(!pn.getFirst().getDomain().equals(pn.getSecond().getDomain()))) ||
+				(pn.getSecond().getDomain() != null) && 
+				(!pn.getSecond().getDomain().equals(pn.getFirst().getDomain()))))
+			throw new NdlException("Link " + l.getName() + " is invalid: it specifies a desired VLAN tag, but the nodes are bound to different domains");
+	}
+	
+	/** 
+	 * Links connecting nodes to crossconnects aren't real
+	 * @param e
+	 * @return
+	 */
+	private boolean fakeLink(OrcaLink e) {
+		Pair<OrcaNode> pn = GUIRequestState.getInstance().getGraph().getEndpoints(e);
+		if ((pn.getFirst() instanceof OrcaCrossconnect) ||
+				(pn.getSecond() instanceof OrcaCrossconnect))
+			return true;
+		return false;
+	}
+	
+	/**
+	 * Check the sanity of a crossconnect
+	 * @param n
+	 * @throws NdlException
+	 */
+	private void checkCrossconnectSanity(OrcaCrossconnect n) throws NdlException {
+		// sanity checks
+		// 1) nodes can't be from different domains
+		
+		Collection<OrcaLink> iLinks = GUIRequestState.getInstance().getGraph().getIncidentEdges(n);
+		String domain = null;
+		boolean flag = false;
+		for(OrcaLink l: iLinks) {
+			// count how many nodes or node groups we're connected to
+			Pair<OrcaNode> pn = GUIRequestState.getInstance().getGraph().getEndpoints(l);
+			if (!(pn.getFirst() instanceof OrcaCrossconnect)) {
+				if (pn.getFirst().getDomain() != null) {
+					if (!flag) {
+						flag = true;
+						domain = pn.getFirst().getDomain();
+					} else if (!pn.getFirst().getDomain().equals(domain))
+						throw new NdlException("You cannot split broadcast link " + n.getName() + " between domains.");
+				} 
+			} else 
+				if (!(pn.getSecond() instanceof OrcaCrossconnect)) {
+					if (pn.getSecond().getDomain() != null) {
+						if (!flag) {
+							flag = true;
+							domain = pn.getSecond().getDomain();
+						} else if (!pn.getSecond().getDomain().equals(domain))
+							throw new NdlException("You cannot split broadcast link " + n.getName() + " between domains.");
+					}
+				}
+		}
+	}
+	
+	private void processCrossconnect(OrcaCrossconnect oc, Individual blI) throws NdlException {
+		
+		Collection<OrcaLink> iLinks = GUIRequestState.getInstance().getGraph().getIncidentEdges(oc);
+		for(OrcaLink l: iLinks) {
+			Pair<OrcaNode> pn = GUIRequestState.getInstance().getGraph().getEndpoints(l);
+			OrcaNode n = null;
+			// find the non-crossconnect side
+			if (!(pn.getFirst() instanceof OrcaCrossconnect))
+				n = pn.getFirst();
+			else if (!(pn.getSecond() instanceof OrcaCrossconnect))
+				n = pn.getSecond();
+			
+			if (n == null) 
+				throw new NdlException("Two VLANs linked together is not a valid combination");
+			// find the individual matching this node
+			
+			Individual intI = ngen.declareInterface(oc.getName()+"-"+n.getName());
+			ngen.addInterfaceToIndividual(intI, blI);
+			
+			Individual nodeI = ngen.getRequestIndividual(n.getName());
+			ngen.addInterfaceToIndividual(intI, nodeI);
+
+			// see if there is an IP address for this link on this node
+			if (n.getIp(l) != null) {
+				// create IP object, attach to interface
+				Individual ipInd = ngen.addUniqueIPToIndividual(n.getIp(l), oc.getName()+"-"+n.getName(), intI);
+				if (n.getNm(l) != null)
+					ngen.addNetmaskToIP(ipInd, netmaskIntToString(Integer.parseInt(n.getNm(l))));
+			}
 		}
 	}
 	
@@ -271,69 +373,75 @@ public class RequestSaver {
 					ngen.addDomainToIndividual(domI, reservation);
 				}
 				
-				// shove invidividual nodes onto the reservation
+				// shove invidividual nodes onto the reservation/crossconnects are vertices, but not 'nodes'
+				// so require special handling
 				for (OrcaNode n: GUIRequestState.getInstance().getGraph().getVertices()) {
 					Individual ni;
-					if (n instanceof OrcaNodeGroup) {
-						OrcaNodeGroup ong = (OrcaNodeGroup) n;
-						if (ong.getSplittable())
-							ni = ngen.declareServerCloud(ong.getName(), ong.getSplittable());
-						else
-							ni = ngen.declareServerCloud(ong.getName());
-						if (ong.getInternalVlan())
-							processNodeGroupInternalVlan(reservation, ong);
-					}
-					else {
-						ni = ngen.declareComputeElement(n.getName());
-						ngen.addVMDomainProperty(ni);
-					}
-					
-					ngen.addResourceToReservation(reservation, ni);
-					
-					// for clusters, add number of nodes, declare as cluster (VM domain)
-					if (n instanceof OrcaNodeGroup) {
-						OrcaNodeGroup ong = (OrcaNodeGroup)n;
-						ngen.addNumCEsToCluster(ong.getNodeCount(), ni);
-						ngen.addVMDomainProperty(ni);
-					}
-					
-					// if no global image is set and a local image is set, add it to node
-					if (!globalImage && (n.getImage() != null)) {
-						// check if image is set in this node
-						OrcaImage im = GUIRequestState.getInstance().getImageByName(n.getImage());
-						if (im != null) {
-							Individual imI = ngen.declareDiskImage(im.getUrl().toString(), im.getHash(), im.getShortName());
-							ngen.addDiskImageToIndividual(imI, ni);
+					if (n instanceof OrcaCrossconnect) {
+						continue;
+					} else {
+						// nodes and nodegroups
+						if (n instanceof OrcaNodeGroup) {
+							OrcaNodeGroup ong = (OrcaNodeGroup) n;
+							if (ong.getSplittable())
+								ni = ngen.declareServerCloud(ong.getName(), ong.getSplittable());
+							else
+								ni = ngen.declareServerCloud(ong.getName());
+							if (ong.getInternalVlan())
+								processNodeGroupInternalVlan(reservation, ong);
 						}
-					}
-					
-					// if no global domain domain is set, declare a domain and add inDomain property
-					if (!globalDomain && (n.getDomain() != null)) {
-						Individual domI = ngen.declareDomain(domainMap.get(n.getDomain()));
-						ngen.addNodeToDomain(domI, ni);
-					}
-					
-					// node type
-					if ((n.getNodeType() != null) && (nodeTypes.get(n.getNodeType()) != null)) {
-						Pair<String> nt = nodeTypes.get(n.getNodeType());
-						ngen.addNodeTypeToCE(nt.getFirst(), nt.getSecond(), ni);
-					}
-					
-					// open ports
-					if (n.getPortsList() != null) {
-						// Say it's a TCPProxy with proxied port
-						String[] ports = n.getPortsList().split(",");
-						int pi = 0;
-						for (String port: ports) {
-							Individual prx = ngen.declareTCPProxy("prx-" + n.getName().replaceAll("[ \t#:/]", "-") + "-" + pi++);
-							ngen.addProxyToIndividual(prx, ni);
-							ngen.addPortToProxy(port.trim(), prx);
+						else {
+							ni = ngen.declareComputeElement(n.getName());
+							ngen.addVMDomainProperty(ni);
 						}
-					}
-					
-					// post boot script
-					if ((n.getPostBootScript() != null) && (n.getPostBootScript().length() > 0)) {
-						ngen.addPostBootScriptToCE(n.getPostBootScript(), ni);
+
+						ngen.addResourceToReservation(reservation, ni);
+
+						// for clusters, add number of nodes, declare as cluster (VM domain)
+						if (n instanceof OrcaNodeGroup) {
+							OrcaNodeGroup ong = (OrcaNodeGroup)n;
+							ngen.addNumCEsToCluster(ong.getNodeCount(), ni);
+							ngen.addVMDomainProperty(ni);
+						}
+
+						// if no global image is set and a local image is set, add it to node
+						if (!globalImage && (n.getImage() != null)) {
+							// check if image is set in this node
+							OrcaImage im = GUIRequestState.getInstance().getImageByName(n.getImage());
+							if (im != null) {
+								Individual imI = ngen.declareDiskImage(im.getUrl().toString(), im.getHash(), im.getShortName());
+								ngen.addDiskImageToIndividual(imI, ni);
+							}
+						}
+
+						// if no global domain domain is set, declare a domain and add inDomain property
+						if (!globalDomain && (n.getDomain() != null)) {
+							Individual domI = ngen.declareDomain(domainMap.get(n.getDomain()));
+							ngen.addNodeToDomain(domI, ni);
+						}
+
+						// node type
+						if ((n.getNodeType() != null) && (nodeTypes.get(n.getNodeType()) != null)) {
+							Pair<String> nt = nodeTypes.get(n.getNodeType());
+							ngen.addNodeTypeToCE(nt.getFirst(), nt.getSecond(), ni);
+						}
+
+						// open ports
+						if (n.getPortsList() != null) {
+							// Say it's a TCPProxy with proxied port
+							String[] ports = n.getPortsList().split(",");
+							int pi = 0;
+							for (String port: ports) {
+								Individual prx = ngen.declareTCPProxy("prx-" + n.getName().replaceAll("[ \t#:/]", "-") + "-" + pi++);
+								ngen.addProxyToIndividual(prx, ni);
+								ngen.addPortToProxy(port.trim(), prx);
+							}
+						}
+
+						// post boot script
+						if ((n.getPostBootScript() != null) && (n.getPostBootScript().length() > 0)) {
+							ngen.addPostBootScriptToCE(n.getPostBootScript(), ni);
+						}
 					}
 				}
 				
@@ -348,17 +456,50 @@ public class RequestSaver {
 					}
 				}
 				
+				// crossconnects are vertices in the graph, but are actually a kind of link
+				for (OrcaNode n: GUIRequestState.getInstance().getGraph().getVertices()) {
+					Individual bl;
+					if (n instanceof OrcaCrossconnect) {
+						// sanity check
+						OrcaCrossconnect oc = (OrcaCrossconnect)n;
+						checkCrossconnectSanity(oc);
+						bl = ngen.declareBroadcastConnection(oc.getName());
+						ngen.addResourceToReservation(reservation, bl);
+						
+						if (oc.getBandwidth() > 0)
+							ngen.addBandwidthToConnection(bl, oc.getBandwidth());
+						
+						if (oc.getLabel() != null) 
+							ngen.addLabelToIndividual(bl, oc.getLabel());
+						
+						ngen.addLayerToConnection(bl, "ethernet", "EthernetNetworkElement");
+						
+						// add incident nodes' interfaces
+						processCrossconnect(oc, bl);
+					}
+				}
+				
+
 				if (GUIRequestState.getInstance().getGraph().getEdgeCount() == 0) {
 					// a bunch of disconnected nodes, no IP addresses 
 					
 				} else {
 					// edges, nodes, IP addresses oh my!
 					for (OrcaLink e: GUIRequestState.getInstance().getGraph().getEdges()) {
+						// skip links to crossconnects
+						if (fakeLink(e))
+							continue;
+						
+						checkLinkSanity(e);
+						
 						Individual ei = ngen.declareNetworkConnection(e.getName());
 						ngen.addResourceToReservation(reservation, ei);
 
 						if (e.getBandwidth() > 0)
 							ngen.addBandwidthToConnection(ei, e.getBandwidth());
+						
+						if (e.getLabel() != null) 
+							ngen.addLabelToIndividual(ei, e.getLabel());
 						
 						// TODO: deal with layers later
 						ngen.addLayerToConnection(ei, "ethernet", "EthernetNetworkElement");
@@ -377,7 +518,7 @@ public class RequestSaver {
 			} catch (Exception e) {
 				ExceptionDialog ed = new ExceptionDialog(GUI.getInstance().getFrame(), "Exception");
 				ed.setLocationRelativeTo(GUI.getInstance().getFrame());
-				ed.setException("Exception encountered while saving file", e);
+				ed.setException("Exception encountered while converting graph to NDL-OWL: ", e);
 				ed.setVisible(true);
 				return null;
 			}
@@ -387,9 +528,11 @@ public class RequestSaver {
 	
 	public boolean saveGraph(File f, SparseMultigraph<OrcaNode, OrcaLink> g) {
 		assert(f != null);
+
 		String ndl = convertGraphToNdl(g);
 		if (ndl == null)
 			return false;
+		
 		try{
 			FileOutputStream fsw = new FileOutputStream(f);
 			OutputStreamWriter out = new OutputStreamWriter(fsw, "UTF-8");
@@ -402,7 +545,7 @@ public class RequestSaver {
 			;
 		} catch(IOException ey) {
 			;
-		}
+		} 
 		return false;
 	}
 
@@ -420,6 +563,8 @@ public class RequestSaver {
 			return null;
 		// strip off name space and "/Domain"
 		String domainName = StringUtils.removeStart(dom.getURI(), NdlCommons.ORCA_NS);
+		if (domainName == null)
+			return null;
 		domainName = StringUtils.removeEnd(domainName, "/Domain");
 		for (Iterator<Map.Entry<String, String>> domName = domainMap.entrySet().iterator(); domName.hasNext();) {
 			Map.Entry<String, String> e = domName.next();

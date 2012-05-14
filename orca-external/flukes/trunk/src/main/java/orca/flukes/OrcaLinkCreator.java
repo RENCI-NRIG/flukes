@@ -25,6 +25,7 @@ package orca.flukes;
 import java.util.Collection;
 
 import edu.uci.ics.jung.graph.SparseMultigraph;
+import edu.uci.ics.jung.graph.util.Pair;
 
 import orca.flukes.OrcaLink.ILinkCreator;
 
@@ -48,7 +49,7 @@ public class OrcaLinkCreator implements ILinkCreator {
 		for (OrcaLink e: edges) {
 			// check that some other edge doesn't have this name
 			if (edge != null) {
-				if ((e != edge) &&(e.getName().equals(nm)))
+				if ((e != edge) && (e.getName().equals(nm)))
 					return false;
 			} else
 				if (e.getName().equals(nm))
@@ -67,6 +68,7 @@ public class OrcaLinkCreator implements ILinkCreator {
     		OrcaLink link = new OrcaLink(name);
     		link.setBandwidth(defaultBandwidth);
     		link.setLatency(defaultLatency);
+    		
     		return link;
     	}
 	}

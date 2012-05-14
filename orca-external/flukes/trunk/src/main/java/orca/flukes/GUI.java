@@ -96,7 +96,7 @@ public class GUI implements ComponentListener {
 	public static final String buildVersion = GUI.class.getPackage().getImplementationVersion();
 	public static final String aboutText = "ORCA FLUKES " + (buildVersion == null? "Eclipse build" : buildVersion) + "\nNDL-OWL network editor for ORCA (Open Resource Control Architecture)" +
 	"\nDeveloped using Jena Semantic Web Framework, JUNG Java Universal Network/Graph Framework and Kiwi Swing toolkit." +
-	"\n\nCopyright 2011 RENCI/UNC Chapel Hill";
+	"\n\nCopyright 2011-2012 RENCI/UNC Chapel Hill";
 	private static final String FRAME_TITLE = "ORCA FLUKES - The ORCA Network Editor";
 	private static final String PREF_FILE = ".flukes.properties";
 	private JFrame frmOrcaFlukes;
@@ -746,6 +746,16 @@ public class GUI implements ComponentListener {
 			horizontalStrut = Box.createHorizontalStrut(10);
 			toolBar.add(horizontalStrut);
 			
+			JButton bcastLinkButton = new JButton("Add Broadcast Links");
+			bcastLinkButton.setToolTipText("Add new broadcast links");
+			bcastLinkButton.setActionCommand("bcastlinks");
+			bcastLinkButton.addActionListener(rbl);
+			bcastLinkButton.setVerticalAlignment(SwingConstants.TOP);
+			toolBar.add(bcastLinkButton);
+			
+			horizontalStrut = Box.createHorizontalStrut(10);
+			toolBar.add(horizontalStrut);
+			
 			JButton imageButton = new JButton("Client Images");
 			imageButton.setToolTipText("Add or edit VM images");
 			imageButton.setActionCommand("images");
@@ -755,7 +765,7 @@ public class GUI implements ComponentListener {
 			horizontalStrut = Box.createHorizontalStrut(10);
 			toolBar.add(horizontalStrut);
 			
-			JButton reservationButton = new JButton("Edit Reservation");
+			JButton reservationButton = new JButton("Reservation Details");
 			reservationButton.setToolTipText("Edit reservation details");
 			reservationButton.setActionCommand("reservation");
 			reservationButton.addActionListener(rbl);

@@ -24,9 +24,13 @@ package orca.flukes;
 
 import org.apache.commons.collections15.Factory;
 
+import edu.uci.ics.jung.graph.util.Pair;
+
 public class OrcaLink {
     protected long bandwidth;
     protected long latency;
+    protected String label = null;
+    
     protected String name;
 	// reservation state
 	protected String state = null;
@@ -50,6 +54,17 @@ public class OrcaLink {
     	latency = l;
     }
 
+    public void setLabel(String l) {
+    	if ((l != null) && l.length() > 0)
+    		label = l;
+    	else
+    		label = null;
+    }
+
+    public String getLabel() {
+    	return label;
+    }
+    
     public long getBandwidth() {
     	return bandwidth;
     }
@@ -94,7 +109,12 @@ public class OrcaLink {
     		viewText += "\nLatency: unspecified";
     	else
     		viewText += "\nLatency: " + latency;
- 
+    	
+    	if (label == null) 
+    		viewText += "\nLabel: unspecified";
+    	else
+    		viewText += "\nLabel: " + latency;
+    	
     	if (state == null)
     		viewText += "\nLink reservation state: unspecified";
     	else
@@ -122,5 +142,15 @@ public class OrcaLink {
         		return inc.create();
         	}
         }    
+    }
+    
+    // link to broadcast
+    public boolean linkToBroadcast() {
+    	// if it is a link to broadcastlink, no editable properties
+    	Pair<OrcaNode> pn = GUIRequestState.getInstance().getGraph().getEndpoints(this);
+    	if ((pn.getFirst() instanceof OrcaCrossconnect) || 
+    			(pn.getSecond() instanceof OrcaCrossconnect))
+    		return true;
+    	return false;
     }
 }
