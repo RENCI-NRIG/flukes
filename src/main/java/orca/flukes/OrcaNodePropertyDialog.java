@@ -67,14 +67,16 @@ public class OrcaNodePropertyDialog extends ComponentDialog implements ActionLis
 	private KTextField openPortsList;
 	private JList imageList, domainList, typeList, dependencyList = null;
 	private KCheckBox splittableCb;
-	private KCheckBox internalVlanCb;
+	//private KCheckBox internalVlanCb;
 	private boolean splittableState = false;
-	private boolean internalVlanState = false;
-	private NumericField internalVlanBwField = null;
-	private NumericField internalVlanLabel = null;
+	
+	// NOTE: All internal VLAN stuff removed - Broadcast links should be used instead 05/24/12 /ib
+	//private boolean internalVlanState = false;
+	//private NumericField internalVlanBwField = null;
+	//private NumericField internalVlanLabel = null;
 	// address field for group's internal address
-	private IpAddrField internalIpf = null;
-	JLabel internalVlanBwLabel = null, internalVlanIpLabel = null, internalVlanLabelLabel = null;
+	//private IpAddrField internalIpf = null;
+	//JLabel internalVlanBwLabel = null, internalVlanIpLabel = null, internalVlanLabelLabel = null;
 	
 	private NumericField ns;
 	private HashMap<OrcaLink, IpAddrField> ipFields;
@@ -245,6 +247,7 @@ public class OrcaNodePropertyDialog extends ComponentDialog implements ActionLis
 			}
 		}
 		
+		/* No more internal vlans - use broadcast connections instead /ib
 		if (node instanceof OrcaNodeGroup) {
 			if (internalVlanState && (internalIpf != null) && !internalIpf.fieldEmpty() && !checkIPField(internalIpf)) {
 				inputErrorDialog("Check the internal VLAN IP addresses", "Check the IP address specification for internal VLAN.");
@@ -253,6 +256,7 @@ public class OrcaNodePropertyDialog extends ComponentDialog implements ActionLis
 			if (internalVlanState && !internalVlanLabel.validateInput())
 				return false;
 		}
+		*/
 		
 		if (!node.setPortsList(openPortsList.getObject())) {
 			inputErrorDialog("Check port list specification", "Check the port list specification for this node.");
@@ -301,6 +305,7 @@ public class OrcaNodePropertyDialog extends ComponentDialog implements ActionLis
 			node.setIp(entry.getKey(), entry.getValue().getAddress(), entry.getValue().getNetmask());
 		}
 		
+		/* No more internal vlans, use broadcast connection instead /ib
 		if (node instanceof OrcaNodeGroup) {
 			OrcaNodeGroup ong = (OrcaNodeGroup)node;
 			ong.setInternalVlan(internalVlanState);
@@ -324,6 +329,7 @@ public class OrcaNodePropertyDialog extends ComponentDialog implements ActionLis
 				// reset internal IP just in case (may have been specified earlier and then removed)
 				ong.removeInternalIp();
 		}
+		*/
 		
 		// if node group, set node count
 		if (node instanceof OrcaNodeGroup) {
@@ -367,6 +373,7 @@ public class OrcaNodePropertyDialog extends ComponentDialog implements ActionLis
 		}
 		
 		// add internal field
+		/*
 		if (node instanceof OrcaNodeGroup) {
 			OrcaNodeGroup ong = (OrcaNodeGroup)node;
 			internalVlanState = ong.getInternalVlan();
@@ -458,7 +465,8 @@ public class OrcaNodePropertyDialog extends ComponentDialog implements ActionLis
 				internalVlanLabel.setVisible(internalVlanState);
 			}
 			ycoord++;
-			
+
+		
 			//if (nodeEdges.size() == 0) {
 				{
 					internalVlanIpLabel = new JLabel("Internal VLAN IP Address: ");
@@ -485,7 +493,8 @@ public class OrcaNodePropertyDialog extends ComponentDialog implements ActionLis
 			//} else 
 			//	// zero out internal address
 			//	internalIpf = null;
-		} 
+		}
+		*/ 
 			
 	}
 	

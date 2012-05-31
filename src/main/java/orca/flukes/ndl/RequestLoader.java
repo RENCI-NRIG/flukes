@@ -248,6 +248,7 @@ public class RequestLoader implements INdlRequestModelListener {
 			links.put(l.getURI(), ol);
 		} else {
 			// multi-point link or internal vlan of a node group
+			/* no more internal VLANs - use Broadcast links instead
 			if (interfaces.size() == 1) {
 				// node group w/ internal vlan
 				OrcaNode ifNode = interfaceToNode.get(it.next().getURI());
@@ -258,6 +259,7 @@ public class RequestLoader implements INdlRequestModelListener {
 					ong.setInternalVlanLabel(NdlCommons.getLayerLabelLiteral(l));
 				}
 			}
+			*/
 		}
 	}
 
@@ -299,11 +301,13 @@ public class RequestLoader implements INdlRequestModelListener {
 			}
 			else {
 				// this could be a disconnected node group
+				/* no more internal vlans
 				if (on instanceof OrcaNodeGroup) {
 					OrcaNodeGroup ong = (OrcaNodeGroup)on;
 					if (ong.getInternalVlan())
 						ong.setInternalIp(ip, "" + RequestSaver.netmaskStringToInt(mask));
 				}
+				*/
 			}
 				
 		}

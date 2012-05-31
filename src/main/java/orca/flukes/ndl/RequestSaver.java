@@ -200,11 +200,13 @@ public class RequestSaver {
 		Individual nodeI = ngen.getRequestIndividual(ong.getName());
 		ngen.addInterfaceToIndividual(intI, nodeI);
 		
+		/* no more internal vlans
 		if (ong.getInternalVlanBw() > 0) 
 			ngen.addBandwidthToConnection(netI, ong.getInternalVlanBw());
 		
 		if (ong.getInternalVlanLabel() != null)
 			ngen.addLabelToIndividual(netI, ong.getInternalVlanLabel());
+		*/
 		
 		if (ong.getInternalIp() != null) {
 			Individual ipInd = ngen.addUniqueIPToIndividual(ong.getInternalIp(), "private-vlan-intf-" + ong.getName(), intI);
@@ -387,8 +389,10 @@ public class RequestSaver {
 								ni = ngen.declareServerCloud(ong.getName(), ong.getSplittable());
 							else
 								ni = ngen.declareServerCloud(ong.getName());
+							/* no more internal vlans
 							if (ong.getInternalVlan())
 								processNodeGroupInternalVlan(reservation, ong);
+							*/
 						}
 						else {
 							ni = ngen.declareComputeElement(n.getName());

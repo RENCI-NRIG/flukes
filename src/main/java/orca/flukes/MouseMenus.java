@@ -182,7 +182,7 @@ public class MouseMenus {
         }
         
         public  EdgePropItem(final JFrame frame) {            
-            super("Edit Link Properties...");
+            super("Edit Properties...");
             this.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
                 	if (!edge.linkToBroadcast()) {
@@ -211,7 +211,7 @@ public class MouseMenus {
     	}
 
     	public  EdgeViewerItem(final JFrame frame) {            
-    		super("View Link Properties...");
+    		super("View Properties...");
     		this.addActionListener(new ActionListener() {
     			public void actionPerformed(ActionEvent e) {
     				OrcaLinkPropertyViewer dialog = new OrcaLinkPropertyViewer(frame, edge);
@@ -357,7 +357,7 @@ public class MouseMenus {
         Point2D point;
         
         public  NodePropItem(final JFrame frame) {            
-            super("Edit Node Properties...");
+            super("Edit Properties...");
             this.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
                 	if (node instanceof OrcaCrossconnect) {
@@ -390,7 +390,7 @@ public class MouseMenus {
         Point2D point;
         
         public  NodeViewItem(final JFrame frame) {
-            super("View Node Properties...");
+            super("View Properties...");
             this.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
                     OrcaNodePropertyViewer dialog = new OrcaNodePropertyViewer(frame, node);
