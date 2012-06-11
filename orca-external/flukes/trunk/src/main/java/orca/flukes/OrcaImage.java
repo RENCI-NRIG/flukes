@@ -50,4 +50,8 @@ public class OrcaImage {
 	public String getShortName() {
 		return shortName;
 	}
+	
+	public void substituteName(String newName) {
+		shortName = newName;
+	}
 }

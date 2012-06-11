@@ -62,6 +62,7 @@ import edu.uci.ics.jung.visualization.picking.PickedState;
  *
  */
 public class GUIRequestState extends GUICommonState implements IDeleteEdgeCallBack<OrcaLink>, IDeleteNodeCallBack<OrcaNode> {
+	private static final String IMAGE_NAME_SUFFIX = "-req";
 	public static final String NO_GLOBAL_IMAGE = "None";
 	public static final String NO_DOMAIN_SELECT = "System select";
 	public static final String NODE_TYPE_SITE_DEFAULT = "Site default";
@@ -182,13 +183,38 @@ public class GUIRequestState extends GUICommonState implements IDeleteEdgeCallBa
 		return definedImages.get(nm);
 	}
 	
-	public void addImage(OrcaImage newIm, OrcaImage oldIm) {
+	public String addImage(OrcaImage newIm, OrcaImage oldIm) {
 		if (newIm == null)
-			return;
+			return null;
+		
+		String retImageName = newIm.getShortName();
+		
 		// if old image is not null, then we are replacing, so delete first
-		if (oldIm != null)
+		if (oldIm != null) {
 			definedImages.remove(oldIm.getShortName());
-		definedImages.put(newIm.getShortName(), newIm);
+		} else {
+			// if old image is null, we should check if there is already an image
+			// with that name and if its URL and hash match. If not ???
+			oldIm = definedImages.get(newIm.getShortName());
+			if (oldIm != null) {
+				if (!oldIm.getHash().equals(newIm.getHash()) || !oldIm.getUrl().equals(newIm.getUrl())) {
+					// try to find a new name, substitute it for the old one
+					if (definedImages.containsKey(retImageName + IMAGE_NAME_SUFFIX)) {
+						int i = 1;
+						for(;definedImages.containsKey(retImageName + IMAGE_NAME_SUFFIX + i);i++);
+						retImageName += IMAGE_NAME_SUFFIX + i;
+					} else
+						retImageName += IMAGE_NAME_SUFFIX;
+					newIm.substituteName(retImageName);
+					definedImages.put(retImageName, newIm);
+				} else {
+					// nothing to do - same image
+				}
+			} 
+		}
+		
+		definedImages.put(retImageName, newIm);
+		return retImageName;
 	}
 	
 	/**

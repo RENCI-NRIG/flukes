@@ -933,7 +933,7 @@ public class GUI implements ComponentListener {
 		ORCA_XMLRPC_CONTROLLER("orca.xmlrpc.url", "https://some.hostname.org:11443/orca/xmlrpc", 
 			"Comma-separated list of URLs of the ORCA XMLRPC controllers where you can submit slice requests"),
 		IMAGE_NAME("image.name", "Debian-6-2G-zfilesystem", 
-			"Name of a known image, you can add more images by adding image1.name, image2.name etc."),
+			"Name of a known image, you can add more images by adding image1.name, image2.name etc. To see defined images click on 'Client Images' button."),
 		IMAGE_URL("image.url", "http://geni-images.renci.org/images/standard/debian/debian-squeeze-amd64-neuca-2g.zfilesystem.sparse.xml", 
 			"URL of a known image description file, you can add more images by adding image1.url, image2.url etc."),
 		IMAGE_HASH("image.hash", "6a8a8466aef43774bf2e309af47ce876ba793f36", 
