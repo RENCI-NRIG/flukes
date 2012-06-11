@@ -44,7 +44,6 @@ import orca.flukes.OrcaNodeGroup;
 import orca.flukes.OrcaReservationTerm;
 import orca.ndl.INdlRequestModelListener;
 import orca.ndl.NdlCommons;
-import orca.ndl.NdlException;
 import orca.ndl.NdlRequestParser;
 
 import org.apache.commons.lang.StringUtils;
@@ -115,9 +114,8 @@ public class RequestLoader implements INdlRequestModelListener {
 				String imageHash = NdlCommons.getIndividualsImageHash(i);
 				if ((imageURL != null) && (imageHash != null)) {
 					try {
-						GUIRequestState.getInstance().addImage(new OrcaImage(di.getLocalName(), new URL(imageURL), imageHash), null);
 						// assign image to reservation
-						reservationDiskImage = di.getLocalName();
+						reservationDiskImage = GUIRequestState.getInstance().addImage(new OrcaImage(di.getLocalName(), new URL(imageURL), imageHash), null);
 					} catch (Exception e) {
 						// FIXME: ?
 						;
@@ -191,9 +189,9 @@ public class RequestLoader implements INdlRequestModelListener {
 			try {
 				String imageURL = NdlCommons.getIndividualsImageURL(ce);
 				String imageHash = NdlCommons.getIndividualsImageHash(ce);
-				GUIRequestState.getInstance().addImage(new OrcaImage(di.getLocalName(), 
+				String imName = GUIRequestState.getInstance().addImage(new OrcaImage(di.getLocalName(), 
 						new URL(imageURL), imageHash), null);
-				newNode.setImage(di.getLocalName());
+				newNode.setImage(imName);
 			} catch (Exception e) {
 				// FIXME: ?
 				;
