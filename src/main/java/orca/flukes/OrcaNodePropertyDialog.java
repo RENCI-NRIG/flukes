@@ -41,6 +41,8 @@ import javax.swing.JList;
 import javax.swing.JScrollPane;
 import javax.swing.ListSelectionModel;
 import javax.swing.ScrollPaneConstants;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 
 import orca.flukes.ndl.RequestSaver;
 import orca.flukes.ui.IpAddrField;
@@ -56,7 +58,7 @@ import com.hyperrealm.kiwi.ui.dialog.ComponentDialog;
 import com.hyperrealm.kiwi.ui.dialog.KMessageDialog;
 
 @SuppressWarnings("serial")
-public class OrcaNodePropertyDialog extends ComponentDialog implements ActionListener, TextAreaDialog.ITextSetter {
+public class OrcaNodePropertyDialog extends ComponentDialog implements ActionListener, TextAreaDialog.ITextSetter, ListSelectionListener {
 	private JFrame parent;
 	private OrcaNode node;
 	private KPanel kp;
@@ -106,6 +108,8 @@ public class OrcaNodePropertyDialog extends ComponentDialog implements ActionLis
 		
 		typeList = addSelectList(kp, gbl_contentPanel, ycoord++, 
 				GUIRequestState.getInstance().getAvailableNodeTypes(), "Select node type: ", false, 3);
+		typeList.addListSelectionListener(this);
+		
 		imageList = addSelectList(kp, gbl_contentPanel, ycoord++, 
 				GUIRequestState.getInstance().getImageShortNamesWithNone(), "Select image: ", false, 3);
 		
@@ -682,4 +686,19 @@ public class OrcaNodePropertyDialog extends ComponentDialog implements ActionLis
 			node.setPostBootScript(null);
 		node.setPostBootScript(RequestSaver.sanitizePostBootScript(t));
 	}
+	
+	// list selection listener interface
+	public void valueChanged(ListSelectionEvent e) {
+		if (e.getValueIsAdjusting() == true)
+			return;
+		JList l = (JList)e.getSource();
+		if (l == typeList) {
+			if (GUIRequestState.getInstance().getAvailableNodeTypes()[typeList.getSelectedIndex()].equals(RequestSaver.BAREMETAL)) {
+				imageList.setVisible(false);
+				imageList.setSelectedIndex(0);
+			}
+			else
+				imageList.setVisible(true);
+		}
+	} 
 }
