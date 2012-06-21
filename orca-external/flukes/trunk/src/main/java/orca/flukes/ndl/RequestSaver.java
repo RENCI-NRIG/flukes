@@ -58,6 +58,8 @@ import edu.uci.ics.jung.graph.util.Pair;
 
 public class RequestSaver {
 	private static final String EUCALYPTUS_NS = "eucalyptus";
+	private static final String EXOGENI_NS = "exogeni";
+	public static final String BAREMETAL = "ExoGENI Bare-metal";
 	public static final String DOT_FORMAT = "DOT";
 	public static final String N3_FORMAT = "N3";
 	public static final String RDF_XML_FORMAT = "RDF-XML";
@@ -98,6 +100,7 @@ public class RequestSaver {
 	public static final Map<String, Pair<String>> nodeTypes;
 	static {
 		Map<String, Pair<String>> nt = new HashMap<String, Pair<String>>();
+		nt.put(BAREMETAL, new Pair<String>(EXOGENI_NS, "ExoGENI-M4"));
 		nt.put("Euca m1.small", new Pair<String>(EUCALYPTUS_NS, "EucaM1Small"));
 		nt.put("Euca c1.medium", new Pair<String>(EUCALYPTUS_NS, "EucaC1Medium"));
 		nt.put("Euca m1.large", new Pair<String>(EUCALYPTUS_NS, "EucaM1Large"));
@@ -396,7 +399,7 @@ public class RequestSaver {
 						}
 						else {
 							ni = ngen.declareComputeElement(n.getName());
-							ngen.addVMDomainProperty(ni);
+							//ngen.addVMDomainProperty(ni);
 						}
 
 						ngen.addResourceToReservation(reservation, ni);
@@ -405,7 +408,7 @@ public class RequestSaver {
 						if (n instanceof OrcaNodeGroup) {
 							OrcaNodeGroup ong = (OrcaNodeGroup)n;
 							ngen.addNumCEsToCluster(ong.getNodeCount(), ni);
-							ngen.addVMDomainProperty(ni);
+							//ngen.addVMDomainProperty(ni);
 						}
 
 						// if no global image is set and a local image is set, add it to node
@@ -425,6 +428,11 @@ public class RequestSaver {
 						}
 
 						// node type
+						if (n.getNodeType().equals(BAREMETAL))
+							ngen.addBareMetalDomainProperty(ni);
+						else
+							ngen.addVMDomainProperty(ni);
+						
 						if ((n.getNodeType() != null) && (nodeTypes.get(n.getNodeType()) != null)) {
 							Pair<String> nt = nodeTypes.get(n.getNodeType());
 							ngen.addNodeTypeToCE(nt.getFirst(), nt.getSecond(), ni);
