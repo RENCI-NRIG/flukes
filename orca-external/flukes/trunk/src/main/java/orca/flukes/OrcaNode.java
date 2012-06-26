@@ -45,7 +45,7 @@ import edu.uci.ics.jung.visualization.renderers.Checkmark;
 
 public class OrcaNode {
 
-	private static final String NOT_SPECIFIED = "Not specified";
+	protected static final String NOT_SPECIFIED = "Not specified";
 	public static final String NODE_NETMASK="32";
 	protected String name;
 	protected String image = null;

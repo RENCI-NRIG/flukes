@@ -89,6 +89,7 @@ public class OrcaCrossconnect extends OrcaNode {
 		String viewText = "";
 		viewText += "Node name: " + name;
 		viewText += "\nNode reservation state: " + state;
+		viewText += "\nReservation notice: " + (resNotice != null ? resNotice : NOT_SPECIFIED);
 		if (label != null)
 			viewText += "\nLabel/Tag: " + label;
 		if (interfaces.size() > 0) {

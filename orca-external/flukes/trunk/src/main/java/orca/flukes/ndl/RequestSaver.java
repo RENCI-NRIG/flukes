@@ -428,7 +428,7 @@ public class RequestSaver {
 						}
 
 						// node type
-						if (n.getNodeType().equals(BAREMETAL))
+						if (BAREMETAL.equals(n.getNodeType()))
 							ngen.addBareMetalDomainProperty(ni);
 						else
 							ngen.addVMDomainProperty(ni);
