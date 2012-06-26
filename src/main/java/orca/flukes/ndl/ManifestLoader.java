@@ -192,6 +192,7 @@ public class ManifestLoader implements INdlManifestModelListener {
 			// create a crossconnect then use interfaceToNode mapping to create links to it
 			OrcaCrossconnect ml = new OrcaCrossconnect(getTrueName(l));
 			ml.setLabel(label);
+			ml.setReservationNotice(NdlCommons.getResourceReservationNotice(l));
 			
 			nodes.put(getTrueName(l), ml);
 			

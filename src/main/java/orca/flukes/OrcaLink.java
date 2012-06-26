@@ -148,6 +148,10 @@ public class OrcaLink {
     public boolean linkToBroadcast() {
     	// if it is a link to broadcastlink, no editable properties
     	Pair<OrcaNode> pn = GUIRequestState.getInstance().getGraph().getEndpoints(this);
+    	
+    	if (pn == null)
+    		return false;
+    	
     	if ((pn.getFirst() instanceof OrcaCrossconnect) || 
     			(pn.getSecond() instanceof OrcaCrossconnect))
     		return true;
