@@ -86,6 +86,7 @@ public class ManifestLoader implements INdlManifestModelListener {
 			NdlManifestParser nrp = new NdlManifestParser(sb.toString(), this);
 			nrp.processManifest();
 			GUIManifestState.getInstance().setManifestString(sb.toString());
+			GUIManifestState.getInstance().launchResourceStateViewer();
 			
 		} catch (Exception e) {
 			ExceptionDialog ed = new ExceptionDialog(GUI.getInstance().getFrame(), "Exception");
@@ -101,7 +102,9 @@ public class ManifestLoader implements INdlManifestModelListener {
 	public boolean loadString(String s) {
 		try {
 			NdlManifestParser nrp = new NdlManifestParser(s, this);
-			nrp.processManifest();			
+			nrp.processManifest();	
+			GUIManifestState.getInstance().launchResourceStateViewer();
+			
 		} catch (Exception e) {
 			ExceptionDialog ed = new ExceptionDialog(GUI.getInstance().getFrame(), "Exception");
 			ed.setLocationRelativeTo(GUI.getInstance().getFrame());

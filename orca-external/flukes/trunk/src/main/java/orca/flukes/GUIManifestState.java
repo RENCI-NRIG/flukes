@@ -26,7 +26,9 @@ import java.awt.BorderLayout;
 import java.awt.Container;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import orca.flukes.GUI.GuiTabs;
@@ -35,7 +37,6 @@ import orca.flukes.ui.TextAreaDialog;
 import orca.flukes.xmlrpc.OrcaSMXMLRPCProxy;
 
 import com.hyperrealm.kiwi.ui.KTextArea;
-import com.hyperrealm.kiwi.ui.KTextField;
 import com.hyperrealm.kiwi.ui.dialog.ExceptionDialog;
 import com.hyperrealm.kiwi.ui.dialog.KMessageDialog;
 import com.hyperrealm.kiwi.ui.dialog.KQuestionDialog;
@@ -73,7 +74,7 @@ public class GUIManifestState extends GUICommonState {
 		for (OrcaNode n: nodes)
 			g.removeVertex(n);
 	}
-	
+
 	public class ResourceButtonListener implements ActionListener {
 		public void actionPerformed(ActionEvent e) {
 			assert(sliceIdField != null);
@@ -155,6 +156,18 @@ public class GUIManifestState extends GUICommonState {
 
 					}
 		}
+	}
+	
+	public void launchResourceStateViewer() {
+		// get a list of nodes and links
+		List<OrcaResource> resources = new ArrayList<OrcaResource>();
+		
+		resources.addAll(g.getVertices());
+		resources.addAll(g.getEdges());
+		
+		OrcaResourceStateViewer viewer = new OrcaResourceStateViewer(GUI.getInstance().getFrame(), resources);
+		viewer.pack();
+		viewer.setVisible(true);
 	}
 	
 	ResourceButtonListener rbl = new ResourceButtonListener();

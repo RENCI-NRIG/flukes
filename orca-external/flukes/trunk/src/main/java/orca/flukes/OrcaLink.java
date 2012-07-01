@@ -26,7 +26,7 @@ import org.apache.commons.collections15.Factory;
 
 import edu.uci.ics.jung.graph.util.Pair;
 
-public class OrcaLink {
+public class OrcaLink implements OrcaResource {
     protected long bandwidth;
     protected long latency;
     protected String label = null;
@@ -85,10 +85,18 @@ public class OrcaLink {
 		state = s;
 	}
 	
+	public String getState() {
+		return state;
+	}
+	
 	public void setReservationNotice(String n) {
 		resNotice = n;
 	}
     
+	public String getReservationNotice() {
+		return resNotice;
+	}
+	
     @Override
     public String toString() {
         return name;

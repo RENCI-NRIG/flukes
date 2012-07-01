@@ -43,7 +43,7 @@ import edu.uci.ics.jung.graph.util.Pair;
 import edu.uci.ics.jung.visualization.LayeredIcon;
 import edu.uci.ics.jung.visualization.renderers.Checkmark;
 
-public class OrcaNode {
+public class OrcaNode implements OrcaResource {
 
 	protected static final String NOT_SPECIFIED = "Not specified";
 	public static final String NODE_NETMASK="32";
@@ -308,8 +308,16 @@ public class OrcaNode {
 		state = s;
 	}
 	
+	public String getState() {
+		return state;
+	}
+	
 	public void setReservationNotice(String n) {
 		resNotice = n;
+	}
+	
+	public String getReservationNotice() {
+		return resNotice;
 	}
 	
 	public String getPortsList() {
