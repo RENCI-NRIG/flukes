@@ -56,6 +56,8 @@ public class OrcaNode implements OrcaResource {
 	protected List<String> managementAccess = null;
 	
 	protected final LayeredIcon icon;
+	
+	protected boolean isResource=false;
 
 	// specific node type 
 	protected String nodeType = null;
@@ -98,6 +100,15 @@ public class OrcaNode implements OrcaResource {
 			return node.icon;
 		}
 	}
+	
+	public boolean isResource() {
+		return isResource;
+	}
+	
+	public void setIsResource() {
+		isResource = true;
+	}
+	
 	
 	// Icon shape transformer for GUI (to make sure icon clickable shape roughly matches the icon)
 	public static class OrcaNodeIconShapeTransformer implements Transformer<OrcaNode, Shape> {

@@ -6,6 +6,8 @@ package orca.flukes;
  *
  */
 public interface OrcaResource {
+	public boolean isResource();
+	public void setIsResource();
 	public String getName();
 	public void setName(String s);
 	public String getState();

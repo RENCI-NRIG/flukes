@@ -36,7 +36,16 @@ public class OrcaLink implements OrcaResource {
 	protected String state = null;
 	// reservation notice
 	protected String resNotice = null;
+	protected boolean isResource = false;
+	
+	public boolean isResource() {
+		return isResource;
+	}
     
+	public void setIsResource() {
+		isResource = true;
+	}
+	
     public OrcaLink(String name) {
         this.name = name;
     }
