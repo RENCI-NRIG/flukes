@@ -1,6 +1,7 @@
 package orca.flukes.ui;
 
 import java.awt.Dimension;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.BoxLayout;
@@ -8,10 +9,10 @@ import javax.swing.JTable;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.AbstractTableModel;
-import javax.swing.table.TableColumn;
 
 import orca.flukes.OrcaResource;
 
+import com.hp.hpl.jena.rdf.model.Resource;
 import com.hyperrealm.kiwi.ui.KPanel;
 import com.hyperrealm.kiwi.ui.KScrollPane;
 import com.hyperrealm.kiwi.ui.KTextArea;
@@ -54,7 +55,11 @@ public class TableSelection extends KPanel {
         List<OrcaResource> resources;
         
         ResourceTableModel(List<OrcaResource> l) {
-        	resources = l;
+        	resources = new ArrayList<OrcaResource>();
+        	for(OrcaResource res: l) {
+        		if (res.isResource())
+        			resources.add(res);
+        	}
         }
         
         public int getColumnCount() {
@@ -62,7 +67,7 @@ public class TableSelection extends KPanel {
         }
  
         public int getRowCount() {
-            return resources.size();
+        	return resources.size();
         }
  
         @Override

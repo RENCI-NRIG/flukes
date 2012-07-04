@@ -156,6 +156,7 @@ public class ManifestLoader implements INdlManifestModelListener {
 		if (interfaces.size() == 2) {
 			GUI.logger().debug("  Adding p-to-p link" + lcount); 
 			OrcaLink ol = new OrcaLink("Link " + lcount++);
+
 			// point-to-point link
 			// the ends
 			Resource if1 = it.next(), if2 = it.next();
@@ -186,6 +187,9 @@ public class ManifestLoader implements INdlManifestModelListener {
 			// state
 			ol.setState(NdlCommons.getResourceStateAsString(l));
 			
+			if (ol.getState() != null)
+				ol.setIsResource();
+			
 			// reservation notice
 			ol.setReservationNotice(NdlCommons.getResourceReservationNotice(l));
 			links.put(getTrueName(l), ol);
@@ -194,8 +198,13 @@ public class ManifestLoader implements INdlManifestModelListener {
 			// multi-point link
 			// create a crossconnect then use interfaceToNode mapping to create links to it
 			OrcaCrossconnect ml = new OrcaCrossconnect(getTrueName(l));
+
 			ml.setLabel(label);
 			ml.setReservationNotice(NdlCommons.getResourceReservationNotice(l));
+			ml.setState(NdlCommons.getResourceStateAsString(l));
+			
+			if (ml.getState() != null)
+				ml.setIsResource();
 			
 			nodes.put(getTrueName(l), ml);
 			
@@ -419,6 +428,9 @@ public class ManifestLoader implements INdlManifestModelListener {
 		
 		// state
 		on.setState(NdlCommons.getResourceStateAsString(nr));
+		
+		if (on.getState() != null)
+			on.setIsResource();
 		
 		// reservation notice
 		on.setReservationNotice(NdlCommons.getResourceReservationNotice(nr));
