@@ -92,6 +92,7 @@ public class RequestSaver {
 		dm.put("NERSC (not a GENI resource)", "nerscvmsite.rdf#nerscvmsite");
 		dm.put("UMass Amherst (vlan 533)", "mass.rdf#mass");
 		dm.put("RENCI OSG (not a GENI resource)", "osgvmsite.rdf#osgvmsite");
+		dm.put("NICTA", "nictavmsite.rdf#nictavmsite");
 
 		domainMap = Collections.unmodifiableMap(dm);
 	}
@@ -313,6 +314,17 @@ public class RequestSaver {
 		}
 	}
 	
+	private void setNodeTypeOnInstance(String type, Individual ni) throws NdlException {
+		if (BAREMETAL.equals(type))
+			ngen.addBareMetalDomainProperty(ni);
+		else
+			ngen.addVMDomainProperty(ni);
+		if (nodeTypes.get(type) != null) {
+			Pair<String> nt = nodeTypes.get(type);
+			ngen.addNodeTypeToCE(nt.getFirst(), nt.getSecond(), ni);
+		}
+	}
+	
 	/**
 	 * Save graph using NDL
 	 * @param f
@@ -356,20 +368,7 @@ public class RequestSaver {
 				}
 				
 				// decide whether we have a global image
-				boolean globalImage = false, globalDomain = false;
-				
-				// is image specified in the reservation?
-				if (GUIRequestState.getInstance().getVMImageInReservation() != null) {
-					// there is a global image (maybe)
-					OrcaImage im = GUIRequestState.getInstance().getImageByName(GUIRequestState.getInstance().getVMImageInReservation());
-					if (im != null) {
-						// definitely an global image - attach it to the reservation
-						globalImage = true;
-						// TODO: check for zero length
-						Individual imI = ngen.declareDiskImage(im.getUrl().toString(), im.getHash(), im.getShortName());
-						ngen.addDiskImageToIndividual(imI, reservation);
-					}
-				}
+				boolean globalDomain = false;
 				
 				// is domain specified in the reservation?
 				if (GUIRequestState.getInstance().getDomainInReservation() != null) {
@@ -392,10 +391,6 @@ public class RequestSaver {
 								ni = ngen.declareServerCloud(ong.getName(), ong.getSplittable());
 							else
 								ni = ngen.declareServerCloud(ong.getName());
-							/* no more internal vlans
-							if (ong.getInternalVlan())
-								processNodeGroupInternalVlan(reservation, ong);
-							*/
 						}
 						else {
 							ni = ngen.declareComputeElement(n.getName());
@@ -411,8 +406,8 @@ public class RequestSaver {
 							//ngen.addVMDomainProperty(ni);
 						}
 
-						// if no global image is set and a local image is set, add it to node
-						if (!globalImage && (n.getImage() != null)) {
+						// check if node has its own image
+						if (n.getImage() != null) {
 							// check if image is set in this node
 							OrcaImage im = GUIRequestState.getInstance().getImageByName(n.getImage());
 							if (im != null) {
@@ -427,16 +422,8 @@ public class RequestSaver {
 							ngen.addNodeToDomain(domI, ni);
 						}
 
-						// node type
-						if (BAREMETAL.equals(n.getNodeType()))
-							ngen.addBareMetalDomainProperty(ni);
-						else
-							ngen.addVMDomainProperty(ni);
-						
-						if ((n.getNodeType() != null) && (nodeTypes.get(n.getNodeType()) != null)) {
-							Pair<String> nt = nodeTypes.get(n.getNodeType());
-							ngen.addNodeTypeToCE(nt.getFirst(), nt.getSecond(), ni);
-						}
+						// node type 
+						setNodeTypeOnInstance(n.getNodeType(), ni);
 
 						// open ports
 						if (n.getPortsList() != null) {

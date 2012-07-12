@@ -89,7 +89,6 @@ public class GUIRequestState extends GUICommonState implements IDeleteEdgeCallBa
 	
 	// Reservation details
 	private OrcaReservationTerm term;
-	private String resImageName = null;
 	private String resDomainName = null;
 	
 	private static void initialize() {
@@ -122,7 +121,6 @@ public class GUIRequestState extends GUICommonState implements IDeleteEdgeCallBa
 		Set<OrcaNode> nodes = new HashSet<OrcaNode>(g.getVertices());
 		for (OrcaNode n: nodes)
 			g.removeVertex(n);
-		resImageName = null;
 		resDomainName = null;
 		term = new OrcaReservationTerm();
 		addingNewImage = false;
@@ -143,24 +141,10 @@ public class GUIRequestState extends GUICommonState implements IDeleteEdgeCallBa
 		term = t;
 	}
 	
-	public void setVMImageInReservation(String im) {
-		// if the value is changing
-		// set it for all nodes
-		if ((resImageName == null) && (im == null))
-			return;
-		if ((resImageName != null) && (resImageName.equals(im)))
-			return;
-		// reset all node images
-		for(OrcaNode n: g.getVertices()) {
-			n.setImage(null);
-		}
-		resImageName = im;
-	}
-	
-	public String getVMImageInReservation() {
-		return resImageName;
-	}
-	
+	/**
+	 * Change domain reservation. Reset node domain reservations to system select.
+	 * @param d
+	 */
 	public void setDomainInReservation(String d) {
 		// if the value is changing
 		// set it for all nodes
@@ -173,6 +157,13 @@ public class GUIRequestState extends GUICommonState implements IDeleteEdgeCallBa
 			n.setDomain(null);
 		}
 		resDomainName = d;
+	}
+	
+	/**
+	 * Simply set domain reservation to null
+	 */
+	public void resetDomainInReservation() {
+		resDomainName = null;
 	}
 	
 	public String getDomainInReservation() {
@@ -438,8 +429,7 @@ public class GUIRequestState extends GUICommonState implements IDeleteEdgeCallBa
 				icd.setVisible(true);
 			} else if (e.getActionCommand().equals("reservation")) {
 				rdd = new ReservationDetailsDialog(GUI.getInstance().getFrame());
-				rdd.setFields(getVMImageInReservation(), 
-						getDomainInReservation(),
+				rdd.setFields(getDomainInReservation(),
 						getTerm(), ofNeededVersion);
 				rdd.pack();
 				rdd.setVisible(true);

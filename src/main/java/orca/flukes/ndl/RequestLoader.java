@@ -59,7 +59,7 @@ import edu.uci.ics.jung.graph.util.Pair;
 public class RequestLoader implements INdlRequestModelListener {
 
 	private OrcaReservationTerm term = new OrcaReservationTerm();
-	private String reservationDiskImage = null, reservationDomain = null;
+	private String reservationDomain = null;
 	private Map<String, OrcaNode> nodes = new HashMap<String, OrcaNode>();
 	private Map<String, Object> links = new HashMap<String, Object>();
 	private Map<String, OrcaNode> interfaceToNode = new HashMap<String, OrcaNode>();
@@ -108,20 +108,6 @@ public class RequestLoader implements INdlRequestModelListener {
 		if (i != null) {
 			reservationDomain = RequestSaver.reverseLookupDomain(NdlCommons.getDomain(i));
 			GUIRequestState.getInstance().setOFVersion(NdlCommons.getOpenFlowVersion(i));
-			Resource di = NdlCommons.getDiskImage(i);
-			if (di != null) {
-				String imageURL = NdlCommons.getIndividualsImageURL(i);
-				String imageHash = NdlCommons.getIndividualsImageHash(i);
-				if ((imageURL != null) && (imageHash != null)) {
-					try {
-						// assign image to reservation
-						reservationDiskImage = GUIRequestState.getInstance().addImage(new OrcaImage(di.getLocalName(), new URL(imageURL), imageHash), null);
-					} catch (Exception e) {
-						// FIXME: ?
-						;
-					}
-				}
-			}
 		}
 	}
 
@@ -342,7 +328,6 @@ public class RequestLoader implements INdlRequestModelListener {
 		// set term etc
 		GUIRequestState.getInstance().setTerm(term);
 		GUIRequestState.getInstance().setDomainInReservation(reservationDomain);
-		GUIRequestState.getInstance().setVMImageInReservation(reservationDiskImage);
 	}
 
 	public void ndlNodeDependencies(Resource ni, OntModel m, Set<Resource> dependencies) {
