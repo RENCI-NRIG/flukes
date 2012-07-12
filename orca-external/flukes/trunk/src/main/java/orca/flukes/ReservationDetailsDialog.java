@@ -52,7 +52,7 @@ public class ReservationDetailsDialog extends ComponentDialog {
 	private TimeField stf;
 	private DateChooserField sdcf;
 	private DurationField df;
-	private JList imageList, domainList;
+	private JList domainList;
 	private boolean isImmediate, openflowEnabled;
 	private KCheckBox immCb, ofCb;
 	private KTextField ofUserEmail;
@@ -93,10 +93,7 @@ public class ReservationDetailsDialog extends ComponentDialog {
 		ofCtrlUrl.setVisible(v);
 	}
 
-	public void setFields(String shortImageName, String domain, OrcaReservationTerm term, String ofVersion) {
-		
-		OrcaNodePropertyDialog.setListSelectedIndex(imageList, 
-				GUIRequestState.getInstance().getImageShortNamesWithNone(), shortImageName);
+	public void setFields(String domain, OrcaReservationTerm term, String ofVersion) {
 
 		OrcaNodePropertyDialog.setListSelectedIndex(domainList, 
 				GUIRequestState.getInstance().getAvailableDomains(), domain);
@@ -151,8 +148,7 @@ public class ReservationDetailsDialog extends ComponentDialog {
 //		gbl_contentPanel.rowWeights = new double[]{0.0, 1.0, 0.0, Double.MIN_VALUE};
 		kp.setLayout(gbl_contentPanel);
 		int y = 0;
-		imageList = OrcaNodePropertyDialog.addSelectList(kp, gbl_contentPanel, y++,
-				GUIRequestState.getInstance().getImageShortNamesWithNone(), "Select image: ", false, 3);
+
 		domainList = OrcaNodePropertyDialog.addSelectList(kp, gbl_contentPanel, y++, 
 				GUIRequestState.getInstance().getAvailableDomains(), "Select domain: ", false, 3);		
 
@@ -369,10 +365,6 @@ public class ReservationDetailsDialog extends ComponentDialog {
 		
 		// get duration
 		GUIRequestState.getInstance().getTerm().setDuration(df.getDays(), df.getHours(), df.getMinutes());
-		
-		// get the image short name
-		String curImName = GUIRequestState.getNodeImageProper(GUIRequestState.getInstance().getImageShortNamesWithNone()[imageList.getSelectedIndex()]);
-		GUIRequestState.getInstance().setVMImageInReservation(curImName);
 		
 		// get the domain for reservation
 		String domName = GUIRequestState.getNodeDomainProper(GUIRequestState.getInstance().getAvailableDomains()[domainList.getSelectedIndex()]);

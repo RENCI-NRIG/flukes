@@ -23,15 +23,11 @@
 package orca.flukes;
 
 import java.awt.Component;
-import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
-import java.awt.Insets;
 import java.util.Set;
 
 import javax.swing.JFrame;
-import javax.swing.JLabel;
 import javax.swing.JList;
-import javax.swing.ListSelectionModel;
 
 import com.hyperrealm.kiwi.ui.KPanel;
 import com.hyperrealm.kiwi.ui.dialog.ComponentDialog;
@@ -42,7 +38,7 @@ public class OrcaMultiNodePropertyDialog extends ComponentDialog {
 	private Set<OrcaNode> nodes = null;
 	private KPanel kp;
 	
-	private JList imageList, domainList;
+	private JList typeList, imageList, domainList;
 	
 	public OrcaMultiNodePropertyDialog(JFrame parent, Set<OrcaNode> ns) {
 		super(parent, "Shared Node Properties", true);
@@ -55,6 +51,8 @@ public class OrcaMultiNodePropertyDialog extends ComponentDialog {
 	@Override
 	public boolean accept() {
 		for (OrcaNode node: nodes) {
+			// type
+			node.setNodeType(GUIRequestState.getNodeImageProper(GUIRequestState.getInstance().getAvailableNodeTypes()[typeList.getSelectedIndex()]));
 			// image
 			node.setImage(GUIRequestState.getNodeImageProper(GUIRequestState.getInstance().getImageShortNamesWithNone()[imageList.getSelectedIndex()]));
 			// domain
@@ -72,11 +70,17 @@ public class OrcaMultiNodePropertyDialog extends ComponentDialog {
 		GridBagLayout gbl_contentPanel = new GridBagLayout();
 		kp.setLayout(gbl_contentPanel);
 		
-		imageList = OrcaNodePropertyDialog.addSelectList(kp, gbl_contentPanel, 0, 
+		int y = 0;
+		typeList = OrcaNodePropertyDialog.addSelectList(kp, gbl_contentPanel, y++, 
+				GUIRequestState.getInstance().getAvailableNodeTypes(), "Select node type: ", false, 3);
+		
+		imageList = OrcaNodePropertyDialog.addSelectList(kp, gbl_contentPanel, y++, 
 				GUIRequestState.getInstance().getImageShortNamesWithNone(), "Select image: ", false, 3);
-		domainList = OrcaNodePropertyDialog.addSelectList(kp, gbl_contentPanel, 1,
+		
+		domainList = OrcaNodePropertyDialog.addSelectList(kp, gbl_contentPanel, y++,
 				GUIRequestState.getInstance().getAvailableDomains(), "Select domain: ", false, 3);
 		
+		typeList.setSelectedIndex(0);
 		imageList.setSelectedIndex(0);
 		domainList.setSelectedIndex(0);
 		return kp;
