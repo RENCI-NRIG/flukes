@@ -14,7 +14,6 @@ package orca.flukes;
 import java.awt.Component;
 import java.awt.event.MouseEvent;
 import java.awt.geom.Point2D;
-import java.util.Set;
 
 import javax.swing.JPopupMenu;
 
@@ -35,7 +34,7 @@ public class PopupVertexEdgeMenuMousePlugin<V, E> extends AbstractPopupGraphMous
     
     /** Creates a new instance of PopupVertexEdgeMenuMousePlugin */
     public PopupVertexEdgeMenuMousePlugin() {
-        this(MouseEvent.BUTTON3_MASK);
+        super();
     }
     
     /**
@@ -53,7 +52,10 @@ public class PopupVertexEdgeMenuMousePlugin<V, E> extends AbstractPopupGraphMous
      */
     @Override
     protected void handlePopup(MouseEvent e) {
-    	if (e.getButton() != 3) 
+//    	if ((e.getButton() != MouseEvent.BUTTON3) &&
+//    					((e.getModifiersEx() & MouseEvent.CTRL_DOWN_MASK ) != MouseEvent.CTRL_DOWN_MASK))
+//    		return;
+    	if (e.getButton() != MouseEvent.BUTTON3)
     		return;
         final VisualizationViewer<V,E> vv =
                 (VisualizationViewer<V,E>)e.getSource();

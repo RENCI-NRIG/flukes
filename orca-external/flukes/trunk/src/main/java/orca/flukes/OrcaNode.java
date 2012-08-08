@@ -376,6 +376,10 @@ public class OrcaNode implements OrcaResource {
 		if (getManagementAccess().size() == 0) {
 			viewText += NOT_SPECIFIED + "\n";
 		}
+		viewText += "\n\nInterfaces: ";
+		for(Map.Entry<OrcaLink, Pair<String>> e: addresses.entrySet()) {
+			viewText += "\n\t" + e.getKey().getName() + ": " + e.getValue().getFirst() + "/" + e.getValue().getSecond();
+		}
 		return viewText;
 	}
 	

@@ -24,15 +24,13 @@ package orca.flukes;
 
 import java.util.Collection;
 
-import edu.uci.ics.jung.graph.SparseMultigraph;
-import edu.uci.ics.jung.graph.util.Pair;
-
 import orca.flukes.OrcaLink.ILinkCreator;
+import edu.uci.ics.jung.graph.SparseMultigraph;
 
 public class OrcaLinkCreator implements ILinkCreator {
     private static int linkCount = 0;
-    private long defaultBandwidth;
-    private long defaultLatency;
+    private long defaultBandwidth = 10000000;
+    private long defaultLatency = 50;
     private final SparseMultigraph<OrcaNode, OrcaLink> g;
     
 	public OrcaLinkCreator(SparseMultigraph<OrcaNode, OrcaLink> g) {

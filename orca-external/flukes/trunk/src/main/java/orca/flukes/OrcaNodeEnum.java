@@ -62,6 +62,7 @@ public enum OrcaNodeEnum {
 	}
 	
 	public void resetCount() {
+		
 		nodeCount = 0;
 	}
 }
