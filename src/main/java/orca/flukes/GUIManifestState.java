@@ -67,6 +67,7 @@ public class GUIManifestState extends GUICommonState {
 	@Override
 	public void clear() {
 		super.clear();
+		
 		// clear the graph, 
 		if (g == null)
 			return;
