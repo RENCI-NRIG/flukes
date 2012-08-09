@@ -11,6 +11,7 @@ import java.security.KeyStore;
 import java.security.PrivateKey;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
@@ -36,10 +37,14 @@ import org.apache.xmlrpc.client.XmlRpcCommonsTransportFactory;
 import com.hyperrealm.kiwi.ui.dialog.KMessageDialog;
 
 public class OrcaSMXMLRPCProxy {
+	private static final String RET_RET_FIELD = "ret";
+	private static final String MSG_RET_FIELD = "msg";
+	private static final String ERR_RET_FIELD = "err";
 	private static final String GET_VERSION = "orca.getVersion";
 	private static final String SLIVER_STATUS = "orca.sliceStatus";
 	private static final String CREATE_SLIVER = "orca.createSlice";
 	private static final String DELETE_SLIVER = "orca.deleteSlice";
+	private static final String LIST_SLICES = "orca.listActiveSlices";
 	private static final String SSH_DSA_PUBKEY_FILE = "id_dsa.pub";
 	private static final String SSH_RSA_PUBKEY_FILE = "id_rsa.pub";
 	
@@ -206,7 +211,10 @@ public class OrcaSMXMLRPCProxy {
 			client.setTransportFactory(f);
 			
 			// create sliver
-			result = (String)client.execute(CREATE_SLIVER, new Object[]{ sliceId, new Object[]{}, resReq, users});
+			Map<String, Object> rr = (Map<String, Object>)client.execute(CREATE_SLIVER, new Object[]{ sliceId, new Object[]{}, resReq, users});
+			if ((Boolean)rr.get(ERR_RET_FIELD))
+				throw new Exception("Unable to create slice: " + (String)rr.get(MSG_RET_FIELD));
+			result = (String)rr.get(RET_RET_FIELD);
         } catch (MalformedURLException e) {
         	throw new Exception("Please check the SM URL " + GUI.getInstance().getSelectedController());
         } catch (XmlRpcException e) {
@@ -265,7 +273,11 @@ public class OrcaSMXMLRPCProxy {
 			client.setTransportFactory(f);
 			
 			// delete sliver
-			res = (Boolean)client.execute(DELETE_SLIVER, new Object[]{ sliceId, new Object[]{}});
+			Map<String, Object> rr = (Map<String, Object>)client.execute(DELETE_SLIVER, new Object[]{ sliceId, new Object[]{}});
+			if ((Boolean)rr.get(ERR_RET_FIELD))
+				throw new Exception("Unable to delete slice: " + (String)rr.get(MSG_RET_FIELD));
+			else
+				res = (Boolean)rr.get(RET_RET_FIELD);
         } catch (MalformedURLException e) {
         	throw new Exception("Please check the SM URL " + GUI.getInstance().getSelectedController());
         } catch (XmlRpcException e) {
@@ -291,13 +303,54 @@ public class OrcaSMXMLRPCProxy {
 			client.setTransportFactory(f);
 			
 			// sliver status
-			result = (String)client.execute(SLIVER_STATUS, new Object[]{ sliceId, new Object[]{}});
+			Map<String, Object> rr = (Map<String, Object>)client.execute(SLIVER_STATUS, new Object[]{ sliceId, new Object[]{}});
+			if ((Boolean)rr.get(ERR_RET_FIELD))
+				throw new Exception("Unable to get sliver status: " + rr.get(MSG_RET_FIELD));
+			result = (String)rr.get(RET_RET_FIELD);
+			
         } catch (MalformedURLException e) {
         	throw new Exception("Please check the SM URL " + GUI.getInstance().getSelectedController());
         } catch (XmlRpcException e) {
         	throw new Exception("Unable to contact SM " + GUI.getInstance().getSelectedController() + " due to " + e);
         }
         
+        return result;
+	}
+	
+	public String[] listMySlices() throws Exception {
+		String[] result = null;
+		setSSLIdentity();
+		try {
+			XmlRpcClientConfigImpl config = new XmlRpcClientConfigImpl();
+			config.setServerURL(new URL(GUI.getInstance().getSelectedController()));
+			XmlRpcClient client = new XmlRpcClient();
+			client.setConfig(config);
+			
+            // set this transport factory for host-specific SSLContexts to work
+            XmlRpcCommonsTransportFactory f = new XmlRpcCommonsTransportFactory(client);
+			client.setTransportFactory(f);
+			
+			// sliver status
+			Map<String, Object> rr = (Map<String, Object>)client.execute(LIST_SLICES, new Object[]{ new Object[]{}});
+			if ((Boolean)rr.get(ERR_RET_FIELD))
+				throw new Exception ("Unable to list active slices: " + rr.get(MSG_RET_FIELD));
+			
+			Object[] ll = (Object[])rr.get(RET_RET_FIELD);
+			if (ll.length == 0)
+				return new String[0];
+			else {
+				System.out.println("The object is " + ((Object[])rr.get(RET_RET_FIELD))[0]);
+				System.out.println("Object class is " + ((Object[])rr.get(RET_RET_FIELD))[0].getClass().getCanonicalName());
+				result = new String[ll.length];
+				for (int i = 0; i < ll.length; i++)
+					result[i] = (String)((Object[])rr.get(RET_RET_FIELD))[i];
+			}
+			
+		} catch (MalformedURLException e) {
+        	throw new Exception("Please check the SM URL " + GUI.getInstance().getSelectedController());
+        } catch (XmlRpcException e) {
+        	throw new Exception("Unable to contact SM " + GUI.getInstance().getSelectedController() + " due to " + e);
+        }
         return result;
 	}
 	

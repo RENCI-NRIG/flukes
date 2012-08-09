@@ -804,6 +804,16 @@ public class GUI implements ComponentListener {
 			// add buttons to resource pane toolbar
 			ActionListener rbl = GUIManifestState.getInstance().getActionListener();
 			
+			JButton listSlicesButton = new JButton("List My Slices");
+			listSlicesButton.setToolTipText("Query ORCA for list of slices with active reservations");
+			listSlicesButton.setActionCommand("listSlices");
+			listSlicesButton.addActionListener(rbl);
+			listSlicesButton.setVerticalAlignment(SwingConstants.TOP);
+			toolBar.add(listSlicesButton);
+			
+			Component horizontalStrut = Box.createHorizontalStrut(10);
+			toolBar.add(horizontalStrut);
+			
 			JButton queryButton = new JButton("Query for Manifest");
 			queryButton.setToolTipText("Query ORCA for slice manifest");
 			queryButton.setActionCommand("manifest");
@@ -811,7 +821,7 @@ public class GUI implements ComponentListener {
 			queryButton.setVerticalAlignment(SwingConstants.TOP);
 			toolBar.add(queryButton);
 			
-			Component horizontalStrut = Box.createHorizontalStrut(10);
+			horizontalStrut = Box.createHorizontalStrut(10);
 			toolBar.add(horizontalStrut);
 			
 			KTextField ktf = new KTextField(20);

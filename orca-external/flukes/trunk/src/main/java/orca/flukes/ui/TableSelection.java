@@ -12,7 +12,6 @@ import javax.swing.table.AbstractTableModel;
 
 import orca.flukes.OrcaResource;
 
-import com.hp.hpl.jena.rdf.model.Resource;
 import com.hyperrealm.kiwi.ui.KPanel;
 import com.hyperrealm.kiwi.ui.KScrollPane;
 import com.hyperrealm.kiwi.ui.KTextArea;

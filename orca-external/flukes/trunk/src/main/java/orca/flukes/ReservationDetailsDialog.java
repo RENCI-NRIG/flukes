@@ -43,7 +43,6 @@ import com.hyperrealm.kiwi.ui.KCheckBox;
 import com.hyperrealm.kiwi.ui.KLabel;
 import com.hyperrealm.kiwi.ui.KPanel;
 import com.hyperrealm.kiwi.ui.KTextField;
-import com.hyperrealm.kiwi.ui.URLField;
 import com.hyperrealm.kiwi.ui.dialog.ComponentDialog;
 
 @SuppressWarnings("serial")
