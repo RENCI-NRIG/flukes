@@ -155,7 +155,20 @@ public class GUIManifestState extends GUICommonState {
 							ed.setVisible(true);
 						}
 
-					}
+					} else
+						if (e.getActionCommand().equals("listSlices")) {
+							try {
+								String[] slices = OrcaSMXMLRPCProxy.getInstance().listMySlices();
+								OrcaSliceList osl = new OrcaSliceList(GUI.getInstance().getFrame(), slices);
+								osl.pack();
+								osl.setVisible(true);
+							} catch (Exception ex) {
+								ExceptionDialog ed = new ExceptionDialog(GUI.getInstance().getFrame(), "Exception");
+								ed.setLocationRelativeTo(GUI.getInstance().getFrame());
+								ed.setException("Exception encountered while listing user slices: ", ex);
+								ed.setVisible(true);
+							}
+						}
 		}
 	}
 	
