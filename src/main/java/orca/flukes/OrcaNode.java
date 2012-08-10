@@ -58,6 +58,8 @@ public class OrcaNode implements OrcaResource {
 	protected final LayeredIcon icon;
 	
 	protected boolean isResource=false;
+	
+	protected Map<String, String> substrateInfo = new HashMap<String, String>();
 
 	// specific node type 
 	protected String nodeType = null;
@@ -380,6 +382,13 @@ public class OrcaNode implements OrcaResource {
 		for(Map.Entry<OrcaLink, Pair<String>> e: addresses.entrySet()) {
 			viewText += "\n\t" + e.getKey().getName() + ": " + e.getValue().getFirst() + "/" + e.getValue().getSecond();
 		}
+		
+		if (substrateInfo.size() > 0) {
+			viewText += "\n\nSubstrate information: ";
+			for(Map.Entry<String, String> e: substrateInfo.entrySet()) {
+				viewText += "\n\t" + e.getKey() + ": " + e.getValue();
+			}
+		}
 		return viewText;
 	}
 	
@@ -407,4 +416,15 @@ public class OrcaNode implements OrcaResource {
         }       
     }
 
+    /**
+     * Substrate info is just an associative array. 
+     * Describes some information about the substrate of the resource
+     */
+    public void setSubstrateInfo(String t, String o) {
+    	substrateInfo.put(t, o);
+    }
+    
+    public String getSubstrateInfo(String t) {
+    	return substrateInfo.get(t);
+    }
 }

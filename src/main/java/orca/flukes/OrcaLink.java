@@ -174,4 +174,12 @@ public class OrcaLink implements OrcaResource {
     		return true;
     	return false;
     }
+    
+    public void setSubstrateInfo(String t, String o) {
+    	// FIXME:
+    }
+    
+    public String getSubstrateInfo(String t) {
+    	return null;
+    }
 }

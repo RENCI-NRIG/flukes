@@ -27,12 +27,13 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStreamReader;
 import java.net.URL;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-
-import org.apache.commons.lang.StringUtils;
+import java.util.Set;
 
 import orca.flukes.GUI;
 import orca.flukes.GUIManifestState;
@@ -43,10 +44,16 @@ import orca.flukes.OrcaLink;
 import orca.flukes.OrcaNode;
 import orca.flukes.OrcaNodeGroup;
 import orca.ndl.INdlManifestModelListener;
+import orca.ndl.INdlRequestModelListener;
 import orca.ndl.NdlCommons;
+import orca.ndl.NdlException;
 import orca.ndl.NdlManifestParser;
+import orca.ndl.NdlRequestParser;
+
+import org.apache.commons.lang.StringUtils;
 
 import com.hp.hpl.jena.ontology.OntModel;
+import com.hp.hpl.jena.rdf.model.Literal;
 import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.rdf.model.StmtIterator;
 import com.hyperrealm.kiwi.ui.dialog.ExceptionDialog;
@@ -59,11 +66,14 @@ import edu.uci.ics.jung.graph.util.Pair;
  * @author ibaldin
  *
  */
-public class ManifestLoader implements INdlManifestModelListener {
+public class ManifestLoader implements INdlManifestModelListener, INdlRequestModelListener {
 
 	private Map<String, OrcaNode> interfaceToNode = new HashMap<String, OrcaNode>();
 	private Map<String, OrcaNode> nodes = new HashMap<String, OrcaNode>();
 	private Map<String, OrcaLink> links = new HashMap<String, OrcaLink>();
+	boolean requestPhase = true;
+	protected Date creationTime = null;
+	protected Date expirationTime = null;
 	
 	public boolean loadGraph(File f) {
 		BufferedReader bin = null; 
@@ -81,10 +91,21 @@ public class ManifestLoader implements INdlManifestModelListener {
 			
 			bin.close();
 
-			NdlManifestParser nrp = new NdlManifestParser(sb.toString(), this);
-			nrp.processManifest();
+			// parse as request
+			NdlRequestParser nrp = new NdlRequestParser(sb.toString(), this);
+			// something wrong with request model that is part of manifest
+			// some interfaces belong only to nodes, and no connections
+			// for now do less strict checking so we can get IP info
+			// 07/2012/ib
+			nrp.doLessStrictChecking();
+			nrp.processRequest();
+			
+			// parse as manifest
+			requestPhase = false;
+			NdlManifestParser nmp = new NdlManifestParser(sb.toString(), this);
+			nmp.processManifest();
 			GUIManifestState.getInstance().setManifestString(sb.toString());
-			GUIManifestState.getInstance().launchResourceStateViewer();
+			GUIManifestState.getInstance().launchResourceStateViewer(creationTime, expirationTime);
 			
 		} catch (Exception e) {
 			ExceptionDialog ed = new ExceptionDialog(GUI.getInstance().getFrame(), "Exception");
@@ -98,15 +119,27 @@ public class ManifestLoader implements INdlManifestModelListener {
 	}
 	
 	public boolean loadString(String s) {
+		
 		try {
-			NdlManifestParser nrp = new NdlManifestParser(s, this);
-			nrp.processManifest();	
-			GUIManifestState.getInstance().launchResourceStateViewer();
+			// parse as request
+			NdlRequestParser nrp = new NdlRequestParser(s, this);
+			// something wrong with request model that is part of manifest
+			// some interfaces belong only to nodes, and no connections
+			// for now do less strict checking so we can get IP info
+			// 07/2012/ib
+			nrp.doLessStrictChecking();
+			nrp.processRequest();
+			
+			// parse as manifest
+			requestPhase = false;
+			NdlManifestParser nmp = new NdlManifestParser(s, this);
+			nmp.processManifest();	
+			GUIManifestState.getInstance().launchResourceStateViewer(creationTime, expirationTime);
 			
 		} catch (Exception e) {
 			ExceptionDialog ed = new ExceptionDialog(GUI.getInstance().getFrame(), "Exception");
 			ed.setLocationRelativeTo(GUI.getInstance().getFrame());
-			ed.setException("Exception encountered while parsing manifest: ", e);
+			ed.setException("Exception encountered while parsing manifest(m): ", e);
 			ed.setVisible(true);
 			return false;
 		} 
@@ -143,6 +176,10 @@ public class ManifestLoader implements INdlManifestModelListener {
 			List<Resource> interfaces, Resource parent) {
 		//System.out.println("Found link connection " + l + " connecting " + interfaces);
 		assert(l != null);
+		
+		// ignore request items
+		if (requestPhase)
+			return;
 		
 		GUI.logger().debug("Link Connection: " + l);
 		
@@ -231,12 +268,22 @@ public class ManifestLoader implements INdlManifestModelListener {
 	@Override
 	public void ndlManifest(Resource i, OntModel m) {
 		// nothing to do in this case
+		
+		// ignore request items
+		if (requestPhase)
+			return;
+		
 		GUI.logger().debug("Manifest: " + i);
 	}
 
 	@Override
 	public void ndlInterface(Resource intf, OntModel om, Resource conn,
 			Resource node, String ip, String mask) {
+		
+		// ignore request items
+		if (requestPhase)
+			return;
+		
 		// System.out.println("Interface " + l + " has IP/netmask" + ip + "/" + mask);
 		GUI.logger().debug("Interface " + intf + " between " + node + " and " + conn + " has IP/netmask " + ip + "/" + mask);
 		
@@ -305,6 +352,11 @@ public class ManifestLoader implements INdlManifestModelListener {
 	@Override
 	public void ndlNetworkConnection(Resource l, OntModel om, long bandwidth,
 			long latency, List<Resource> interfaces) {
+		
+		// ignore request items
+		if (requestPhase)
+			return;
+		
 		// nothing to do in this case
 		GUI.logger().debug("Network Connection: " + l);
 
@@ -313,6 +365,10 @@ public class ManifestLoader implements INdlManifestModelListener {
 	@Override
 	public void ndlCrossConnect(Resource c, OntModel m, 
 			long bw, String label, List<Resource> interfaces, Resource parent) {
+		
+		// ignore request items
+		if (requestPhase)
+			return;
 		
 		if (c == null)
 			return;
@@ -343,6 +399,10 @@ public class ManifestLoader implements INdlManifestModelListener {
 	@Override
 	public void ndlNode(Resource ce, OntModel om, Resource ceClass,
 			List<Resource> interfaces) {
+		
+		// ignore request items
+		if (requestPhase)
+			return;
 		
 		if (ce == null)
 			return;
@@ -467,10 +527,21 @@ public class ManifestLoader implements INdlManifestModelListener {
 		Resource ceType = NdlCommons.getSpecificCE(nr);
 		if (ceType != null)
 			on.setNodeType(RequestSaver.reverseNodeTypeLookup(ceType));
+		
+		// substrate info if present
+		if (NdlCommons.getEC2WorkerNodeId(nr) != null)
+			on.setSubstrateInfo("worker", NdlCommons.getEC2WorkerNodeId(nr));
+		if (NdlCommons.getEC2InstanceId(nr) != null)
+			on.setSubstrateInfo("instance", NdlCommons.getEC2InstanceId(nr));
+		
 	}
 	
 	@Override
 	public void ndlParseComplete() {
+		// ignore request items
+		if (requestPhase)
+			return;
+		
 		// nothing to do in this case
 		GUI.logger().debug("Parse complete.");
 	}
@@ -478,8 +549,79 @@ public class ManifestLoader implements INdlManifestModelListener {
 	@Override
 	public void ndlNetworkConnectionPath(Resource c, OntModel m,
 			List<Resource> path) {
+		
+		// ignore request items
+		if (requestPhase)
+			return;
+		
 		// nothing to do in this case
 		GUI.logger().debug("Network Connection Path: " + c);
+	}
+
+	/**
+	 * Request items - mostly ignored
+	 * 
+	 */
+	
+	
+	@Override
+	public void ndlBroadcastConnection(Resource bl, OntModel om,
+			long bandwidth, List<Resource> interfaces) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void ndlNodeDependencies(Resource ni, OntModel m,
+			Set<Resource> dependencies) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void ndlReservation(Resource i, OntModel m) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void ndlReservationEnd(Literal e, OntModel m, Date end) {
+		expirationTime = end;
+		
+	}
+
+	@Override
+	public void ndlReservationResources(List<Resource> r, OntModel m) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void ndlReservationStart(Literal s, OntModel m, Date start) {
+		creationTime = start;
+		
+	}
+
+	@Override
+	public void ndlReservationTermDuration(Resource d, OntModel m, int years,
+			int months, int days, int hours, int minutes, int seconds) {
+		if (creationTime == null)
+			return;
+		Calendar cal = Calendar.getInstance();
+		cal.setTime(creationTime);
+		cal.add(Calendar.YEAR, years);
+		cal.add(Calendar.MONTH, months);
+		cal.add(Calendar.DAY_OF_YEAR, days);
+		cal.add(Calendar.HOUR, hours);
+		cal.add(Calendar.MINUTE, minutes);
+		cal.add(Calendar.SECOND, seconds);
+		expirationTime = cal.getTime();
+	}
+
+	@Override
+	public void ndlSlice(Resource sl, OntModel m) {
+		// TODO Auto-generated method stub
+		
 	}
 
 }

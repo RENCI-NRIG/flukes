@@ -27,6 +27,7 @@ import java.awt.Container;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -76,47 +77,52 @@ public class GUIManifestState extends GUICommonState {
 			g.removeVertex(n);
 	}
 
+	void queryManifest() {
+		// run request manifest from controller
+		if ((sliceIdField.getText() == null) || 
+				(sliceIdField.getText().length() == 0)) {
+			KMessageDialog kmd = new KMessageDialog(GUI.getInstance().getFrame());
+			kmd.setMessage("You must specify a slice id");
+			kmd.setLocationRelativeTo(GUI.getInstance().getFrame());
+			kmd.setVisible(true);
+			return;
+		}
+
+		try {
+			GUIManifestState.getInstance().clear();
+
+			manifestString = OrcaSMXMLRPCProxy.getInstance().sliceStatus(sliceIdField.getText());
+
+			ManifestLoader ml = new ManifestLoader();
+
+			// get rid of crud before <rdf:RDF
+			int ind = manifestString.indexOf("<rdf:RDF");
+			if (ind > 0) {
+				String realManifest = manifestString.substring(ind);
+				if (ml.loadString(realManifest))
+					GUI.getInstance().kickLayout(GuiTabs.MANIFEST_VIEW);
+			} else {
+				KMessageDialog kmd = new KMessageDialog(GUI.getInstance().getFrame());
+				kmd.setMessage("Error has occurred, check raw controller response for details.");
+				kmd.setLocationRelativeTo(GUI.getInstance().getFrame());
+				kmd.setVisible(true);
+				return;
+			}
+		} catch (Exception ex) {
+			ExceptionDialog ed = new ExceptionDialog(GUI.getInstance().getFrame(), "Exception");
+			ed.setLocationRelativeTo(GUI.getInstance().getFrame());
+			ed.setException("Exception encountered while querying ORCA for slice manifest: ", ex);
+			ed.setVisible(true);
+		}
+	}
+	
 	public class ResourceButtonListener implements ActionListener {
 		public void actionPerformed(ActionEvent e) {
 			assert(sliceIdField != null);
 
 			if (e.getActionCommand().equals("manifest")) {
 				// run request manifest from controller
-				if ((sliceIdField.getText() == null) || 
-						(sliceIdField.getText().length() == 0)) {
-					KMessageDialog kmd = new KMessageDialog(GUI.getInstance().getFrame());
-					kmd.setMessage("You must specify a slice id");
-					kmd.setLocationRelativeTo(GUI.getInstance().getFrame());
-					kmd.setVisible(true);
-					return;
-				}
-
-				try {
-					GUIManifestState.getInstance().clear();
-
-					manifestString = OrcaSMXMLRPCProxy.getInstance().sliceStatus(sliceIdField.getText());
-
-					ManifestLoader ml = new ManifestLoader();
-
-					// get rid of crud before <rdf:RDF
-					int ind = manifestString.indexOf("<rdf:RDF");
-					if (ind > 0) {
-						String realManifest = manifestString.substring(ind);
-						if (ml.loadString(realManifest))
-							GUI.getInstance().kickLayout(GuiTabs.MANIFEST_VIEW);
-					} else {
-						KMessageDialog kmd = new KMessageDialog(GUI.getInstance().getFrame());
-						kmd.setMessage("Error has occurred, check raw controller response for details.");
-						kmd.setLocationRelativeTo(GUI.getInstance().getFrame());
-						kmd.setVisible(true);
-						return;
-					}
-				} catch (Exception ex) {
-					ExceptionDialog ed = new ExceptionDialog(GUI.getInstance().getFrame(), "Exception");
-					ed.setLocationRelativeTo(GUI.getInstance().getFrame());
-					ed.setException("Exception encountered while querying ORCA for slice manifest: ", ex);
-					ed.setVisible(true);
-				}
+				queryManifest();
 			} else 
 				if (e.getActionCommand().equals("raw")) {
 					TextAreaDialog tad = new TextAreaDialog(GUI.getInstance().getFrame(), "Raw manifest", 
@@ -172,14 +178,14 @@ public class GUIManifestState extends GUICommonState {
 		}
 	}
 	
-	public void launchResourceStateViewer() {
+	public void launchResourceStateViewer(Date start, Date end) {
 		// get a list of nodes and links
 		List<OrcaResource> resources = new ArrayList<OrcaResource>();
 		
 		resources.addAll(g.getVertices());
 		resources.addAll(g.getEdges());
 		
-		OrcaResourceStateViewer viewer = new OrcaResourceStateViewer(GUI.getInstance().getFrame(), resources);
+		OrcaResourceStateViewer viewer = new OrcaResourceStateViewer(GUI.getInstance().getFrame(), resources, start, end);
 		viewer.pack();
 		viewer.setVisible(true);
 	}

@@ -1,0 +1,14 @@
+Flukes Release Notes:
+---------------------
+
+08/10/12:
+
+- Added ability for user to list slices belonging to her in a particular controller (Manifest View)
+
+- Added the listing of configured dataplane interfaces with IP addresses to node properties in manifest
+
+- Added the listing of worker node and instance id in node properties in manifest
+
+- Modified to support the latest manifest format
+
+- Reordered menu items under 'File'

@@ -24,6 +24,7 @@ package orca.flukes;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
+import java.util.Date;
 import java.util.List;
 
 import javax.swing.JFrame;
@@ -37,11 +38,11 @@ public class OrcaResourceStateViewer extends ComponentDialog {
 	private KPanel kp;
 	
 	
-	public OrcaResourceStateViewer(JFrame parent, List<OrcaResource> resources) {
+	public OrcaResourceStateViewer(JFrame parent, List<OrcaResource> resources, Date start, Date end) {
 		super(parent, "View current resource states.", false);
 		
 		super.setLocationRelativeTo(parent);
-		setComment("Resource states (click to see details):");
+		setComment("Resource states (start: " + start + " end: " + end + "):");
 		
 		kp.setLayout(new BorderLayout(0,0));
 		kp.add(new TableSelection(resources));

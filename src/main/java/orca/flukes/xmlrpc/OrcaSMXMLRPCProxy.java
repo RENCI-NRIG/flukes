@@ -339,8 +339,6 @@ public class OrcaSMXMLRPCProxy {
 			if (ll.length == 0)
 				return new String[0];
 			else {
-				System.out.println("The object is " + ((Object[])rr.get(RET_RET_FIELD))[0]);
-				System.out.println("Object class is " + ((Object[])rr.get(RET_RET_FIELD))[0].getClass().getCanonicalName());
 				result = new String[ll.length];
 				for (int i = 0; i < ll.length; i++)
 					result[i] = (String)((Object[])rr.get(RET_RET_FIELD))[i];
