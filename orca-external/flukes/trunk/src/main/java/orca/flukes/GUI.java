@@ -34,7 +34,9 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Constructor;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -110,9 +112,7 @@ public class GUI implements ComponentListener {
 	private JSeparator separator;
 	private JMenuItem exitMenuItem;
 	private JMenu mnNewMenu, controllerMenu, outputMenu, layoutMenu;
-	private JMenuItem helpMenuItem;
-	private JMenuItem prefMenuItem;
-	private JMenuItem aboutMenuItem;
+	private JMenuItem helpMenuItem, prefMenuItem, licenseMenuItem, relnotesMenuItem, aboutMenuItem;
 	private JSeparator separator_1, separator_2;
 	private Logger logger;
 	private String[] controllerUrls;
@@ -294,6 +294,10 @@ public class GUI implements ComponentListener {
 				aboutDialog();
 			else if (e.getActionCommand().equals("prefs"))
 				prefsDialog();
+			else if (e.getActionCommand().equals("license"))
+				licenseDialog();
+			else if (e.getActionCommand().equals("relnotes"))
+				relnotesDialog();
 			else if (e.getActionCommand().equals("xml"))
 				RequestSaver.getInstance().setOutputFormat(RequestSaver.RDF_XML_FORMAT);
 			else if (e.getActionCommand().equals("n3"))
@@ -471,6 +475,49 @@ public class GUI implements ComponentListener {
         tad.setVisible(true);
 	}
 
+	private String readResourceToString(String res) {
+		StringBuilder sb = new StringBuilder();
+		try {
+			InputStream is = GUI.class.getResourceAsStream(res);
+			BufferedReader bin = new BufferedReader(new InputStreamReader(is, "UTF-8"));
+			String line = null;
+			while((line = bin.readLine()) != null) {
+				sb.append(line);
+				// re-add line separator
+				sb.append(System.getProperty("line.separator"));
+			}
+
+			bin.close();
+		} catch (UnsupportedEncodingException uee) {
+			
+		} catch (IOException ioe) {
+			
+		}
+		return sb.toString();
+	}
+	
+	private void licenseDialog() {
+		TextAreaDialog tad = new TextAreaDialog(frmOrcaFlukes, "LICENSE", 
+				"License", 
+				30, 50);
+		KTextArea ta = tad.getTextArea();
+
+		ta.setText(readResourceToString("/LICENSE"));
+		tad.pack();
+        tad.setVisible(true);
+	}
+	
+	private void relnotesDialog() {
+		TextAreaDialog tad = new TextAreaDialog(frmOrcaFlukes, "Release Notes", 
+				"Release Notes", 
+				30, 50);
+		KTextArea ta = tad.getTextArea();
+
+		ta.setText(readResourceToString("/RELEASE-NOTES"));
+		tad.pack();
+        tad.setVisible(true);
+	}
+	
 	private void identityDialog() {
 		KeystoreDialog ld = new KeystoreDialog(frmOrcaFlukes, 
 				"Enter key alias and key password to be used with " + getPreference(PrefsEnum.USER_KEYSTORE));
@@ -495,19 +542,11 @@ public class GUI implements ComponentListener {
 		fileNewMenu = new JMenu("File ");
 		menuBar.add(fileNewMenu);
 		
-		newMenuItem = new JMenuItem("New");
+		newMenuItem = new JMenuItem("New Request");
 		newMenuItem.setActionCommand("new");
 		newMenuItem.addActionListener(mListener);
 		fileNewMenu.add(newMenuItem);
 
-		openManifestMenuItem = new JMenuItem("Open Manifest...");
-		openManifestMenuItem.setActionCommand("openmanifest");
-		openManifestMenuItem.addActionListener(mListener);
-		fileNewMenu.add(openManifestMenuItem);
-		
-		JSeparator sep = new JSeparator();
-		fileNewMenu.add(sep);
-		
 		openMenuItem = new JMenuItem("Open Request...");
 		openMenuItem.setActionCommand("open");
 		openMenuItem.addActionListener(mListener);
@@ -522,6 +561,14 @@ public class GUI implements ComponentListener {
 		saveAsMenuItem.setActionCommand("saveas");
 		saveAsMenuItem.addActionListener(mListener);
 		fileNewMenu.add(saveAsMenuItem);
+		
+		JSeparator sep = new JSeparator();
+		fileNewMenu.add(sep);
+		
+		openManifestMenuItem = new JMenuItem("Open Manifest...");
+		openManifestMenuItem.setActionCommand("openmanifest");
+		openManifestMenuItem.addActionListener(mListener);
+		fileNewMenu.add(openManifestMenuItem);
 		
 		separator = new JSeparator();
 		fileNewMenu.add(separator);
@@ -606,7 +653,16 @@ public class GUI implements ComponentListener {
 		aboutMenuItem.setActionCommand("about");
 		aboutMenuItem.addActionListener(mListener);
 		mnNewMenu.add(aboutMenuItem);
+		
+		licenseMenuItem = new JMenuItem("License");
+		licenseMenuItem.setActionCommand("license");
+		licenseMenuItem.addActionListener(mListener);
+		mnNewMenu.add(licenseMenuItem);
 			
+		relnotesMenuItem = new JMenuItem("Release Notes");
+		relnotesMenuItem.setActionCommand("relnotes");
+		relnotesMenuItem.addActionListener(mListener);
+		mnNewMenu.add(relnotesMenuItem);
 	}
 	
 	public enum GuiTabs {
@@ -804,7 +860,7 @@ public class GUI implements ComponentListener {
 			// add buttons to resource pane toolbar
 			ActionListener rbl = GUIManifestState.getInstance().getActionListener();
 			
-			JButton listSlicesButton = new JButton("List My Slices");
+			JButton listSlicesButton = new JButton("My Slices");
 			listSlicesButton.setToolTipText("Query ORCA for list of slices with active reservations");
 			listSlicesButton.setActionCommand("listSlices");
 			listSlicesButton.addActionListener(rbl);
