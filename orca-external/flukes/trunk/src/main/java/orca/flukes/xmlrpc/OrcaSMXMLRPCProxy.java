@@ -11,7 +11,6 @@ import java.security.KeyStore;
 import java.security.PrivateKey;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
@@ -44,7 +43,7 @@ public class OrcaSMXMLRPCProxy {
 	private static final String SLIVER_STATUS = "orca.sliceStatus";
 	private static final String CREATE_SLIVER = "orca.createSlice";
 	private static final String DELETE_SLIVER = "orca.deleteSlice";
-	private static final String LIST_SLICES = "orca.listActiveSlices";
+	private static final String LIST_SLICES = "orca.listSlices";
 	private static final String SSH_DSA_PUBKEY_FILE = "id_dsa.pub";
 	private static final String SSH_RSA_PUBKEY_FILE = "id_rsa.pub";
 	

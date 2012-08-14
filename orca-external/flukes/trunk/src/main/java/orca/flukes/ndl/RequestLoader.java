@@ -146,7 +146,7 @@ public class RequestLoader implements INdlRequestModelListener {
 
 		Resource domain = NdlCommons.getDomain(ce);
 		if (domain != null)
-			newNode.setDomain(RequestSaver.reverseLookupDomain(domain));
+			newNode.setDomainWithGlobalReset(RequestSaver.reverseLookupDomain(domain));
 		
 		Resource ceType = NdlCommons.getSpecificCE(ce);
 		if (ceType != null)

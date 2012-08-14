@@ -200,9 +200,13 @@ public class OrcaNode implements OrcaResource {
 		return domain;
 	}
 	
-	public void setDomain(String d) {
+	public void setDomainWithGlobalReset(String d) {
 		// reset reservation-level setting
 		GUIRequestState.getInstance().resetDomainInReservation();
+		domain = d;
+	}
+	
+	public void setDomain(String d) {
 		domain = d;
 	}
 	
