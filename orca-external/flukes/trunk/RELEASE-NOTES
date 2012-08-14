@@ -1,6 +1,10 @@
 Flukes Release Notes:
 ---------------------
 
+08/14/12:
+
+- Fixed a bug related to manifest parsing, which overrides reservation-level domain setting in the request
+
 08/10/12:
 
 - Added ability for user to list slices belonging to her in a particular controller (Manifest View)
