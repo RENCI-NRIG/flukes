@@ -1,6 +1,9 @@
 Flukes Release Notes:
 ---------------------
 
+09/05/12:
+- Fixed a bug with model closing by modifying NdlGenerator to use a dynamic, rather than static reference model.
+
 08/14/12:
 
 - Fixed a bug related to manifest parsing, which overrides reservation-level domain setting in the request

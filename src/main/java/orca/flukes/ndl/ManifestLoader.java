@@ -46,7 +46,6 @@ import orca.flukes.OrcaNodeGroup;
 import orca.ndl.INdlManifestModelListener;
 import orca.ndl.INdlRequestModelListener;
 import orca.ndl.NdlCommons;
-import orca.ndl.NdlException;
 import orca.ndl.NdlManifestParser;
 import orca.ndl.NdlRequestParser;
 
@@ -74,6 +73,7 @@ public class ManifestLoader implements INdlManifestModelListener, INdlRequestMod
 	boolean requestPhase = true;
 	protected Date creationTime = null;
 	protected Date expirationTime = null;
+	private OntModel m = null;
 	
 	public boolean loadGraph(File f) {
 		BufferedReader bin = null; 
@@ -273,6 +273,7 @@ public class ManifestLoader implements INdlManifestModelListener, INdlRequestMod
 		if (requestPhase)
 			return;
 		
+		this.m = m;
 		GUI.logger().debug("Manifest: " + i);
 	}
 
@@ -544,6 +545,8 @@ public class ManifestLoader implements INdlManifestModelListener, INdlRequestMod
 		
 		// nothing to do in this case
 		GUI.logger().debug("Parse complete.");
+		if (m != null)
+			m.close();
 	}
 
 	@Override
