@@ -63,6 +63,7 @@ public class RequestLoader implements INdlRequestModelListener {
 	private Map<String, OrcaNode> nodes = new HashMap<String, OrcaNode>();
 	private Map<String, Object> links = new HashMap<String, Object>();
 	private Map<String, OrcaNode> interfaceToNode = new HashMap<String, OrcaNode>();
+	private OntModel m = null;
 
 	public boolean loadGraph(File f) {
 		BufferedReader bin = null; 
@@ -105,6 +106,8 @@ public class RequestLoader implements INdlRequestModelListener {
 
 	public void ndlReservation(Resource i, final OntModel m) {
 		GUI.logger().debug("Reservation: " + i);
+		this.m = m;
+		
 		if (i != null) {
 			reservationDomain = RequestSaver.reverseLookupDomain(NdlCommons.getDomain(i));
 			GUIRequestState.getInstance().setOFVersion(NdlCommons.getOpenFlowVersion(i));
@@ -328,6 +331,9 @@ public class RequestLoader implements INdlRequestModelListener {
 		// set term etc
 		GUIRequestState.getInstance().setTerm(term);
 		GUIRequestState.getInstance().setDomainInReservation(reservationDomain);
+		
+		if (m != null)
+			m.close();
 	}
 
 	public void ndlNodeDependencies(Resource ni, OntModel m, Set<Resource> dependencies) {
