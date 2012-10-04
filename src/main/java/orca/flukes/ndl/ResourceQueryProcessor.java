@@ -65,7 +65,7 @@ public class ResourceQueryProcessor {
 				continue;
 			}
 			// create a model from the description
-			OntModel amModel = NdlCommons.getModelFromString(fullRdf);
+			OntModel amModel = NdlCommons.getModelFromString(fullRdf, true);
 			// query
 			String query = NdlCommons.createQueryStringDomainLocationDetails();
 			ResultSet rs = OntProcessor.rdfQuery(amModel, query);
@@ -82,6 +82,7 @@ public class ResourceQueryProcessor {
 				OrcaResourceSite ors = GUIResourceState.getInstance().createSite(name, lat.getFloat(), lon.getFloat());
 				
 			}
+			amModel.close();
 		}
 		o.setProgress(100);
 	}
