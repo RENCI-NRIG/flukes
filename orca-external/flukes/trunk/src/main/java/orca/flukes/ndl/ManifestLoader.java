@@ -73,7 +73,6 @@ public class ManifestLoader implements INdlManifestModelListener, INdlRequestMod
 	boolean requestPhase = true;
 	protected Date creationTime = null;
 	protected Date expirationTime = null;
-	private OntModel m = null;
 	
 	public boolean loadGraph(File f) {
 		BufferedReader bin = null; 
@@ -99,11 +98,13 @@ public class ManifestLoader implements INdlManifestModelListener, INdlRequestMod
 			// 07/2012/ib
 			nrp.doLessStrictChecking();
 			nrp.processRequest();
+			nrp.freeModel();
 			
 			// parse as manifest
 			requestPhase = false;
 			NdlManifestParser nmp = new NdlManifestParser(sb.toString(), this);
 			nmp.processManifest();
+			nmp.freeModel();
 			GUIManifestState.getInstance().setManifestString(sb.toString());
 			GUIManifestState.getInstance().launchResourceStateViewer(creationTime, expirationTime);
 			
@@ -273,7 +274,6 @@ public class ManifestLoader implements INdlManifestModelListener, INdlRequestMod
 		if (requestPhase)
 			return;
 		
-		this.m = m;
 		GUI.logger().debug("Manifest: " + i);
 	}
 
@@ -545,8 +545,6 @@ public class ManifestLoader implements INdlManifestModelListener, INdlRequestMod
 		
 		// nothing to do in this case
 		GUI.logger().debug("Parse complete.");
-		if (m != null)
-			m.close();
 	}
 
 	@Override

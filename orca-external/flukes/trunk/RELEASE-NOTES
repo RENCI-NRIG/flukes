@@ -1,15 +1,16 @@
 Flukes Release Notes:
 ---------------------
 
+09/25/12:
+- Changed the model closing to be done in request and manifest parser
+
 09/05/12:
 - Fixed a bug with model closing by modifying NdlGenerator to use a dynamic, rather than static reference model.
 
 08/14/12:
-
 - Fixed a bug related to manifest parsing, which overrides reservation-level domain setting in the request
 
 08/10/12:
-
 - Added ability for user to list slices belonging to her in a particular controller (Manifest View)
 
 - Added the listing of configured dataplane interfaces with IP addresses to node properties in manifest
