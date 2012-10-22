@@ -93,12 +93,19 @@ public class RequestSaver {
 		dm.put("RENCI OSG (not a GENI resource)", "osgvmsite.rdf#osgvmsite");
 		dm.put("NICTA", "nictavmsite.rdf#nictavmsite");
 
-		dm.put("RENCI XO Rack Net", "rciNet.rdf#rciNet");
-		dm.put("BBN/GPO XO Rack Net", "bbnNet.rdf#bbnNet");
-		dm.put("NLR Net", "nlr.rdf#nlr");
-		dm.put("BEN Net", "ben.rdf#ben");
-		
 		domainMap = Collections.unmodifiableMap(dm);
+	}
+	
+	public static final Map<String, String> netDomainMap;
+	static {
+		Map<String, String> ndm = new HashMap<String, String>();
+
+		ndm.put("RENCI XO Rack Net", "rciNet.rdf#rciNet");
+		ndm.put("BBN/GPO XO Rack Net", "bbnNet.rdf#bbnNet");
+		ndm.put("NLR Net", "nlr.rdf#nlr");
+		ndm.put("BEN Net", "ben.rdf#ben");
+		
+		netDomainMap = Collections.unmodifiableMap(ndm);
 	}
 	
 	// various node types
@@ -556,6 +563,23 @@ public class RequestSaver {
 		return null;
 	}
 	
+	
+	// use different maps to try to do a reverse lookup
+	private static String reverseLookupDomain_(Resource dom, Map<String, String> m, String suffix) {
+		String domainName = StringUtils.removeStart(dom.getURI(), NdlCommons.ORCA_NS);
+		if (domainName == null)
+			return null;
+		
+		// remove one or the other
+		domainName = StringUtils.removeEnd(domainName, suffix);
+		for (Iterator<Map.Entry<String, String>> domName = m.entrySet().iterator(); domName.hasNext();) {
+			Map.Entry<String, String> e = domName.next();
+			if (domainName.equals(e.getValue()))
+				return e.getKey();
+		}
+		return null;
+	}
+	
 	/**
 	 * Do a reverse lookup on domain (NDL -> short name)
 	 * @param dom
@@ -568,15 +592,13 @@ public class RequestSaver {
 		String domainName = StringUtils.removeStart(dom.getURI(), NdlCommons.ORCA_NS);
 		if (domainName == null)
 			return null;
-		// remove one or the other
-		domainName = StringUtils.removeEnd(domainName, "/Domain");
-		domainName = StringUtils.removeEnd(domainName, "/Domain/vlan");
-		for (Iterator<Map.Entry<String, String>> domName = domainMap.entrySet().iterator(); domName.hasNext();) {
-			Map.Entry<String, String> e = domName.next();
-			if (domainName.equals(e.getValue()))
-				return e.getKey();
-		}
-		return null;
+		
+		// try vm domain, then net domain
+		String mapping = reverseLookupDomain_(dom, domainMap, "/Domain");
+		if (mapping == null) 
+			mapping = reverseLookupDomain_(dom, netDomainMap, "/Domain/vlan");
+		
+		return mapping;
 	}
 	
 	/**
