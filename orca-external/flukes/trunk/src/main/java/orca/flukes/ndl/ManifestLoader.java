@@ -193,13 +193,25 @@ public class ManifestLoader implements INdlManifestModelListener, INdlRequestMod
 			GUI.logger().debug("  Adding p-to-p link");
 			OrcaLink ol = GUIManifestState.getInstance().getLinkCreator().create();
 
-			// point-to-point link
+			// maybe point-to-point link
 			// the ends
 			Resource if1 = it.next(), if2 = it.next();
 			
 			if ((if1 != null) && (if2 != null)) {
 				OrcaNode if1Node = interfaceToNode.get(getTrueName(if1));
 				OrcaNode if2Node = interfaceToNode.get(getTrueName(if2));
+				
+				if ((if1Node != null) && if1Node.equals(if2Node)) {
+					// degenerate case of a node on a shared vlan
+					OrcaCrossconnect oc = new OrcaCrossconnect(getTrueName(l));
+					oc.setLabel(label);
+					oc.setDomain(RequestSaver.reverseLookupDomain(NdlCommons.getDomain(l)));
+					nodes.put(getTrueName(l), oc);
+					// save one interface
+					interfaceToNode.put(getTrueName(if1), oc);
+					GUIManifestState.getInstance().getGraph().addVertex(oc);
+					return;
+				}
 				
 				// get the bandwidth of crossconnects if possible
 				long bw1 = 0, bw2 = 0;
@@ -238,6 +250,8 @@ public class ManifestLoader implements INdlManifestModelListener, INdlRequestMod
 			ml.setLabel(label);
 			ml.setReservationNotice(NdlCommons.getResourceReservationNotice(l));
 			ml.setState(NdlCommons.getResourceStateAsString(l));
+			ml.setDomain(RequestSaver.reverseLookupDomain(NdlCommons.getDomain(l)));
+
 			
 			if (ml.getState() != null)
 				ml.setIsResource();
