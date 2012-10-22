@@ -1,6 +1,10 @@
 Flukes Release Notes:
 ---------------------
 
+10/22/12:
+- Added reverse domain name remapping for network domains
+- Added case handling single node on shared vlan
+
 09/25/12:
 - Changed the model closing to be done in request and manifest parser
 
