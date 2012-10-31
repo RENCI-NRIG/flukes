@@ -580,6 +580,22 @@ public class RequestSaver {
 		return null;
 	}
 	
+	// use different maps to try to do a reverse lookup
+	private static String reverseLookupDomain_(String dom, Map<String, String> m, String suffix) {
+		String domainName = StringUtils.removeStart(dom, NdlCommons.ORCA_NS);
+		if (domainName == null)
+			return null;
+		
+		// remove one or the other
+		domainName = StringUtils.removeEnd(domainName, suffix);
+		for (Iterator<Map.Entry<String, String>> domName = m.entrySet().iterator(); domName.hasNext();) {
+			Map.Entry<String, String> e = domName.next();
+			if (domainName.equals(e.getValue()))
+				return e.getKey();
+		}
+		return null;
+	}
+	
 	/**
 	 * Do a reverse lookup on domain (NDL -> short name)
 	 * @param dom
@@ -595,6 +611,26 @@ public class RequestSaver {
 		
 		// try vm domain, then net domain
 		String mapping = reverseLookupDomain_(dom, domainMap, "/Domain");
+		if (mapping == null)
+			mapping = reverseLookupDomain_(dom, domainMap, "/Domain/vm");
+		if (mapping == null) 
+			mapping = reverseLookupDomain_(dom, netDomainMap, "/Domain/vlan");
+		
+		return mapping;
+	}
+	
+	public static String reverseLookupDomain(String dom) {
+		if (dom == null)
+			return null;
+		// strip off name space and "/Domain"
+		String domainName = StringUtils.removeStart(dom, NdlCommons.ORCA_NS);
+		if (domainName == null)
+			return null;
+		
+		// try vm domain, then net domain
+		String mapping = reverseLookupDomain_(dom, domainMap, "/Domain");
+		if (mapping == null)
+			mapping = reverseLookupDomain_(dom, domainMap, "/Domain/vm");
 		if (mapping == null) 
 			mapping = reverseLookupDomain_(dom, netDomainMap, "/Domain/vlan");
 		

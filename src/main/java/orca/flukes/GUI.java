@@ -315,6 +315,7 @@ public class GUI implements ComponentListener {
 				OrcaSMXMLRPCProxy.getInstance().resetSSLIdentity();
 				keyAlias = null;
 				keyPassword = null;
+				GUIRequestState.getInstance().listSMResources();
 			}
 		}
 	}
@@ -405,7 +406,7 @@ public class GUI implements ComponentListener {
 					gui.getControllersFromPreferences();
 					
 					gui.initialize();
-					gui.getFrame().setVisible(true);
+					gui.getFrame().setVisible(true);					
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
