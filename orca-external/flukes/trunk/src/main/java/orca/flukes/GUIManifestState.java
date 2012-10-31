@@ -97,6 +97,26 @@ public class GUIManifestState extends GUICommonState {
 		}
 	}
 	
+	void modifySlice(String name, String req) {
+		if ((name == null) || 
+				(name.length() == 0)) {
+			KMessageDialog kmd = new KMessageDialog(GUI.getInstance().getFrame());
+			kmd.setMessage("You must specify a slice id");
+			kmd.setLocationRelativeTo(GUI.getInstance().getFrame());
+			kmd.setVisible(true);
+			return;
+		}
+		
+		try {
+			OrcaSMXMLRPCProxy.getInstance().modifySlice(name, req);
+		} catch (Exception ex) {
+			ExceptionDialog ed = new ExceptionDialog(GUI.getInstance().getFrame(), "Exception");
+			ed.setLocationRelativeTo(GUI.getInstance().getFrame());
+			ed.setException("Exception encountered while modifying slice: ", ex);
+			ed.setVisible(true);
+		}
+	}
+	
 	void queryManifest() {
 		// run request manifest from controller
 		if ((sliceIdField.getText() == null) || 
@@ -173,7 +193,7 @@ public class GUIManifestState extends GUICommonState {
 							return;
 						deleteSlice(sliceIdField.getText());
 
-					} else
+					} else 
 						if (e.getActionCommand().equals("listSlices")) {
 							try {
 								String[] slices = OrcaSMXMLRPCProxy.getInstance().listMySlices();
@@ -186,7 +206,30 @@ public class GUIManifestState extends GUICommonState {
 								ed.setException("Exception encountered while listing user slices: ", ex);
 								ed.setVisible(true);
 							}
-						}
+						} else 
+							if (e.getActionCommand().equals("modify")) {
+								try {
+									if ((sliceIdField.getText() == null) || 
+											(sliceIdField.getText().length() == 0)) {
+										KMessageDialog kmd = new KMessageDialog(GUI.getInstance().getFrame());
+										kmd.setMessage("You must specify a slice id");
+										kmd.setLocationRelativeTo(GUI.getInstance().getFrame());
+										kmd.setVisible(true);
+										return;
+									}
+									ModifyTextSetter mts = new ModifyTextSetter(sliceIdField.getText());
+									TextAreaDialog tad = new TextAreaDialog(GUI.getInstance().getFrame(), mts, 
+											"Modify Request", 
+											"Cut and paste the modify request into the window", 30, 50);
+									tad.pack();
+									tad.setVisible(true);
+								} catch(Exception ex) {
+									ExceptionDialog ed = new ExceptionDialog(GUI.getInstance().getFrame(), "Exception");
+									ed.setLocationRelativeTo(GUI.getInstance().getFrame());
+									ed.setException("Exception encountered while modifying slice: ", ex);
+									ed.setVisible(true);
+								}
+							}
 		}
 	}
 	

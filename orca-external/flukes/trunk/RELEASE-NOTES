@@ -7,6 +7,7 @@ Flukes Release Notes:
 - Fixed issues with double-links created when switching between Edit and Pick modes
 - Added ability to generate a self-contained app, in addition to JNLP
 - Fixed Windows 7 startup bug
+- Added call to modifySlice protected by enable.modify property
 
 10/22/12:
 - Added reverse domain name remapping for network domains
