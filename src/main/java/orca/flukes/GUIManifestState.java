@@ -106,9 +106,17 @@ public class GUIManifestState extends GUICommonState {
 			kmd.setVisible(true);
 			return;
 		}
-		
 		try {
-			OrcaSMXMLRPCProxy.getInstance().modifySlice(name, req);
+			String s = OrcaSMXMLRPCProxy.getInstance().modifySlice(name, req);
+			TextAreaDialog tad = new TextAreaDialog(GUI.getInstance().getFrame(), "Modify Output", 
+					"Modify Output", 
+					30, 50);
+			KTextArea ta = tad.getTextArea();
+
+			if (s != null)
+				ta.setText(s);
+			tad.pack();
+			tad.setVisible(true);
 		} catch (Exception ex) {
 			ExceptionDialog ed = new ExceptionDialog(GUI.getInstance().getFrame(), "Exception");
 			ed.setLocationRelativeTo(GUI.getInstance().getFrame());
