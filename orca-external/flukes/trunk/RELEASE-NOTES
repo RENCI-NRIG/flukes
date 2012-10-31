@@ -6,6 +6,7 @@ Flukes Release Notes:
 - Added 'Delete' button to slice list, so you can delete a slice without querying for it
 - Fixed issues with double-links created when switching between Edit and Pick modes
 - Added ability to generate a self-contained app, in addition to JNLP
+- Fixed Windows 7 startup bug
 
 10/22/12:
 - Added reverse domain name remapping for network domains
