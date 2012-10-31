@@ -1,6 +1,12 @@
 Flukes Release Notes:
 ---------------------
 
+10/31/12:
+- Added ability to lookup available domains from SM. Domain list shown in Node Properties is the list of domains available at this SM.
+- Added 'Delete' button to slice list, so you can delete a slice without querying for it
+- Fixed issues with double-links created when switching between Edit and Pick modes
+- Added ability to generate a self-contained app, in addition to JNLP
+
 10/22/12:
 - Added reverse domain name remapping for network domains
 - Added case handling single node on shared vlan

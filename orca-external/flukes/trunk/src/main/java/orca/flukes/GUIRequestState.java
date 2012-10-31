@@ -27,7 +27,6 @@ import java.awt.BorderLayout;
 import java.awt.Container;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.MouseEvent;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -38,11 +37,13 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
+import orca.flukes.ndl.AdLoader;
 import orca.flukes.ndl.RequestSaver;
 import orca.flukes.ui.ChooserWithNewDialog;
-import orca.flukes.ui.EditingModalGraphMouseWithModifiers;
 import orca.flukes.ui.TextAreaDialog;
 import orca.flukes.xmlrpc.OrcaSMXMLRPCProxy;
+import orca.ndl.NdlAbstractDelegationParser;
+import orca.ndl.NdlException;
 
 import com.hyperrealm.kiwi.ui.KTextArea;
 import com.hyperrealm.kiwi.ui.dialog.ExceptionDialog;
@@ -52,6 +53,7 @@ import edu.uci.ics.jung.algorithms.layout.FRLayout;
 import edu.uci.ics.jung.algorithms.layout.Layout;
 import edu.uci.ics.jung.graph.util.Pair;
 import edu.uci.ics.jung.visualization.VisualizationViewer;
+import edu.uci.ics.jung.visualization.control.EditingModalGraphMouse;
 import edu.uci.ics.jung.visualization.control.ModalGraphMouse;
 import edu.uci.ics.jung.visualization.decorators.ToStringLabeller;
 import edu.uci.ics.jung.visualization.picking.PickedState;
@@ -67,6 +69,8 @@ public class GUIRequestState extends GUICommonState implements IDeleteEdgeCallBa
 	public static final String NO_DOMAIN_SELECT = "System select";
 	public static final String NODE_TYPE_SITE_DEFAULT = "Site default";
 	public static final String NO_NODE_DEPS="No dependencies";
+	private static final String RDF_START = "<rdf:RDF";
+	private static final String RDF_END = "</rdf:RDF>";
 	private static GUIRequestState instance = null;
 	
 	// is it openflow (and what version [null means non-of])
@@ -74,6 +78,9 @@ public class GUIRequestState extends GUICommonState implements IDeleteEdgeCallBa
 	private String ofUserEmail = null;
 	private String ofSlicePass = null;
 	private String ofCtrlUrl = null;
+	
+	// VM domains known to this controller
+	private List<String> knownDomains = null;
 	
 	// VM images defined by the user
 	HashMap<String, OrcaImage> definedImages; 
@@ -266,7 +273,9 @@ public class GUIRequestState extends GUICommonState implements IDeleteEdgeCallBa
 	 * @return
 	 */
 	public String[] getAvailableDomains() {
-		List<String> knownDomains = new ArrayList(RequestSaver.domainMap.keySet());
+		if (knownDomains == null)
+			listSMResources();
+		
 		Collections.sort(knownDomains);
 		
 		String[] itemList = new String[knownDomains.size() + 1];
@@ -483,6 +492,62 @@ public class GUIRequestState extends GUICommonState implements IDeleteEdgeCallBa
 		return al;
 	}
 	
+	// sets the knownDomains instance variable based
+	// on a query to the selected SM
+	public void listSMResources() {
+		// query the selected controller for resources
+		try {
+			// re-initialize known domains
+			knownDomains = new ArrayList<String>();
+			String ads = OrcaSMXMLRPCProxy.getInstance().listResources();
+			List<String> domains = new ArrayList<String>();
+
+			try {
+				
+				boolean done = false;
+				while (!done) {
+					// find <rdf:RDF> and </rdf:RDF>
+					int start = ads.indexOf(RDF_START);
+					int end = ads.indexOf(RDF_END);
+					if ((start == -1) || (end == -1)) {
+						done = true;
+						continue;
+					}
+					String ad = ads.substring(start, end + RDF_END.length());
+
+					AdLoader adl = new AdLoader();
+					// parse out
+					NdlAbstractDelegationParser nadp = new NdlAbstractDelegationParser(ad, adl);
+					
+					// this will call the callbacks
+					nadp.processDelegationModel();
+					
+					domains.addAll(adl.getDomains());
+					
+					nadp.freeModel();
+					
+					// advance pointer
+					ads = ads.substring(end + RDF_END.length());
+				}
+			} catch (NdlException e) {
+				return;
+			}
+			for(String d: domains) {
+				if (d.endsWith("Domain/vm")) {
+					String domName = RequestSaver.reverseLookupDomain(d);
+					if (domName != null)
+						knownDomains.add(domName);
+				}
+			}
+			
+		} catch (Exception ex) {
+			ExceptionDialog ed = new ExceptionDialog(GUI.getInstance().getFrame(), "Exception");
+			ed.setLocationRelativeTo(GUI.getInstance().getFrame());
+			ed.setException("Exception encountered while querying the SM for available resources: ", ex);
+			ed.setVisible(true);
+		}
+	}
+	
 	/**
 	 * Initialize request pane 
 	 */
@@ -504,7 +569,11 @@ public class GUIRequestState extends GUICommonState implements IDeleteEdgeCallBa
 		// Create a graph mouse and add it to the visualization viewer
 		OrcaNode.OrcaNodeFactory onf = new OrcaNode.OrcaNodeFactory(nodeCreator);
 		OrcaLink.OrcaLinkFactory olf = new OrcaLink.OrcaLinkFactory(linkCreator);
-		gm = new EditingModalGraphMouseWithModifiers<OrcaNode, OrcaLink>(MouseEvent.BUTTON1_MASK, vv.getRenderContext(), 
+		
+		// FIXME: this editingmodalgraphmosewithmodifiers is broken w.r.t. pick - picking on node
+		// results in loopback links being added. For now use the usual editingmodelgraphmouse 10/30/12 /ib
+		//gm = new EditingModalGraphMouseWithModifiers<OrcaNode, OrcaLink>(MouseEvent.BUTTON1_MASK, vv.getRenderContext(),
+		gm = new EditingModalGraphMouse<OrcaNode, OrcaLink>(vv.getRenderContext(),
 				onf, olf);
 
 		

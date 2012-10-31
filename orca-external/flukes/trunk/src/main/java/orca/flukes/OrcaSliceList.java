@@ -2,7 +2,10 @@ package orca.flukes;
 
 import java.awt.Component;
 import java.awt.GridBagLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
+import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JList;
 
@@ -13,6 +16,7 @@ public class OrcaSliceList extends ComponentDialog {
 	private KPanel kp;
 	private JList sliceList;
 	private GridBagLayout gbl_contentPanel;
+	private JButton del;
 	
 	public OrcaSliceList(JFrame parent, String[] slices) {
 		super(parent, "View current slices.", false);
@@ -33,6 +37,18 @@ public class OrcaSliceList extends ComponentDialog {
 		gbl_contentPanel = new GridBagLayout();
 		kp.setLayout(gbl_contentPanel);
 
+		setAcceptButtonText("Query");
+		del = new JButton("Delete");
+		del.setActionCommand("delete");
+		del.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				if (e.getActionCommand().equals("manifest")) {
+					GUIManifestState.getInstance().deleteSlice((String)sliceList.getSelectedValue());
+				}
+			}
+		});
+		addButton(del);
 		return kp;
 	}
 

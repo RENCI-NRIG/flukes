@@ -260,6 +260,28 @@
 					</execution>
 				</executions>
 			</plugin>
+			<plugin>
+           		<groupId>org.codehaus.mojo</groupId>
+            	<artifactId>appassembler-maven-plugin</artifactId>
+            	<version>1.2.2</version>
+            	<executions>
+            		<execution>
+            			<id>package-execs-and-daemon</id>
+                        <phase>package</phase>
+                        <goals>
+                        	<goal>assemble</goal>
+                        </goals>
+                        <configuration>
+                        	<programs>
+                            	<program>
+                                	<mainClass>orca.flukes.GUI</mainClass>
+                                    <name>flukes</name>
+                                </program>
+                            </programs>
+                        </configuration>
+                   </execution>
+				</executions>
+			</plugin>
 		</plugins>
 	</build>
   <dependencies>

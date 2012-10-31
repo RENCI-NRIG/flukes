@@ -77,6 +77,26 @@ public class GUIManifestState extends GUICommonState {
 			g.removeVertex(n);
 	}
 
+	void deleteSlice(String name) {
+		if ((name == null) || 
+				(name.length() == 0)) {
+			KMessageDialog kmd = new KMessageDialog(GUI.getInstance().getFrame());
+			kmd.setMessage("You must specify a slice id");
+			kmd.setLocationRelativeTo(GUI.getInstance().getFrame());
+			kmd.setVisible(true);
+			return;
+		}
+		
+		try {
+			OrcaSMXMLRPCProxy.getInstance().deleteSlice(name);
+		} catch (Exception ex) {
+			ExceptionDialog ed = new ExceptionDialog(GUI.getInstance().getFrame(), "Exception");
+			ed.setLocationRelativeTo(GUI.getInstance().getFrame());
+			ed.setException("Exception encountered while deleting slice manifest: ", ex);
+			ed.setVisible(true);
+		}
+	}
+	
 	void queryManifest() {
 		// run request manifest from controller
 		if ((sliceIdField.getText() == null) || 
@@ -151,15 +171,7 @@ public class GUIManifestState extends GUICommonState {
 						kqd.setVisible(true);
 						if (!kqd.getStatus()) 
 							return;
-
-						try {
-							OrcaSMXMLRPCProxy.getInstance().deleteSlice(sliceIdField.getText());
-						} catch (Exception ex) {
-							ExceptionDialog ed = new ExceptionDialog(GUI.getInstance().getFrame(), "Exception");
-							ed.setLocationRelativeTo(GUI.getInstance().getFrame());
-							ed.setException("Exception encountered while deleting slice manifest: ", ex);
-							ed.setVisible(true);
-						}
+						deleteSlice(sliceIdField.getText());
 
 					} else
 						if (e.getActionCommand().equals("listSlices")) {
