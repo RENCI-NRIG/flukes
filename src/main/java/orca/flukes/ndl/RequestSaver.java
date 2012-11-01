@@ -383,6 +383,8 @@ public class RequestSaver {
 				
 				// is domain specified in the reservation?
 				if (GUIRequestState.getInstance().getDomainInReservation() != null) {
+					if (!GUIRequestState.getInstance().isAKnownDomain(GUIRequestState.getInstance().getDomainInReservation()))
+						throw new NdlException("Domain " + GUIRequestState.getInstance().getDomainInReservation() + " is not visible from this SM!");
 					globalDomain = true;
 					Individual domI = ngen.declareDomain(domainMap.get(GUIRequestState.getInstance().getDomainInReservation()));
 					ngen.addDomainToIndividual(domI, reservation);
@@ -429,6 +431,8 @@ public class RequestSaver {
 
 						// if no global domain domain is set, declare a domain and add inDomain property
 						if (!globalDomain && (n.getDomain() != null)) {
+							if (!GUIRequestState.getInstance().isAKnownDomain(n.getDomain()))
+								throw new NdlException("Domain " + n.getDomain() + " of node " + n + " is not visible from this SM!");
 							Individual domI = ngen.declareDomain(domainMap.get(n.getDomain()));
 							ngen.addNodeToDomain(domI, ni);
 						}
@@ -531,6 +535,9 @@ public class RequestSaver {
 				ed.setException("Exception encountered while converting graph to NDL-OWL: ", e);
 				ed.setVisible(true);
 				return null;
+			} finally {
+				if (ngen != null)
+					ngen.done();
 			}
 		}
 		return res;

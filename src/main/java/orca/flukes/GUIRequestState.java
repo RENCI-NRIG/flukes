@@ -291,6 +291,14 @@ public class GUIRequestState extends GUICommonState implements IDeleteEdgeCallBa
 	}
 	
 	/**
+	 * Is this a known domain
+	 * @return
+	 */
+	public boolean isAKnownDomain(String d) {
+		return knownDomains.contains(d);
+	}
+	
+	/**
 	 * Return null if 'None' image is asked for
 	 * @param n
 	 * @param image
@@ -560,8 +568,7 @@ public class GUIRequestState extends GUICommonState implements IDeleteEdgeCallBa
 		Layout<OrcaNode, OrcaLink> layout = new FRLayout<OrcaNode, OrcaLink>(g);
 		
 		//layout.setSize(new Dimension(1000,800));
-		vv = 
-			new VisualizationViewer<OrcaNode,OrcaLink>(layout);
+		vv = new VisualizationViewer<OrcaNode,OrcaLink>(layout);
 		// Show vertex and edge labels
 		vv.getRenderContext().setVertexLabelTransformer(new ToStringLabeller<OrcaNode>());
 		vv.getRenderContext().setEdgeLabelTransformer(new ToStringLabeller<OrcaLink>());
@@ -576,7 +583,6 @@ public class GUIRequestState extends GUICommonState implements IDeleteEdgeCallBa
 		gm = new EditingModalGraphMouse<OrcaNode, OrcaLink>(vv.getRenderContext(),
 				onf, olf);
 
-		
 		// add the plugin
 		PopupVertexEdgeMenuMousePlugin<OrcaNode, OrcaLink> myPlugin = new PopupVertexEdgeMenuMousePlugin<OrcaNode, OrcaLink>();
 		

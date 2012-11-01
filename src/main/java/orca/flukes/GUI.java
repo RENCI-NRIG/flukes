@@ -1012,7 +1012,7 @@ public class GUI implements ComponentListener {
 			"Keystore containing your private key and certificate issued by GPO, Emulab or BEN"),
 		ORCA_XMLRPC_CONTROLLER("orca.xmlrpc.url", "https://some.hostname.org:11443/orca/xmlrpc", 
 			"Comma-separated list of URLs of the ORCA XMLRPC controllers where you can submit slice requests"),
-		ENABLE_MODIFY("enable.modify", "false", "Enable experimental support for slice modify operations"),
+		ENABLE_MODIFY("enable.modify", "false", "Enable experimental support for slice modify operations (at your own risk!)"),
 		IMAGE_NAME("image.name", "Debian-6-2G-zfilesystem", 
 			"Name of a known image, you can add more images by adding image1.name, image2.name etc. To see defined images click on 'Client Images' button."),
 		IMAGE_URL("image.url", "http://geni-images.renci.org/images/standard/debian/debian-squeeze-amd64-neuca-2g.zfilesystem.sparse.xml", 
