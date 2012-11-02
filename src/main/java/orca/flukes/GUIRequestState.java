@@ -98,6 +98,9 @@ public class GUIRequestState extends GUICommonState implements IDeleteEdgeCallBa
 	private OrcaReservationTerm term;
 	private String resDomainName = null;
 	
+	// save the guid of the namespace of the request if it was loaded
+	String nsGuid = null;
+	
 	private static void initialize() {
 		;
 	}
@@ -135,6 +138,7 @@ public class GUIRequestState extends GUICommonState implements IDeleteEdgeCallBa
 		ofUserEmail = null;
 		ofSlicePass = null;
 		ofCtrlUrl = null;
+		nsGuid = null;
 		
 		//definedImages = new HashMap<String, OrcaImage>();
 		GUI.getInstance().getImagesFromPreferences();
@@ -146,6 +150,10 @@ public class GUIRequestState extends GUICommonState implements IDeleteEdgeCallBa
 	
 	public void setTerm(OrcaReservationTerm t) {
 		term = t;
+	}
+	
+	public void setNsGuid(String g) {
+		nsGuid = g;
 	}
 	
 	/**
@@ -465,7 +473,7 @@ public class GUIRequestState extends GUICommonState implements IDeleteEdgeCallBa
 					kmd.setVisible(true);
 					return;
 				}
-				String ndl = RequestSaver.getInstance().convertGraphToNdl(g);
+				String ndl = RequestSaver.getInstance().convertGraphToNdl(g, nsGuid);
 				if ((ndl == null) ||
 						(ndl.length() == 0)) {
 					KMessageDialog kmd = new KMessageDialog(GUI.getInstance().getFrame());

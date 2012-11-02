@@ -1,6 +1,9 @@
 Flukes Release Notes:
 ---------------------
 
+11/2/12:
+- Flukes now preserves the namespace of saved requests across save/submission
+
 10/31/12:
 - Added ability to lookup available domains from SM. Domain list shown in Node Properties is the list of domains available at this SM.
 - Added 'Delete' button to slice list, so you can delete a slice without querying for it

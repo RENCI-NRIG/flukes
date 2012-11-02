@@ -252,7 +252,8 @@ public class GUI implements ComponentListener {
 			else if (e.getActionCommand().equals("save")) {
 				if (GUIRequestState.getInstance().getSaveFile() != null) {
 					RequestSaver.getInstance().saveGraph(GUIRequestState.getInstance().getSaveFile(), 
-							GUIRequestState.getInstance().g);
+							GUIRequestState.getInstance().g,
+							GUIRequestState.getInstance().nsGuid);
 				} else {
 					KFileChooserDialog d = new KFileChooserDialog(getFrame(), "Save Request in NDL", KFileChooser.SAVE_DIALOG);
 					d.setLocationRelativeTo(getFrame());
@@ -263,7 +264,9 @@ public class GUI implements ComponentListener {
 					d.pack();
 					d.setVisible(true);
 					if (d.getSelectedFile() != null) {
-						if (RequestSaver.getInstance().saveGraph(d.getSelectedFile(), GUIRequestState.getInstance().g)) {
+						if (RequestSaver.getInstance().saveGraph(d.getSelectedFile(), 
+								GUIRequestState.getInstance().g,
+								GUIRequestState.getInstance().nsGuid)) {
 							frmOrcaFlukes.setTitle(FRAME_TITLE + " : " + d.getSelectedFile().getName());
 							GUIRequestState.getInstance().setSaveFile(d.getSelectedFile());
 							GUIRequestState.getInstance().setSaveDir(d.getSelectedFile().getParent());
@@ -281,7 +284,9 @@ public class GUI implements ComponentListener {
 				d.pack();
 				d.setVisible(true);
 				if (d.getSelectedFile() != null) {
-					if (RequestSaver.getInstance().saveGraph(d.getSelectedFile(), GUIRequestState.getInstance().g)) {
+					if (RequestSaver.getInstance().saveGraph(d.getSelectedFile(), 
+							GUIRequestState.getInstance().g,
+							GUIRequestState.getInstance().nsGuid)) {
 						frmOrcaFlukes.setTitle(FRAME_TITLE + " : " + d.getSelectedFile().getName());
 						GUIRequestState.getInstance().setSaveFile(d.getSelectedFile());
 						GUIRequestState.getInstance().setSaveDir(d.getSelectedFile().getParent());

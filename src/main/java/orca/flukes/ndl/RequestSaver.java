@@ -341,14 +341,14 @@ public class RequestSaver {
 	 * @param f
 	 * @param requestGraph
 	 */
-	public String convertGraphToNdl(SparseMultigraph<OrcaNode, OrcaLink> g) {
+	public String convertGraphToNdl(SparseMultigraph<OrcaNode, OrcaLink> g, String nsGuid) {
 		String res = null;
 		
 		assert(g != null);
 		// this should never run in parallel anyway
 		synchronized(instance) {
 			try {
-				ngen = new NdlGenerator(GUI.logger());
+				ngen = new NdlGenerator(nsGuid, GUI.logger());
 			
 				reservation = ngen.declareReservation();
 				Individual term = ngen.declareTerm();
@@ -543,10 +543,10 @@ public class RequestSaver {
 		return res;
 	}
 	
-	public boolean saveGraph(File f, SparseMultigraph<OrcaNode, OrcaLink> g) {
+	public boolean saveGraph(File f, SparseMultigraph<OrcaNode, OrcaLink> g, String nsGuid) {
 		assert(f != null);
 
-		String ndl = convertGraphToNdl(g);
+		String ndl = convertGraphToNdl(g, nsGuid);
 		if (ndl == null)
 			return false;
 		

@@ -108,6 +108,12 @@ public class RequestLoader implements INdlRequestModelListener {
 	public void ndlReservation(Resource i, final OntModel m) {
 		GUI.logger().debug("Reservation: " + i);
 		
+		// try to extract the guid out of the URL
+		String u = i.getURI();
+		String guid = StringUtils.removeEnd(StringUtils.removeStart(u, NdlCommons.ORCA_NS), "#");
+		
+		GUIRequestState.getInstance().setNsGuid(guid);
+		
 		if (i != null) {
 			reservationDomain = RequestSaver.reverseLookupDomain(NdlCommons.getDomain(i));
 			GUIRequestState.getInstance().setOFVersion(NdlCommons.getOpenFlowVersion(i));
