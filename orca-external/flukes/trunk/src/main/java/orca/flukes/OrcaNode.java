@@ -48,8 +48,10 @@ public class OrcaNode implements OrcaResource {
 	protected static final String NOT_SPECIFIED = "Not specified";
 	public static final String NODE_NETMASK="32";
 	protected String name;
+	protected String url;
 	protected String image = null;
 	protected String domain = null;
+	protected String group = null;
 	// Pair<String> first is IP, second is Netmask
 	protected HashMap<OrcaLink, Pair<String>> addresses;
 	
@@ -163,7 +165,9 @@ public class OrcaNode implements OrcaResource {
 		this.addresses = new HashMap<OrcaLink, Pair<String>>();
 		this.icon = new LayeredIcon(new ImageIcon(GUIRequestState.class.getResource(OrcaNodeEnum.CE.getIconName())).getImage());
 		this.domain = parent.getDomain();
+		this.group = parent.getGroup();
 		this.image = parent.getImage();
+		this.url = parent.getUrl();
 		this.nodeType = parent.getNodeType();
 		this.dependencies = parent.getDependencies();
 		this.state = parent.state;
@@ -188,12 +192,28 @@ public class OrcaNode implements OrcaResource {
 		this.name = name;
 	}
 
+	public void setUrl(String u) {
+		url = u;
+	}
+	
+	public String getUrl() {
+		return url;
+	}
+	
 	public String getImage() {
 		return image;
 	}
 
 	public void setImage(String image) {
 		this.image = image;
+	}
+	
+	public String getGroup() {
+		return group;
+	}
+	
+	public void setGroup(String d) {
+		group = d;
 	}
 	
 	public String getDomain() {

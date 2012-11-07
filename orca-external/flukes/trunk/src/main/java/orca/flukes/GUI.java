@@ -917,6 +917,16 @@ public class GUI implements ComponentListener {
 			
 				horizontalStrut = Box.createHorizontalStrut(10);
 				toolBar.add(horizontalStrut);
+				
+				JButton modifyClearButton = new JButton("Clear Modify slice");
+				modifyClearButton.setToolTipText("Clear Modify slice");
+				modifyClearButton.setActionCommand("clearModify");
+				modifyClearButton.addActionListener(rbl);
+				modifyClearButton.setVerticalAlignment(SwingConstants.TOP);
+				toolBar.add(modifyClearButton);
+			
+				horizontalStrut = Box.createHorizontalStrut(10);
+				toolBar.add(horizontalStrut);
 			}
 			
 			JButton deleteButton = new JButton("Delete slice");
