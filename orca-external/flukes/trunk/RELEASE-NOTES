@@ -1,6 +1,9 @@
 Flukes Release Notes:
 ---------------------
 
+11/7/12:
+- Added generation of modify requests on manifests (increase and remove) from manifest
+
 11/2/12:
 - Flukes now preserves the namespace of saved requests across save/submission
 
