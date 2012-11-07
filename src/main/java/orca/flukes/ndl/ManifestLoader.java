@@ -538,6 +538,12 @@ public class ManifestLoader implements INdlManifestModelListener, INdlRequestMod
 		if (domain != null)
 			on.setDomain(RequestSaver.reverseLookupDomain(domain));
 		
+		// group (if any)
+		on.setGroup(NdlCommons.getRequestGroupURLProperty(nr));
+		
+		// url
+		on.setUrl(nr.getURI());
+		
 		// specific ce type
 		Resource ceType = NdlCommons.getSpecificCE(nr);
 		if (ceType != null)

@@ -34,6 +34,7 @@ import java.util.Set;
 
 import orca.flukes.GUI.GuiTabs;
 import orca.flukes.ndl.ManifestLoader;
+import orca.flukes.ndl.ModifySaver;
 import orca.flukes.ui.TextAreaDialog;
 import orca.flukes.xmlrpc.OrcaSMXMLRPCProxy;
 
@@ -50,10 +51,10 @@ import edu.uci.ics.jung.visualization.control.ModalGraphMouse;
 import edu.uci.ics.jung.visualization.decorators.ToStringLabeller;
 import edu.uci.ics.jung.visualization.picking.PickedState;
 
-public class GUIManifestState extends GUICommonState {
+public class GUIManifestState extends GUICommonState implements IDeleteEdgeCallBack<OrcaLink>, IDeleteNodeCallBack<OrcaNode>{
 	private static GUIManifestState instance = new GUIManifestState();
 	protected String manifestString;
-	
+
 	public static GUIManifestState getInstance() {
 		return instance;
 	}
@@ -229,6 +230,7 @@ public class GUIManifestState extends GUICommonState {
 									TextAreaDialog tad = new TextAreaDialog(GUI.getInstance().getFrame(), mts, 
 											"Modify Request", 
 											"Cut and paste the modify request into the window", 30, 50);
+									tad.getTextArea().setText(ModifySaver.getInstance().getModifyRequest());
 									tad.pack();
 									tad.setVisible(true);
 								} catch(Exception ex) {
@@ -236,8 +238,11 @@ public class GUIManifestState extends GUICommonState {
 									ed.setLocationRelativeTo(GUI.getInstance().getFrame());
 									ed.setException("Exception encountered while modifying slice: ", ex);
 									ed.setVisible(true);
+								} 
+							} else
+								if (e.getActionCommand().equals("modifyClear")) {
+									ModifySaver.getInstance().clear();
 								}
-							}
 		}
 	}
 	
@@ -306,6 +311,17 @@ public class GUIManifestState extends GUICommonState {
 		c.add(vv);
 
 		gm.setMode(ModalGraphMouse.Mode.TRANSFORMING); // Start off in panning mode  
+	}
+
+	@Override
+	public void deleteEdgeCallBack(OrcaLink e) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void deleteNodeCallBack(OrcaNode n) {
+		ModifySaver.getInstance().removeNodeFromGroup(n.getGroup(), n.getUrl());
 	}
 	
 

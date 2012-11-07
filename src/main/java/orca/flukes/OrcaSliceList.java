@@ -40,11 +40,13 @@ public class OrcaSliceList extends ComponentDialog {
 		setAcceptButtonText("Query");
 		del = new JButton("Delete");
 		del.setActionCommand("delete");
+		final ComponentDialog me = this;
 		del.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				if (e.getActionCommand().equals("manifest")) {
+				if (e.getActionCommand().equals("delete")) {
 					GUIManifestState.getInstance().deleteSlice((String)sliceList.getSelectedValue());
+					me.setVisible(false);
 				}
 			}
 		});

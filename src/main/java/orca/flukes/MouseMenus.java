@@ -24,11 +24,12 @@ import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.JRadioButtonMenuItem;
 
+import orca.flukes.GUI.PrefsEnum;
 import orca.ndl.ScaledFormatPrinter;
 
+import com.hyperrealm.kiwi.ui.dialog.KDialog;
 import com.hyperrealm.kiwi.ui.dialog.KMessageDialog;
 
-import edu.uci.ics.jung.graph.util.Pair;
 import edu.uci.ics.jung.visualization.VisualizationViewer;
 import edu.uci.ics.jung.visualization.control.AbstractModalGraphMouse;
 import edu.uci.ics.jung.visualization.control.ModalGraphMouse;
@@ -280,6 +281,12 @@ public class MouseMenus {
             this.add(new DomainDisplay());
             this.add(new NodeTypeDisplay());
             this.addSeparator();
+            if ((GUI.getInstance().getPreference(PrefsEnum.ENABLE_MODIFY).equalsIgnoreCase("true")) ||
+            		(GUI.getInstance().getPreference(PrefsEnum.ENABLE_MODIFY).equalsIgnoreCase("yes"))) {
+            	this.add(new DeleteVertexMenuItem<OrcaNode, OrcaLink>(GUIManifestState.getInstance()));
+            	this.add(new IncreaseByNodeGroupItem(GUI.getInstance().getFrame()));
+            	this.addSeparator();
+            }
             this.add(new NodeViewItem(GUI.getInstance().getFrame()));
             this.add(new NodeLoginItem(GUI.getInstance().getFrame()));
         }
@@ -409,6 +416,36 @@ public class MouseMenus {
 		public void setPoint(Point2D point) {
 			this.point = point;
 		}	
+    }
+    
+    public static class IncreaseByNodeGroupItem extends JMenuItem implements NodeMenuListener<OrcaNode, OrcaLink>, MenuPointListener {
+        OrcaNode node;
+        VisualizationViewer<OrcaNode, OrcaLink> visComp;
+        Point2D point;
+        
+        public  IncreaseByNodeGroupItem(final JFrame frame) {
+            super("Increase node group size...");
+            this.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    OrcaIncreaseGroupSizeDialog dialog = new OrcaIncreaseGroupSizeDialog(frame, node);
+                    dialog.pack();
+                    dialog.setVisible(true);
+                }
+            });
+        }
+        
+		@Override
+		public void setNodeAndView(OrcaNode v,
+				VisualizationViewer<OrcaNode, OrcaLink> visView) {
+			visComp = visView;
+			node = v;
+		}
+
+		@Override
+		public void setPoint(Point2D point) {
+			this.point = point;
+		}
+    	
     }
     
     public static class NodeLoginItem extends JMenuItem implements NodeMenuListener<OrcaNode, OrcaLink>, MenuPointListener {
