@@ -230,7 +230,9 @@ public class GUIManifestState extends GUICommonState implements IDeleteEdgeCallB
 									TextAreaDialog tad = new TextAreaDialog(GUI.getInstance().getFrame(), mts, 
 											"Modify Request", 
 											"Cut and paste the modify request into the window", 30, 50);
-									tad.getTextArea().setText(ModifySaver.getInstance().getModifyRequest());
+									String txt = ModifySaver.getInstance().getModifyRequest();
+									if (txt != null)
+										tad.getTextArea().setText(txt);
 									tad.pack();
 									tad.setVisible(true);
 								} catch(Exception ex) {
