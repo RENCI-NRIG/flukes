@@ -14,7 +14,8 @@ public class OrcaIncreaseGroupSizeDialog extends KInputDialog {
 	OrcaNode node;
 
 	public OrcaIncreaseGroupSizeDialog(Frame arg0, OrcaNode on) {
-		super(arg0, "Increase size of group " + on.getGroup(), true);
+		super(arg0, "Increase group size", true);
+		super.setComment((on.getGroup() != null ? on.getGroup() : "Not part of a group"));
 		super.setLocationRelativeTo(arg0);
 		node = on;
 	}
