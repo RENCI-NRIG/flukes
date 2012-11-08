@@ -33,6 +33,8 @@ public class ModifySaver {
 	}
 	
 	private String getFormattedOutput(String oFormat) {
+		if (ngen == null)
+			return null;
 		if (oFormat == null)
 			return getFormattedOutput(RequestSaver.defaultFormat);
 		if (oFormat.equals(RequestSaver.RDF_XML_FORMAT)) 
