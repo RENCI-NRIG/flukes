@@ -908,8 +908,8 @@ public class GUI implements ComponentListener {
 			
 			if (getPreference(PrefsEnum.ENABLE_MODIFY).equalsIgnoreCase("true") ||
 					getPreference(PrefsEnum.ENABLE_MODIFY).equalsIgnoreCase("yes")) {
-				JButton modifyButton = new JButton("Modify Slice");
-				modifyButton.setToolTipText("Modify slice");
+				JButton modifyButton = new JButton("Commit Modify Actions");
+				modifyButton.setToolTipText("Commit modify slice actions");
 				modifyButton.setActionCommand("modify");
 				modifyButton.addActionListener(rbl);
 				modifyButton.setVerticalAlignment(SwingConstants.TOP);
@@ -918,8 +918,8 @@ public class GUI implements ComponentListener {
 				horizontalStrut = Box.createHorizontalStrut(10);
 				toolBar.add(horizontalStrut);
 				
-				JButton modifyClearButton = new JButton("Clear Modify Slice");
-				modifyClearButton.setToolTipText("Clear Modify Slice");
+				JButton modifyClearButton = new JButton("Clear Modify Actions");
+				modifyClearButton.setToolTipText("Clear modify slice actions");
 				modifyClearButton.setActionCommand("clearModify");
 				modifyClearButton.addActionListener(rbl);
 				modifyClearButton.setVerticalAlignment(SwingConstants.TOP);

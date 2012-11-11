@@ -1,6 +1,9 @@
 Flukes Release Notes:
 ---------------------
 
+11/11/12:
+- Renamed modify buttons to make purpose clearer
+
 11/7/12:
 - Added generation of modify requests on manifests (increase and remove) from manifest
 
