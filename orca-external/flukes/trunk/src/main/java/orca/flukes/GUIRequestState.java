@@ -303,7 +303,9 @@ public class GUIRequestState extends GUICommonState implements IDeleteEdgeCallBa
 	 * @return
 	 */
 	public boolean isAKnownDomain(String d) {
-		return knownDomains.contains(d);
+		if (knownDomains != null)
+			return knownDomains.contains(d);
+		return true;
 	}
 	
 	/**
