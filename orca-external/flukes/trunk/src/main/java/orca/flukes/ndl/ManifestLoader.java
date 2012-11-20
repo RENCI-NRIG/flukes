@@ -424,6 +424,14 @@ public class ManifestLoader implements INdlManifestModelListener, INdlRequestMod
 		
 		GUI.logger().debug("Node: " + ce);
 		
+		// FIXME: get rid of this - temporary fix for left over VMs 11/14/12 /ib
+//		String state = NdlCommons.getResourceStateAsString(ce);
+//		String stateInNotice = NdlCommons.getResourceReservationNotice(ce);
+//		
+//		if (state.contains("Closed") || stateInNotice.contains("Closing"))
+//			return;
+		// end FIXME
+		
 		OrcaNode newNode;
 		
 		newNode = new OrcaNode(getTrueName(ce));

@@ -1028,11 +1028,11 @@ public class GUI implements ComponentListener {
 		ORCA_XMLRPC_CONTROLLER("orca.xmlrpc.url", "https://some.hostname.org:11443/orca/xmlrpc", 
 			"Comma-separated list of URLs of the ORCA XMLRPC controllers where you can submit slice requests"),
 		ENABLE_MODIFY("enable.modify", "false", "Enable experimental support for slice modify operations (at your own risk!)"),
-		IMAGE_NAME("image.name", "Debian-6-2G-zfilesystem", 
+		IMAGE_NAME("image.name", "Debian-6-Standard-Multi-Size-Image-v.1.0.5", 
 			"Name of a known image, you can add more images by adding image1.name, image2.name etc. To see defined images click on 'Client Images' button."),
-		IMAGE_URL("image.url", "http://geni-images.renci.org/images/standard/debian/debian-squeeze-amd64-neuca-2g.zfilesystem.sparse.xml", 
+		IMAGE_URL("image.url", "http://geni-images.renci.org/images/standard/debian/deb6-neuca-v1.0.5.xml", 
 			"URL of a known image description file, you can add more images by adding image1.url, image2.url etc."),
-		IMAGE_HASH("image.hash", "6a8a8466aef43774bf2e309af47ce876ba793f36", 
+		IMAGE_HASH("image.hash", "104ea3d824906f0e13cebb89b14df232290553b1", 
 			"SHA-1 hash of the image description file, you can add more images by adding image1.hash, image2.hash etc.");
 		
 		private final String propName;
