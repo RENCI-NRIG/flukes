@@ -378,7 +378,7 @@ public class RequestSaver {
 							ofSliceI);
 				}
 				
-				// decide whether we have a global image
+				// decide whether we have a global domain
 				boolean globalDomain = false;
 				
 				// is domain specified in the reservation?
@@ -419,6 +419,9 @@ public class RequestSaver {
 							//ngen.addVMDomainProperty(ni);
 						}
 
+						// node type 
+						setNodeTypeOnInstance(n.getNodeType(), ni);
+						
 						// check if node has its own image
 						if (n.getImage() != null) {
 							// check if image is set in this node
@@ -427,6 +430,11 @@ public class RequestSaver {
 								Individual imI = ngen.declareDiskImage(im.getUrl().toString(), im.getHash(), im.getShortName());
 								ngen.addDiskImageToIndividual(imI, ni);
 							}
+						} else {
+							// only bare-metal can specify no image
+							if (!NdlCommons.isBareMetal(ni))
+								throw new NdlException("Node " + n.getName() + " is not bare-metal and does not specify an image");
+								
 						}
 
 						// if no global domain domain is set, declare a domain and add inDomain property
@@ -436,9 +444,6 @@ public class RequestSaver {
 							Individual domI = ngen.declareDomain(domainMap.get(n.getDomain()));
 							ngen.addNodeToDomain(domI, ni);
 						}
-
-						// node type 
-						setNodeTypeOnInstance(n.getNodeType(), ni);
 
 						// open ports
 						if (n.getPortsList() != null) {
