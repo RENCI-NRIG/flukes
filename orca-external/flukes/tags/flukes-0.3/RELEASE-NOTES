@@ -1,0 +1,55 @@
+Flukes Release Notes:
+---------------------
+
+12/21/12:
+- 'End-of-the-world' release, last in 0.3 series.
+
+12/17/12:
+- Added checks for image when saving and loading requests
+
+11/30/12:
+- Updated standard Debian image
+
+11/20/12:
+- Added new standard Debian image
+
+11/11/12:
+- Renamed modify buttons to make purpose clearer
+
+11/7/12:
+- Added generation of modify requests on manifests (increase and remove) from manifest
+
+11/2/12:
+- Flukes now preserves the namespace of saved requests across save/submission
+
+10/31/12:
+- Added ability to lookup available domains from SM. Domain list shown in Node Properties is the list of domains available at this SM.
+- Added 'Delete' button to slice list, so you can delete a slice without querying for it
+- Fixed issues with double-links created when switching between Edit and Pick modes
+- Added ability to generate a self-contained app, in addition to JNLP
+- Fixed Windows 7 startup bug
+- Added call to modifySlice protected by enable.modify property
+
+10/22/12:
+- Added reverse domain name remapping for network domains
+- Added case handling single node on shared vlan
+
+09/25/12:
+- Changed the model closing to be done in request and manifest parser
+
+09/05/12:
+- Fixed a bug with model closing by modifying NdlGenerator to use a dynamic, rather than static reference model.
+
+08/14/12:
+- Fixed a bug related to manifest parsing, which overrides reservation-level domain setting in the request
+
+08/10/12:
+- Added ability for user to list slices belonging to her in a particular controller (Manifest View)
+
+- Added the listing of configured dataplane interfaces with IP addresses to node properties in manifest
+
+- Added the listing of worker node and instance id in node properties in manifest
+
+- Modified to support the latest manifest format
+
+- Reordered menu items under 'File'
