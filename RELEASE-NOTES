@@ -1,6 +1,12 @@
 Flukes Release Notes:
 ---------------------
 
+12/21/12:
+- 'End-of-the-world' release, last in 0.3 series.
+
+12/17/12:
+- Added checks for image when saving and loading requests
+
 11/30/12:
 - Updated standard Debian image
 
