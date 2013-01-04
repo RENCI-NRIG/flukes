@@ -139,6 +139,7 @@ public class GUIRequestState extends GUICommonState implements IDeleteEdgeCallBa
 		ofSlicePass = null;
 		ofCtrlUrl = null;
 		nsGuid = null;
+		saveFile = null;
 		
 		//definedImages = new HashMap<String, OrcaImage>();
 		GUI.getInstance().getImagesFromPreferences();
