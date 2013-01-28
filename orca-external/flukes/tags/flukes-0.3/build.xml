@@ -40,7 +40,7 @@
 </target>
 
 <target name="install" description="Install flukes onto specified host and unpack for JNLP use">
-	<property name="flukes.zip" value="flukes-0.3-SNAPSHOT.zip"/>
+	<property name="flukes.zip" value="flukes-0.3.zip"/>
 	<property name="flukes.host" value="geni-images.renci.org"/>
 <!--
 	<property name="flukes.dir" value="/images/webstart/0.3-SNAPSHOT"/>
