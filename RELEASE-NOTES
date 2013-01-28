@@ -1,6 +1,9 @@
 Flukes Release Notes:
 ---------------------
 
+01/28/13:
+- New base image with non-blocking NEuca tools upgrade
+
 01/04/13:
 - Updated for New/Save bug
 
