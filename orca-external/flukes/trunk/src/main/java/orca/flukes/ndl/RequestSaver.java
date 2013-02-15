@@ -92,6 +92,8 @@ public class RequestSaver {
 		dm.put("UMass Amherst (vlan 533)", "mass.rdf#mass");
 		dm.put("RENCI OSG (not a GENI resource)", "osgvmsite.rdf#osgvmsite");
 		dm.put("NICTA", "nictavmsite.rdf#nictavmsite");
+		dm.put("FIU XO Rack", "fiuvmsite.rdf#fiuvmsite");
+		dm.put("UH XO Rack", "uhvmsite.rdf#uhvmsite");
 
 		domainMap = Collections.unmodifiableMap(dm);
 	}
@@ -102,6 +104,7 @@ public class RequestSaver {
 
 		ndm.put("RENCI XO Rack Net", "rciNet.rdf#rciNet");
 		ndm.put("BBN/GPO XO Rack Net", "bbnNet.rdf#bbnNet");
+		ndm.put("FIU XO Rack Net", "fiuNet.rdf#fiuNet");
 		ndm.put("NLR Net", "nlr.rdf#nlr");
 		ndm.put("BEN Net", "ben.rdf#ben");
 		

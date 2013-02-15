@@ -1,6 +1,9 @@
 Flukes Release Notes:
 ---------------------
 
+02/15/13:
+- Added FIU
+
 01/28/13:
 - New base image with non-blocking NEuca tools upgrade
 

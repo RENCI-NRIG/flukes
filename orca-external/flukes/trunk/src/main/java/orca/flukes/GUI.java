@@ -98,7 +98,7 @@ public class GUI implements ComponentListener {
 	public static final String buildVersion = GUI.class.getPackage().getImplementationVersion();
 	public static final String aboutText = "ORCA FLUKES " + (buildVersion == null? "Eclipse build" : buildVersion) + "\nNDL-OWL network editor for ORCA (Open Resource Control Architecture)" +
 	"\nDeveloped using Jena Semantic Web Framework, JUNG Java Universal Network/Graph Framework and Kiwi Swing toolkit." +
-	"\n\nCopyright 2011-2012 RENCI/UNC Chapel Hill";
+	"\n\nCopyright 2011-2013 RENCI/UNC Chapel Hill";
 	private static final String FRAME_TITLE = "ORCA FLUKES - The ORCA Network Editor";
 	private static final String PREF_FILE = ".flukes.properties";
 	private JFrame frmOrcaFlukes;
