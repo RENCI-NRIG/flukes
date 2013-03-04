@@ -551,7 +551,14 @@ public class RequestSaver {
 		return res;
 	}
 	
-	public boolean saveGraph(File f, SparseMultigraph<OrcaNode, OrcaLink> g, String nsGuid) {
+	/**
+	 * Save to file
+	 * @param f
+	 * @param g
+	 * @param nsGuid
+	 * @return
+	 */
+	public boolean saveGraph(File f, final SparseMultigraph<OrcaNode, OrcaLink> g, final String nsGuid) {
 		assert(f != null);
 
 		String ndl = convertGraphToNdl(g, nsGuid);
@@ -574,6 +581,22 @@ public class RequestSaver {
 		return false;
 	}
 
+	/**
+	 * Save to string
+	 * @param f
+	 * @param g
+	 * @param nsGuid
+	 * @return
+	 */
+	public boolean saveGraph(String f, final SparseMultigraph<OrcaNode, OrcaLink> g, final String nsGuid) {
+		
+		f = convertGraphToNdl(g, nsGuid);
+		if (f == null)
+			return false;
+		
+		return true;
+	}
+	
 	public SparseMultigraph<OrcaNode, OrcaLink> loadGraph(File f) {
 		return null;
 	}

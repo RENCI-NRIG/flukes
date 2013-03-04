@@ -64,6 +64,11 @@ public class RequestLoader implements INdlRequestModelListener {
 	private Map<String, Object> links = new HashMap<String, Object>();
 	private Map<String, OrcaNode> interfaceToNode = new HashMap<String, OrcaNode>();
 
+	/**
+	 * Load from file
+	 * @param f
+	 * @return
+	 */
 	public boolean loadGraph(File f) {
 		BufferedReader bin = null; 
 		try {
@@ -90,6 +95,30 @@ public class RequestLoader implements INdlRequestModelListener {
 			ExceptionDialog ed = new ExceptionDialog(GUI.getInstance().getFrame(), "Exception");
 			ed.setLocationRelativeTo(GUI.getInstance().getFrame());
 			ed.setException("Exception encountered while loading file " + f.getName() + ":", e);
+			ed.setVisible(true);
+			return false;
+		} 
+		
+		return true;
+	}
+	
+	/**
+	 * Load from string
+	 * @param f
+	 * @return
+	 */
+	public boolean loadGraph(String f) {
+		try {
+			NdlRequestParser nrp = new NdlRequestParser(f, this);
+			GUI.logger().debug("Parsing request");
+			nrp.processRequest();
+			
+			nrp.freeModel();
+			
+		} catch (Exception e) {
+			ExceptionDialog ed = new ExceptionDialog(GUI.getInstance().getFrame(), "Exception");
+			ed.setLocationRelativeTo(GUI.getInstance().getFrame());
+			ed.setException("Exception encountered while loading graph from string:", e);
 			ed.setVisible(true);
 			return false;
 		} 
