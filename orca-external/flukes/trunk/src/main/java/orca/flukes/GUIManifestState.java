@@ -33,9 +33,13 @@ import java.util.List;
 import java.util.Set;
 
 import orca.flukes.GUI.GuiTabs;
+import orca.flukes.GUI.PrefsEnum;
+import orca.flukes.irods.IRodsException;
+import orca.flukes.irods.IRodsICommands;
 import orca.flukes.ndl.ManifestLoader;
 import orca.flukes.ndl.ModifySaver;
 import orca.flukes.ui.TextAreaDialog;
+import orca.flukes.xmlrpc.NDLConverter;
 import orca.flukes.xmlrpc.OrcaSMXMLRPCProxy;
 
 import com.hyperrealm.kiwi.ui.KTextArea;
@@ -63,6 +67,9 @@ public class GUIManifestState extends GUICommonState implements IDeleteEdgeCallB
 		manifestString = s;
 	}
 	
+	public String getManifestString() {
+		return manifestString;
+	}
 	/**
 	 * clear the manifest
 	 */
@@ -325,6 +332,33 @@ public class GUIManifestState extends GUICommonState implements IDeleteEdgeCallB
 	public void deleteNodeCallBack(OrcaNode n) {
 		ModifySaver.getInstance().removeNodeFromGroup(n.getGroup(), n.getUrl());
 	}
-	
 
+	public void saveManifestToIRods() {
+		IRodsICommands irods = new IRodsICommands();
+		try {
+			// convert if needed
+			if (GUI.getInstance().getPreference(PrefsEnum.IRODS_FORMAT).equalsIgnoreCase("rspec")) {
+				String rspec = NDLConverter.callConverter(NDLConverter.MANIFEST_TO_RSPEC, new Object[]{manifestString, "urn:unknown"});
+				irods.saveManifest(IRodsICommands.substituteManifestName(), rspec);
+			} else if (GUI.getInstance().getPreference(PrefsEnum.IRODS_FORMAT).equalsIgnoreCase("ndl"))
+				irods.saveManifest(IRodsICommands.substituteManifestName(), manifestString);
+			else {
+				ExceptionDialog ed = new ExceptionDialog(GUI.getInstance().getFrame(), "Exception");
+				ed.setLocationRelativeTo(GUI.getInstance().getFrame());
+				ed.setException("Exception encountered while saving manifest to iRods: ", 
+						new Exception("unknown format " + GUI.getInstance().getPreference(PrefsEnum.IRODS_FORMAT)));
+				ed.setVisible(true);
+			}
+		} catch (IRodsException ie) {
+			ExceptionDialog ed = new ExceptionDialog(GUI.getInstance().getFrame(), "Exception");
+			ed.setLocationRelativeTo(GUI.getInstance().getFrame());
+			ed.setException("Exception encountered while saving manifest to iRods: ", ie);
+			ed.setVisible(true);
+		} catch (Exception e) {
+			ExceptionDialog ed = new ExceptionDialog(GUI.getInstance().getFrame(), "Exception");
+			ed.setLocationRelativeTo(GUI.getInstance().getFrame());
+			ed.setException("Exception encountered while saving manifest to iRods: ", e);
+			ed.setVisible(true);
+		}
+	}
 }

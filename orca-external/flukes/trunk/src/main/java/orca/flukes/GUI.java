@@ -64,6 +64,8 @@ import javax.swing.JToolBar;
 import javax.swing.SwingConstants;
 import javax.swing.filechooser.FileFilter;
 
+import orca.flukes.irods.IRodsException;
+import orca.flukes.irods.IRodsICommands;
 import orca.flukes.ndl.ManifestLoader;
 import orca.flukes.ndl.RequestLoader;
 import orca.flukes.ndl.RequestSaver;
@@ -79,7 +81,9 @@ import com.hyperrealm.kiwi.ui.KFileChooser;
 import com.hyperrealm.kiwi.ui.KTextArea;
 import com.hyperrealm.kiwi.ui.KTextField;
 import com.hyperrealm.kiwi.ui.UIChangeManager;
+import com.hyperrealm.kiwi.ui.dialog.ExceptionDialog;
 import com.hyperrealm.kiwi.ui.dialog.KFileChooserDialog;
+import com.hyperrealm.kiwi.ui.dialog.KMessageDialog;
 import com.hyperrealm.kiwi.ui.dialog.KQuestionDialog;
 import com.hyperrealm.kiwi.ui.dialog.ProgressDialog;
 
@@ -109,6 +113,7 @@ public class GUI implements ComponentListener {
 	private JMenuItem newMenuItem;
 	private JMenuItem openMenuItem, openManifestMenuItem;
 	private JMenuItem saveMenuItem, saveAsMenuItem;
+	private JMenuItem openIRodsMenuItem, saveIRodsMenuItem, openManifestIRodsMenuItem, saveManifestIRodsMenuItem;
 	private JSeparator separator;
 	private JMenuItem exitMenuItem;
 	private JMenu mnNewMenu, controllerMenu, outputMenu, layoutMenu;
@@ -117,6 +122,8 @@ public class GUI implements ComponentListener {
 	private Logger logger;
 	private String[] controllerUrls;
 	private String selectedControllerUrl;
+	
+	private boolean withIRods = false;
 	
 	// alias and password within a keystore to be used for XMLRPC calls
 	private String keyAlias = null, keyPassword = null;
@@ -321,6 +328,29 @@ public class GUI implements ComponentListener {
 				keyAlias = null;
 				keyPassword = null;
 				GUIRequestState.getInstance().listSMResources();
+			} else if (e.getActionCommand().equals("openirods")) {
+				KMessageDialog md = new KMessageDialog(GUI.getInstance().getFrame(), "Not implemented.", true);
+				md.setMessage("This function is not yet implemented!");
+				md.setLocationRelativeTo(GUI.getInstance().getFrame());
+				md.setVisible(true);
+			} else if (e.getActionCommand().equals("saveirods")) {
+				KMessageDialog md = new KMessageDialog(GUI.getInstance().getFrame(), "Not implemented.", true);
+				md.setMessage("This function is not yet implemented!");
+				md.setLocationRelativeTo(GUI.getInstance().getFrame());
+				md.setVisible(true);
+			} else if (e.getActionCommand().equals("openmanifestirods")) {
+				KMessageDialog md = new KMessageDialog(GUI.getInstance().getFrame(), "Not implemented.", true);
+				md.setMessage("This function is not yet implemented!");
+				md.setLocationRelativeTo(GUI.getInstance().getFrame());
+				md.setVisible(true);
+			} else if (e.getActionCommand().equals("savemanifestirods")) {
+				GUIManifestState.getInstance().saveManifestToIRods();
+			} else {
+				// catchall
+				KMessageDialog md = new KMessageDialog(GUI.getInstance().getFrame(), "Not implemented.", true);
+				md.setMessage("Unknown or unimplemented function!");
+				md.setLocationRelativeTo(GUI.getInstance().getFrame());
+				md.setVisible(true);
 			}
 		}
 	}
@@ -409,6 +439,7 @@ public class GUI implements ComponentListener {
 					gui.processPreferences();
 					gui.getImagesFromPreferences();
 					gui.getControllersFromPreferences();
+					gui.getIRodsPreferences();
 					
 					gui.initialize();
 					gui.getFrame().setVisible(true);					
@@ -558,6 +589,13 @@ public class GUI implements ComponentListener {
 		openMenuItem.addActionListener(mListener);
 		fileNewMenu.add(openMenuItem);
 		
+		if (withIRods) {
+			openIRodsMenuItem = new JMenuItem("Open Request from iRods ...");
+			openIRodsMenuItem.setActionCommand("openirods");
+			openIRodsMenuItem.addActionListener(mListener);
+			fileNewMenu.add(openIRodsMenuItem);
+		}
+		
 		saveMenuItem = new JMenuItem("Save Request");
 		saveMenuItem.setActionCommand("save");
 		saveMenuItem.addActionListener(mListener);
@@ -568,6 +606,13 @@ public class GUI implements ComponentListener {
 		saveAsMenuItem.addActionListener(mListener);
 		fileNewMenu.add(saveAsMenuItem);
 		
+		if (withIRods) {
+			saveIRodsMenuItem = new JMenuItem("Save Request into iRods ...");
+			saveIRodsMenuItem.setActionCommand("saveirods");
+			saveIRodsMenuItem.addActionListener(mListener);
+			fileNewMenu.add(saveIRodsMenuItem);
+		}
+		
 		JSeparator sep = new JSeparator();
 		fileNewMenu.add(sep);
 		
@@ -575,6 +620,18 @@ public class GUI implements ComponentListener {
 		openManifestMenuItem.setActionCommand("openmanifest");
 		openManifestMenuItem.addActionListener(mListener);
 		fileNewMenu.add(openManifestMenuItem);
+		
+		if (withIRods) {
+			openManifestIRodsMenuItem = new JMenuItem("Open Manifest from iRods ...");
+			openManifestIRodsMenuItem.setActionCommand("openmanifestirods");
+			openManifestIRodsMenuItem.addActionListener(mListener);
+			fileNewMenu.add(openManifestIRodsMenuItem);
+			
+			saveManifestIRodsMenuItem = new JMenuItem("Save Manifest into iRods ...");
+			saveManifestIRodsMenuItem.setActionCommand("savemanifestirods");
+			saveManifestIRodsMenuItem.addActionListener(mListener);
+			fileNewMenu.add(saveManifestIRodsMenuItem);
+		}
 		
 		separator = new JSeparator();
 		fileNewMenu.add(separator);
@@ -1028,6 +1085,13 @@ public class GUI implements ComponentListener {
 		ORCA_XMLRPC_CONTROLLER("orca.xmlrpc.url", "https://some.hostname.org:11443/orca/xmlrpc", 
 			"Comma-separated list of URLs of the ORCA XMLRPC controllers where you can submit slice requests"),
 		ENABLE_MODIFY("enable.modify", "false", "Enable experimental support for slice modify operations (at your own risk!)"),
+		ENABLE_IRODS("enable.irods", "false", "Enable experimental support for iRods (at your own risk!)"),
+		IRODS_FORMAT("irods.format", "ndl", "Specify the format in which requests and manifest should be saved ('ndl' or 'rspec')"),
+		IRODS_FILE_NAMES("irods.file.names", "${slice.name}-${date}/manifest.${irods.format}", 
+				"Specify the format for request and manifest file names (substitutions are performed)"),
+		IRODS_ICOMMANDS_PATH("irods.icommands.path", "/usr/bin", "Path to icommands"),
+		NDL_CONVERTER_LIST("ndl.converter.list", "http://geni.renci.org:12080/ndl-conversion/, http://bbn-hn.exogeni.net:15080/ndl-conversion/", 
+				"Comma-separated list of available NDL converters"),
 		IMAGE_NAME("image.name", "Debian-6-Standard-Multi-Size-Image-v.1.0.6", 
 			"Name of a known image, you can add more images by adding image1.name, image2.name etc. To see defined images click on 'Client Images' button."),
 		IMAGE_URL("image.url", "http://geni-images.renci.org/images/standard/debian/deb6-neuca-v1.0.7.xml", 
@@ -1145,5 +1209,11 @@ public class GUI implements ComponentListener {
 	
 	public String getSelectedController() {
 		return selectedControllerUrl;
+	}
+	
+	private void getIRodsPreferences() {
+		if (getPreference(PrefsEnum.ENABLE_IRODS).equalsIgnoreCase("true") ||
+				getPreference(PrefsEnum.ENABLE_IRODS).equalsIgnoreCase("yes")) 
+			withIRods = true;		
 	}
 }

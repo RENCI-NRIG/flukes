@@ -130,11 +130,14 @@ public class ManifestLoader implements INdlManifestModelListener, INdlRequestMod
 			// 07/2012/ib
 			nrp.doLessStrictChecking();
 			nrp.processRequest();
+			nrp.freeModel();
 			
 			// parse as manifest
 			requestPhase = false;
 			NdlManifestParser nmp = new NdlManifestParser(s, this);
 			nmp.processManifest();	
+			nmp.freeModel();
+			GUIManifestState.getInstance().setManifestString(s);
 			GUIManifestState.getInstance().launchResourceStateViewer(creationTime, expirationTime);
 			
 		} catch (Exception e) {
