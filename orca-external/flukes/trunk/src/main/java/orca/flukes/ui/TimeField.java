@@ -23,8 +23,6 @@
 package orca.flukes.ui;
 
 import java.util.Calendar;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import com.hyperrealm.kiwi.ui.DataField;
 

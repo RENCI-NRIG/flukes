@@ -22,20 +22,15 @@ public class IRodsICommands implements IIRods {
 		iget = GUI.getInstance().getPreference(PrefsEnum.IRODS_ICOMMANDS_PATH) + System.getProperty("file.separator") + "iget";
 	}
 	
+
 	@Override
-	public String loadManifest(String name) throws IRodsException {
+	public String loadFile(String name) throws IRodsException {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public String loadRequest(String name) throws IRodsException {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public void saveManifest(String name, String manifest)
+	public void saveFile(String name, String manifest)
 			throws IRodsException {
 		if (name == null)
 			throw new IRodsException("Unable to create irods file with name (check irods.file.names property)" + name);
@@ -70,17 +65,19 @@ public class IRodsICommands implements IIRods {
 			throw new IRodsException("Unable to save manifest to irods: " + e.getMessage());
 		}
 	}
-
-	@Override
-	public void saveRequest(String name, String request) throws IRodsException {
-		// TODO Auto-generated method stub
-		
-	}
 	
 	private static String START_CONST = "${";
 	private static String END_CONST = "}";
 	
 	public static String substituteManifestName() {
+		return substituteName(GUI.getInstance().getPreference(PrefsEnum.IRODS_MANIFEST_TEMPLATE));
+	}
+	
+	public static String substituteRequestName() {
+		return substituteName(GUI.getInstance().getPreference(PrefsEnum.IRODS_REQUEST_TEMPLATE));
+	}
+	
+	public static String substituteName(String template) {
 		// collect the properties
 		Properties p = new Properties();
 		
@@ -92,51 +89,50 @@ public class IRodsICommands implements IIRods {
 		p.setProperty("date", date.toString().replace(" ", "-"));
 		p.setProperty("irods.format", GUI.getInstance().getPreference(PrefsEnum.IRODS_FORMAT));
 		
-		return substituteManifestName_(p);
+		return substituteManifestName_(template, p);
 	}
 	
 	// generate a name of the irods manifest based on pattern in a property
-	private static String substituteManifestName_(Properties props) {
-		String value = GUI.getInstance().getPreference(PrefsEnum.IRODS_FILE_NAMES);
+	private static String substituteManifestName_(String pattern, Properties props) {
 
 		// Get the index of the first constant, if any
 		int beginIndex = 0;
-		int startName = value.indexOf(START_CONST, beginIndex);
+		int startName = pattern.indexOf(START_CONST, beginIndex);
 
 		while (startName != -1) {
-			int endName = value.indexOf(END_CONST, startName);
+			int endName = pattern.indexOf(END_CONST, startName);
 			if (endName == -1) {
 				// Terminating symbol not found
 				// Return the value as is
-				return value;
+				return pattern;
 			}
 
-			String constName = value.substring(startName + 2, endName);
+			String constName = pattern.substring(startName + 2, endName);
 			String constValue = props.getProperty(constName);
 
 			if (constValue == null) {
 				// Property name not found
 				// Return the value as is
-				return value;
+				return pattern;
 			}
 
 			// Insert the constant value into the
 			// original property value
-			String newValue = (startName>0) ? value.substring(0, startName) : "";
+			String newValue = (startName>0) ? pattern.substring(0, startName) : "";
 			newValue += constValue;
 
 			// Start checking for constants at this index
 			beginIndex = newValue.length();
 
 			// Append the remainder of the value
-			newValue += value.substring(endName+1);
+			newValue += pattern.substring(endName+1);
 
-			value = newValue;
+			pattern = newValue;
 
 			// Look for the next constant
-			startName = value.indexOf(START_CONST, beginIndex);
+			startName = pattern.indexOf(START_CONST, beginIndex);
 		}
-		return value;
+		return pattern;
 	}
 
 	
@@ -149,7 +145,7 @@ public class IRodsICommands implements IIRods {
 		Date date = new Date();
 		p.setProperty("date", date.toString().replace(" ", "-"));
 		p.setProperty("irods.format", "ndl");
-		System.out.println(irc.substituteManifestName_(p));
+		System.out.println(irc.substituteManifestName_(GUI.getInstance().getPreference(PrefsEnum.IRODS_MANIFEST_TEMPLATE), p));
 		
 	}
 }

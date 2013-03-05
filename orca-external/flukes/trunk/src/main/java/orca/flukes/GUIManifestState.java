@@ -27,10 +27,13 @@ import java.awt.Container;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+
+import javax.xml.bind.DatatypeConverter;
 
 import orca.flukes.GUI.GuiTabs;
 import orca.flukes.GUI.PrefsEnum;
@@ -58,6 +61,7 @@ import edu.uci.ics.jung.visualization.picking.PickedState;
 public class GUIManifestState extends GUICommonState implements IDeleteEdgeCallBack<OrcaLink>, IDeleteNodeCallBack<OrcaNode>{
 	private static GUIManifestState instance = new GUIManifestState();
 	protected String manifestString;
+	private Date start = null, end = null;
 
 	public static GUIManifestState getInstance() {
 		return instance;
@@ -70,6 +74,28 @@ public class GUIManifestState extends GUICommonState implements IDeleteEdgeCallB
 	public String getManifestString() {
 		return manifestString;
 	}
+	
+	public void setManifestTerm(Date s, Date e) {
+		start = s;
+		end = e;
+	}
+	
+	public void setNewEndDate(Date s) {
+
+		if ((start == null) || (end == null))
+			return;
+		
+		Long diff = s.getTime() - start.getTime();
+		if (diff < 0)
+			return;
+
+		diff = s.getTime() - end.getTime();
+		if (diff < 0)
+			return;
+		
+		end = s;	
+	}
+	
 	/**
 	 * clear the manifest
 	 */
@@ -251,7 +277,29 @@ public class GUIManifestState extends GUICommonState implements IDeleteEdgeCallB
 							} else
 								if (e.getActionCommand().equals("modifyClear")) {
 									ModifySaver.getInstance().clear();
-								}
+								} else
+									if (e.getActionCommand().equals("extend")) {
+										ReservationExtensionDialog red = new ReservationExtensionDialog(GUI.getInstance().getFrame());
+										red.setFields(new Date());
+										red.pack();
+										red.setVisible(true);
+										
+										if (end != null) {
+											try {
+												OrcaSMXMLRPCProxy.getInstance().renewSlice(sliceIdField.getText(), end);
+											} catch (Exception ee) {
+												ExceptionDialog ed = new ExceptionDialog(GUI.getInstance().getFrame(), "Exception");
+												ed.setLocationRelativeTo(GUI.getInstance().getFrame());
+												ed.setException("Exception encountered while extending slice: ", ee);
+												ed.setVisible(true);
+											}
+										} else {
+											KMessageDialog md = new KMessageDialog(GUI.getInstance().getFrame(), "Error", true);
+											md.setMessage("Invalid end date!");
+											md.setLocationRelativeTo(GUI.getInstance().getFrame());
+											md.setVisible(true);
+										}
+									}
 		}
 	}
 	
@@ -325,7 +373,6 @@ public class GUIManifestState extends GUICommonState implements IDeleteEdgeCallB
 	@Override
 	public void deleteEdgeCallBack(OrcaLink e) {
 		// TODO Auto-generated method stub
-		
 	}
 
 	@Override
@@ -335,13 +382,20 @@ public class GUIManifestState extends GUICommonState implements IDeleteEdgeCallB
 
 	public void saveManifestToIRods() {
 		IRodsICommands irods = new IRodsICommands();
+		if (manifestString == null) {
+			KMessageDialog md = new KMessageDialog(GUI.getInstance().getFrame(), "Not implemented.", true);
+			md.setMessage("Manifest is empty!");
+			md.setLocationRelativeTo(GUI.getInstance().getFrame());
+			md.setVisible(true);
+			return;
+		}
 		try {
 			// convert if needed
 			if (GUI.getInstance().getPreference(PrefsEnum.IRODS_FORMAT).equalsIgnoreCase("rspec")) {
 				String rspec = NDLConverter.callConverter(NDLConverter.MANIFEST_TO_RSPEC, new Object[]{manifestString, "urn:unknown"});
-				irods.saveManifest(IRodsICommands.substituteManifestName(), rspec);
+				irods.saveFile(IRodsICommands.substituteManifestName(), rspec);
 			} else if (GUI.getInstance().getPreference(PrefsEnum.IRODS_FORMAT).equalsIgnoreCase("ndl"))
-				irods.saveManifest(IRodsICommands.substituteManifestName(), manifestString);
+				irods.saveFile(IRodsICommands.substituteManifestName(), manifestString);
 			else {
 				ExceptionDialog ed = new ExceptionDialog(GUI.getInstance().getFrame(), "Exception");
 				ed.setLocationRelativeTo(GUI.getInstance().getFrame());

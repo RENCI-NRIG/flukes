@@ -41,7 +41,6 @@ public class NDLConverter {
 				XmlRpcClient client = new XmlRpcClient();
 				client.setConfig(config);
 
-				
 				ret = (Map<String, Object>)client.execute(call, params);
 				break;
 			} catch (XmlRpcException e) {
