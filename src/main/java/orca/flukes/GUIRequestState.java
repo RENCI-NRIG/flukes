@@ -29,18 +29,24 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
+import orca.flukes.GUI.PrefsEnum;
+import orca.flukes.irods.IRodsException;
+import orca.flukes.irods.IRodsICommands;
 import orca.flukes.ndl.AdLoader;
 import orca.flukes.ndl.RequestSaver;
 import orca.flukes.ui.ChooserWithNewDialog;
 import orca.flukes.ui.TextAreaDialog;
+import orca.flukes.xmlrpc.NDLConverter;
 import orca.flukes.xmlrpc.OrcaSMXMLRPCProxy;
 import orca.ndl.NdlAbstractDelegationParser;
 import orca.ndl.NdlException;
@@ -104,6 +110,7 @@ public class GUIRequestState extends GUICommonState implements IDeleteEdgeCallBa
 	private static void initialize() {
 		;
 	}
+
 	
 	private GUIRequestState() {
 		term = new OrcaReservationTerm();
@@ -624,5 +631,42 @@ public class GUIRequestState extends GUICommonState implements IDeleteEdgeCallBa
 		gm.setMode(ModalGraphMouse.Mode.EDITING); // Start off in editing mode  
 	}
 	
+	public void saveRequestToIRods() {
+		IRodsICommands irods = new IRodsICommands();
+		String ndl = RequestSaver.getInstance().convertGraphToNdl(g, nsGuid);
+		if ((ndl == null) ||
+				(ndl.length() == 0)) {
+			KMessageDialog kmd = new KMessageDialog(GUI.getInstance().getFrame());
+			kmd.setMessage("Unable to convert graph to NDL.");
+			kmd.setLocationRelativeTo(GUI.getInstance().getFrame());
+			kmd.setVisible(true);
+			return;
+		}
+		try {
+			// convert if needed
+			if (GUI.getInstance().getPreference(PrefsEnum.IRODS_FORMAT).equalsIgnoreCase("rspec")) {
+				String rspec = NDLConverter.callConverter(NDLConverter.RSPEC3_TO_NDL, new Object[]{ndl, "urn:unknown"});
+				irods.saveFile(IRodsICommands.substituteRequestName(), rspec);
+			} else if (GUI.getInstance().getPreference(PrefsEnum.IRODS_FORMAT).equalsIgnoreCase("ndl"))
+				irods.saveFile(IRodsICommands.substituteRequestName(), ndl);
+			else {
+				ExceptionDialog ed = new ExceptionDialog(GUI.getInstance().getFrame(), "Exception");
+				ed.setLocationRelativeTo(GUI.getInstance().getFrame());
+				ed.setException("Exception encountered while saving request to iRods: ", 
+						new Exception("unknown format " + GUI.getInstance().getPreference(PrefsEnum.IRODS_FORMAT)));
+				ed.setVisible(true);
+			}
+		} catch (IRodsException ie) {
+			ExceptionDialog ed = new ExceptionDialog(GUI.getInstance().getFrame(), "Exception");
+			ed.setLocationRelativeTo(GUI.getInstance().getFrame());
+			ed.setException("Exception encountered while saving request to iRods: ", ie);
+			ed.setVisible(true);
+		} catch (Exception e) {
+			ExceptionDialog ed = new ExceptionDialog(GUI.getInstance().getFrame(), "Exception");
+			ed.setLocationRelativeTo(GUI.getInstance().getFrame());
+			ed.setException("Exception encountered while saving request to iRods: ", e);
+			ed.setVisible(true);
+		}
+	}
 	
 }

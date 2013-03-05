@@ -64,8 +64,6 @@ import javax.swing.JToolBar;
 import javax.swing.SwingConstants;
 import javax.swing.filechooser.FileFilter;
 
-import orca.flukes.irods.IRodsException;
-import orca.flukes.irods.IRodsICommands;
 import orca.flukes.ndl.ManifestLoader;
 import orca.flukes.ndl.RequestLoader;
 import orca.flukes.ndl.RequestSaver;
@@ -81,7 +79,6 @@ import com.hyperrealm.kiwi.ui.KFileChooser;
 import com.hyperrealm.kiwi.ui.KTextArea;
 import com.hyperrealm.kiwi.ui.KTextField;
 import com.hyperrealm.kiwi.ui.UIChangeManager;
-import com.hyperrealm.kiwi.ui.dialog.ExceptionDialog;
 import com.hyperrealm.kiwi.ui.dialog.KFileChooserDialog;
 import com.hyperrealm.kiwi.ui.dialog.KMessageDialog;
 import com.hyperrealm.kiwi.ui.dialog.KQuestionDialog;
@@ -440,6 +437,7 @@ public class GUI implements ComponentListener {
 					gui.getImagesFromPreferences();
 					gui.getControllersFromPreferences();
 					gui.getIRodsPreferences();
+					gui.getCustomInstancePreferences();
 					
 					gui.initialize();
 					gui.getFrame().setVisible(true);					
@@ -809,7 +807,7 @@ public class GUI implements ComponentListener {
 		manifestPanel.setLayout(new BoxLayout(manifestPanel, BoxLayout.PAGE_AXIS));
 		manifestPanel.addComponentListener(this);
 		
-		frmOrcaFlukes.setBounds(100, 100, 1000, 800);
+		frmOrcaFlukes.setBounds(100, 100, 1100, 800);
 		frmOrcaFlukes.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		
 		{
@@ -963,6 +961,19 @@ public class GUI implements ComponentListener {
 			horizontalStrut = Box.createHorizontalStrut(10);
 			toolBar.add(horizontalStrut);
 			
+			if (getPreference(PrefsEnum.ENABLE_EXTEND).equalsIgnoreCase("true") ||
+					getPreference(PrefsEnum.ENABLE_EXTEND).equalsIgnoreCase("yes")) {
+				JButton extendButton = new JButton("Extend Reservation");
+				extendButton.setToolTipText("Extend the end date of the reservation");
+				extendButton.setActionCommand("extend");
+				extendButton.addActionListener(rbl);
+				extendButton.setVerticalAlignment(SwingConstants.TOP);
+				toolBar.add(extendButton);
+
+				horizontalStrut = Box.createHorizontalStrut(10);
+				toolBar.add(horizontalStrut);
+			}
+			
 			if (getPreference(PrefsEnum.ENABLE_MODIFY).equalsIgnoreCase("true") ||
 					getPreference(PrefsEnum.ENABLE_MODIFY).equalsIgnoreCase("yes")) {
 				JButton modifyButton = new JButton("Commit Modify Actions");
@@ -1086,12 +1097,16 @@ public class GUI implements ComponentListener {
 			"Comma-separated list of URLs of the ORCA XMLRPC controllers where you can submit slice requests"),
 		ENABLE_MODIFY("enable.modify", "false", "Enable experimental support for slice modify operations (at your own risk!)"),
 		ENABLE_IRODS("enable.irods", "false", "Enable experimental support for iRods (at your own risk!)"),
+		ENABLE_EXTEND("enable.extend", "false", "Enable extending slice lifetime (at your own risk!)"),
 		IRODS_FORMAT("irods.format", "ndl", "Specify the format in which requests and manifest should be saved ('ndl' or 'rspec')"),
-		IRODS_FILE_NAMES("irods.file.names", "${slice.name}-${date}/manifest.${irods.format}", 
-				"Specify the format for request and manifest file names (substitutions are performed)"),
+		IRODS_MANIFEST_TEMPLATE("irods.manifest.template", "${slice.name}-${date}/manifest.${irods.format}", 
+				"Specify the format for manifest file names (substitutions are performed)"),
+		IRODS_REQUEST_TEMPLATE("irods.manifest.template", "${slice.name}-${date}/request.${irods.format}", 
+				"Specify the format for request file names (substitutions are performed)"),
 		IRODS_ICOMMANDS_PATH("irods.icommands.path", "/usr/bin", "Path to icommands"),
 		NDL_CONVERTER_LIST("ndl.converter.list", "http://geni.renci.org:12080/ndl-conversion/, http://bbn-hn.exogeni.net:15080/ndl-conversion/", 
 				"Comma-separated list of available NDL converters"),
+		CUSTOM_INSTANCE_LIST("custom.instance.list", "", "Comma-separated list of custom instance sizes. For debugging only!"),
 		IMAGE_NAME("image.name", "Debian-6-Standard-Multi-Size-Image-v.1.0.6", 
 			"Name of a known image, you can add more images by adding image1.name, image2.name etc. To see defined images click on 'Client Images' button."),
 		IMAGE_URL("image.url", "http://geni-images.renci.org/images/standard/debian/deb6-neuca-v1.0.7.xml", 
@@ -1215,5 +1230,14 @@ public class GUI implements ComponentListener {
 		if (getPreference(PrefsEnum.ENABLE_IRODS).equalsIgnoreCase("true") ||
 				getPreference(PrefsEnum.ENABLE_IRODS).equalsIgnoreCase("yes")) 
 			withIRods = true;		
+	}
+	
+	private void getCustomInstancePreferences() {
+		String[] customInstances = getPreference(PrefsEnum.CUSTOM_INSTANCE_LIST).split(",");
+		
+		for (String instance: customInstances) 
+			if (instance.startsWith("Euca") || instance.startsWith("EC2")) {
+				RequestSaver.addCustomType(instance);
+			}
 	}
 }

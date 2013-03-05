@@ -106,6 +106,7 @@ public class ManifestLoader implements INdlManifestModelListener, INdlRequestMod
 			nmp.processManifest();
 			nmp.freeModel();
 			GUIManifestState.getInstance().setManifestString(sb.toString());
+			GUIManifestState.getInstance().setManifestTerm(creationTime, expirationTime);
 			GUIManifestState.getInstance().launchResourceStateViewer(creationTime, expirationTime);
 			
 		} catch (Exception e) {
@@ -136,8 +137,8 @@ public class ManifestLoader implements INdlManifestModelListener, INdlRequestMod
 			requestPhase = false;
 			NdlManifestParser nmp = new NdlManifestParser(s, this);
 			nmp.processManifest();	
-			nmp.freeModel();
-			GUIManifestState.getInstance().setManifestString(s);
+			nmp.freeModel();			
+			GUIManifestState.getInstance().setManifestTerm(creationTime, expirationTime);
 			GUIManifestState.getInstance().launchResourceStateViewer(creationTime, expirationTime);
 			
 		} catch (Exception e) {

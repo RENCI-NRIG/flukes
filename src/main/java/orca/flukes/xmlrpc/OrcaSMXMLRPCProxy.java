@@ -11,6 +11,8 @@ import java.security.KeyStore;
 import java.security.PrivateKey;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
@@ -20,6 +22,7 @@ import java.util.UUID;
 
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
+import javax.xml.bind.DatatypeConverter;
 
 import orca.flukes.GUI;
 import orca.util.ssl.ContextualSSLProtocolSocketFactory;
@@ -44,6 +47,7 @@ public class OrcaSMXMLRPCProxy {
 	private static final String CREATE_SLICE = "orca.createSlice";
 	private static final String DELETE_SLICE = "orca.deleteSlice";
 	private static final String MODIFY_SLICE = "orca.modifySlice";
+	private static final String RENEW_SLICE = "orca.renewSlice";
 	private static final String LIST_SLICES = "orca.listSlices";
 	private static final String LIST_RESOURCES = "orca.listResources";
 	private static final String SSH_DSA_PUBKEY_FILE = "id_dsa.pub";
@@ -217,6 +221,46 @@ public class OrcaSMXMLRPCProxy {
 			Map<String, Object> rr = (Map<String, Object>)client.execute(CREATE_SLICE, new Object[]{ sliceId, new Object[]{}, resReq, users});
 			if ((Boolean)rr.get(ERR_RET_FIELD))
 				throw new Exception("Unable to create slice: " + (String)rr.get(MSG_RET_FIELD));
+			result = (String)rr.get(RET_RET_FIELD);
+        } catch (MalformedURLException e) {
+        	throw new Exception("Please check the SM URL " + GUI.getInstance().getSelectedController());
+        } catch (XmlRpcException e) {
+        	throw new Exception("Unable to contact SM " + GUI.getInstance().getSelectedController() + " due to " + e);
+        }
+		
+		return result;
+	}
+	
+	/** submit an ndl request to create a slice, using explicitly specified users array
+	 * 
+	 * @param sliceId
+	 * @param resReq
+	 * @param users
+	 * @return
+	 */
+	@SuppressWarnings("unchecked")
+	public String renewSlice(String sliceId, Date newDate) throws Exception {
+		assert(sliceId != null);
+		
+		String result = null;
+    	setSSLIdentity();
+		try {
+			XmlRpcClientConfigImpl config = new XmlRpcClientConfigImpl();
+			config.setServerURL(new URL(GUI.getInstance().getSelectedController()));
+			XmlRpcClient client = new XmlRpcClient();
+			client.setConfig(config);
+			
+            // set this transport factory for host-specific SSLContexts to work
+            XmlRpcCommonsTransportFactory f = new XmlRpcCommonsTransportFactory(client);
+			client.setTransportFactory(f);
+			
+			// create sliver
+			Calendar ecal = Calendar.getInstance();
+			ecal.setTime(newDate);
+			String endDateString = DatatypeConverter.printDateTime(ecal); // RFC3339/ISO8601
+			Map<String, Object> rr = (Map<String, Object>)client.execute(RENEW_SLICE, new Object[]{ sliceId, new Object[]{}, endDateString});
+			if ((Boolean)rr.get(ERR_RET_FIELD))
+				throw new Exception("Unable to renew slice: " + (String)rr.get(MSG_RET_FIELD));
 			result = (String)rr.get(RET_RET_FIELD);
         } catch (MalformedURLException e) {
         	throw new Exception("Please check the SM URL " + GUI.getInstance().getSelectedController());

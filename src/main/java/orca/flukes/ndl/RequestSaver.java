@@ -121,11 +121,16 @@ public class RequestSaver {
 		nt.put("Euca m1.large", new Pair<String>(EUCALYPTUS_NS, "EucaM1Large"));
 		nt.put("Euca m1.xlarge", new Pair<String>(EUCALYPTUS_NS, "EucaM1XLarge"));
 		nt.put("Euca c1.xlarge", new Pair<String>(EUCALYPTUS_NS, "EucaC1XLarge"));
-		nodeTypes = Collections.unmodifiableMap(nt);
+		//nodeTypes = Collections.unmodifiableMap(nt);
+		nodeTypes = nt;
 	}
 	
 	private RequestSaver() {
 		
+	}
+	
+	public static void addCustomType(String type) {
+		nodeTypes.put(type, new Pair<String>(EUCALYPTUS_NS, type));
 	}
 	
 	public static RequestSaver getInstance() {

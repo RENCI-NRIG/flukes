@@ -22,7 +22,6 @@
 */
 package orca.flukes;
 
-import java.util.Calendar;
 import java.util.Date;
 
 /**
