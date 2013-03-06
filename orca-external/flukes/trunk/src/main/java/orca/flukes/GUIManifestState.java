@@ -27,13 +27,10 @@ import java.awt.Container;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-
-import javax.xml.bind.DatatypeConverter;
 
 import orca.flukes.GUI.GuiTabs;
 import orca.flukes.GUI.PrefsEnum;
@@ -159,6 +156,16 @@ public class GUIManifestState extends GUICommonState implements IDeleteEdgeCallB
 		}
 	}
 	
+	private String stripManifest(String m) {
+		if (m == null)
+			return null;
+		int ind = m.indexOf("<rdf:RDF");
+		if (ind > 0)
+			return m.substring(ind);
+		else
+			return null;
+	}
+	
 	void queryManifest() {
 		// run request manifest from controller
 		if ((sliceIdField.getText() == null) || 
@@ -177,11 +184,9 @@ public class GUIManifestState extends GUICommonState implements IDeleteEdgeCallB
 
 			ManifestLoader ml = new ManifestLoader();
 
-			// get rid of crud before <rdf:RDF
-			int ind = manifestString.indexOf("<rdf:RDF");
-			if (ind > 0) {
-				String realManifest = manifestString.substring(ind);
-				if (ml.loadString(realManifest))
+			String realM = stripManifest(manifestString);
+			if (realM != null) {
+				if (ml.loadString(realM))
 					GUI.getInstance().kickLayout(GuiTabs.MANIFEST_VIEW);
 			} else {
 				KMessageDialog kmd = new KMessageDialog(GUI.getInstance().getFrame());
@@ -383,19 +388,20 @@ public class GUIManifestState extends GUICommonState implements IDeleteEdgeCallB
 	public void saveManifestToIRods() {
 		IRodsICommands irods = new IRodsICommands();
 		if (manifestString == null) {
-			KMessageDialog md = new KMessageDialog(GUI.getInstance().getFrame(), "Not implemented.", true);
+			KMessageDialog md = new KMessageDialog(GUI.getInstance().getFrame(), "Manifest Error", true);
 			md.setMessage("Manifest is empty!");
 			md.setLocationRelativeTo(GUI.getInstance().getFrame());
 			md.setVisible(true);
 			return;
 		}
 		try {
+			String realM = stripManifest(manifestString);
 			// convert if needed
 			if (GUI.getInstance().getPreference(PrefsEnum.IRODS_FORMAT).equalsIgnoreCase("rspec")) {
-				String rspec = NDLConverter.callConverter(NDLConverter.MANIFEST_TO_RSPEC, new Object[]{manifestString, "urn:unknown"});
+				String rspec = NDLConverter.callConverter(NDLConverter.MANIFEST_TO_RSPEC, new Object[]{realM, "urn:unknown"});
 				irods.saveFile(IRodsICommands.substituteManifestName(), rspec);
 			} else if (GUI.getInstance().getPreference(PrefsEnum.IRODS_FORMAT).equalsIgnoreCase("ndl"))
-				irods.saveFile(IRodsICommands.substituteManifestName(), manifestString);
+				irods.saveFile(IRodsICommands.substituteManifestName(), realM);
 			else {
 				ExceptionDialog ed = new ExceptionDialog(GUI.getInstance().getFrame(), "Exception");
 				ed.setLocationRelativeTo(GUI.getInstance().getFrame());
