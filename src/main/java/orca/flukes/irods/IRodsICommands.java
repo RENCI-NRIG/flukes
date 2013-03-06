@@ -64,6 +64,8 @@ public class IRodsICommands implements IIRods {
 		} catch (IOException e) {
 			throw new IRodsException("Unable to save manifest to irods: " + e.getMessage());
 		}
+		if (tFile.delete() != true) 
+			throw new IRodsException("Unable to delete temporary file");
 	}
 	
 	private static String START_CONST = "${";
