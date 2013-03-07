@@ -57,11 +57,15 @@ public class OrcaLinkCreator implements ILinkCreator {
 	}
 
 	@Override
-	public OrcaLink create() {
+	public OrcaLink create(String prefix) {
        	synchronized(this) {
     		String name;
     		do {
-    			name = "Link" + linkCount++;
+    			if (prefix != null)
+    				name = prefix; 
+    			else
+    				name = "";
+    			name += "Link" + linkCount++;
     		} while (!checkUniqueLinkName(null, name));
     		OrcaLink link = new OrcaLink(name);
     		link.setBandwidth(defaultBandwidth);
@@ -69,6 +73,14 @@ public class OrcaLinkCreator implements ILinkCreator {
     		
     		return link;
     	}
+	}
+	
+	@Override
+	public OrcaLink create(String nm, long bw) {
+		OrcaLink link = new OrcaLink(nm);
+		link.setBandwidth(bw);
+		link.setLatency(defaultLatency);
+		return link;
 	}
 	
 	public void reset() {

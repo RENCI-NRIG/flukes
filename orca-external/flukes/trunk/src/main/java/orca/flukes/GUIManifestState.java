@@ -58,7 +58,7 @@ import edu.uci.ics.jung.visualization.picking.PickedState;
 public class GUIManifestState extends GUICommonState implements IDeleteEdgeCallBack<OrcaLink>, IDeleteNodeCallBack<OrcaNode>{
 	private static GUIManifestState instance = new GUIManifestState();
 	protected String manifestString;
-	private Date start = null, end = null;
+	private Date start = null, end = null, newEnd = null;
 
 	public static GUIManifestState getInstance() {
 		return instance;
@@ -90,7 +90,12 @@ public class GUIManifestState extends GUICommonState implements IDeleteEdgeCallB
 		if (diff < 0)
 			return;
 		
-		end = s;	
+		newEnd = s;	
+	}
+	
+	public void resetEndDate() {
+		end = newEnd;
+		newEnd = null;
 	}
 	
 	/**
@@ -289,21 +294,24 @@ public class GUIManifestState extends GUICommonState implements IDeleteEdgeCallB
 										red.pack();
 										red.setVisible(true);
 										
-										if (end != null) {
+										if (newEnd != null) {
 											try {
-												OrcaSMXMLRPCProxy.getInstance().renewSlice(sliceIdField.getText(), end);
+												Boolean res = OrcaSMXMLRPCProxy.getInstance().renewSlice(sliceIdField.getText(), newEnd);
+												KMessageDialog kd = new KMessageDialog(GUI.getInstance().getFrame(), "Result", true);
+												kd.setMessage("The extend operation returned: " + res);
+												kd.setLocationRelativeTo(GUI.getInstance().getFrame());
+												kd.setVisible(true);
+												if (res)
+													resetEndDate();
+												else
+													newEnd = null;
 											} catch (Exception ee) {
 												ExceptionDialog ed = new ExceptionDialog(GUI.getInstance().getFrame(), "Exception");
 												ed.setLocationRelativeTo(GUI.getInstance().getFrame());
 												ed.setException("Exception encountered while extending slice: ", ee);
 												ed.setVisible(true);
 											}
-										} else {
-											KMessageDialog md = new KMessageDialog(GUI.getInstance().getFrame(), "Error", true);
-											md.setMessage("Invalid end date!");
-											md.setLocationRelativeTo(GUI.getInstance().getFrame());
-											md.setVisible(true);
-										}
+										} 
 									}
 		}
 	}

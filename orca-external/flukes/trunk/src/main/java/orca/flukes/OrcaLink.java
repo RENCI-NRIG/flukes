@@ -51,7 +51,8 @@ public class OrcaLink implements OrcaResource {
     }
 
     interface ILinkCreator {
-    	public OrcaLink create();
+    	public OrcaLink create(String prefix);
+    	public OrcaLink create(String nm, long bw);
     	public void reset();
     }
     
@@ -130,7 +131,7 @@ public class OrcaLink implements OrcaResource {
     	if (label == null) 
     		viewText += "\nLabel: unspecified";
     	else
-    		viewText += "\nLabel: " + latency;
+    		viewText += "\nLabel: " + label;
     	
     	if (state == null)
     		viewText += "\nLink reservation state: unspecified";
@@ -156,7 +157,7 @@ public class OrcaLink implements OrcaResource {
         	if (inc == null)
         		return null;
         	synchronized(inc) {
-        		return inc.create();
+        		return inc.create(null);
         	}
         }    
     }

@@ -160,6 +160,15 @@ public class ManifestLoader implements INdlManifestModelListener, INdlRequestMod
 		return StringUtils.removeStart(r.getURI(), NdlCommons.ORCA_NS);
 	}
 	
+	private String getPrettyName(Resource r) {
+		String rname = getTrueName(r);
+		int ind = rname.indexOf('#');
+		if (ind > 0) {
+			rname = rname.substring(ind + 1);
+		}
+		return rname;
+	}
+	
 	// get domain name from inter-domain resource name
 	private String getInterDomainName(Resource r) {
 		String trueName = getTrueName(r);
@@ -195,7 +204,8 @@ public class ManifestLoader implements INdlManifestModelListener, INdlRequestMod
 		
 		if (interfaces.size() == 2) {
 			GUI.logger().debug("  Adding p-to-p link");
-			OrcaLink ol = GUIManifestState.getInstance().getLinkCreator().create();
+			OrcaLink ol = GUIManifestState.getInstance().getLinkCreator().create(getPrettyName(l), NdlCommons.getResourceBandwidth(l));
+			ol.setLabel(label);
 
 			// maybe point-to-point link
 			// the ends
@@ -207,7 +217,7 @@ public class ManifestLoader implements INdlManifestModelListener, INdlRequestMod
 				
 				if ((if1Node != null) && if1Node.equals(if2Node)) {
 					// degenerate case of a node on a shared vlan
-					OrcaCrossconnect oc = new OrcaCrossconnect(getTrueName(l));
+					OrcaCrossconnect oc = new OrcaCrossconnect(getPrettyName(l));
 					oc.setLabel(label);
 					oc.setDomain(RequestSaver.reverseLookupDomain(NdlCommons.getDomain(l)));
 					nodes.put(getTrueName(l), oc);
@@ -249,7 +259,7 @@ public class ManifestLoader implements INdlManifestModelListener, INdlRequestMod
 			GUI.logger().debug("  Adding multi-point crossconnect " + getTrueName(l));
 			// multi-point link
 			// create a crossconnect then use interfaceToNode mapping to create links to it
-			OrcaCrossconnect ml = new OrcaCrossconnect(getTrueName(l));
+			OrcaCrossconnect ml = new OrcaCrossconnect(getPrettyName(l));
 
 			ml.setLabel(label);
 			ml.setReservationNotice(NdlCommons.getResourceReservationNotice(l));
@@ -352,7 +362,7 @@ public class ManifestLoader implements INdlManifestModelListener, INdlRequestMod
 
 					// create link from node to crossconnect and assign IP if it doesn't exist
 					GUI.logger().debug("  Creating a link  from " + on + " to " + crs);
-					ol = GUIManifestState.getInstance().getLinkCreator().create();
+					ol = GUIManifestState.getInstance().getLinkCreator().create("Unnamed");
 					GUIManifestState.getInstance().getGraph().addEdge(ol, new Pair<OrcaNode>(on, crs), 
 							EdgeType.UNDIRECTED);
 					on.setIp(ol, ip, nmInt);
@@ -394,7 +404,7 @@ public class ManifestLoader implements INdlManifestModelListener, INdlRequestMod
 
 		GUI.logger().debug("CrossConnect: " + c);
 		
-		OrcaCrossconnect oc = new OrcaCrossconnect(getTrueName(c));
+		OrcaCrossconnect oc = new OrcaCrossconnect(getPrettyName(c));
 		oc.setLabel(label);
 		
 		setCommonNodeProperties(oc, c);
@@ -438,7 +448,7 @@ public class ManifestLoader implements INdlManifestModelListener, INdlRequestMod
 		
 		OrcaNode newNode;
 		
-		newNode = new OrcaNode(getTrueName(ce));
+		newNode = new OrcaNode(getPrettyName(ce));
 		
 //		if (ceClass.equals(NdlCommons.computeElementClass))
 //			// HACK! if it is a collection, it used to be NODEGROUP
@@ -501,7 +511,7 @@ public class ManifestLoader implements INdlManifestModelListener, INdlRequestMod
 			OrcaNode on = new OrcaNode(getTrueName(tmpR), parent);
 			nodes.put(getTrueName(tmpR), on);
 			GUIManifestState.getInstance().getGraph().addVertex(on);
-			OrcaLink ol = GUIManifestState.getInstance().getLinkCreator().create();
+			OrcaLink ol = GUIManifestState.getInstance().getLinkCreator().create("Unnamed");
 			
 			// link to parent (a visual HACK)
 			links.put(ol.getName(), ol);

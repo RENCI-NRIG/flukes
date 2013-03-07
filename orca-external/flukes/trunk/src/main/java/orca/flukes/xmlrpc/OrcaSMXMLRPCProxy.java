@@ -239,10 +239,10 @@ public class OrcaSMXMLRPCProxy {
 	 * @return
 	 */
 	@SuppressWarnings("unchecked")
-	public String renewSlice(String sliceId, Date newDate) throws Exception {
+	public Boolean renewSlice(String sliceId, Date newDate) throws Exception {
 		assert(sliceId != null);
 		
-		String result = null;
+		Boolean result = false;
     	setSSLIdentity();
 		try {
 			XmlRpcClientConfigImpl config = new XmlRpcClientConfigImpl();
@@ -261,7 +261,7 @@ public class OrcaSMXMLRPCProxy {
 			Map<String, Object> rr = (Map<String, Object>)client.execute(RENEW_SLICE, new Object[]{ sliceId, new Object[]{}, endDateString});
 			if ((Boolean)rr.get(ERR_RET_FIELD))
 				throw new Exception("Unable to renew slice: " + (String)rr.get(MSG_RET_FIELD));
-			result = (String)rr.get(RET_RET_FIELD);
+			result = (Boolean)rr.get(RET_RET_FIELD);
         } catch (MalformedURLException e) {
         	throw new Exception("Please check the SM URL " + GUI.getInstance().getSelectedController());
         } catch (XmlRpcException e) {
