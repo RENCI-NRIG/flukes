@@ -1,6 +1,11 @@
 Flukes Release Notes:
 ---------------------
 
+03/07/13:
+- Added ability to extend slice lifetime
+- Improved readability of names in manifests
+- Added ability to save manifest into iRods
+
 02/15/13:
 - Added FIU
 
