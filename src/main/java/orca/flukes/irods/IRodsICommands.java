@@ -5,19 +5,24 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
+import java.io.Reader;
 import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Properties;
 
 import orca.flukes.GUI;
 import orca.flukes.GUIManifestState;
 import orca.flukes.GUI.PrefsEnum;
+import orca.flukes.util.SystemExecutor;
 
 // deal with irods using pre-installed icommands
 public class IRodsICommands implements IIRods {
-	private final String iput, iget;
+	private final String iput, iget, imkdir;
 	
 	public IRodsICommands() {
+		imkdir = GUI.getInstance().getPreference(PrefsEnum.IRODS_ICOMMANDS_PATH) + System.getProperty("file.separator") + "imkdir";
 		iput = GUI.getInstance().getPreference(PrefsEnum.IRODS_ICOMMANDS_PATH) + System.getProperty("file.separator") + "iput";
 		iget = GUI.getInstance().getPreference(PrefsEnum.IRODS_ICOMMANDS_PATH) + System.getProperty("file.separator") + "iget";
 	}
@@ -30,12 +35,17 @@ public class IRodsICommands implements IIRods {
 	}
 
 	@Override
-	public void saveFile(String name, String manifest)
+	/**
+	 * Save file into irods
+	 * @param name - name of irods file
+	 * @param content - file contents
+	 */
+	public String saveFile(String name, String content)
 			throws IRodsException {
 		if (name == null)
 			throw new IRodsException("Unable to create irods file with name (check irods.file.names property)" + name);
 		
-		if (manifest == null)
+		if (content == null)
 			throw new IRodsException("Unable to save empty manifest into iRods");
 		
 		// save manifest into temp file, then push to irods
@@ -44,7 +54,7 @@ public class IRodsICommands implements IIRods {
 			tFile = File.createTempFile("manifest", null);
 			FileOutputStream fsw = new FileOutputStream(tFile);
 			OutputStreamWriter out = new OutputStreamWriter(fsw, "UTF-8");
-			out.write(manifest);
+			out.write(content);
 			out.close();
 		} catch(FileNotFoundException e) {
 			;
@@ -57,15 +67,30 @@ public class IRodsICommands implements IIRods {
 		if (tFile == null)
 			throw new IRodsException("Unable to save manifest temp file");
 		
-		String command = iput + " " + tFile.getPath() + " " + name;
-		Runtime rt = Runtime.getRuntime();   
+		runIMkdir(name);
+		
+		// iput
+		ArrayList<String> myCommand = new ArrayList<String>();
+
+		myCommand.add(iput);
+		myCommand.add(tFile.getPath());
+		myCommand.add(name);
+		
+		String ret = executeIRodsCommand(myCommand, null);
+	
+		return ret;
+	}
+	
+	private String executeIRodsCommand(List<String> cmd, Properties env) throws IRodsException {
+		SystemExecutor se = new SystemExecutor();
+		
+		String response;
 		try {
-			rt.exec(command);
-		} catch (IOException e) {
-			throw new IRodsException("Unable to save manifest to irods: " + e.getMessage());
-		}
-		if (tFile.delete() != true) 
-			throw new IRodsException("Unable to delete temporary file");
+			response = se.execute(cmd, env, GUI.getInstance().getPreference(PrefsEnum.IRODS_ICOMMANDS_PATH), (Reader)null);
+		} catch (RuntimeException re) {
+			throw new IRodsException("Error executing icommand: " + re);
+ 		}
+		return response;
 	}
 	
 	private static String START_CONST = "${";
@@ -92,6 +117,29 @@ public class IRodsICommands implements IIRods {
 		p.setProperty("irods.format", GUI.getInstance().getPreference(PrefsEnum.IRODS_FORMAT));
 		
 		return substituteManifestName_(template, p);
+	}
+	
+	private void runIMkdir(String name) {
+		// imkdir
+		List<String> myCommand = new ArrayList<String>();
+		
+		myCommand.add(imkdir);
+		myCommand.add("-p");
+		
+		int ind = name.indexOf('/');
+		String subdir = null;
+		while(ind > 0) {
+			subdir = name.substring(0, ind);
+			ind = name.indexOf('/', ind + 1);
+		}
+		myCommand.add(subdir);
+		// need to mkdir for a series of subdirs
+		
+		try {
+			executeIRodsCommand(myCommand, null);
+		} catch(IRodsException ie1) {
+			; // allow mkdir to fail
+		}
 	}
 	
 	// generate a name of the irods manifest based on pattern in a property
