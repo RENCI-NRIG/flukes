@@ -5,5 +5,5 @@ public interface IIRods {
 
 	public String loadFile(String name) throws IRodsException;
 	
-	public void saveFile(String name, String manifest) throws IRodsException;
+	public String saveFile(String name, String content) throws IRodsException;
 }

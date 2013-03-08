@@ -405,11 +405,12 @@ public class GUIManifestState extends GUICommonState implements IDeleteEdgeCallB
 		try {
 			String realM = stripManifest(manifestString);
 			// convert if needed
+			String iRodsName = IRodsICommands.substituteManifestName();
 			if (GUI.getInstance().getPreference(PrefsEnum.IRODS_FORMAT).equalsIgnoreCase("rspec")) {
-				String rspec = NDLConverter.callConverter(NDLConverter.MANIFEST_TO_RSPEC, new Object[]{realM, "urn:unknown"});
-				irods.saveFile(IRodsICommands.substituteManifestName(), rspec);
+				String rspec = NDLConverter.callConverter(NDLConverter.MANIFEST_TO_RSPEC, new Object[]{realM, sliceIdField.getText()});
+				irods.saveFile(iRodsName, rspec);
 			} else if (GUI.getInstance().getPreference(PrefsEnum.IRODS_FORMAT).equalsIgnoreCase("ndl"))
-				irods.saveFile(IRodsICommands.substituteManifestName(), realM);
+				irods.saveFile(iRodsName, realM);
 			else {
 				ExceptionDialog ed = new ExceptionDialog(GUI.getInstance().getFrame(), "Exception");
 				ed.setLocationRelativeTo(GUI.getInstance().getFrame());
@@ -417,6 +418,10 @@ public class GUIManifestState extends GUICommonState implements IDeleteEdgeCallB
 						new Exception("unknown format " + GUI.getInstance().getPreference(PrefsEnum.IRODS_FORMAT)));
 				ed.setVisible(true);
 			}
+			KMessageDialog md = new KMessageDialog(GUI.getInstance().getFrame(), "Saving to iRods", true);
+			md.setMessage("Manifest saved as " + iRodsName);
+			md.setLocationRelativeTo(GUI.getInstance().getFrame());
+			md.setVisible(true);
 		} catch (IRodsException ie) {
 			ExceptionDialog ed = new ExceptionDialog(GUI.getInstance().getFrame(), "Exception");
 			ed.setLocationRelativeTo(GUI.getInstance().getFrame());

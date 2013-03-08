@@ -645,7 +645,7 @@ public class GUIRequestState extends GUICommonState implements IDeleteEdgeCallBa
 		try {
 			// convert if needed
 			if (GUI.getInstance().getPreference(PrefsEnum.IRODS_FORMAT).equalsIgnoreCase("rspec")) {
-				String rspec = NDLConverter.callConverter(NDLConverter.RSPEC3_TO_NDL, new Object[]{ndl, "urn:unknown"});
+				String rspec = NDLConverter.callConverter(NDLConverter.RSPEC3_TO_NDL, new Object[]{ndl, sliceIdField.getText()});
 				irods.saveFile(IRodsICommands.substituteRequestName(), rspec);
 			} else if (GUI.getInstance().getPreference(PrefsEnum.IRODS_FORMAT).equalsIgnoreCase("ndl"))
 				irods.saveFile(IRodsICommands.substituteRequestName(), ndl);
