@@ -960,20 +960,17 @@ public class GUI implements ComponentListener {
 			
 			horizontalStrut = Box.createHorizontalStrut(10);
 			toolBar.add(horizontalStrut);
-			
-			if (getPreference(PrefsEnum.ENABLE_EXTEND).equalsIgnoreCase("true") ||
-					getPreference(PrefsEnum.ENABLE_EXTEND).equalsIgnoreCase("yes")) {
-				JButton extendButton = new JButton("Extend Reservation");
-				extendButton.setToolTipText("Extend the end date of the reservation");
-				extendButton.setActionCommand("extend");
-				extendButton.addActionListener(rbl);
-				extendButton.setVerticalAlignment(SwingConstants.TOP);
-				toolBar.add(extendButton);
 
-				horizontalStrut = Box.createHorizontalStrut(10);
-				toolBar.add(horizontalStrut);
-			}
-			
+			JButton extendButton = new JButton("Extend Reservation");
+			extendButton.setToolTipText("Extend the end date of the reservation");
+			extendButton.setActionCommand("extend");
+			extendButton.addActionListener(rbl);
+			extendButton.setVerticalAlignment(SwingConstants.TOP);
+			toolBar.add(extendButton);
+
+			horizontalStrut = Box.createHorizontalStrut(10);
+			toolBar.add(horizontalStrut);
+
 			if (getPreference(PrefsEnum.ENABLE_MODIFY).equalsIgnoreCase("true") ||
 					getPreference(PrefsEnum.ENABLE_MODIFY).equalsIgnoreCase("yes")) {
 				JButton modifyButton = new JButton("Commit Modify Actions");
@@ -982,17 +979,17 @@ public class GUI implements ComponentListener {
 				modifyButton.addActionListener(rbl);
 				modifyButton.setVerticalAlignment(SwingConstants.TOP);
 				toolBar.add(modifyButton);
-			
+
 				horizontalStrut = Box.createHorizontalStrut(10);
 				toolBar.add(horizontalStrut);
-				
+
 				JButton modifyClearButton = new JButton("Clear Modify Actions");
 				modifyClearButton.setToolTipText("Clear modify slice actions");
 				modifyClearButton.setActionCommand("clearModify");
 				modifyClearButton.addActionListener(rbl);
 				modifyClearButton.setVerticalAlignment(SwingConstants.TOP);
 				toolBar.add(modifyClearButton);
-			
+
 				horizontalStrut = Box.createHorizontalStrut(10);
 				toolBar.add(horizontalStrut);
 			}
@@ -1097,7 +1094,7 @@ public class GUI implements ComponentListener {
 			"Comma-separated list of URLs of the ORCA XMLRPC controllers where you can submit slice requests"),
 		ENABLE_MODIFY("enable.modify", "false", "Enable experimental support for slice modify operations (at your own risk!)"),
 		ENABLE_IRODS("enable.irods", "false", "Enable experimental support for iRods (at your own risk!)"),
-		ENABLE_EXTEND("enable.extend", "false", "Enable extending slice lifetime (at your own risk!)"),
+		//ENABLE_EXTEND("enable.extend", "false", "Enable extending slice lifetime (at your own risk!)"),
 		IRODS_FORMAT("irods.format", "ndl", "Specify the format in which requests and manifest should be saved ('ndl' or 'rspec')"),
 		IRODS_MANIFEST_TEMPLATE("irods.manifest.template", "${slice.name}/manifest-${date}.${irods.format}", 
 				"Specify the format for manifest file names (substitutions are performed, multiple directory levels are respected)"),

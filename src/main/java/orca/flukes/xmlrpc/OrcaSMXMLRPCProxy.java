@@ -189,6 +189,8 @@ public class OrcaSMXMLRPCProxy {
         	throw new Exception("Please check the SM URL " + GUI.getInstance().getSelectedController());
         } catch (XmlRpcException e) {
         	throw new Exception("Unable to contact SM " + GUI.getInstance().getSelectedController() + " due to " + e);
+        } catch (Exception e) {
+        	throw new Exception("Unable to contact SM " + GUI.getInstance().getSelectedController());
         }
 		return versionMap;
 	}
@@ -226,6 +228,8 @@ public class OrcaSMXMLRPCProxy {
         	throw new Exception("Please check the SM URL " + GUI.getInstance().getSelectedController());
         } catch (XmlRpcException e) {
         	throw new Exception("Unable to contact SM " + GUI.getInstance().getSelectedController() + " due to " + e);
+        } catch (Exception e) {
+        	throw new Exception("Unable to contact SM " + GUI.getInstance().getSelectedController());
         }
 		
 		return result;
@@ -266,6 +270,8 @@ public class OrcaSMXMLRPCProxy {
         	throw new Exception("Please check the SM URL " + GUI.getInstance().getSelectedController());
         } catch (XmlRpcException e) {
         	throw new Exception("Unable to contact SM " + GUI.getInstance().getSelectedController() + " due to " + e);
+        } catch (Exception e) {
+        	throw new Exception("Unable to contact SM " + GUI.getInstance().getSelectedController());
         }
 		
 		return result;
@@ -330,6 +336,8 @@ public class OrcaSMXMLRPCProxy {
         	throw new Exception("Please check the SM URL " + GUI.getInstance().getSelectedController());
         } catch (XmlRpcException e) {
         	throw new Exception("Unable to contact SM " + GUI.getInstance().getSelectedController() + " due to " + e);
+        } catch (Exception e) {
+        	throw new Exception("Unable to contact SM " + GUI.getInstance().getSelectedController());
         }
         
         return res;
@@ -361,6 +369,8 @@ public class OrcaSMXMLRPCProxy {
         	throw new Exception("Please check the SM URL " + GUI.getInstance().getSelectedController());
         } catch (XmlRpcException e) {
         	throw new Exception("Unable to contact SM " + GUI.getInstance().getSelectedController() + " due to " + e);
+        } catch (Exception e) {
+        	throw new Exception("Unable to contact SM " + GUI.getInstance().getSelectedController());
         }
         
         return result;
@@ -398,6 +408,8 @@ public class OrcaSMXMLRPCProxy {
         	throw new Exception("Please check the SM URL " + GUI.getInstance().getSelectedController());
         } catch (XmlRpcException e) {
         	throw new Exception("Unable to contact SM " + GUI.getInstance().getSelectedController() + " due to " + e);
+        } catch (Exception e) {
+        	throw new Exception("Unable to contact SM " + GUI.getInstance().getSelectedController());
         }
         return result;
 	}
@@ -428,6 +440,8 @@ public class OrcaSMXMLRPCProxy {
         	throw new Exception("Please check the SM URL " + GUI.getInstance().getSelectedController());
         } catch (XmlRpcException e) {
         	throw new Exception("Unable to contact SM " + GUI.getInstance().getSelectedController() + " due to " + e);
+        } catch (Exception e) {
+        	throw new Exception("Unable to contact SM " + GUI.getInstance().getSelectedController());
         }
 		
 		return result;
@@ -457,6 +471,8 @@ public class OrcaSMXMLRPCProxy {
         	throw new Exception("Please check the SM URL " + GUI.getInstance().getSelectedController());
         } catch (XmlRpcException e) {
         	throw new Exception("Unable to contact SM " + GUI.getInstance().getSelectedController() + " due to " + e);
+        } catch (Exception e) {
+        	throw new Exception("Unable to contact SM " + GUI.getInstance().getSelectedController());
         }
 		
 		return result;
