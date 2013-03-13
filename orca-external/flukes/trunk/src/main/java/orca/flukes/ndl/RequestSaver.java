@@ -94,6 +94,7 @@ public class RequestSaver {
 		dm.put("NICTA", "nictavmsite.rdf#nictavmsite");
 		dm.put("FIU XO Rack", "fiuvmsite.rdf#fiuvmsite");
 		dm.put("UH XO Rack", "uhvmsite.rdf#uhvmsite");
+		dm.put("NCSU XO Rack", "ncsuvmsite.rdf#ncsuvmsite");
 
 		domainMap = Collections.unmodifiableMap(dm);
 	}
