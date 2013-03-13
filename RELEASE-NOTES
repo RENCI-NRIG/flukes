@@ -1,6 +1,9 @@
 Flukes Release Notes:
 ---------------------
 
+03/13/13:
+- Added NCSU site
+
 03/07/13:
 - Added ability to extend slice lifetime
 - Improved readability of names in manifests
