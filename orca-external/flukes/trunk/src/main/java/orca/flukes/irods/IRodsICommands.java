@@ -78,6 +78,8 @@ public class IRodsICommands implements IIRods {
 		
 		String ret = executeIRodsCommand(myCommand, null);
 	
+		tFile.delete();
+		
 		return ret;
 	}
 	
