@@ -229,7 +229,7 @@ public class OrcaSMXMLRPCProxy {
         } catch (XmlRpcException e) {
         	throw new Exception("Unable to contact SM " + GUI.getInstance().getSelectedController() + " due to " + e);
         } catch (Exception e) {
-        	throw new Exception("Unable to contact SM " + GUI.getInstance().getSelectedController());
+        	return "Unable to submit slice to SM:  " + GUI.getInstance().getSelectedController() + " due to " + e;
         }
 		
 		return result;

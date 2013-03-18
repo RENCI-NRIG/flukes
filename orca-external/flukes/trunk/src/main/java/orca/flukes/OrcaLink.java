@@ -30,6 +30,7 @@ public class OrcaLink implements OrcaResource {
     protected long bandwidth;
     protected long latency;
     protected String label = null;
+    protected String realName = null;
     
     protected String name;
 	// reservation state
@@ -91,6 +92,10 @@ public class OrcaLink implements OrcaResource {
         this.name = name;
     }       
     
+    public void setRealName(String n) {
+    	this.realName = n;
+    }
+    
 	public void setState(String s) {
 		state = s;
 	}
@@ -117,7 +122,7 @@ public class OrcaLink implements OrcaResource {
      * @return
      */
     public String getViewerText() {
-    	String viewText = "Link name: " + name;
+    	String viewText = "Link name: " + (realName != null ? realName : name);
     	if (bandwidth == 0)
     		viewText += "\nBandwidth: unspecified";
     	else 

@@ -77,7 +77,12 @@ public class OrcaLinkCreator implements ILinkCreator {
 	
 	@Override
 	public OrcaLink create(String nm, long bw) {
-		OrcaLink link = new OrcaLink(nm);
+		String dispName = nm;
+		if ((nm != null) && (nm.length() > 20)) {
+			dispName = nm.substring(0, 20) + "...";
+		}
+		OrcaLink link = new OrcaLink(dispName);
+		link.setRealName(nm);
 		link.setBandwidth(bw);
 		link.setLatency(defaultLatency);
 		return link;
