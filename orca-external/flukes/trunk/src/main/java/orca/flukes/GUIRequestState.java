@@ -29,10 +29,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -46,6 +44,7 @@ import orca.flukes.ndl.AdLoader;
 import orca.flukes.ndl.RequestSaver;
 import orca.flukes.ui.ChooserWithNewDialog;
 import orca.flukes.ui.TextAreaDialog;
+import orca.flukes.util.IP4Assign;
 import orca.flukes.xmlrpc.NDLConverter;
 import orca.flukes.xmlrpc.OrcaSMXMLRPCProxy;
 import orca.ndl.NdlAbstractDelegationParser;
@@ -474,6 +473,13 @@ public class GUIRequestState extends GUICommonState implements IDeleteEdgeCallBa
 				nodeCreator.setCurrent(OrcaNodeEnum.NODEGROUP);
 			} else if (e.getActionCommand().equals("bcastlinks")) {
 				nodeCreator.setCurrent(OrcaNodeEnum.CROSSCONNECT);
+			} else if (e.getActionCommand().equals("autoip")) {
+				if (!autoAssignIPAddresses()) {
+					KMessageDialog kmd = new KMessageDialog(GUI.getInstance().getFrame());
+					kmd.setMessage("Unable auto-assign IP addresses.");
+					kmd.setLocationRelativeTo(GUI.getInstance().getFrame());
+					kmd.setVisible(true);
+				}
 			} else if (e.getActionCommand().equals("submit")) {
 				if ((sliceIdField.getText() == null) || 
 						(sliceIdField.getText().length() == 0)) {
@@ -669,4 +675,85 @@ public class GUIRequestState extends GUICommonState implements IDeleteEdgeCallBa
 		}
 	}
 	
+	public boolean autoAssignIPAddresses() {
+		// for each link and switch assign IP addresses
+		// treat node groups as switches
+		IP4Assign ipa = new IP4Assign();
+
+		for(OrcaLink ol: g.getEdges()) {
+			// if one end is a switch, ignore it for now
+			Pair<OrcaNode> pn = g.getEndpoints(ol);
+			if ((pn.getFirst() instanceof OrcaCrossconnect) ||
+					(pn.getSecond() instanceof OrcaCrossconnect))
+				continue;
+			int nodeCt1, nodeCt2;
+			if (pn.getFirst() instanceof OrcaNodeGroup) {
+				OrcaNodeGroup ong = (OrcaNodeGroup)pn.getFirst();
+				nodeCt1 = ong.getNodeCount();
+			} else
+				nodeCt1 = 1;
+			if (pn.getSecond() instanceof OrcaNodeGroup) {
+				OrcaNodeGroup ong = (OrcaNodeGroup)pn.getSecond();
+				nodeCt2 = ong.getNodeCount();
+			} else
+				nodeCt2 = 1;
+
+			if (nodeCt1 + nodeCt2 == 2) {
+				String[] addrs = ipa.getPPAddresses();
+				if (addrs != null) {
+					pn.getFirst().setIp(ol, addrs[0], "" + ipa.getPPIntMask());
+					pn.getSecond().setIp(ol, addrs[1], "" + ipa.getPPIntMask());
+				} else {
+					return false;
+				}
+			} else {
+				String[] addrs = ipa.getMPAddresses(nodeCt1 + nodeCt2);
+				if (addrs != null) {
+					pn.getFirst().setIp(ol, addrs[0], "" + ipa.getMPIntMask());
+					pn.getSecond().setIp(ol, addrs[nodeCt1], "" + ipa.getMPIntMask());
+				} else
+					return false;
+			}
+		}
+		
+		// now deal with crossconnects
+		// each crossconnects may have nodes or groups attached to it
+		for(OrcaNode csx: g.getVertices()) {
+			if (!(csx instanceof OrcaCrossconnect))
+				continue;
+			// find neighbor nodes (they can't be crossconnects)
+			int[] nodeCts = new int[g.getNeighborCount(csx)];
+			int i = 0;
+			Collection<OrcaNode> neighbors = g.getNeighbors(csx);
+			int sum = 0;
+			for(OrcaNode nb: neighbors) {
+				if (nb instanceof OrcaCrossconnect) 
+					continue;
+				if (nb instanceof OrcaNodeGroup) 
+					nodeCts[i] = ((OrcaNodeGroup)nb).getNodeCount();
+				else
+					nodeCts[i] = 1;
+				sum += nodeCts[i++];
+			}
+			String[] addrs = ipa.getMPAddresses(sum);
+			if (addrs != null) {
+				int ct = 0;
+				i = 0;
+				for(OrcaNode nb: neighbors) {
+					if (nb instanceof OrcaCrossconnect) 
+						continue;
+					// find the link that goes back to the crossconnect
+					for(OrcaLink nl: g.getIncidentEdges(nb)) {
+						if (g.getOpposite(nb, nl).equals(csx)) {
+							nb.setIp(nl, addrs[ct], "" + ipa.getMPIntMask());
+							break;
+						}
+					}
+					ct += nodeCts[i++];
+				}
+			} else
+				return false;
+		}
+		return true;
+	}
 }

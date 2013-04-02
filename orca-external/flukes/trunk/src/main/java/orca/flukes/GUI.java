@@ -882,6 +882,18 @@ public class GUI implements ComponentListener {
 			horizontalStrut = Box.createHorizontalStrut(10);
 			toolBar.add(horizontalStrut);
 			
+			if (getPreference(PrefsEnum.ENABLE_AUTOIP).equalsIgnoreCase("true") ||
+					getPreference(PrefsEnum.ENABLE_AUTOIP).equalsIgnoreCase("yes")) {
+				JButton autoipButton = new JButton("Auto IP");
+				autoipButton.setToolTipText("Auto-assign IP addresses");
+				autoipButton.setActionCommand("autoip");
+				autoipButton.addActionListener(rbl);
+				toolBar.add(autoipButton);
+
+				horizontalStrut = Box.createHorizontalStrut(10);
+				toolBar.add(horizontalStrut);
+			}
+			
 			JButton reservationButton = new JButton("Reservation Details");
 			reservationButton.setToolTipText("Edit reservation details");
 			reservationButton.setActionCommand("reservation");
@@ -1094,6 +1106,7 @@ public class GUI implements ComponentListener {
 			"Comma-separated list of URLs of the ORCA XMLRPC controllers where you can submit slice requests"),
 		ENABLE_MODIFY("enable.modify", "false", "Enable experimental support for slice modify operations (at your own risk!)"),
 		ENABLE_IRODS("enable.irods", "false", "Enable experimental support for iRods (at your own risk!)"),
+		ENABLE_AUTOIP("enable.autoip", "false", "Enable experimental automatic IP address assignment (at  your own risk!)"),
 		//ENABLE_EXTEND("enable.extend", "false", "Enable extending slice lifetime (at your own risk!)"),
 		IRODS_FORMAT("irods.format", "ndl", "Specify the format in which requests and manifest should be saved ('ndl' or 'rspec')"),
 		IRODS_MANIFEST_TEMPLATE("irods.manifest.template", "${slice.name}/manifest-${date}.${irods.format}", 
