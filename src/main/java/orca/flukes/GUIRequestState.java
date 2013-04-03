@@ -678,7 +678,8 @@ public class GUIRequestState extends GUICommonState implements IDeleteEdgeCallBa
 	public boolean autoAssignIPAddresses() {
 		// for each link and switch assign IP addresses
 		// treat node groups as switches
-		IP4Assign ipa = new IP4Assign();
+		int mpMask = Integer.parseInt(GUI.getInstance().getPreference(PrefsEnum.AUTOIP_MASK));
+		IP4Assign ipa = new IP4Assign(mpMask);
 
 		for(OrcaLink ol: g.getEdges()) {
 			// if one end is a switch, ignore it for now
