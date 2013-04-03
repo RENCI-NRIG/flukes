@@ -20,7 +20,6 @@ public class IP4Assign {
 	private static final String PP_START_ADDRESS="172.16.0.1";
 	private static final String MP_START_ADDRESS="172.16.100.1";
 	
-	private Inet4Address ppMask, mpMask;
 	private Inet4Address ppCurrent, mpCurrent;
 	private final int ppMaskSize, mpMaskSize;
 	private int mpStartInt;
@@ -30,12 +29,7 @@ public class IP4Assign {
 	 * @param mpSz
 	 */
 	public IP4Assign(int mpSz) {
-		try {
-			ppMask = (Inet4Address)Inet4Address.getByName(RequestSaver.netmaskIntToString(PP_MASK_SIZE));
-			mpMask = (Inet4Address)Inet4Address.getByName(RequestSaver.netmaskIntToString(mpSz));
-		} catch (UnknownHostException e) {
-			;
-		}
+
 		ppMaskSize = PP_MASK_SIZE;
 		mpMaskSize = mpSz;
 		init();
@@ -45,12 +39,7 @@ public class IP4Assign {
 	 * Use default mask length for multipoint links
 	 */
 	public IP4Assign() {
-		try {
-			ppMask = (Inet4Address)Inet4Address.getByName(RequestSaver.netmaskIntToString(PP_MASK_SIZE));
-			mpMask = (Inet4Address)Inet4Address.getByName(RequestSaver.netmaskIntToString(MP_MASK_SIZE));
-		} catch (UnknownHostException e) {
-			;
-		}
+
 		ppMaskSize = PP_MASK_SIZE;
 		mpMaskSize = MP_MASK_SIZE;
 		init();
@@ -71,7 +60,7 @@ public class IP4Assign {
 	 * @return
 	 */
 	public String getPPMask() {
-		return ppMask.getHostName();
+		return RequestSaver.netmaskIntToString(ppMaskSize);
 	}
 	
 	public int getPPIntMask() {
@@ -83,7 +72,7 @@ public class IP4Assign {
 	 * @return
 	 */
 	public String getMPMask() {
-		return mpMask.getHostName();
+		return RequestSaver.netmaskIntToString(mpMaskSize);
 	}
 
 	public int getMPIntMask() {
@@ -117,7 +106,7 @@ public class IP4Assign {
 	 * Uses the setting of MP mask to issue. 
 	 * Use getMPMask() to get the netmask for mp links 
 	 * @param ct - number of addresses needed 
-	 * @return
+	 * @return - array of addresses or null if no addresses are available
 	 */
 	public String[] getMPAddresses(int ct) {
 		assert(ct > 0);
