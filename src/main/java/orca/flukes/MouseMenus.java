@@ -27,7 +27,7 @@ import javax.swing.JRadioButtonMenuItem;
 import orca.flukes.GUI.PrefsEnum;
 import orca.ndl.ScaledFormatPrinter;
 
-import com.hyperrealm.kiwi.ui.dialog.KDialog;
+import com.hyperrealm.kiwi.ui.dialog.ExceptionDialog;
 import com.hyperrealm.kiwi.ui.dialog.KMessageDialog;
 
 import edu.uci.ics.jung.visualization.VisualizationViewer;
@@ -494,7 +494,11 @@ public class MouseMenus {
                 			rt.exec(command);
                 		}
                 	} catch (IOException ex) {
-                		;
+                		ExceptionDialog ked = new ExceptionDialog(GUI.getInstance().getFrame(), "Unable to login due to exception!");
+                		ked.setException("Exception encountered: ", ex);
+                		ked.setLocationRelativeTo(GUI.getInstance().getFrame());
+                		ked.setVisible(true);
+                		return;
                 	}
                 }
             });
