@@ -301,6 +301,7 @@ public class OrcaSMXMLRPCProxy {
 			throw new Exception("Unable to load user public ssh key " + keyPath);
 		
 		Map<String, Object> userEntry = new HashMap<String, Object>();
+		// FIXME: probably should get they urn from somewhere?
 		String userName = System.getProperties().getProperty("user.name");
 		userEntry.put("urn", (userName == null ? "authorized_user" : userName));
 		List<String> keys = new ArrayList<String>();

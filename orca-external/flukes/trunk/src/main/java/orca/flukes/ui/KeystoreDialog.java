@@ -44,5 +44,4 @@ public class KeystoreDialog extends LoginDialog {
 	public String getPassword() {
 		return new String(this.t_passwd.getPassword());
 	}
-	
 }
