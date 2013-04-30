@@ -1,6 +1,9 @@
 Flukes Release Notes:
 ---------------------
 
+04/30/13:
+- Added support for stitching ports
+
 04/02/13:
 - Added experimental support for automatic IP address assignment
 

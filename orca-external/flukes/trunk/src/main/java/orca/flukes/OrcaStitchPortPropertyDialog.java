@@ -91,7 +91,8 @@ public class OrcaStitchPortPropertyDialog extends ComponentDialog {
 			name = new KTextField(10);
 			GridBagConstraints gbc_list = new GridBagConstraints();
 			gbc_list.insets = new Insets(0, 0, 5, 5);
-			gbc_list.fill = GridBagConstraints.WEST;
+			gbc_list.fill = GridBagConstraints.HORIZONTAL;
+			gbc_list.gridwidth = 10;
 			gbc_list.gridx = 1;
 			gbc_list.gridy = y++;
 			kp.add(name, gbc_list);
@@ -109,8 +110,9 @@ public class OrcaStitchPortPropertyDialog extends ComponentDialog {
 		{
 			port = new URLField(25);
 			GridBagConstraints gbc_list = new GridBagConstraints();
+			gbc_list.fill = GridBagConstraints.HORIZONTAL;
+			gbc_list.gridwidth = 10;
 			gbc_list.insets = new Insets(0, 0, 5, 5);
-			gbc_list.fill = GridBagConstraints.WEST;
 			gbc_list.gridx = 1;
 			gbc_list.gridy = y++;
 			kp.add(port, gbc_list);
@@ -133,7 +135,8 @@ public class OrcaStitchPortPropertyDialog extends ComponentDialog {
 			label.setDecimals(0);
 			GridBagConstraints gbc_list = new GridBagConstraints();
 			gbc_list.insets = new Insets(0, 0, 5, 5);
-			gbc_list.fill = GridBagConstraints.WEST;
+			gbc_list.fill = GridBagConstraints.HORIZONTAL;
+			gbc_list.gridwidth = 10;
 			gbc_list.gridx = 1;
 			gbc_list.gridy = y++;
 			kp.add(label, gbc_list);

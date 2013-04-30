@@ -105,7 +105,6 @@ public class OrcaImageDialog extends ComponentDialog {
 			imageUrl = new URLField(25);
 			GridBagConstraints gbc_textField = new GridBagConstraints();
 			gbc_textField.fill = GridBagConstraints.HORIZONTAL;
-			gbc_textField.fill = GridBagConstraints.HORIZONTAL;
 			gbc_textField.gridwidth = 10;
 			gbc_textField.gridx = 1;
 			gbc_textField.gridy = 1;
