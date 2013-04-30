@@ -473,6 +473,8 @@ public class GUIRequestState extends GUICommonState implements IDeleteEdgeCallBa
 				nodeCreator.setCurrent(OrcaNodeEnum.NODEGROUP);
 			} else if (e.getActionCommand().equals("bcastlinks")) {
 				nodeCreator.setCurrent(OrcaNodeEnum.CROSSCONNECT);
+			} else if (e.getActionCommand().equals("stitchport")) {
+				nodeCreator.setCurrent(OrcaNodeEnum.STITCHPORT);
 			} else if (e.getActionCommand().equals("autoip")) {
 				if (!autoAssignIPAddresses()) {
 					KMessageDialog kmd = new KMessageDialog(GUI.getInstance().getFrame());

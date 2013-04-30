@@ -42,9 +42,11 @@ import orca.flukes.OrcaImage;
 import orca.flukes.OrcaLink;
 import orca.flukes.OrcaNode;
 import orca.flukes.OrcaNodeGroup;
+import orca.flukes.OrcaStitchPort;
 import orca.ndl.NdlCommons;
 import orca.ndl.NdlException;
 import orca.ndl.NdlGenerator;
+import orca.ndl.NdlToRSpecHelper;
 
 import org.apache.commons.lang.StringUtils;
 
@@ -95,6 +97,7 @@ public class RequestSaver {
 		dm.put("FIU XO Rack", "fiuvmsite.rdf#fiuvmsite");
 		dm.put("UH XO Rack", "uhvmsite.rdf#uhvmsite");
 		dm.put("NCSU XO Rack", "ncsuvmsite.rdf#ncsuvmsite");
+		dm.put(OrcaStitchPort.STITCHING_DOMAIN_SHORT_NAME, "orca.rdf#Stitching");
 
 		domainMap = Collections.unmodifiableMap(dm);
 	}
@@ -193,9 +196,18 @@ public class RequestSaver {
 	 * @throws NdlException
 	 */
 	private void processNodeAndLink(OrcaNode n, OrcaLink e, Individual edgeI) throws NdlException {
-		Individual intI = ngen.declareInterface(e.getName()+"-"+n.getName());
+
+		Individual intI;
+		if (n instanceof OrcaStitchPort) {
+			OrcaStitchPort sp = (OrcaStitchPort)n;
+			intI = ngen.declareExistingInterface(sp.getPort());
+			ngen.addLabelToIndividual(intI, sp.getLabel());
+		} else 
+			intI = ngen.declareInterface(e.getName()+"-"+n.getName());
+		// add to link
 		ngen.addInterfaceToIndividual(intI, edgeI);
 		
+		// add to previously added node
 		Individual nodeI = ngen.getRequestIndividual(n.getName());
 		ngen.addInterfaceToIndividual(intI, nodeI);
 		
@@ -318,7 +330,14 @@ public class RequestSaver {
 				throw new NdlException("Two VLANs linked together is not a valid combination");
 			// find the individual matching this node
 			
-			Individual intI = ngen.declareInterface(oc.getName()+"-"+n.getName());
+			Individual intI;
+			if (n instanceof OrcaStitchPort) {
+				OrcaStitchPort sp = (OrcaStitchPort)n;
+				intI = ngen.declareExistingInterface(sp.getPort());
+				ngen.addLabelToIndividual(intI, sp.getLabel());
+			} else
+				intI = ngen.declareInterface(oc.getName()+"-"+n.getName());
+			
 			ngen.addInterfaceToIndividual(intI, blI);
 			
 			Individual nodeI = ngen.getRequestIndividual(n.getName());
@@ -405,6 +424,10 @@ public class RequestSaver {
 					Individual ni;
 					if (n instanceof OrcaCrossconnect) {
 						continue;
+					} else if (n instanceof OrcaStitchPort) {
+						OrcaStitchPort sp = (OrcaStitchPort)n;
+						ni = ngen.declareStitchingNode(sp.getName());
+						ngen.addResourceToReservation(reservation, ni);
 					} else {
 						// nodes and nodegroups
 						if (n instanceof OrcaNodeGroup) {

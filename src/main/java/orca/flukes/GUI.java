@@ -873,6 +873,16 @@ public class GUI implements ComponentListener {
 			horizontalStrut = Box.createHorizontalStrut(10);
 			toolBar.add(horizontalStrut);
 			
+			JButton stitchPortButton = new JButton("Add Stitch Port");
+			stitchPortButton.setToolTipText("Add new stitch port");
+			stitchPortButton.setActionCommand("stitchport");
+			stitchPortButton.addActionListener(rbl);
+			stitchPortButton.setVerticalAlignment(SwingConstants.TOP);
+			toolBar.add(stitchPortButton);
+			
+			horizontalStrut = Box.createHorizontalStrut(10);
+			toolBar.add(horizontalStrut);
+			
 			JButton imageButton = new JButton("Client Images");
 			imageButton.setToolTipText("Add or edit VM images");
 			imageButton.setActionCommand("images");
@@ -881,18 +891,15 @@ public class GUI implements ComponentListener {
 			
 			horizontalStrut = Box.createHorizontalStrut(10);
 			toolBar.add(horizontalStrut);
-			
-			if (getPreference(PrefsEnum.ENABLE_AUTOIP).equalsIgnoreCase("true") ||
-					getPreference(PrefsEnum.ENABLE_AUTOIP).equalsIgnoreCase("yes")) {
-				JButton autoipButton = new JButton("Auto IP");
-				autoipButton.setToolTipText("Auto-assign IP addresses");
-				autoipButton.setActionCommand("autoip");
-				autoipButton.addActionListener(rbl);
-				toolBar.add(autoipButton);
 
-				horizontalStrut = Box.createHorizontalStrut(10);
-				toolBar.add(horizontalStrut);
-			}
+			JButton autoipButton = new JButton("Auto IP");
+			autoipButton.setToolTipText("Auto-assign IP addresses");
+			autoipButton.setActionCommand("autoip");
+			autoipButton.addActionListener(rbl);
+			toolBar.add(autoipButton);
+
+			horizontalStrut = Box.createHorizontalStrut(10);
+			toolBar.add(horizontalStrut);
 			
 			JButton reservationButton = new JButton("Reservation Details");
 			reservationButton.setToolTipText("Edit reservation details");
@@ -1106,7 +1113,6 @@ public class GUI implements ComponentListener {
 			"Comma-separated list of URLs of the ORCA XMLRPC controllers where you can submit slice requests"),
 		ENABLE_MODIFY("enable.modify", "false", "Enable experimental support for slice modify operations (at your own risk!)"),
 		ENABLE_IRODS("enable.irods", "false", "Enable experimental support for iRods (at your own risk!)"),
-		ENABLE_AUTOIP("enable.autoip", "false", "Enable experimental automatic IP address assignment (at  your own risk!)"),
 		AUTOIP_MASK("autoip.mask", "25", "Length of netmask (in bits) to use when assigning IP addresses to groups and broadcast links (simple point-to-point links always use 30 bit masks)"),
 		IRODS_FORMAT("irods.format", "ndl", "Specify the format in which requests and manifests should be saved to iRods ('ndl' or 'rspec')"),
 		IRODS_MANIFEST_TEMPLATE("irods.manifest.template", "${slice.name}/manifest-${date}.${irods.format}", 
