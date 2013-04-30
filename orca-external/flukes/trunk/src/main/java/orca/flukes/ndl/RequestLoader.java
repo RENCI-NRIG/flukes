@@ -42,6 +42,7 @@ import orca.flukes.OrcaLink;
 import orca.flukes.OrcaNode;
 import orca.flukes.OrcaNodeGroup;
 import orca.flukes.OrcaReservationTerm;
+import orca.flukes.OrcaStitchPort;
 import orca.ndl.INdlRequestModelListener;
 import orca.ndl.NdlCommons;
 import orca.ndl.NdlRequestParser;
@@ -178,6 +179,12 @@ public class RequestLoader implements INdlRequestModelListener {
 					newNodeGroup.setNodeCount(ceCount);
 				newNodeGroup.setSplittable(NdlCommons.isSplittable(ce));
 				newNode = newNodeGroup;
+			} else if ((ceClass.equals(NdlCommons.deviceOntClass) && 
+					(NdlCommons.getDomain(ce) != null) && 
+					NdlCommons.getDomain(ce).equals(NdlCommons.stitchingDomain))) {
+				// stitching node
+				OrcaStitchPort sp = new OrcaStitchPort(ce.getLocalName());
+				newNode = sp;
 			} else // default just a node
 				newNode = new OrcaNode(ce.getLocalName());
 		}
@@ -308,6 +315,11 @@ public class RequestLoader implements INdlRequestModelListener {
 		}
 		
 		if (on != null) {
+			if (on instanceof OrcaStitchPort) {
+				OrcaStitchPort sp = (OrcaStitchPort)on;
+				sp.setPort(intf.toString());
+				sp.setLabel(NdlCommons.getLayerLabelLiteral(intf));
+			}
 			// point-to-point
 			if (ol != null) {
 				on.setIp(ol, ip, "" + RequestSaver.netmaskStringToInt(mask));
