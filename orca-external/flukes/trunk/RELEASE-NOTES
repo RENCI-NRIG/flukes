@@ -1,8 +1,11 @@
 Flukes Release Notes:
 ---------------------
 
+05/01/13:
+- Added support for stitch port manifest 
+
 04/30/13:
-- Added support for stitching ports
+- Added support for stitching port requests
 
 04/02/13:
 - Added experimental support for automatic IP address assignment
