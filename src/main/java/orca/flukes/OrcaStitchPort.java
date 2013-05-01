@@ -70,9 +70,8 @@ public class OrcaStitchPort extends OrcaNode {
 	@Override
 	public String getViewerText() {
 		String viewText = "";
-		viewText += "Stitch port name: " + name;
-		viewText += "\nPort reservation state: " + state;
-		viewText += "\nReservation notice: " + (resNotice != null ? resNotice : NOT_SPECIFIED);
+		viewText += "Stitch port: " + name;
+		viewText += "\nPort id: " + port;
 		if (label != null)
 			viewText += "\nLabel/Tag: " + label;
 		if (interfaces.size() > 0) {

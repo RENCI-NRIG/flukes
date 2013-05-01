@@ -43,6 +43,7 @@ import orca.flukes.OrcaImage;
 import orca.flukes.OrcaLink;
 import orca.flukes.OrcaNode;
 import orca.flukes.OrcaNodeGroup;
+import orca.flukes.OrcaStitchPort;
 import orca.ndl.INdlManifestModelListener;
 import orca.ndl.INdlRequestModelListener;
 import orca.ndl.NdlCommons;
@@ -438,34 +439,19 @@ public class ManifestLoader implements INdlManifestModelListener, INdlRequestMod
 		
 		GUI.logger().debug("Node: " + ce);
 		
-		// FIXME: get rid of this - temporary fix for left over VMs 11/14/12 /ib
-//		String state = NdlCommons.getResourceStateAsString(ce);
-//		String stateInNotice = NdlCommons.getResourceReservationNotice(ce);
-//		
-//		if (state.contains("Closed") || stateInNotice.contains("Closing"))
-//			return;
-		// end FIXME
-		
 		OrcaNode newNode;
 		
-		newNode = new OrcaNode(getPrettyName(ce));
-		
-//		if (ceClass.equals(NdlCommons.computeElementClass))
-//			// HACK! if it is a collection, it used to be NODEGROUP
-//			if (ce.hasProperty(NdlCommons.collectionElementProperty))
-//				newNode = new OrcaCrossconnect(getTrueName(ce));
-//			else
-//				newNode = new OrcaNode(getTrueName(ce));
-//		else { 
-//			if (ceClass.equals(NdlCommons.serverCloudClass)) {
-//				OrcaNodeGroup newNodeGroup = new OrcaNodeGroup(getTrueName(ce));
-//				int ceCount = NdlCommons.getNumCE(ce);
-//				if (ceCount > 0)
-//					newNodeGroup.setNodeCount(ceCount);
-//				newNode = newNodeGroup;
-//			} else // default just a node
-//				newNode = new OrcaNode(getTrueName(ce));
-//		}
+		if (NdlCommons.isStitchingNode(ce)) {
+			OrcaStitchPort sp = new OrcaStitchPort(getPrettyName(ce));
+			// get the interface (first)
+			if (interfaces.size() == 1) {
+				sp.setLabel(NdlCommons.getLayerLabelLiteral(interfaces.get(0)));
+				if (NdlCommons.getLinkTo(interfaces.get(0)) != null)
+					sp.setPort(NdlCommons.getLinkTo(interfaces.get(0)).toString());
+			} 
+			newNode = sp;
+		} else 
+			newNode = new OrcaNode(getPrettyName(ce));
 		
 		// set common properties
 		setCommonNodeProperties(newNode, ce);
