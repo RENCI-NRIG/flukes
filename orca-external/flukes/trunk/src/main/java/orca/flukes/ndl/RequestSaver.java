@@ -125,6 +125,10 @@ public class RequestSaver {
 		nt.put("Euca m1.large", new Pair<String>(EUCALYPTUS_NS, "EucaM1Large"));
 		nt.put("Euca m1.xlarge", new Pair<String>(EUCALYPTUS_NS, "EucaM1XLarge"));
 		nt.put("Euca c1.xlarge", new Pair<String>(EUCALYPTUS_NS, "EucaC1XLarge"));
+		nt.put("XO Small", new Pair<String>(EXOGENI_NS, "XOSmall"));
+		nt.put("XO Medium", new Pair<String>(EXOGENI_NS, "XOMedium"));
+		nt.put("XO Large", new Pair<String>(EXOGENI_NS, "XOLarge"));
+		nt.put("XO Extra large", new Pair<String>(EXOGENI_NS, "XOXlarge"));
 		//nodeTypes = Collections.unmodifiableMap(nt);
 		nodeTypes = nt;
 	}
