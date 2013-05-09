@@ -311,7 +311,13 @@ public class GUIManifestState extends GUICommonState implements IDeleteEdgeCallB
 												ed.setException("Exception encountered while extending slice: ", ee);
 												ed.setVisible(true);
 											}
-										} 
+										} else {
+											KMessageDialog kmd = new KMessageDialog(GUI.getInstance().getFrame());
+											kmd.setMessage("Invalid new end date.");
+											kmd.setLocationRelativeTo(GUI.getInstance().getFrame());
+											kmd.setVisible(true);
+											return;
+										}
 									}
 		}
 	}
