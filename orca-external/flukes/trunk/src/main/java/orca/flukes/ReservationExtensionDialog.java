@@ -90,7 +90,7 @@ public class ReservationExtensionDialog extends ComponentDialog {
 		int y = 0;
 		
 		{
-			etLabel = new KLabel("Start Time:");
+			etLabel = new KLabel("New End Time:");
 			GridBagConstraints gbc_lblNewLabel = new GridBagConstraints();
 			gbc_lblNewLabel.anchor = GridBagConstraints.WEST;
 			gbc_lblNewLabel.insets = new Insets(0, 0, 5, 5);
