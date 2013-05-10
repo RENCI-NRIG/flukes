@@ -142,7 +142,8 @@ public class OrcaNodePropertyDialog extends ComponentDialog implements ActionLis
 			setListSelectedIndices(dependencyList, GUIRequestState.getInstance().getAvailableDependencies(node), node.getDependencyNames());
 		
 		// list of open ports on management network
-		addOpenPortsField(ycoord++);
+		// not used for now /ib 05/10/2013
+		//addOpenPortsField(ycoord++);
 		
 		ipFields = new HashMap<OrcaLink, IpAddrField>();
 		
