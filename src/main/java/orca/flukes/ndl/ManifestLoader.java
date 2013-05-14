@@ -641,6 +641,8 @@ public class ManifestLoader implements INdlManifestModelListener, INdlRequestMod
 			int months, int days, int hours, int minutes, int seconds) {
 		if (creationTime == null)
 			return;
+		if ((years == 0) && (months == 0) && (days == 0) && (hours == 0) && (minutes == 0) && (seconds == 0))
+			return;
 		Calendar cal = Calendar.getInstance();
 		cal.setTime(creationTime);
 		cal.add(Calendar.YEAR, years);
