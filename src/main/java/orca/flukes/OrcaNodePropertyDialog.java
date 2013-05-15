@@ -252,10 +252,10 @@ public class OrcaNodePropertyDialog extends ComponentDialog implements ActionLis
 			}
 		}
 		
-		if (!node.setPortsList(openPortsList.getObject())) {
-			inputErrorDialog("Check port list specification", "Check the port list specification for this node.");
-			return false;
-		}
+//		if (!node.setPortsList(openPortsList.getObject())) {
+//			inputErrorDialog("Check port list specification", "Check the port list specification for this node.");
+//			return false;
+//		}
 		
 		// node name
 		node.setName(name.getObject());
