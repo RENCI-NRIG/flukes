@@ -70,6 +70,7 @@ import orca.flukes.ndl.RequestSaver;
 import orca.flukes.ui.KeystoreDialog;
 import orca.flukes.ui.TextAreaDialog;
 import orca.flukes.xmlrpc.OrcaSMXMLRPCProxy;
+import orca.flukes.xmlrpc.RegistryXMLRPCProxy;
 import orca.ndl.NdlCommons;
 
 import org.apache.log4j.Level;
@@ -435,10 +436,11 @@ public class GUI implements ComponentListener {
 
 					gui.processPreferences();
 					gui.getImagesFromPreferences();
+					gui.getImagesFromRegistry();
 					gui.getControllersFromPreferences();
 					gui.getIRodsPreferences();
 					gui.getCustomInstancePreferences();
-					
+
 					gui.initialize();
 					gui.getFrame().setVisible(true);					
 				} catch (Exception e) {
@@ -1213,6 +1215,40 @@ public class GUI implements ComponentListener {
 			i++;
 		}
 		
+		GUIRequestState.getInstance().addImages(images);
+	}
+	
+	/**
+	 * Get images from image registry
+	 */
+	void getImagesFromRegistry() {
+		List<OrcaImage> images = new ArrayList<OrcaImage>();
+		
+		List<Map<String, String>> regImages = null;
+		try {
+			regImages = RegistryXMLRPCProxy.getInstance().getImages();
+		} catch (Exception e) {
+			KMessageDialog md = new KMessageDialog(GUI.getInstance().getFrame(), "Unable to fetch images from image registry.", true);
+			md.setMessage("Unable to fetch images from image registry  " + PrefsEnum.ORCA_REGISTRY + ". This is not a fatal error.");
+			md.setLocationRelativeTo(GUI.getInstance().getFrame());
+			md.setVisible(true);
+			return;
+		}
+		
+		for (Map<String, String> regImg: regImages) {
+			if ((regImg.get("ImageName") != null) &&
+					(regImg.get("ImageURL") != null) && 
+					(regImg.get("ImageHash") != null)) {
+				try {
+					OrcaImage im = new OrcaImage(regImg.get("ImageName"), 
+							new URL(regImg.get("ImageURL")), 
+							regImg.get("ImageHash"));
+					images.add(im);
+				} catch (MalformedURLException me) {
+					continue;
+				}
+			}
+		}
 		GUIRequestState.getInstance().addImages(images);
 	}
 	

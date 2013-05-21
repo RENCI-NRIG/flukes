@@ -1,6 +1,9 @@
 Flukes Release Notes:
 ---------------------
 
+05/21/13:
+- Added support for image registry
+
 05/01/13:
 - Added support for stitch port manifest 
 
