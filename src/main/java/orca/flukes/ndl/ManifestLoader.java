@@ -441,7 +441,7 @@ public class ManifestLoader implements INdlManifestModelListener, INdlRequestMod
 		
 		OrcaNode newNode;
 		
-		if (NdlCommons.isStitchingNode(ce)) {
+		if (NdlCommons.isStitchingNodeInManifest(ce)) {
 			OrcaStitchPort sp = new OrcaStitchPort(getPrettyName(ce));
 			// get the interface (first)
 			if (interfaces.size() == 1) {
