@@ -356,6 +356,7 @@ public class ManifestLoader implements INdlManifestModelListener, INdlRequestMod
 			if (ol != null) {
 				on.setIp(ol, ip, nmInt);
 				on.setInterfaceName(ol, getTrueName(intf));
+				on.setMac(ol, NdlCommons.getAddressMAC(intf));
 			} else if (crs != null) {
 				if (intf.toString().matches(node.toString() + "/IP/[0-9]+")) {
 					// include only interfaces that have nodename/IP/<number> format - those
@@ -367,6 +368,7 @@ public class ManifestLoader implements INdlManifestModelListener, INdlRequestMod
 					GUIManifestState.getInstance().getGraph().addEdge(ol, new Pair<OrcaNode>(on, crs), 
 							EdgeType.UNDIRECTED);
 					on.setIp(ol, ip, nmInt);
+					on.setMac(ol, NdlCommons.getAddressMAC(intf));
 				}
 			}
 			else {
