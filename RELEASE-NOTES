@@ -1,6 +1,9 @@
 Flukes Release Notes:
 ---------------------
 
+05/23/13:
+- Added mac addresses to displayed properties
+
 05/21/13:
 - Added support for image registry
 
