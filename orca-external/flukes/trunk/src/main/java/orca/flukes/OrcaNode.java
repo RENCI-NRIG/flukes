@@ -54,6 +54,7 @@ public class OrcaNode implements OrcaResource {
 	protected String group = null;
 	// Pair<String> first is IP, second is Netmask
 	protected HashMap<OrcaLink, Pair<String>> addresses;
+	protected HashMap<OrcaLink, String> macAddresses;
 	
 	protected List<String> managementAccess = null;
 	
@@ -156,6 +157,7 @@ public class OrcaNode implements OrcaResource {
 	public OrcaNode(String name) {
 		this.name = name;
 		this.addresses = new HashMap<OrcaLink, Pair<String>>();
+		this.macAddresses = new HashMap<OrcaLink, String>();
 		this.icon = new LayeredIcon(new ImageIcon(GUIRequestState.class.getResource(OrcaNodeEnum.CE.getIconName())).getImage());
 	}
 
@@ -163,6 +165,7 @@ public class OrcaNode implements OrcaResource {
 	public OrcaNode(String name, OrcaNode parent) {
 		this.name = name;
 		this.addresses = new HashMap<OrcaLink, Pair<String>>();
+		this.macAddresses = new HashMap<OrcaLink, String>();
 		this.icon = new LayeredIcon(new ImageIcon(GUIRequestState.class.getResource(OrcaNodeEnum.CE.getIconName())).getImage());
 		this.domain = parent.getDomain();
 		this.group = parent.getGroup();
@@ -181,6 +184,7 @@ public class OrcaNode implements OrcaResource {
 	protected OrcaNode(String name, LayeredIcon icon) {
 		this.name = name;
 		this.addresses = new HashMap<OrcaLink, Pair<String>>();
+		this.macAddresses = new HashMap<OrcaLink, String>();
 		this.icon = icon;
 	}
 	
@@ -237,6 +241,23 @@ public class OrcaNode implements OrcaResource {
 	public String getNodeType() {
 		return nodeType;
 	}
+	
+	public void setMac(OrcaLink e, String mac) {
+		if (e == null)
+			return;
+		if (mac == null) { 
+			macAddresses.remove(e);
+			return;
+		}
+		macAddresses.put(e, mac);
+	}
+	
+	public String getMac(OrcaLink e) {
+		if ((e == null) || (macAddresses.get(e) == null))
+			return null;
+		return macAddresses.get(e);
+	}
+	
 	
 	public void setIp(OrcaLink e, String addr, String nm) {
 		if (e == null)
@@ -404,7 +425,8 @@ public class OrcaNode implements OrcaResource {
 		}
 		viewText += "\n\nInterfaces: ";
 		for(Map.Entry<OrcaLink, Pair<String>> e: addresses.entrySet()) {
-			viewText += "\n\t" + e.getKey().getName() + ": " + e.getValue().getFirst() + "/" + e.getValue().getSecond();
+			viewText += "\n\t" + e.getKey().getName() + ": " + e.getValue().getFirst() + "/" + e.getValue().getSecond() + " " + 
+			(macAddresses.get(e.getKey()) != null ? macAddresses.get(e.getKey()) : "");
 		}
 		
 		if (substrateInfo.size() > 0) {
