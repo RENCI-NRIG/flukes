@@ -308,6 +308,21 @@ public class OrcaSMXMLRPCProxy {
 		keys.add(userKey);
 		userEntry.put("keys", keys);
 		users.add(userEntry);
+		
+		// any additional keys?
+		keyPath = GUI.getInstance().getPreference(GUI.PrefsEnum.SSH_OTHER_PUBKEY);
+		keyPath = keyPath.replaceAll("~", p.getProperty("user.home"));
+		String otherUserKey = getUserKeyFile(keyPath);
+		
+		// add other ssh keys
+		if (otherUserKey != null) {
+			userEntry = new HashMap<String, Object>();
+			userEntry.put("urn", "other_authorized_users");
+			keys = new ArrayList<String>();
+			keys.add(otherUserKey);
+			userEntry.put("keys", keys);
+			users.add(userEntry);
+		}
 
 		// submit the request
 		return createSlice(sliceId, resReq, users);
