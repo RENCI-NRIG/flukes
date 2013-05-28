@@ -1,6 +1,9 @@
 Flukes Release Notes:
 ---------------------
 
+05/28/13:
+- Added support for additional SSH public keys
+
 05/23/13:
 - Added mac addresses to displayed properties
 
