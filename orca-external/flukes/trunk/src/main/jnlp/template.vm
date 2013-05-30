@@ -15,7 +15,7 @@
 		<all-permissions/>
 	</security>
 	<resources>
-		<j2se version="1.6+" initial-heap-size="1024m" max-heap-size="3000m" />
+		<j2se version="1.6+" initial-heap-size="1024m" />
 		$dependencies
 	</resources>
 	<application-desc main-class="$mainClass"/>
