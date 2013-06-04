@@ -83,20 +83,16 @@ public class RequestSaver {
 	public static final Map<String, String> domainMap;
 	static {
 		Map<String, String> dm = new HashMap<String, String>();
-		dm.put("RENCI XO Rack", "rcivmsite.rdf#rcivmsite");
-		dm.put("BBN/GPO XO Rack", "bbnvmsite.rdf#bbnvmsite");
-		dm.put("RENCI ACIS","acisrencivmsite.rdf#acisrencivmsite");
-		dm.put("Duke CS", "dukevmsite.rdf#dukevmsite");
-		dm.put("UNC BEN", "uncvmsite.rdf#uncvmsite");
-		dm.put("UH minirack", "uhoustonvmsite.rdf#uhoustonvmsite");
-		dm.put("RENCI BEN (not a GENI resource)", "rencivmsite.rdf#rencivmsite");
-		dm.put("NERSC (not a GENI resource)", "nerscvmsite.rdf#nerscvmsite");
-		dm.put("UMass Amherst (vlan 533)", "mass.rdf#mass");
-		dm.put("RENCI OSG (not a GENI resource)", "osgvmsite.rdf#osgvmsite");
-		dm.put("NICTA", "nictavmsite.rdf#nictavmsite");
-		dm.put("FIU XO Rack", "fiuvmsite.rdf#fiuvmsite");
-		dm.put("UH XO Rack", "uhvmsite.rdf#uhvmsite");
-		dm.put("NCSU XO Rack", "ncsuvmsite.rdf#ncsuvmsite");
+		dm.put("RENCI (Chapel Hill, NC USA) XO Rack", "rcivmsite.rdf#rcivmsite");
+		dm.put("BBN/GPO (Boston, MA USA) XO Rack", "bbnvmsite.rdf#bbnvmsite");
+		dm.put("Duke CS (Durham, NC USA) XO Rack", "dukevmsite.rdf#dukevmsite");
+		dm.put("UNC BEN (Chapel Hill, NC USA)", "uncvmsite.rdf#uncvmsite");
+		dm.put("RENCI BEN (Chapel Hill, NC USA)", "rencivmsite.rdf#rencivmsite");
+		dm.put("NICTA (Sydney, Australia) XO Rack", "nictavmsite.rdf#nictavmsite");
+		dm.put("FIU (Miami, FL USA) XO Rack", "fiuvmsite.rdf#fiuvmsite");
+		dm.put("UH (Houston, TX USA) XO Rack", "uhvmsite.rdf#uhvmsite");
+		dm.put("NCSU (Raleigh, NC USA) XO Rack", "ncsuvmsite.rdf#ncsuvmsite");
+		dm.put("UvA (Amsterdam, The Netherlands) XO Rack", "uvanlvmsite.rdf#uvanlvmsite");
 		dm.put(OrcaStitchPort.STITCHING_DOMAIN_SHORT_NAME, "orca.rdf#Stitching");
 
 		domainMap = Collections.unmodifiableMap(dm);
