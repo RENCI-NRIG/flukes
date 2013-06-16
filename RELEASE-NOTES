@@ -1,6 +1,9 @@
 Flukes Release Notes:
 ---------------------
 
+06/16/13:
+- Added user cert validity check
+
 06/03/13:
 - Updated the list of known sites
 
