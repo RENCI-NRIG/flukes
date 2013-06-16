@@ -149,6 +149,15 @@ public class OrcaSMXMLRPCProxy {
 				throw new Exception("Certificate with alias " + keyAlias + " does not exist in keystore " + keyStorePath + ".");
 			}
 			
+			if (ks.getCertificate(keyAlias).getType().equals("X.509")) {
+				X509Certificate x509Cert = (X509Certificate)ks.getCertificate(keyAlias);
+				try {
+					x509Cert.checkValidity();
+				} catch (Exception e) {
+					throw new Exception("Certificate with alias " + keyAlias + " is not yet valid or has expired.");
+				}
+            }
+			
 			// add the identity into it
 			mkm.addPrivateKey(keyAlias, 
 					(PrivateKey)ks.getKey(keyAlias, keyPassword.toCharArray()), 
