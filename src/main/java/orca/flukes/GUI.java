@@ -1160,11 +1160,8 @@ public class GUI implements ComponentListener {
 	 * Read and process preferences file
 	 */
 	private void processPreferences() {
-		Properties p = System.getProperties();
-		
-		String prefFilePath = "" + p.getProperty("user.home") + p.getProperty("file.separator") + PREF_FILE;
 		try {
-			File prefs = new File(prefFilePath);
+			File prefs = new File(System.getProperty("user.home"), PREF_FILE);
 			FileInputStream is = new FileInputStream(prefs);
 			BufferedReader bin = new BufferedReader(new InputStreamReader(is, "UTF-8"));
 			
