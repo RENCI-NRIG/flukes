@@ -8,7 +8,9 @@ import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.security.KeyStore;
+import java.security.Security;
 import java.security.PrivateKey;
+import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -35,6 +37,19 @@ import org.apache.xmlrpc.XmlRpcException;
 import org.apache.xmlrpc.client.XmlRpcClient;
 import org.apache.xmlrpc.client.XmlRpcClientConfigImpl;
 import org.apache.xmlrpc.client.XmlRpcCommonsTransportFactory;
+
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.bouncycastle.cert.X509CertificateHolder;
+import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter;
+import org.bouncycastle.openssl.PEMParser;
+import org.bouncycastle.openssl.PEMKeyPair;
+import org.bouncycastle.openssl.PEMEncryptedKeyPair;
+import org.bouncycastle.openssl.PEMDecryptorProvider;
+import org.bouncycastle.openssl.jcajce.JceOpenSSLPKCS8DecryptorProviderBuilder;
+import org.bouncycastle.openssl.jcajce.JcePEMDecryptorProviderBuilder;
+import org.bouncycastle.openssl.jcajce.JcaPEMKeyConverter;
+import org.bouncycastle.operator.InputDecryptorProvider;
+import org.bouncycastle.pkcs.PKCS8EncryptedPrivateKeyInfo;
 
 import com.hyperrealm.kiwi.ui.dialog.KMessageDialog;
 
@@ -116,9 +131,15 @@ public class OrcaSMXMLRPCProxy {
 			String keyAlias = GUI.getInstance().getKeystoreAlias();
 			String keyPassword = GUI.getInstance().getKeystorePassword();
 
-			String keyStorePath = GUI.getInstance().getPreference(GUI.PrefsEnum.USER_KEYSTORE);
-			Properties p = System.getProperties();
-			keyStorePath = keyStorePath.replaceAll("~", p.getProperty("user.home"));
+			String keyStorePathStr = GUI.getInstance().getPreference(GUI.PrefsEnum.USER_KEYSTORE);
+			File keyStorePath;
+			if (keyStorePathStr.startsWith("~")) {
+				keyStorePathStr = keyStorePathStr.replaceAll("~", "");
+				keyStorePath = new File(System.getProperty("user.home", keyStorePathStr));
+			}
+			else {
+				keyStorePath = new File(keyStorePathStr);
+			}
 			
 			FileInputStream fis = new FileInputStream(keyStorePath);
 
@@ -177,6 +198,77 @@ public class OrcaSMXMLRPCProxy {
 			throw new Exception("Unable to load user private key and certificate from the keystore: " + e);
 		}
 	}
+
+        private KeyStore loadX509Data (String keyPassword, String keyPath, String certPath)
+            throws Exception {
+            if (Security.getProvider("BC") == null) {
+                Security.addProvider(new BouncyCastleProvider());
+            }
+        
+            JcaPEMKeyConverter keyConverter =
+                new JcaPEMKeyConverter().setProvider("BC");
+            JcaX509CertificateConverter certConverter =
+                new JcaX509CertificateConverter().setProvider("BC");
+        
+            Object object;
+            
+            File keyFile = new File(keyPath);
+            FileInputStream is = new FileInputStream(keyFile);
+            PEMParser pemParser = new PEMParser(new BufferedReader(new InputStreamReader(is, "UTF-8")));
+            
+            PrivateKey privKey = null;
+
+            while ((object = pemParser.readObject()) != null) {
+                if (object instanceof PKCS8EncryptedPrivateKeyInfo) {
+                    InputDecryptorProvider decProv =
+                        new JceOpenSSLPKCS8DecryptorProviderBuilder().build(keyPassword.toCharArray());
+                    privKey =
+                        keyConverter.getPrivateKey(((PKCS8EncryptedPrivateKeyInfo) object).decryptPrivateKeyInfo(decProv));
+                    break;
+                }
+                else if (object instanceof PEMEncryptedKeyPair) {
+                    PEMDecryptorProvider decProv =
+                        new JcePEMDecryptorProviderBuilder().build(keyPassword.toCharArray());
+                    privKey =
+                        keyConverter.getPrivateKey((((PEMEncryptedKeyPair) object).decryptKeyPair(decProv)).getPrivateKeyInfo());
+                    break;
+                }
+                else if (object instanceof PEMKeyPair) {
+                    privKey =
+                        keyConverter.getPrivateKey(((PEMKeyPair) object).getPrivateKeyInfo());
+                    break;
+                }
+            }
+            
+            is.close();
+            
+            if (privKey == null)
+                throw new Exception("Private key file " + keyPath + " did not contain a private key.");
+            
+            File certFile = new File(certPath);
+            is = new FileInputStream(certFile);
+            pemParser = new PEMParser(new BufferedReader(new InputStreamReader(is, "UTF-8")));
+            
+            ArrayList<Certificate> certs = new ArrayList<Certificate>();
+            
+            while ((object = pemParser.readObject()) != null) {
+                if (object instanceof X509CertificateHolder) {
+                    certs.add(certConverter.getCertificate((X509CertificateHolder) object));
+                }
+            }
+
+            is.close();
+            
+            if (certs.isEmpty())
+                throw new Exception("Certificate file " + certPath + " contained no certificates.");
+
+            KeyStore ks = KeyStore.getInstance(KeyStore.getDefaultType());
+            ks.load(null);
+            ks.setKeyEntry("currentSession", privKey,
+                           keyPassword.toCharArray(), certs.toArray(new Certificate[certs.size()]));
+            
+            return ks;
+        }
 	
 	@SuppressWarnings("unchecked")
 	public Map<String, Object> getVersion() throws Exception {
@@ -297,12 +389,18 @@ public class OrcaSMXMLRPCProxy {
     	setSSLIdentity();
     	
 		// collect user credentials from $HOME/.ssh
-		Properties p = System.getProperties();
 		
 		// create an array
 		List<Map<String, ?>> users = new ArrayList<Map<String, ?>>();
-		String keyPath = GUI.getInstance().getPreference(GUI.PrefsEnum.SSH_PUBKEY);
-		keyPath = keyPath.replaceAll("~", p.getProperty("user.home"));
+		String keyPathStr = GUI.getInstance().getPreference(GUI.PrefsEnum.SSH_PUBKEY);
+		File keyPath;
+		if (keyPathStr.startsWith("~")) {
+			keyPathStr = keyPathStr.replaceAll("~", "");
+			keyPath = new File(System.getProperty("user.home", keyPathStr));
+		}
+		else {
+			keyPath = new File(keyPathStr);
+		}
 		
 		String userKey = getUserKeyFile(keyPath);
 		
@@ -319,8 +417,14 @@ public class OrcaSMXMLRPCProxy {
 		users.add(userEntry);
 		
 		// any additional keys?
-		keyPath = GUI.getInstance().getPreference(GUI.PrefsEnum.SSH_OTHER_PUBKEY);
-		keyPath = keyPath.replaceAll("~", p.getProperty("user.home"));
+		keyPathStr = GUI.getInstance().getPreference(GUI.PrefsEnum.SSH_OTHER_PUBKEY);
+		if (keyPathStr.startsWith("~")) {
+			keyPathStr = keyPathStr.replaceAll("~", "");
+			keyPath = new File(System.getProperty("user.home", keyPathStr));
+		}
+		else {
+			keyPath = new File(keyPathStr);
+		}
 		String otherUserKey = getUserKeyFile(keyPath);
 		
 		// add other ssh keys
@@ -510,13 +614,15 @@ public class OrcaSMXMLRPCProxy {
 	private String getAnyUserPubKey() {
 		Properties p = System.getProperties();
 		
-		String keyFilePath = "" + p.getProperty("user.home") + p.getProperty("file.separator") + ".ssh" +
+		String keyFilePathStr = "" + p.getProperty("user.home") + p.getProperty("file.separator") + ".ssh" +
 		p.getProperty("file.separator") + SSH_DSA_PUBKEY_FILE;
+		File keyFilePath = new File(keyFilePathStr);
 
 		String userKey = getUserKeyFile(keyFilePath);
 		if (userKey == null) {
-			keyFilePath = "" + p.getProperty("user.home") + p.getProperty("file.separator") + ".ssh" + 
+			keyFilePathStr = "" + p.getProperty("user.home") + p.getProperty("file.separator") + ".ssh" + 
 			p.getProperty("file.separator") + SSH_RSA_PUBKEY_FILE;
+			keyFilePath = new File(keyFilePathStr);
 			userKey = getUserKeyFile(keyFilePath);
 			if (userKey == null) {
 				KMessageDialog md = new KMessageDialog(GUI.getInstance().getFrame(), "No user ssh keys found", true);
@@ -529,10 +635,9 @@ public class OrcaSMXMLRPCProxy {
 		return userKey;
 	}
 
-	private String getUserKeyFile(String path) {
+	private String getUserKeyFile(File path) {
 		try {
-			File prefs = new File(path);
-			FileInputStream is = new FileInputStream(prefs);
+			FileInputStream is = new FileInputStream(path);
 			BufferedReader bin = new BufferedReader(new InputStreamReader(is, "UTF-8"));
 
 			StringBuilder sb = new StringBuilder();
