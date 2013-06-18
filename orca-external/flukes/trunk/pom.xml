@@ -114,7 +114,7 @@
 							<addDefaultImplementationEntries>true</addDefaultImplementationEntries>
 						</manifest>
 						<manifestEntries>
-							<Implementation-Version>v.${version}.build-${buildNumber} built on ${maven.build.timestamp}</Implementation-Version>
+							<Implementation-Version>v.${project.version}.build-${buildNumber} built on ${maven.build.timestamp}</Implementation-Version>
 						</manifestEntries>
 					</archive>
 				</configuration>
