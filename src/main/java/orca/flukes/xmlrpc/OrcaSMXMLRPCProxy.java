@@ -135,7 +135,7 @@ public class OrcaSMXMLRPCProxy {
 			File keyStorePath;
 			if (keyStorePathStr.startsWith("~")) {
 				keyStorePathStr = keyStorePathStr.replaceAll("~", "");
-				keyStorePath = new File(System.getProperty("user.home", keyStorePathStr));
+				keyStorePath = new File(System.getProperty("user.home"), keyStorePathStr);
 			}
 			else {
 				keyStorePath = new File(keyStorePathStr);
@@ -396,7 +396,7 @@ public class OrcaSMXMLRPCProxy {
 		File keyPath;
 		if (keyPathStr.startsWith("~")) {
 			keyPathStr = keyPathStr.replaceAll("~", "");
-			keyPath = new File(System.getProperty("user.home", keyPathStr));
+			keyPath = new File(System.getProperty("user.home"), keyPathStr);
 		}
 		else {
 			keyPath = new File(keyPathStr);
@@ -420,7 +420,7 @@ public class OrcaSMXMLRPCProxy {
 		keyPathStr = GUI.getInstance().getPreference(GUI.PrefsEnum.SSH_OTHER_PUBKEY);
 		if (keyPathStr.startsWith("~")) {
 			keyPathStr = keyPathStr.replaceAll("~", "");
-			keyPath = new File(System.getProperty("user.home", keyPathStr));
+			keyPath = new File(System.getProperty("user.home"), keyPathStr);
 		}
 		else {
 			keyPath = new File(keyPathStr);
