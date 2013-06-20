@@ -131,22 +131,28 @@ public class OrcaSMXMLRPCProxy {
 			String keyAlias = GUI.getInstance().getKeystoreAlias();
 			String keyPassword = GUI.getInstance().getKeystorePassword();
 
-			String keyStorePathStr = GUI.getInstance().getPreference(GUI.PrefsEnum.USER_KEYSTORE);
-			File keyStorePath;
-			if (keyStorePathStr.startsWith("~")) {
-				keyStorePathStr = keyStorePathStr.replaceAll("~", "");
-				keyStorePath = new File(System.getProperty("user.home"), keyStorePathStr);
-			}
-			else {
-				keyStorePath = new File(keyStorePathStr);
-			}
-			
-			FileInputStream fis = new FileInputStream(keyStorePath);
+                        KeyStore ks = null;
+                        File keyStorePath = loadUserFile(GUI.getInstance().getPreference(GUI.PrefsEnum.USER_KEYSTORE));
+                        File certFilePath = loadUserFile(GUI.getInstance().getPreference(GUI.PrefsEnum.USER_CERTFILE));
+                        File certKeyFilePath = loadUserFile(GUI.getInstance().getPreference(GUI.PrefsEnum.USER_CERTKEYFILE));
 
-			KeyStore ks = KeyStore.getInstance("jks");
+                        if (keyStorePath.exists()) {
+                            FileInputStream jksIS = new FileInputStream(keyStorePath);
+                            ks = loadJKSData(jksIS, keyAlias, keyPassword);
+                            jksIS.close();
+                        }
+                        else if (certFilePath.exists() && certKeyFilePath.exists()) {
+                            FileInputStream certIS = new FileInputStream(certFilePath);
+                            FileInputStream keyIS = new FileInputStream(certKeyFilePath);
+                            ks = loadX509Data(certIS, keyIS, keyAlias, keyPassword);
+                            certIS.close();
+                            keyIS.close();
+                        }
 
-			ks.load(fis, keyPassword.toCharArray());
-			fis.close();
+                        if (ks == null)
+                            throw new Exception("Was unable to find either: " + keyStorePath.getCanonicalPath() +
+                                                " or the pair of: " + certFilePath.getCanonicalPath() +
+                                                " and " + certKeyFilePath.getCanonicalPath() + " as specified.");
 
 			// check that the spelling of key alias is proper
 			Enumeration<String> as = ks.aliases();
@@ -199,8 +205,32 @@ public class OrcaSMXMLRPCProxy {
 		}
 	}
 
-        private KeyStore loadX509Data (String keyPassword, String keyPath, String certPath)
+        private File loadUserFile (String pathStr) {
+            File f;
+
+            if (pathStr.startsWith("~")) {
+                pathStr = pathStr.replaceAll("~", "");
+                f = new File(System.getProperty("user.home"), pathStr);
+            }
+            else {
+                f = new File(pathStr);
+            }
+            
+            return f;
+        }
+
+        private KeyStore loadJKSData (FileInputStream jksIS, String keyAlias, String keyPassword)
             throws Exception {
+
+            KeyStore ks = KeyStore.getInstance("jks");
+            ks.load(jksIS, keyPassword.toCharArray());
+
+            return ks;
+        }
+
+        private KeyStore loadX509Data (FileInputStream certIS, FileInputStream keyIS, String keyAlias, String keyPassword)
+            throws Exception {
+
             if (Security.getProvider("BC") == null) {
                 Security.addProvider(new BouncyCastleProvider());
             }
@@ -212,9 +242,7 @@ public class OrcaSMXMLRPCProxy {
         
             Object object;
             
-            File keyFile = new File(keyPath);
-            FileInputStream is = new FileInputStream(keyFile);
-            PEMParser pemParser = new PEMParser(new BufferedReader(new InputStreamReader(is, "UTF-8")));
+            PEMParser pemParser = new PEMParser(new BufferedReader(new InputStreamReader(keyIS, "UTF-8")));
             
             PrivateKey privKey = null;
 
@@ -240,14 +268,10 @@ public class OrcaSMXMLRPCProxy {
                 }
             }
             
-            is.close();
-            
             if (privKey == null)
-                throw new Exception("Private key file " + keyPath + " did not contain a private key.");
+                throw new Exception("Private key file did not contain a private key.");
             
-            File certFile = new File(certPath);
-            is = new FileInputStream(certFile);
-            pemParser = new PEMParser(new BufferedReader(new InputStreamReader(is, "UTF-8")));
+            pemParser = new PEMParser(new BufferedReader(new InputStreamReader(certIS, "UTF-8")));
             
             ArrayList<Certificate> certs = new ArrayList<Certificate>();
             
@@ -257,14 +281,12 @@ public class OrcaSMXMLRPCProxy {
                 }
             }
 
-            is.close();
-            
             if (certs.isEmpty())
-                throw new Exception("Certificate file " + certPath + " contained no certificates.");
+                throw new Exception("Certificate file contained no certificates.");
 
-            KeyStore ks = KeyStore.getInstance(KeyStore.getDefaultType());
+            KeyStore ks = KeyStore.getInstance("jks");
             ks.load(null);
-            ks.setKeyEntry("currentSession", privKey,
+            ks.setKeyEntry(keyAlias, privKey,
                            keyPassword.toCharArray(), certs.toArray(new Certificate[certs.size()]));
             
             return ks;
