@@ -465,38 +465,78 @@ public class MouseMenus {
                 		String mgt = node.getSSHManagementAccess();
                 		if (mgt == null) {
                 			KMessageDialog kqd = new KMessageDialog(GUI.getInstance().getFrame(), "Node login", true);
-                    		kqd.setMessage("Node " + node.getName() + " does not allow user logins.");
-                    		kqd.setLocationRelativeTo(GUI.getInstance().getFrame());
-                    		kqd.setVisible(true);
+                                        kqd.setMessage("Node " + node.getName() + " does not allow user logins.");
+                                        kqd.setLocationRelativeTo(GUI.getInstance().getFrame());
+                                        kqd.setVisible(true);
                 			return;
                 		}
-                		// parse the URI
-                		if (mgt.startsWith("ssh")) {                			
-                			mgt = mgt.replaceAll("://", " " + " -i " + GUI.getInstance().getPreference(GUI.PrefsEnum.SSH_KEY) + " " + GUI.getInstance().getPreference(GUI.PrefsEnum.SSH_OPTIONS) + " ");
+                		// parse the URI, with slight differences based on the underlying OS
+                                boolean isWindows = (System.getProperty("os.name").toLowerCase().indexOf("windows") > -1);
+                		if (mgt.startsWith("ssh")) {
+                                    if (!isWindows) {
+                                        mgt = mgt.replaceAll("://", " " + " -i " +
+                                                             GUI.getInstance().getPreference(GUI.PrefsEnum.SSH_KEY) +
+                                                             " " + GUI.getInstance().getPreference(GUI.PrefsEnum.SSH_OPTIONS) + " ");
                 			mgt = mgt.replaceAll(":", " -p ");
+                                    }
+                                    else {
+                                        mgt = mgt.replaceAll("ssh://", "");
+                                    }
                 		} else {
                 			KMessageDialog kqd = new KMessageDialog(GUI.getInstance().getFrame(), "Node login", true);
-                    		kqd.setMessage("Node " + node.getName() + " uses unsupported access method: " + mgt);
-                    		kqd.setLocationRelativeTo(GUI.getInstance().getFrame());
-                    		kqd.setVisible(true);
+                                        kqd.setMessage("Node " + node.getName() + " uses unsupported access method: " + mgt);
+                                        kqd.setLocationRelativeTo(GUI.getInstance().getFrame());
+                                        kqd.setVisible(true);
                 			return;
                 		}
-                		String xtermCmd = GUI.getInstance().getPreference(GUI.PrefsEnum.XTERM_PATH); 
-                		//System.out.println("Management acces " + mgt);
-                		// check that xterm runs
-                		File xtermFile = new File(xtermCmd);
-                		if (!xtermFile.canExecute()) {
+                                if (!isWindows) {
+                                    String xtermCmd = GUI.getInstance().getPreference(GUI.PrefsEnum.XTERM_PATH);
+                                    File xtermFile = new File(xtermCmd);
+                                    if (!xtermFile.canExecute()) {
                 			KMessageDialog kqd = new KMessageDialog(GUI.getInstance().getFrame(), "Node login", true);
-                    		kqd.setMessage("Path to xterm " + xtermCmd + " is not valid. Please fix $HOME/.flukes.properties!");
-                    		kqd.setLocationRelativeTo(GUI.getInstance().getFrame());
-                    		kqd.setVisible(true);
+                                        kqd.setMessage("Path to xterm " + xtermCmd +
+                                                       " is not valid. Please fix $HOME/.flukes.properties!");
+                                        kqd.setLocationRelativeTo(GUI.getInstance().getFrame());
+                                        kqd.setVisible(true);
                 			return;
-                		} else {
+                                    } else {
                 			// run xterm
-                			String command= xtermCmd + " -T \"" + node.getName() + "\" -e " + mgt; 
+                			String command = xtermCmd + " -T \"" + node.getName() + "\" -e " + mgt; 
                 			Runtime rt = Runtime.getRuntime();      
                 			rt.exec(command);
-                		}
+                                    }
+                                }
+                                else {
+                                    String puttyCmd = GUI.getInstance().getPreference(GUI.PrefsEnum.PUTTY_PATH);
+                                    File puttyFile = new File(puttyCmd);
+                                    if (!puttyFile.canExecute()) {
+                			KMessageDialog kqd = new KMessageDialog(GUI.getInstance().getFrame(), "Node login", true);
+                                        kqd.setMessage("Path to PuTTY " + puttyCmd +
+                                                       " is not valid. Please fix $HOME/.flukes.properties!");
+                                        kqd.setLocationRelativeTo(GUI.getInstance().getFrame());
+                                        kqd.setVisible(true);
+                			return;
+                                    } else {
+                			// run putty
+                                        int splitIndex = mgt.indexOf(":");
+                                        String mgtUserHost = mgt.substring(0, splitIndex);
+                                        String mgtPort = mgt.substring(splitIndex + 1);
+
+                                        String mgtPrivKey = GUI.getInstance().getPreference(GUI.PrefsEnum.SSH_KEY);
+                                        File mgtPrivKeyPath;
+                                        if (mgtPrivKey.startsWith("~/")) {
+                                            mgtPrivKey = mgtPrivKey.replaceAll("~/", "/");
+                                            mgtPrivKeyPath = new File(System.getProperty("user.home"), mgtPrivKey);
+                                        }
+                                        else {
+                                            mgtPrivKeyPath = new File(mgtPrivKey);
+                                        }
+
+                			Runtime rt = Runtime.getRuntime();
+                			rt.exec(new String[] {puttyCmd, "-ssh", mgtUserHost, "-P", mgtPort, "-i",
+                                                              mgtPrivKeyPath.getCanonicalPath()});
+                                    }
+                                }
                 	} catch (IOException ex) {
                 		ExceptionDialog ked = new ExceptionDialog(GUI.getInstance().getFrame(), "Unable to login due to exception!");
                 		ked.setException("Exception encountered: ", ex);
