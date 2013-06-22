@@ -518,9 +518,7 @@ public class MouseMenus {
                 			return;
                                     } else {
                 			// run putty
-                                        int splitIndex = mgt.indexOf(":");
-                                        String mgtUserHost = mgt.substring(0, splitIndex);
-                                        String mgtPort = mgt.substring(splitIndex + 1);
+                                        String[] mgtHostInfo = mgt.split(":");
 
                                         String mgtPrivKey = GUI.getInstance().getPreference(GUI.PrefsEnum.SSH_KEY);
                                         File mgtPrivKeyPath;
@@ -533,8 +531,8 @@ public class MouseMenus {
                                         }
 
                 			Runtime rt = Runtime.getRuntime();
-                			rt.exec(new String[] {puttyCmd, "-ssh", mgtUserHost, "-P", mgtPort, "-i",
-                                                              mgtPrivKeyPath.getCanonicalPath()});
+                			rt.exec(new String[] {puttyCmd, "-ssh", mgtHostInfo[0], "-P", mgtHostInfo[1],
+                                                              "-i", mgtPrivKeyPath.getCanonicalPath()});
                                     }
                                 }
                 	} catch (IOException ex) {
