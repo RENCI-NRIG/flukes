@@ -208,8 +208,8 @@ public class OrcaSMXMLRPCProxy {
         private File loadUserFile (String pathStr) {
             File f;
 
-            if (pathStr.startsWith("~")) {
-                pathStr = pathStr.replaceAll("~", "");
+            if (pathStr.startsWith("~/")) {
+                pathStr = pathStr.replaceAll("~/", "/");
                 f = new File(System.getProperty("user.home"), pathStr);
             }
             else {
@@ -416,8 +416,8 @@ public class OrcaSMXMLRPCProxy {
 		List<Map<String, ?>> users = new ArrayList<Map<String, ?>>();
 		String keyPathStr = GUI.getInstance().getPreference(GUI.PrefsEnum.SSH_PUBKEY);
 		File keyPath;
-		if (keyPathStr.startsWith("~")) {
-			keyPathStr = keyPathStr.replaceAll("~", "");
+		if (keyPathStr.startsWith("~/")) {
+			keyPathStr = keyPathStr.replaceAll("~/", "/");
 			keyPath = new File(System.getProperty("user.home"), keyPathStr);
 		}
 		else {
@@ -440,8 +440,8 @@ public class OrcaSMXMLRPCProxy {
 		
 		// any additional keys?
 		keyPathStr = GUI.getInstance().getPreference(GUI.PrefsEnum.SSH_OTHER_PUBKEY);
-		if (keyPathStr.startsWith("~")) {
-			keyPathStr = keyPathStr.replaceAll("~", "");
+		if (keyPathStr.startsWith("~/")) {
+			keyPathStr = keyPathStr.replaceAll("~/", "/");
 			keyPath = new File(System.getProperty("user.home"), keyPathStr);
 		}
 		else {
