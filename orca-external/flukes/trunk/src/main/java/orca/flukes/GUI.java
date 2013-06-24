@@ -68,6 +68,7 @@ import orca.flukes.ndl.ManifestLoader;
 import orca.flukes.ndl.RequestLoader;
 import orca.flukes.ndl.RequestSaver;
 import orca.flukes.ui.KeystoreDialog;
+import orca.flukes.ui.PasswordDialog;
 import orca.flukes.ui.TextAreaDialog;
 import orca.flukes.xmlrpc.OrcaSMXMLRPCProxy;
 import orca.flukes.xmlrpc.RegistryXMLRPCProxy;
@@ -193,6 +194,12 @@ public class GUI implements ComponentListener {
 	public String getKeystorePassword() {
 		if ((keyAlias == null) || (keyPassword == null)) 
 			identityDialog();
+		return keyPassword;
+	}
+	
+	public String getKeystorePasswordOnly() {
+		if (keyPassword == null) 
+			passwordDialog();
 		return keyPassword;
 	}
 	
@@ -553,6 +560,15 @@ public class GUI implements ComponentListener {
 		ta.setText(readResourceToString("/RELEASE-NOTES"));
 		tad.pack();
         tad.setVisible(true);
+	}
+	
+	private void passwordDialog() {
+		PasswordDialog pd = new PasswordDialog(frmOrcaFlukes, "Enter key password to be used with " + getPreference(PrefsEnum.USER_CERTKEYFILE));
+		
+		pd.pack();
+		pd.setVisible(true);
+		
+		keyPassword = pd.getPassword();
 	}
 	
 	private void identityDialog() {
