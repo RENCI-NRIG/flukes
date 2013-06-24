@@ -1,6 +1,9 @@
 Flukes Release Notes:
 ---------------------
 
+06/24/13:
+- Added direct support for .pem/.crt/.key credentials without intervening .jks 
+
 06/16/13:
 - Added user cert validity check
 
