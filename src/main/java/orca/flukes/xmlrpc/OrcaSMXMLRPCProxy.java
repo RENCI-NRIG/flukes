@@ -67,20 +67,20 @@ public class OrcaSMXMLRPCProxy {
 	private static final String LIST_RESOURCES = "orca.listResources";
 	private static final String SSH_DSA_PUBKEY_FILE = "id_dsa.pub";
 	private static final String SSH_RSA_PUBKEY_FILE = "id_rsa.pub";
-	
+
 	private MultiKeyManager mkm = null;
 	private boolean sslIdentitySet = false;
-	
+
 	OrcaSMXMLRPCProxy() {
 		;
 	}
-	
+
 	private static OrcaSMXMLRPCProxy instance = new OrcaSMXMLRPCProxy();
-	
+
 	public static OrcaSMXMLRPCProxy getInstance() {
 		return instance;
 	}
-	
+
 	TrustManager[] trustAllCerts = new TrustManager[] {
 			new X509TrustManager() {
 				public X509Certificate[] getAcceptedIssuers() {
@@ -99,21 +99,21 @@ public class OrcaSMXMLRPCProxy {
 
 			}
 	};
-	
+
 	public void resetSSLIdentity() {
 		sslIdentitySet = false;
 	}
-	
+
 	/**
 	 * Set the identity for the communications to the XMLRPC controller. Eventually
 	 * we may talk to several controller with different identities. For now only
 	 * one is configured.
 	 */
 	private void setSSLIdentity() throws Exception {
-		
+
 		if (sslIdentitySet)
 			return;
-		
+
 		try {
 			// create multikeymanager
 			mkm = new MultiKeyManager();
@@ -127,32 +127,36 @@ public class OrcaSMXMLRPCProxy {
 			regSslFact.addHostContextFactory(new MultiKeySSLContextFactory(mkm, trustAllCerts), 
 					ctrlrUrl.getHost(), ctrlrUrl.getPort());
 
-			// load keystore and get the right cert from it
-			String keyAlias = GUI.getInstance().getKeystoreAlias();
-			String keyPassword = GUI.getInstance().getKeystorePassword();
 
-                        KeyStore ks = null;
-                        File keyStorePath = loadUserFile(GUI.getInstance().getPreference(GUI.PrefsEnum.USER_KEYSTORE));
-                        File certFilePath = loadUserFile(GUI.getInstance().getPreference(GUI.PrefsEnum.USER_CERTFILE));
-                        File certKeyFilePath = loadUserFile(GUI.getInstance().getPreference(GUI.PrefsEnum.USER_CERTKEYFILE));
 
-                        if (keyStorePath.exists()) {
-                            FileInputStream jksIS = new FileInputStream(keyStorePath);
-                            ks = loadJKSData(jksIS, keyAlias, keyPassword);
-                            jksIS.close();
-                        }
-                        else if (certFilePath.exists() && certKeyFilePath.exists()) {
-                            FileInputStream certIS = new FileInputStream(certFilePath);
-                            FileInputStream keyIS = new FileInputStream(certKeyFilePath);
-                            ks = loadX509Data(certIS, keyIS, keyAlias, keyPassword);
-                            certIS.close();
-                            keyIS.close();
-                        }
+			KeyStore ks = null;
+			File keyStorePath = loadUserFile(GUI.getInstance().getPreference(GUI.PrefsEnum.USER_KEYSTORE));
+			File certFilePath = loadUserFile(GUI.getInstance().getPreference(GUI.PrefsEnum.USER_CERTFILE));
+			File certKeyFilePath = loadUserFile(GUI.getInstance().getPreference(GUI.PrefsEnum.USER_CERTKEYFILE));
 
-                        if (ks == null)
-                            throw new Exception("Was unable to find either: " + keyStorePath.getCanonicalPath() +
-                                                " or the pair of: " + certFilePath.getCanonicalPath() +
-                                                " and " + certKeyFilePath.getCanonicalPath() + " as specified.");
+			String keyAlias = null, keyPassword = null;
+			if (keyStorePath.exists()) {
+				// load keystore and get the right cert from it
+				keyAlias = GUI.getInstance().getKeystoreAlias();
+				keyPassword = GUI.getInstance().getKeystorePassword();
+				FileInputStream jksIS = new FileInputStream(keyStorePath);
+				ks = loadJKSData(jksIS, keyAlias, keyPassword);
+				jksIS.close();
+			}
+			else if (certFilePath.exists() && certKeyFilePath.exists()) {
+				FileInputStream certIS = new FileInputStream(certFilePath);
+				FileInputStream keyIS = new FileInputStream(certKeyFilePath);
+				keyAlias = "x509convert";
+				keyPassword = GUI.getInstance().getKeystorePasswordOnly();
+				ks = loadX509Data(certIS, keyIS, keyAlias, keyPassword);
+				certIS.close();
+				keyIS.close();
+			}
+			
+			if (ks == null)
+				throw new Exception("Was unable to find either: " + keyStorePath.getCanonicalPath() +
+						" or the pair of: " + certFilePath.getCanonicalPath() +
+						" and " + certKeyFilePath.getCanonicalPath() + " as specified.");
 
 			// check that the spelling of key alias is proper
 			Enumeration<String> as = ks.aliases();
@@ -163,19 +167,19 @@ public class OrcaSMXMLRPCProxy {
 					break;
 				}
 			}
-			
+
 			// alias has to exist and have a key and cert present
 			if (!ks.containsAlias(keyAlias)) {
 				throw new Exception("Alias " + keyAlias + " does not exist in keystore " + keyStorePath + ".");
 			}
-			
+
 			if (ks.getKey(keyAlias, keyPassword.toCharArray()) == null)
 				throw new Exception("Key with alias " + keyAlias + " does not exist in keystore " + keyStorePath + ".");
-			
+
 			if (ks.getCertificate(keyAlias) == null) {
 				throw new Exception("Certificate with alias " + keyAlias + " does not exist in keystore " + keyStorePath + ".");
 			}
-			
+
 			if (ks.getCertificate(keyAlias).getType().equals("X.509")) {
 				X509Certificate x509Cert = (X509Certificate)ks.getCertificate(keyAlias);
 				try {
@@ -183,8 +187,8 @@ public class OrcaSMXMLRPCProxy {
 				} catch (Exception e) {
 					throw new Exception("Certificate with alias " + keyAlias + " is not yet valid or has expired.");
 				}
-            }
-			
+			}
+
 			// add the identity into it
 			mkm.addPrivateKey(keyAlias, 
 					(PrivateKey)ks.getKey(keyAlias, keyPassword.toCharArray()), 
@@ -193,11 +197,11 @@ public class OrcaSMXMLRPCProxy {
 			// before we do SSL to this controller, set our identity
 			mkm.setCurrentGuid(keyAlias);
 
-	    	// register the protocol (Note: All xmlrpc clients must use XmlRpcCommonsTransportFactory
-	    	// for this to work). See ContextualSSLProtocolSocketFactory.
+			// register the protocol (Note: All xmlrpc clients must use XmlRpcCommonsTransportFactory
+			// for this to work). See ContextualSSLProtocolSocketFactory.
 			Protocol reghhttps = new Protocol("https", (ProtocolSocketFactory)regSslFact, 443); 
 			Protocol.registerProtocol("https", reghhttps);
-			
+
 			sslIdentitySet = true;
 		} catch (Exception e) {
 			GUI.getInstance().resetKeystoreAliasAndPassword();
@@ -205,119 +209,119 @@ public class OrcaSMXMLRPCProxy {
 		}
 	}
 
-        private File loadUserFile (String pathStr) {
-            File f;
+	private File loadUserFile (String pathStr) {
+		File f;
 
-            if (pathStr.startsWith("~/")) {
-                pathStr = pathStr.replaceAll("~/", "/");
-                f = new File(System.getProperty("user.home"), pathStr);
-            }
-            else {
-                f = new File(pathStr);
-            }
-            
-            return f;
-        }
+		if (pathStr.startsWith("~/")) {
+			pathStr = pathStr.replaceAll("~/", "/");
+			f = new File(System.getProperty("user.home"), pathStr);
+		}
+		else {
+			f = new File(pathStr);
+		}
 
-        private KeyStore loadJKSData (FileInputStream jksIS, String keyAlias, String keyPassword)
-            throws Exception {
+		return f;
+	}
 
-            KeyStore ks = KeyStore.getInstance("jks");
-            ks.load(jksIS, keyPassword.toCharArray());
+	private KeyStore loadJKSData (FileInputStream jksIS, String keyAlias, String keyPassword)
+	throws Exception {
 
-            return ks;
-        }
+		KeyStore ks = KeyStore.getInstance("jks");
+		ks.load(jksIS, keyPassword.toCharArray());
 
-        private KeyStore loadX509Data (FileInputStream certIS, FileInputStream keyIS, String keyAlias, String keyPassword)
-            throws Exception {
+		return ks;
+	}
 
-            if (Security.getProvider("BC") == null) {
-                Security.addProvider(new BouncyCastleProvider());
-            }
-        
-            JcaPEMKeyConverter keyConverter =
-                new JcaPEMKeyConverter().setProvider("BC");
-            JcaX509CertificateConverter certConverter =
-                new JcaX509CertificateConverter().setProvider("BC");
-        
-            Object object;
-            
-            PEMParser pemParser = new PEMParser(new BufferedReader(new InputStreamReader(keyIS, "UTF-8")));
-            
-            PrivateKey privKey = null;
+	private KeyStore loadX509Data (FileInputStream certIS, FileInputStream keyIS, String keyAlias, String keyPassword)
+	throws Exception {
 
-            while ((object = pemParser.readObject()) != null) {
-                if (object instanceof PKCS8EncryptedPrivateKeyInfo) {
-                    InputDecryptorProvider decProv =
-                        new JceOpenSSLPKCS8DecryptorProviderBuilder().build(keyPassword.toCharArray());
-                    privKey =
-                        keyConverter.getPrivateKey(((PKCS8EncryptedPrivateKeyInfo) object).decryptPrivateKeyInfo(decProv));
-                    break;
-                }
-                else if (object instanceof PEMEncryptedKeyPair) {
-                    PEMDecryptorProvider decProv =
-                        new JcePEMDecryptorProviderBuilder().build(keyPassword.toCharArray());
-                    privKey =
-                        keyConverter.getPrivateKey((((PEMEncryptedKeyPair) object).decryptKeyPair(decProv)).getPrivateKeyInfo());
-                    break;
-                }
-                else if (object instanceof PEMKeyPair) {
-                    privKey =
-                        keyConverter.getPrivateKey(((PEMKeyPair) object).getPrivateKeyInfo());
-                    break;
-                }
-            }
-            
-            if (privKey == null)
-                throw new Exception("Private key file did not contain a private key.");
-            
-            pemParser = new PEMParser(new BufferedReader(new InputStreamReader(certIS, "UTF-8")));
-            
-            ArrayList<Certificate> certs = new ArrayList<Certificate>();
-            
-            while ((object = pemParser.readObject()) != null) {
-                if (object instanceof X509CertificateHolder) {
-                    certs.add(certConverter.getCertificate((X509CertificateHolder) object));
-                }
-            }
+		if (Security.getProvider("BC") == null) {
+			Security.addProvider(new BouncyCastleProvider());
+		}
 
-            if (certs.isEmpty())
-                throw new Exception("Certificate file contained no certificates.");
+		JcaPEMKeyConverter keyConverter =
+			new JcaPEMKeyConverter().setProvider("BC");
+		JcaX509CertificateConverter certConverter =
+			new JcaX509CertificateConverter().setProvider("BC");
 
-            KeyStore ks = KeyStore.getInstance("jks");
-            ks.load(null);
-            ks.setKeyEntry(keyAlias, privKey,
-                           keyPassword.toCharArray(), certs.toArray(new Certificate[certs.size()]));
-            
-            return ks;
-        }
-	
+		Object object;
+
+		PEMParser pemParser = new PEMParser(new BufferedReader(new InputStreamReader(keyIS, "UTF-8")));
+
+		PrivateKey privKey = null;
+
+		while ((object = pemParser.readObject()) != null) {
+			if (object instanceof PKCS8EncryptedPrivateKeyInfo) {
+				InputDecryptorProvider decProv =
+					new JceOpenSSLPKCS8DecryptorProviderBuilder().build(keyPassword.toCharArray());
+				privKey =
+					keyConverter.getPrivateKey(((PKCS8EncryptedPrivateKeyInfo) object).decryptPrivateKeyInfo(decProv));
+				break;
+			}
+			else if (object instanceof PEMEncryptedKeyPair) {
+				PEMDecryptorProvider decProv =
+					new JcePEMDecryptorProviderBuilder().build(keyPassword.toCharArray());
+				privKey =
+					keyConverter.getPrivateKey((((PEMEncryptedKeyPair) object).decryptKeyPair(decProv)).getPrivateKeyInfo());
+				break;
+			}
+			else if (object instanceof PEMKeyPair) {
+				privKey =
+					keyConverter.getPrivateKey(((PEMKeyPair) object).getPrivateKeyInfo());
+				break;
+			}
+		}
+
+		if (privKey == null)
+			throw new Exception("Private key file did not contain a private key.");
+
+		pemParser = new PEMParser(new BufferedReader(new InputStreamReader(certIS, "UTF-8")));
+
+		ArrayList<Certificate> certs = new ArrayList<Certificate>();
+
+		while ((object = pemParser.readObject()) != null) {
+			if (object instanceof X509CertificateHolder) {
+				certs.add(certConverter.getCertificate((X509CertificateHolder) object));
+			}
+		}
+
+		if (certs.isEmpty())
+			throw new Exception("Certificate file contained no certificates.");
+
+		KeyStore ks = KeyStore.getInstance("jks");
+		ks.load(null);
+		ks.setKeyEntry(keyAlias, privKey,
+				keyPassword.toCharArray(), certs.toArray(new Certificate[certs.size()]));
+
+		return ks;
+	}
+
 	@SuppressWarnings("unchecked")
 	public Map<String, Object> getVersion() throws Exception {
-        Map<String, Object> versionMap = null;
-    	setSSLIdentity();
-        try {
+		Map<String, Object> versionMap = null;
+		setSSLIdentity();
+		try {
 			XmlRpcClientConfigImpl config = new XmlRpcClientConfigImpl();
 			config.setServerURL(new URL(GUI.getInstance().getSelectedController()));
 			XmlRpcClient client = new XmlRpcClient();
 			client.setConfig(config);
-			
-            // set this transport factory for host-specific SSLContexts to work
-            XmlRpcCommonsTransportFactory f = new XmlRpcCommonsTransportFactory(client);
+
+			// set this transport factory for host-specific SSLContexts to work
+			XmlRpcCommonsTransportFactory f = new XmlRpcCommonsTransportFactory(client);
 			client.setTransportFactory(f);
-			
+
 			// get verbose list of the AMs
 			versionMap = (Map<String, Object>)client.execute(GET_VERSION, new Object[]{});
-        } catch (MalformedURLException e) {
-        	throw new Exception("Please check the SM URL " + GUI.getInstance().getSelectedController());
-        } catch (XmlRpcException e) {
-        	throw new Exception("Unable to contact SM " + GUI.getInstance().getSelectedController() + " due to " + e);
-        } catch (Exception e) {
-        	throw new Exception("Unable to contact SM " + GUI.getInstance().getSelectedController());
-        }
+		} catch (MalformedURLException e) {
+			throw new Exception("Please check the SM URL " + GUI.getInstance().getSelectedController());
+		} catch (XmlRpcException e) {
+			throw new Exception("Unable to contact SM " + GUI.getInstance().getSelectedController() + " due to " + e);
+		} catch (Exception e) {
+			throw new Exception("Unable to contact SM " + GUI.getInstance().getSelectedController());
+		}
 		return versionMap;
 	}
-	
+
 	/** submit an ndl request to create a slice, using explicitly specified users array
 	 * 
 	 * @param sliceId
@@ -329,35 +333,35 @@ public class OrcaSMXMLRPCProxy {
 	public String createSlice(String sliceId, String resReq, List<Map<String, ?>> users) throws Exception {
 		assert(sliceId != null);
 		assert(resReq != null);
-		
+
 		String result = null;
-    	setSSLIdentity();
+		setSSLIdentity();
 		try {
 			XmlRpcClientConfigImpl config = new XmlRpcClientConfigImpl();
 			config.setServerURL(new URL(GUI.getInstance().getSelectedController()));
 			XmlRpcClient client = new XmlRpcClient();
 			client.setConfig(config);
-			
-            // set this transport factory for host-specific SSLContexts to work
-            XmlRpcCommonsTransportFactory f = new XmlRpcCommonsTransportFactory(client);
+
+			// set this transport factory for host-specific SSLContexts to work
+			XmlRpcCommonsTransportFactory f = new XmlRpcCommonsTransportFactory(client);
 			client.setTransportFactory(f);
-			
+
 			// create sliver
 			Map<String, Object> rr = (Map<String, Object>)client.execute(CREATE_SLICE, new Object[]{ sliceId, new Object[]{}, resReq, users});
 			if ((Boolean)rr.get(ERR_RET_FIELD))
 				throw new Exception("Unable to create slice: " + (String)rr.get(MSG_RET_FIELD));
 			result = (String)rr.get(RET_RET_FIELD);
-        } catch (MalformedURLException e) {
-        	throw new Exception("Please check the SM URL " + GUI.getInstance().getSelectedController());
-        } catch (XmlRpcException e) {
-        	throw new Exception("Unable to contact SM " + GUI.getInstance().getSelectedController() + " due to " + e);
-        } catch (Exception e) {
-        	return "Unable to submit slice to SM:  " + GUI.getInstance().getSelectedController() + " due to " + e;
-        }
-		
+		} catch (MalformedURLException e) {
+			throw new Exception("Please check the SM URL " + GUI.getInstance().getSelectedController());
+		} catch (XmlRpcException e) {
+			throw new Exception("Unable to contact SM " + GUI.getInstance().getSelectedController() + " due to " + e);
+		} catch (Exception e) {
+			return "Unable to submit slice to SM:  " + GUI.getInstance().getSelectedController() + " due to " + e;
+		}
+
 		return result;
 	}
-	
+
 	/** submit an ndl request to create a slice, using explicitly specified users array
 	 * 
 	 * @param sliceId
@@ -368,19 +372,19 @@ public class OrcaSMXMLRPCProxy {
 	@SuppressWarnings("unchecked")
 	public Boolean renewSlice(String sliceId, Date newDate) throws Exception {
 		assert(sliceId != null);
-		
+
 		Boolean result = false;
-    	setSSLIdentity();
+		setSSLIdentity();
 		try {
 			XmlRpcClientConfigImpl config = new XmlRpcClientConfigImpl();
 			config.setServerURL(new URL(GUI.getInstance().getSelectedController()));
 			XmlRpcClient client = new XmlRpcClient();
 			client.setConfig(config);
-			
-            // set this transport factory for host-specific SSLContexts to work
-            XmlRpcCommonsTransportFactory f = new XmlRpcCommonsTransportFactory(client);
+
+			// set this transport factory for host-specific SSLContexts to work
+			XmlRpcCommonsTransportFactory f = new XmlRpcCommonsTransportFactory(client);
 			client.setTransportFactory(f);
-			
+
 			// create sliver
 			Calendar ecal = Calendar.getInstance();
 			ecal.setTime(newDate);
@@ -389,17 +393,17 @@ public class OrcaSMXMLRPCProxy {
 			if ((Boolean)rr.get(ERR_RET_FIELD))
 				throw new Exception("Unable to renew slice: " + (String)rr.get(MSG_RET_FIELD));
 			result = (Boolean)rr.get(RET_RET_FIELD);
-        } catch (MalformedURLException e) {
-        	throw new Exception("Please check the SM URL " + GUI.getInstance().getSelectedController());
-        } catch (XmlRpcException e) {
-        	throw new Exception("Unable to contact SM " + GUI.getInstance().getSelectedController() + " due to " + e);
-        } catch (Exception e) {
-        	throw new Exception("Unable to contact SM " + GUI.getInstance().getSelectedController());
-        }
-		
+		} catch (MalformedURLException e) {
+			throw new Exception("Please check the SM URL " + GUI.getInstance().getSelectedController());
+		} catch (XmlRpcException e) {
+			throw new Exception("Unable to contact SM " + GUI.getInstance().getSelectedController() + " due to " + e);
+		} catch (Exception e) {
+			throw new Exception("Unable to contact SM " + GUI.getInstance().getSelectedController());
+		}
+
 		return result;
 	}
-	
+
 	/**
 	 * submit an ndl request to create a slice using this user's credentials
 	 * @param sliceId
@@ -408,10 +412,10 @@ public class OrcaSMXMLRPCProxy {
 	 * @return
 	 */
 	public String createSlice(String sliceId, String resReq) throws Exception {
-    	setSSLIdentity();
-    	
+		setSSLIdentity();
+
 		// collect user credentials from $HOME/.ssh
-		
+
 		// create an array
 		List<Map<String, ?>> users = new ArrayList<Map<String, ?>>();
 		String keyPathStr = GUI.getInstance().getPreference(GUI.PrefsEnum.SSH_PUBKEY);
@@ -423,12 +427,12 @@ public class OrcaSMXMLRPCProxy {
 		else {
 			keyPath = new File(keyPathStr);
 		}
-		
+
 		String userKey = getUserKeyFile(keyPath);
-		
+
 		if (userKey == null) 
 			throw new Exception("Unable to load user public ssh key " + keyPath);
-		
+
 		Map<String, Object> userEntry = new HashMap<String, Object>();
 		// FIXME: probably should get they urn from somewhere?
 		String userName = System.getProperties().getProperty("user.name");
@@ -437,7 +441,7 @@ public class OrcaSMXMLRPCProxy {
 		keys.add(userKey);
 		userEntry.put("keys", keys);
 		users.add(userEntry);
-		
+
 		// any additional keys?
 		keyPathStr = GUI.getInstance().getPreference(GUI.PrefsEnum.SSH_OTHER_PUBKEY);
 		if (keyPathStr.startsWith("~/")) {
@@ -448,7 +452,7 @@ public class OrcaSMXMLRPCProxy {
 			keyPath = new File(keyPathStr);
 		}
 		String otherUserKey = getUserKeyFile(keyPath);
-		
+
 		// add other ssh keys
 		if (otherUserKey != null) {
 			userEntry = new HashMap<String, Object>();
@@ -462,71 +466,71 @@ public class OrcaSMXMLRPCProxy {
 		// submit the request
 		return createSlice(sliceId, resReq, users);
 	}
-	
+
 	@SuppressWarnings("unchecked")
 	public boolean deleteSlice(String sliceId)  throws Exception {
 		boolean res = false;
-    	setSSLIdentity();
+		setSSLIdentity();
 		try {
 			XmlRpcClientConfigImpl config = new XmlRpcClientConfigImpl();
 			config.setServerURL(new URL(GUI.getInstance().getSelectedController()));
 			XmlRpcClient client = new XmlRpcClient();
 			client.setConfig(config);
-			
-            // set this transport factory for host-specific SSLContexts to work
-            XmlRpcCommonsTransportFactory f = new XmlRpcCommonsTransportFactory(client);
+
+			// set this transport factory for host-specific SSLContexts to work
+			XmlRpcCommonsTransportFactory f = new XmlRpcCommonsTransportFactory(client);
 			client.setTransportFactory(f);
-			
+
 			// delete sliver
 			Map<String, Object> rr = (Map<String, Object>)client.execute(DELETE_SLICE, new Object[]{ sliceId, new Object[]{}});
 			if ((Boolean)rr.get(ERR_RET_FIELD))
 				throw new Exception("Unable to delete slice: " + (String)rr.get(MSG_RET_FIELD));
 			else
 				res = (Boolean)rr.get(RET_RET_FIELD);
-        } catch (MalformedURLException e) {
-        	throw new Exception("Please check the SM URL " + GUI.getInstance().getSelectedController());
-        } catch (XmlRpcException e) {
-        	throw new Exception("Unable to contact SM " + GUI.getInstance().getSelectedController() + " due to " + e);
-        } catch (Exception e) {
-        	throw new Exception("Unable to contact SM " + GUI.getInstance().getSelectedController());
-        }
-        
-        return res;
+		} catch (MalformedURLException e) {
+			throw new Exception("Please check the SM URL " + GUI.getInstance().getSelectedController());
+		} catch (XmlRpcException e) {
+			throw new Exception("Unable to contact SM " + GUI.getInstance().getSelectedController() + " due to " + e);
+		} catch (Exception e) {
+			throw new Exception("Unable to contact SM " + GUI.getInstance().getSelectedController());
+		}
+
+		return res;
 	}
-	
+
 	@SuppressWarnings("unchecked")
 	public String sliceStatus(String sliceId)  throws Exception {
 		assert(sliceId != null);
-		
+
 		String result = null;
-    	setSSLIdentity();
+		setSSLIdentity();
 		try {
 			XmlRpcClientConfigImpl config = new XmlRpcClientConfigImpl();
 			config.setServerURL(new URL(GUI.getInstance().getSelectedController()));
 			XmlRpcClient client = new XmlRpcClient();
 			client.setConfig(config);
-			
-            // set this transport factory for host-specific SSLContexts to work
-            XmlRpcCommonsTransportFactory f = new XmlRpcCommonsTransportFactory(client);
+
+			// set this transport factory for host-specific SSLContexts to work
+			XmlRpcCommonsTransportFactory f = new XmlRpcCommonsTransportFactory(client);
 			client.setTransportFactory(f);
-			
+
 			// sliver status
 			Map<String, Object> rr = (Map<String, Object>)client.execute(SLICE_STATUS, new Object[]{ sliceId, new Object[]{}});
 			if ((Boolean)rr.get(ERR_RET_FIELD))
 				throw new Exception("Unable to get sliver status: " + rr.get(MSG_RET_FIELD));
 			result = (String)rr.get(RET_RET_FIELD);
-			
-        } catch (MalformedURLException e) {
-        	throw new Exception("Please check the SM URL " + GUI.getInstance().getSelectedController());
-        } catch (XmlRpcException e) {
-        	throw new Exception("Unable to contact SM " + GUI.getInstance().getSelectedController() + " due to " + e);
-        } catch (Exception e) {
-        	throw new Exception("Unable to contact SM " + GUI.getInstance().getSelectedController());
-        }
-        
-        return result;
+
+		} catch (MalformedURLException e) {
+			throw new Exception("Please check the SM URL " + GUI.getInstance().getSelectedController());
+		} catch (XmlRpcException e) {
+			throw new Exception("Unable to contact SM " + GUI.getInstance().getSelectedController() + " due to " + e);
+		} catch (Exception e) {
+			throw new Exception("Unable to contact SM " + GUI.getInstance().getSelectedController());
+		}
+
+		return result;
 	}
-	
+
 	@SuppressWarnings("unchecked")
 	public String[] listMySlices() throws Exception {
 		String[] result = null;
@@ -536,16 +540,16 @@ public class OrcaSMXMLRPCProxy {
 			config.setServerURL(new URL(GUI.getInstance().getSelectedController()));
 			XmlRpcClient client = new XmlRpcClient();
 			client.setConfig(config);
-			
-            // set this transport factory for host-specific SSLContexts to work
-            XmlRpcCommonsTransportFactory f = new XmlRpcCommonsTransportFactory(client);
+
+			// set this transport factory for host-specific SSLContexts to work
+			XmlRpcCommonsTransportFactory f = new XmlRpcCommonsTransportFactory(client);
 			client.setTransportFactory(f);
-			
+
 			// sliver status
 			Map<String, Object> rr = (Map<String, Object>)client.execute(LIST_SLICES, new Object[]{ new Object[]{}});
 			if ((Boolean)rr.get(ERR_RET_FIELD))
 				throw new Exception ("Unable to list active slices: " + rr.get(MSG_RET_FIELD));
-			
+
 			Object[] ll = (Object[])rr.get(RET_RET_FIELD);
 			if (ll.length == 0)
 				return new String[0];
@@ -554,88 +558,88 @@ public class OrcaSMXMLRPCProxy {
 				for (int i = 0; i < ll.length; i++)
 					result[i] = (String)((Object[])rr.get(RET_RET_FIELD))[i];
 			}
-			
+
 		} catch (MalformedURLException e) {
-        	throw new Exception("Please check the SM URL " + GUI.getInstance().getSelectedController());
-        } catch (XmlRpcException e) {
-        	throw new Exception("Unable to contact SM " + GUI.getInstance().getSelectedController() + " due to " + e);
-        } catch (Exception e) {
-        	throw new Exception("Unable to contact SM " + GUI.getInstance().getSelectedController());
-        }
-        return result;
+			throw new Exception("Please check the SM URL " + GUI.getInstance().getSelectedController());
+		} catch (XmlRpcException e) {
+			throw new Exception("Unable to contact SM " + GUI.getInstance().getSelectedController() + " due to " + e);
+		} catch (Exception e) {
+			throw new Exception("Unable to contact SM " + GUI.getInstance().getSelectedController());
+		}
+		return result;
 	}
-	
+
 	@SuppressWarnings("unchecked")
 	public String modifySlice(String sliceId, String modReq) throws Exception {
 		assert(sliceId != null);
 		assert(modReq != null);
-		
+
 		String result = null;
-    	setSSLIdentity();
+		setSSLIdentity();
 		try {
 			XmlRpcClientConfigImpl config = new XmlRpcClientConfigImpl();
 			config.setServerURL(new URL(GUI.getInstance().getSelectedController()));
 			XmlRpcClient client = new XmlRpcClient();
 			client.setConfig(config);
-			
-            // set this transport factory for host-specific SSLContexts to work
-            XmlRpcCommonsTransportFactory f = new XmlRpcCommonsTransportFactory(client);
+
+			// set this transport factory for host-specific SSLContexts to work
+			XmlRpcCommonsTransportFactory f = new XmlRpcCommonsTransportFactory(client);
 			client.setTransportFactory(f);
-			
+
 			// modify slice
 			Map<String, Object> rr = (Map<String, Object>)client.execute(MODIFY_SLICE, new Object[]{ sliceId, new Object[]{}, modReq});
 			if ((Boolean)rr.get(ERR_RET_FIELD))
 				throw new Exception("Unable to modify slice: " + (String)rr.get(MSG_RET_FIELD));
 			result = (String)rr.get(RET_RET_FIELD);
-        } catch (MalformedURLException e) {
-        	throw new Exception("Please check the SM URL " + GUI.getInstance().getSelectedController());
-        } catch (XmlRpcException e) {
-        	throw new Exception("Unable to contact SM " + GUI.getInstance().getSelectedController() + " due to " + e);
-        } catch (Exception e) {
-        	throw new Exception("Unable to contact SM " + GUI.getInstance().getSelectedController());
-        }
-		
+		} catch (MalformedURLException e) {
+			throw new Exception("Please check the SM URL " + GUI.getInstance().getSelectedController());
+		} catch (XmlRpcException e) {
+			throw new Exception("Unable to contact SM " + GUI.getInstance().getSelectedController() + " due to " + e);
+		} catch (Exception e) {
+			throw new Exception("Unable to contact SM " + GUI.getInstance().getSelectedController());
+		}
+
 		return result;
 	}
-	
+
 	@SuppressWarnings("unchecked")
 	public String listResources() throws Exception {
-		
+
 		String result = null;
-    	setSSLIdentity();
+		setSSLIdentity();
 		try {
 			XmlRpcClientConfigImpl config = new XmlRpcClientConfigImpl();
 			config.setServerURL(new URL(GUI.getInstance().getSelectedController()));
 			XmlRpcClient client = new XmlRpcClient();
 			client.setConfig(config);
-			
-            // set this transport factory for host-specific SSLContexts to work
-            XmlRpcCommonsTransportFactory f = new XmlRpcCommonsTransportFactory(client);
+
+			// set this transport factory for host-specific SSLContexts to work
+			XmlRpcCommonsTransportFactory f = new XmlRpcCommonsTransportFactory(client);
 			client.setTransportFactory(f);
-			
+
 			// modify slice
 			Map<String, Object> rr = (Map<String, Object>)client.execute(LIST_RESOURCES, new Object[]{ new Object[]{}, new HashMap<String, String>()});
 			if ((Boolean)rr.get(ERR_RET_FIELD))
 				throw new Exception("Unable to list resources: " + (String)rr.get(MSG_RET_FIELD));
 			result = (String)rr.get(RET_RET_FIELD);
-        } catch (MalformedURLException e) {
-        	throw new Exception("Please check the SM URL " + GUI.getInstance().getSelectedController());
-        } catch (XmlRpcException e) {
-        	throw new Exception("Unable to contact SM " + GUI.getInstance().getSelectedController() + " due to " + e);
-        } catch (Exception e) {
-        	throw new Exception("Unable to contact SM " + GUI.getInstance().getSelectedController());
-        }
-		
+		} catch (MalformedURLException e) {
+			throw new Exception("Please check the SM URL " + GUI.getInstance().getSelectedController());
+		} catch (XmlRpcException e) {
+			throw new Exception("Unable to contact SM " + GUI.getInstance().getSelectedController() + " due to " + e);
+		} catch (Exception e) {
+			throw new Exception("Unable to contact SM " + GUI.getInstance().getSelectedController());
+		}
+
 		return result;
 	}
-	
+
 	/**
 	 * Try to get a public key file, first DSA, then RSA
 	 * @return
 	 */
 	private String getAnyUserPubKey() {
 		Properties p = System.getProperties();
-		
+
 		String keyFilePathStr = "" + p.getProperty("user.home") + p.getProperty("file.separator") + ".ssh" +
 		p.getProperty("file.separator") + SSH_DSA_PUBKEY_FILE;
 		File keyFilePath = new File(keyFilePathStr);
@@ -669,29 +673,29 @@ public class OrcaSMXMLRPCProxy {
 				// re-add line separator
 				sb.append(System.getProperty("line.separator"));
 			}
-			
+
 			bin.close();
-			
+
 			return sb.toString();
-			
+
 		} catch (IOException e) {
 			return null;
 		}
 	}
-	
-	
+
+
 	/**
 	 * Test harness
 	 * @param args
 	 */
 	public static void main(String[] args) {
 		OrcaSMXMLRPCProxy p = OrcaSMXMLRPCProxy.getInstance();
-		
+
 		if (args.length != 1) {
 			System.err.println("You must specify the request filename");
 			System.exit(1);
 		}
-			
+
 		StringBuilder sb = null;
 		try {
 			BufferedReader bin = null;
@@ -714,22 +718,22 @@ public class OrcaSMXMLRPCProxy {
 		} finally {
 			;
 		}
-		
+
 		try {
 			System.out.println("Placing request against " + GUI.getInstance().getSelectedController());
 			String sliceId = UUID.randomUUID().toString();
 			System.out.println("Creating slice " + sliceId);
 			String result = p.createSlice(sliceId, sb.toString());
 			System.out.println("Result of create slice: " + result);
-			
+
 			System.out.println("Sleeping for 60sec");
 			Thread.sleep(60000);
-			
+
 			System.out.println("Requesting sliver status");
 			System.out.println("Status: " + p.sliceStatus(sliceId));
-			
-//			System.out.println("Deleting slice " + sliceId);
-//			System.out.println("Result of delete slice: " + p.deleteSliver(sliceId));
+
+			//			System.out.println("Deleting slice " + sliceId);
+			//			System.out.println("Result of delete slice: " + p.deleteSliver(sliceId));
 		} catch (Exception e) {
 			System.err.println("An exception has occurred in creating slice " + e);
 		}
