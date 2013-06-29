@@ -504,6 +504,8 @@ public class OrcaSMXMLRPCProxy {
 
 		String result = null;
 		setSSLIdentity();
+
+		Map<String, Object> rr = null;
 		try {
 			XmlRpcClientConfigImpl config = new XmlRpcClientConfigImpl();
 			config.setServerURL(new URL(GUI.getInstance().getSelectedController()));
@@ -515,10 +517,7 @@ public class OrcaSMXMLRPCProxy {
 			client.setTransportFactory(f);
 
 			// sliver status
-			Map<String, Object> rr = (Map<String, Object>)client.execute(SLICE_STATUS, new Object[]{ sliceId, new Object[]{}});
-			if ((Boolean)rr.get(ERR_RET_FIELD))
-				throw new Exception("Unable to get sliver status: " + rr.get(MSG_RET_FIELD));
-			result = (String)rr.get(RET_RET_FIELD);
+			rr = (Map<String, Object>)client.execute(SLICE_STATUS, new Object[]{ sliceId, new Object[]{}});
 
 		} catch (MalformedURLException e) {
 			throw new Exception("Please check the SM URL " + GUI.getInstance().getSelectedController());
@@ -527,6 +526,14 @@ public class OrcaSMXMLRPCProxy {
 		} catch (Exception e) {
 			throw new Exception("Unable to contact SM " + GUI.getInstance().getSelectedController());
 		}
+
+		if (rr == null)
+			throw new Exception("Unable to contact SM " + GUI.getInstance().getSelectedController());
+
+		if ((Boolean)rr.get(ERR_RET_FIELD))
+			throw new Exception("Unable to get sliver status: " + rr.get(MSG_RET_FIELD));
+
+		result = (String)rr.get(RET_RET_FIELD);
 
 		return result;
 	}
