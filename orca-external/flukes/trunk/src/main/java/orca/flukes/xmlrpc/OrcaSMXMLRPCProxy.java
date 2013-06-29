@@ -336,6 +336,8 @@ public class OrcaSMXMLRPCProxy {
 
 		String result = null;
 		setSSLIdentity();
+
+		Map<String, Object> rr = null;
 		try {
 			XmlRpcClientConfigImpl config = new XmlRpcClientConfigImpl();
 			config.setServerURL(new URL(GUI.getInstance().getSelectedController()));
@@ -347,10 +349,7 @@ public class OrcaSMXMLRPCProxy {
 			client.setTransportFactory(f);
 
 			// create sliver
-			Map<String, Object> rr = (Map<String, Object>)client.execute(CREATE_SLICE, new Object[]{ sliceId, new Object[]{}, resReq, users});
-			if ((Boolean)rr.get(ERR_RET_FIELD))
-				throw new Exception("Unable to create slice: " + (String)rr.get(MSG_RET_FIELD));
-			result = (String)rr.get(RET_RET_FIELD);
+			rr = (Map<String, Object>)client.execute(CREATE_SLICE, new Object[]{ sliceId, new Object[]{}, resReq, users});
 		} catch (MalformedURLException e) {
 			throw new Exception("Please check the SM URL " + GUI.getInstance().getSelectedController());
 		} catch (XmlRpcException e) {
@@ -359,6 +358,13 @@ public class OrcaSMXMLRPCProxy {
 			return "Unable to submit slice to SM:  " + GUI.getInstance().getSelectedController() + " due to " + e;
 		}
 
+		if (rr == null)
+                        throw new Exception("Unable to contact SM " + GUI.getInstance().getSelectedController());
+
+		if ((Boolean)rr.get(ERR_RET_FIELD))
+			throw new Exception("Unable to create slice: " + (String)rr.get(MSG_RET_FIELD));
+
+		result = (String)rr.get(RET_RET_FIELD);
 		return result;
 	}
 
@@ -375,6 +381,8 @@ public class OrcaSMXMLRPCProxy {
 
 		Boolean result = false;
 		setSSLIdentity();
+
+		Map<String, Object> rr = null;
 		try {
 			XmlRpcClientConfigImpl config = new XmlRpcClientConfigImpl();
 			config.setServerURL(new URL(GUI.getInstance().getSelectedController()));
@@ -389,10 +397,7 @@ public class OrcaSMXMLRPCProxy {
 			Calendar ecal = Calendar.getInstance();
 			ecal.setTime(newDate);
 			String endDateString = DatatypeConverter.printDateTime(ecal); // RFC3339/ISO8601
-			Map<String, Object> rr = (Map<String, Object>)client.execute(RENEW_SLICE, new Object[]{ sliceId, new Object[]{}, endDateString});
-			if ((Boolean)rr.get(ERR_RET_FIELD))
-				throw new Exception("Unable to renew slice: " + (String)rr.get(MSG_RET_FIELD));
-			result = (Boolean)rr.get(RET_RET_FIELD);
+			rr = (Map<String, Object>)client.execute(RENEW_SLICE, new Object[]{ sliceId, new Object[]{}, endDateString});
 		} catch (MalformedURLException e) {
 			throw new Exception("Please check the SM URL " + GUI.getInstance().getSelectedController());
 		} catch (XmlRpcException e) {
@@ -401,6 +406,13 @@ public class OrcaSMXMLRPCProxy {
 			throw new Exception("Unable to contact SM " + GUI.getInstance().getSelectedController());
 		}
 
+		if (rr == null)
+                        throw new Exception("Unable to contact SM " + GUI.getInstance().getSelectedController());
+
+		if ((Boolean)rr.get(ERR_RET_FIELD))
+			throw new Exception("Unable to renew slice: " + (String)rr.get(MSG_RET_FIELD));
+
+		result = (Boolean)rr.get(RET_RET_FIELD);
 		return result;
 	}
 
@@ -471,6 +483,8 @@ public class OrcaSMXMLRPCProxy {
 	public boolean deleteSlice(String sliceId)  throws Exception {
 		boolean res = false;
 		setSSLIdentity();
+
+		Map<String, Object> rr = null;
 		try {
 			XmlRpcClientConfigImpl config = new XmlRpcClientConfigImpl();
 			config.setServerURL(new URL(GUI.getInstance().getSelectedController()));
@@ -482,11 +496,7 @@ public class OrcaSMXMLRPCProxy {
 			client.setTransportFactory(f);
 
 			// delete sliver
-			Map<String, Object> rr = (Map<String, Object>)client.execute(DELETE_SLICE, new Object[]{ sliceId, new Object[]{}});
-			if ((Boolean)rr.get(ERR_RET_FIELD))
-				throw new Exception("Unable to delete slice: " + (String)rr.get(MSG_RET_FIELD));
-			else
-				res = (Boolean)rr.get(RET_RET_FIELD);
+			rr = (Map<String, Object>)client.execute(DELETE_SLICE, new Object[]{ sliceId, new Object[]{}});
 		} catch (MalformedURLException e) {
 			throw new Exception("Please check the SM URL " + GUI.getInstance().getSelectedController());
 		} catch (XmlRpcException e) {
@@ -494,6 +504,14 @@ public class OrcaSMXMLRPCProxy {
 		} catch (Exception e) {
 			throw new Exception("Unable to contact SM " + GUI.getInstance().getSelectedController());
 		}
+
+		if (rr == null)
+                        throw new Exception("Unable to contact SM " + GUI.getInstance().getSelectedController());
+
+		if ((Boolean)rr.get(ERR_RET_FIELD))
+			throw new Exception("Unable to delete slice: " + (String)rr.get(MSG_RET_FIELD));
+		else
+			res = (Boolean)rr.get(RET_RET_FIELD);
 
 		return res;
 	}
@@ -542,6 +560,8 @@ public class OrcaSMXMLRPCProxy {
 	public String[] listMySlices() throws Exception {
 		String[] result = null;
 		setSSLIdentity();
+
+		Map<String, Object> rr = null;
 		try {
 			XmlRpcClientConfigImpl config = new XmlRpcClientConfigImpl();
 			config.setServerURL(new URL(GUI.getInstance().getSelectedController()));
@@ -553,19 +573,7 @@ public class OrcaSMXMLRPCProxy {
 			client.setTransportFactory(f);
 
 			// sliver status
-			Map<String, Object> rr = (Map<String, Object>)client.execute(LIST_SLICES, new Object[]{ new Object[]{}});
-			if ((Boolean)rr.get(ERR_RET_FIELD))
-				throw new Exception ("Unable to list active slices: " + rr.get(MSG_RET_FIELD));
-
-			Object[] ll = (Object[])rr.get(RET_RET_FIELD);
-			if (ll.length == 0)
-				return new String[0];
-			else {
-				result = new String[ll.length];
-				for (int i = 0; i < ll.length; i++)
-					result[i] = (String)((Object[])rr.get(RET_RET_FIELD))[i];
-			}
-
+			rr = (Map<String, Object>)client.execute(LIST_SLICES, new Object[]{ new Object[]{}});
 		} catch (MalformedURLException e) {
 			throw new Exception("Please check the SM URL " + GUI.getInstance().getSelectedController());
 		} catch (XmlRpcException e) {
@@ -573,6 +581,22 @@ public class OrcaSMXMLRPCProxy {
 		} catch (Exception e) {
 			throw new Exception("Unable to contact SM " + GUI.getInstance().getSelectedController());
 		}
+
+		if (rr == null)
+			throw new Exception("Unable to contact SM " + GUI.getInstance().getSelectedController());
+
+		if ((Boolean)rr.get(ERR_RET_FIELD))
+			throw new Exception ("Unable to list active slices: " + rr.get(MSG_RET_FIELD));
+
+		Object[] ll = (Object[])rr.get(RET_RET_FIELD);
+		if (ll.length == 0)
+			return new String[0];
+		else {
+			result = new String[ll.length];
+			for (int i = 0; i < ll.length; i++)
+				result[i] = (String)((Object[])rr.get(RET_RET_FIELD))[i];
+		}
+
 		return result;
 	}
 
@@ -583,6 +607,8 @@ public class OrcaSMXMLRPCProxy {
 
 		String result = null;
 		setSSLIdentity();
+
+		Map<String, Object> rr = null;
 		try {
 			XmlRpcClientConfigImpl config = new XmlRpcClientConfigImpl();
 			config.setServerURL(new URL(GUI.getInstance().getSelectedController()));
@@ -594,10 +620,7 @@ public class OrcaSMXMLRPCProxy {
 			client.setTransportFactory(f);
 
 			// modify slice
-			Map<String, Object> rr = (Map<String, Object>)client.execute(MODIFY_SLICE, new Object[]{ sliceId, new Object[]{}, modReq});
-			if ((Boolean)rr.get(ERR_RET_FIELD))
-				throw new Exception("Unable to modify slice: " + (String)rr.get(MSG_RET_FIELD));
-			result = (String)rr.get(RET_RET_FIELD);
+			rr = (Map<String, Object>)client.execute(MODIFY_SLICE, new Object[]{ sliceId, new Object[]{}, modReq});
 		} catch (MalformedURLException e) {
 			throw new Exception("Please check the SM URL " + GUI.getInstance().getSelectedController());
 		} catch (XmlRpcException e) {
@@ -606,6 +629,13 @@ public class OrcaSMXMLRPCProxy {
 			throw new Exception("Unable to contact SM " + GUI.getInstance().getSelectedController());
 		}
 
+		if (rr == null)
+			throw new Exception("Unable to contact SM " + GUI.getInstance().getSelectedController());
+
+		if ((Boolean)rr.get(ERR_RET_FIELD))
+			throw new Exception("Unable to modify slice: " + (String)rr.get(MSG_RET_FIELD));
+
+		result = (String)rr.get(RET_RET_FIELD);
 		return result;
 	}
 
@@ -614,6 +644,8 @@ public class OrcaSMXMLRPCProxy {
 
 		String result = null;
 		setSSLIdentity();
+
+		Map<String, Object> rr = null;
 		try {
 			XmlRpcClientConfigImpl config = new XmlRpcClientConfigImpl();
 			config.setServerURL(new URL(GUI.getInstance().getSelectedController()));
@@ -625,10 +657,7 @@ public class OrcaSMXMLRPCProxy {
 			client.setTransportFactory(f);
 
 			// modify slice
-			Map<String, Object> rr = (Map<String, Object>)client.execute(LIST_RESOURCES, new Object[]{ new Object[]{}, new HashMap<String, String>()});
-			if ((Boolean)rr.get(ERR_RET_FIELD))
-				throw new Exception("Unable to list resources: " + (String)rr.get(MSG_RET_FIELD));
-			result = (String)rr.get(RET_RET_FIELD);
+			rr = (Map<String, Object>)client.execute(LIST_RESOURCES, new Object[]{ new Object[]{}, new HashMap<String, String>()});
 		} catch (MalformedURLException e) {
 			throw new Exception("Please check the SM URL " + GUI.getInstance().getSelectedController());
 		} catch (XmlRpcException e) {
@@ -637,6 +666,13 @@ public class OrcaSMXMLRPCProxy {
 			throw new Exception("Unable to contact SM " + GUI.getInstance().getSelectedController());
 		}
 
+		if (rr == null)
+			throw new Exception("Unable to contact SM " + GUI.getInstance().getSelectedController());
+
+		if ((Boolean)rr.get(ERR_RET_FIELD))
+			throw new Exception("Unable to list resources: " + (String)rr.get(MSG_RET_FIELD));
+
+		result = (String)rr.get(RET_RET_FIELD);
 		return result;
 	}
 
