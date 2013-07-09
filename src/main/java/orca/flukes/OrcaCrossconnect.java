@@ -22,10 +22,12 @@
 */
 package orca.flukes;
 
+import java.util.Collection;
 import java.util.Map.Entry;
 
 import javax.swing.ImageIcon;
 
+import edu.uci.ics.jung.graph.util.Pair;
 import edu.uci.ics.jung.visualization.LayeredIcon;
 
 /*
@@ -101,4 +103,29 @@ public class OrcaCrossconnect extends OrcaNode {
 		}
 		return viewText;
 	}
+	
+	// is this crossconnect linked to shared storage?
+    public boolean linkToSharedStorage() {
+    	
+    	Collection<OrcaLink> iLinks = GUIRequestState.getInstance().getGraph().getIncidentEdges(this);
+		for(OrcaLink l: iLinks) {
+			Pair<OrcaNode> pn = GUIRequestState.getInstance().getGraph().getEndpoints(l);
+			OrcaNode n = null;
+			// find the non-crossconnect side
+			if (!(pn.getFirst() instanceof OrcaCrossconnect))
+				n = pn.getFirst();
+			else if (!(pn.getSecond() instanceof OrcaCrossconnect))
+				n = pn.getSecond();
+			
+			if (n == null) 
+				continue;
+			
+			if (n instanceof OrcaStorageNode) {
+				OrcaStorageNode snode = (OrcaStorageNode)n;
+				if (snode.getSharedNetwork())
+					return true;
+			}
+		}
+		return false;
+    }
 }

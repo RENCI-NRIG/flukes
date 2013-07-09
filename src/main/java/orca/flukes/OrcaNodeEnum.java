@@ -32,6 +32,7 @@ public enum OrcaNodeEnum {
 	NODEGROUP(OrcaNodeGroup.class, "NodeGroup", "server-stack-50.gif"), 
 	CROSSCONNECT(OrcaCrossconnect.class, "VLAN", "crossconnect-50.gif"),
 	STITCHPORT(OrcaStitchPort.class, "StitchPort", "stitch-50.gif"),
+	STORAGE(OrcaStorageNode.class, "Storage", "disk-50.gif"),
 	RESOURCESITE(OrcaResourceSite.class, "Resource Site", "resourcesite-50.gif");
 	
 	private int nodeCount;

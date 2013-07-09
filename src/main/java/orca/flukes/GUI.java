@@ -57,6 +57,7 @@ import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.JRadioButtonMenuItem;
 import javax.swing.JSeparator;
 import javax.swing.JTabbedPane;
@@ -69,6 +70,7 @@ import orca.flukes.ndl.RequestLoader;
 import orca.flukes.ndl.RequestSaver;
 import orca.flukes.ui.KeystoreDialog;
 import orca.flukes.ui.PasswordDialog;
+import orca.flukes.ui.SplitButton;
 import orca.flukes.ui.TextAreaDialog;
 import orca.flukes.xmlrpc.OrcaSMXMLRPCProxy;
 import orca.flukes.xmlrpc.RegistryXMLRPCProxy;
@@ -121,6 +123,7 @@ public class GUI implements ComponentListener {
 	private Logger logger;
 	private String[] controllerUrls;
 	private String selectedControllerUrl;
+	private SplitButton splitNodeButton;
 	
 	private boolean withIRods = false;
 	
@@ -798,6 +801,17 @@ public class GUI implements ComponentListener {
 		}
 	}
 	
+	private static JMenuItem addNodeMenuItem(String name, String action, ActionListener al) {
+		JMenuItem i = new JMenuItem(name);
+		i.setActionCommand(action);
+		i.addActionListener(al);
+		return i;
+	}
+	
+	void hideNodeMenu() {
+		splitNodeButton.hideMenu();
+	}
+	
 	/**
 	 * Initialize the contents of the frame.
 	 */
@@ -871,6 +885,18 @@ public class GUI implements ComponentListener {
 			Component horizontalStrut = Box.createHorizontalStrut(10);
 			toolBar.add(horizontalStrut);
 			
+			//first instantiate the control
+			splitNodeButton = new SplitButton(nodeButton, SwingConstants.SOUTH);
+		    JPopupMenu testMenu = new JPopupMenu("Node menu");
+		    testMenu.add(addNodeMenuItem("Node", "nodes", rbl));
+		    testMenu.add(addNodeMenuItem("Node Group", "nodegroups", rbl));
+		    testMenu.add(addNodeMenuItem("Broadcast Link", "bcastlinks", rbl));
+		    testMenu.add(addNodeMenuItem("Storage", "storage", rbl));
+		    testMenu.add(addNodeMenuItem("StitchPort", "stitchport", rbl));
+		    splitNodeButton.setMenu(testMenu);
+			toolBar.add(splitNodeButton);
+			
+			/*
 			JButton nodeGroupButton = new JButton("Add Node Groups");
 			nodeGroupButton.setToolTipText("Add new node groups");
 			nodeGroupButton.setActionCommand("nodegroups");
@@ -891,12 +917,24 @@ public class GUI implements ComponentListener {
 			horizontalStrut = Box.createHorizontalStrut(10);
 			toolBar.add(horizontalStrut);
 			
+			JButton storageButton = new JButton("Add Storage");
+			storageButton.setToolTipText("Add new storage node");
+			storageButton.setActionCommand("storage");
+			storageButton.addActionListener(rbl);
+			storageButton.setVerticalAlignment(SwingConstants.TOP);
+			toolBar.add(storageButton);
+			
+			horizontalStrut = Box.createHorizontalStrut(10);
+			toolBar.add(horizontalStrut);
+			
 			JButton stitchPortButton = new JButton("Add Stitch Port");
 			stitchPortButton.setToolTipText("Add new stitch port");
 			stitchPortButton.setActionCommand("stitchport");
 			stitchPortButton.addActionListener(rbl);
 			stitchPortButton.setVerticalAlignment(SwingConstants.TOP);
 			toolBar.add(stitchPortButton);
+			
+			*/
 			
 			horizontalStrut = Box.createHorizontalStrut(10);
 			toolBar.add(horizontalStrut);
