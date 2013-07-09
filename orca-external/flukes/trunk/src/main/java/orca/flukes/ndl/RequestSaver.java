@@ -29,10 +29,12 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 import orca.flukes.GUI;
@@ -43,10 +45,10 @@ import orca.flukes.OrcaLink;
 import orca.flukes.OrcaNode;
 import orca.flukes.OrcaNodeGroup;
 import orca.flukes.OrcaStitchPort;
+import orca.flukes.OrcaStorageNode;
 import orca.ndl.NdlCommons;
 import orca.ndl.NdlException;
 import orca.ndl.NdlGenerator;
-import orca.ndl.NdlToRSpecHelper;
 
 import org.apache.commons.lang.StringUtils;
 
@@ -188,6 +190,30 @@ public class RequestSaver {
 			return netmaskConverter[nm - 1];
 	}
 	
+	private void addLinkStorageDependency(OrcaNode n, OrcaLink e) throws NdlException {
+		
+		// if the other end is storage, need to add dependency
+		if (e.linkToSharedStorage() && !(n instanceof OrcaStorageNode)) {
+			Pair<OrcaNode> pn = GUIRequestState.getInstance().getGraph().getEndpoints(e);
+			OrcaStorageNode osn = null;
+			try {
+				if (pn.getFirst() instanceof OrcaStorageNode)
+					osn = (OrcaStorageNode) pn.getFirst();
+				else
+					osn = (OrcaStorageNode) pn.getSecond();
+			} catch (Exception ce) {
+				;
+			}
+			if (osn == null)
+				throw new NdlException("Link " + e.getName() + " marked as storage, but neither endpoint is storage");
+			Individual storInd = ngen.getRequestIndividual(osn.getName());
+			Individual nodeInd = ngen.getRequestIndividual(n.getName());
+			if ((storInd == null) || (nodeInd == null))
+				throw new NdlException("Unable to find individual for node " + osn + " or " + n);
+			ngen.addDependOnToIndividual(storInd, nodeInd);
+		}
+	}
+	
 	/**
 	 * Link node to edge, create interface and process IP address 
 	 * @param n
@@ -198,6 +224,9 @@ public class RequestSaver {
 	private void processNodeAndLink(OrcaNode n, OrcaLink e, Individual edgeI) throws NdlException {
 
 		Individual intI;
+		
+		addLinkStorageDependency(n, e);
+		
 		if (n instanceof OrcaStitchPort) {
 			OrcaStitchPort sp = (OrcaStitchPort)n;
 			intI = ngen.declareExistingInterface(sp.getPort());
@@ -206,6 +235,7 @@ public class RequestSaver {
 			intI = ngen.declareInterface(e.getName()+"-"+n.getName());
 		// add to link
 		ngen.addInterfaceToIndividual(intI, edgeI);
+
 		
 		// add to previously added node
 		Individual nodeI = ngen.getRequestIndividual(n.getName());
@@ -314,9 +344,16 @@ public class RequestSaver {
 		}
 	}
 	
-	private void processCrossconnect(OrcaCrossconnect oc, Individual blI) throws NdlException {
-		
+	private void addCrossConnectStorageDependency(OrcaCrossconnect oc) throws NdlException {
 		Collection<OrcaLink> iLinks = GUIRequestState.getInstance().getGraph().getIncidentEdges(oc);
+		boolean sharedStorage = oc.linkToSharedStorage();
+		
+		if (!sharedStorage)
+			return;
+		
+		List<OrcaStorageNode> snodes = new ArrayList<OrcaStorageNode>();
+		List<OrcaNode> otherNodes = new ArrayList<OrcaNode>();
+		
 		for(OrcaLink l: iLinks) {
 			Pair<OrcaNode> pn = GUIRequestState.getInstance().getGraph().getEndpoints(l);
 			OrcaNode n = null;
@@ -328,7 +365,41 @@ public class RequestSaver {
 			
 			if (n == null) 
 				throw new NdlException("Two VLANs linked together is not a valid combination");
-			// find the individual matching this node
+			
+			if (n instanceof OrcaStorageNode) 
+				snodes.add((OrcaStorageNode)n);
+			else
+				otherNodes.add(n);
+		}
+		
+		for(OrcaNode n: otherNodes) {
+			for (OrcaStorageNode s: snodes) {
+				Individual storInd = ngen.getRequestIndividual(s.getName());
+				Individual nodeInd = ngen.getRequestIndividual(n.getName());
+				if ((storInd == null) || (nodeInd == null))
+					throw new NdlException("Unable to find individual for node " + s + " or " + n);
+				ngen.addDependOnToIndividual(storInd, nodeInd);
+			}
+		}
+	}
+	
+	private void processCrossconnect(OrcaCrossconnect oc, Individual blI) throws NdlException {
+		
+		addCrossConnectStorageDependency(oc);
+		
+		Collection<OrcaLink> iLinks = GUIRequestState.getInstance().getGraph().getIncidentEdges(oc);
+		
+		for(OrcaLink l: iLinks) {
+			Pair<OrcaNode> pn = GUIRequestState.getInstance().getGraph().getEndpoints(l);
+			OrcaNode n = null;
+			// find the non-crossconnect side
+			if (!(pn.getFirst() instanceof OrcaCrossconnect))
+				n = pn.getFirst();
+			else if (!(pn.getSecond() instanceof OrcaCrossconnect))
+				n = pn.getSecond();
+			
+			if (n == null) 
+				throw new NdlException("Two VLANs linked together is not a valid combination");
 			
 			Individual intI;
 			if (n instanceof OrcaStitchPort) {
@@ -340,6 +411,7 @@ public class RequestSaver {
 			
 			ngen.addInterfaceToIndividual(intI, blI);
 			
+			// find the individual matching this node
 			Individual nodeI = ngen.getRequestIndividual(n.getName());
 			ngen.addInterfaceToIndividual(intI, nodeI);
 
@@ -428,6 +500,16 @@ public class RequestSaver {
 						OrcaStitchPort sp = (OrcaStitchPort)n;
 						ni = ngen.declareStitchingNode(sp.getName());
 						ngen.addResourceToReservation(reservation, ni);
+					} else if (n instanceof OrcaStorageNode) {
+						OrcaStorageNode snode = (OrcaStorageNode)n;
+						ni = ngen.declareISCSIStorageNode(snode.getName(), snode.getCapacity());
+						if (!globalDomain && (n.getDomain() != null)) {
+							if (!GUIRequestState.getInstance().isAKnownDomain(n.getDomain()))
+								throw new NdlException("Domain " + n.getDomain() + " of node " + n + " is not visible from this SM!");
+							Individual domI = ngen.declareDomain(domainMap.get(n.getDomain()));
+							ngen.addNodeToDomain(domI, ni);
+						}
+						ngen.addResourceToReservation(reservation, ni);
 					} else {
 						// nodes and nodegroups
 						if (n instanceof OrcaNodeGroup) {
@@ -443,7 +525,7 @@ public class RequestSaver {
 						}
 
 						ngen.addResourceToReservation(reservation, ni);
-
+						
 						// for clusters, add number of nodes, declare as cluster (VM domain)
 						if (n instanceof OrcaNodeGroup) {
 							OrcaNodeGroup ong = (OrcaNodeGroup)n;

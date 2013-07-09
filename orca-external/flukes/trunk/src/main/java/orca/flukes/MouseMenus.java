@@ -375,6 +375,10 @@ public class MouseMenus {
                 		OrcaStitchPortPropertyDialog dialog = new OrcaStitchPortPropertyDialog(frame, (OrcaStitchPort)node);
                 		dialog.pack();
                 		dialog.setVisible(true);
+                	} else if (node instanceof OrcaStorageNode) {
+                		OrcaStoragePropertyDialog dialog = new OrcaStoragePropertyDialog(frame, (OrcaStorageNode) node);
+                		dialog.pack();
+                		dialog.setVisible(true);
                 	} else {
                 		OrcaNodePropertyDialog dialog = new OrcaNodePropertyDialog(frame, node);
                 		dialog.pack();

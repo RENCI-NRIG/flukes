@@ -43,6 +43,7 @@ import orca.flukes.OrcaNode;
 import orca.flukes.OrcaNodeGroup;
 import orca.flukes.OrcaReservationTerm;
 import orca.flukes.OrcaStitchPort;
+import orca.flukes.OrcaStorageNode;
 import orca.ndl.INdlRequestModelListener;
 import orca.ndl.NdlCommons;
 import orca.ndl.NdlRequestParser;
@@ -164,7 +165,7 @@ public class RequestLoader implements INdlRequestModelListener {
 	}
 
 	public void ndlNode(Resource ce, OntModel om, Resource ceClass, List<Resource> interfaces) {
-		GUI.logger().debug("Node: " + ce);
+		GUI.logger().debug("Node: " + ce + " of class " + ceClass);
 		if (ce == null)
 			return;
 		OrcaNode newNode;
@@ -179,12 +180,15 @@ public class RequestLoader implements INdlRequestModelListener {
 					newNodeGroup.setNodeCount(ceCount);
 				newNodeGroup.setSplittable(NdlCommons.isSplittable(ce));
 				newNode = newNodeGroup;
-			} else if ((ceClass.equals(NdlCommons.deviceOntClass) && 
-					(NdlCommons.getDomain(ce) != null) && 
-					NdlCommons.getDomain(ce).equals(NdlCommons.stitchingDomain))) {
+			} else if (NdlCommons.isStitchingNode(ce)) {
 				// stitching node
 				OrcaStitchPort sp = new OrcaStitchPort(ce.getLocalName());
 				newNode = sp;
+			} else if (NdlCommons.isNetworkStorage(ce)) {
+				// storage node
+				OrcaStorageNode snode = new OrcaStorageNode(ce.getLocalName());
+				snode.setCapacity(NdlCommons.getResourceStorageCapacity(ce));
+				newNode = snode;
 			} else // default just a node
 				newNode = new OrcaNode(ce.getLocalName());
 		}
@@ -319,6 +323,10 @@ public class RequestLoader implements INdlRequestModelListener {
 				OrcaStitchPort sp = (OrcaStitchPort)on;
 				sp.setPort(intf.toString());
 				sp.setLabel(NdlCommons.getLayerLabelLiteral(intf));
+			}
+			if (on instanceof OrcaStorageNode) {
+				// this is for shared network storage /ib 07/08/2013
+				return;
 			}
 			// point-to-point
 			if (ol != null) {

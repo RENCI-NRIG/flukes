@@ -457,6 +457,7 @@ public class GUIRequestState extends GUICommonState implements IDeleteEdgeCallBa
 	 */
 	public class RequestButtonListener implements ActionListener {
 		public void actionPerformed(ActionEvent e) {
+			GUI.getInstance().hideNodeMenu();
 			if (e.getActionCommand().equals("images")) {
 				icd = new ImageChooserDialog(GUI.getInstance().getFrame());
 				icd.pack();
@@ -475,6 +476,8 @@ public class GUIRequestState extends GUICommonState implements IDeleteEdgeCallBa
 				nodeCreator.setCurrent(OrcaNodeEnum.CROSSCONNECT);
 			} else if (e.getActionCommand().equals("stitchport")) {
 				nodeCreator.setCurrent(OrcaNodeEnum.STITCHPORT);
+			} else if (e.getActionCommand().equals("storage")) {
+				nodeCreator.setCurrent(OrcaNodeEnum.STORAGE);
 			} else if (e.getActionCommand().equals("autoip")) {
 				if (!autoAssignIPAddresses()) {
 					KMessageDialog kmd = new KMessageDialog(GUI.getInstance().getFrame());
@@ -684,6 +687,8 @@ public class GUIRequestState extends GUICommonState implements IDeleteEdgeCallBa
 		IP4Assign ipa = new IP4Assign(mpMask);
 
 		for(OrcaLink ol: g.getEdges()) {
+			if (ol.linkToSharedStorage())
+				continue;
 			// if one end is a switch, ignore it for now
 			Pair<OrcaNode> pn = g.getEndpoints(ol);
 			if ((pn.getFirst() instanceof OrcaCrossconnect) ||
@@ -723,6 +728,9 @@ public class GUIRequestState extends GUICommonState implements IDeleteEdgeCallBa
 		// each crossconnects may have nodes or groups attached to it
 		for(OrcaNode csx: g.getVertices()) {
 			if (!(csx instanceof OrcaCrossconnect))
+				continue;
+			OrcaCrossconnect csxI = (OrcaCrossconnect)csx;
+			if (csxI.linkToSharedStorage())
 				continue;
 			// find neighbor nodes (they can't be crossconnects)
 			int[] nodeCts = new int[g.getNeighborCount(csx)];

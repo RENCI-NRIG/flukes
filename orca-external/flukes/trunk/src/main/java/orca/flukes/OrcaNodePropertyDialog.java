@@ -316,6 +316,8 @@ public class OrcaNodePropertyDialog extends ComponentDialog implements ActionLis
 			return;
 		}
 		for (OrcaLink e: nodeEdges) {
+			if (e.linkToSharedStorage())
+				continue;
 			{
 				JLabel lblNewLabel_1 = new JLabel(e.getName() + " IP Address: ");
 				GridBagConstraints gbc_lblNewLabel_1 = new GridBagConstraints();
