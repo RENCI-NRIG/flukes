@@ -102,7 +102,7 @@ public class GUI implements ComponentListener {
 	private static final String FLUKES_HELP_WIKI = "https://geni-orca.renci.org/trac/wiki/flukes";
 	public static final String buildVersion = GUI.class.getPackage().getImplementationVersion();
 	public static final String aboutText = "ORCA FLUKES " + (buildVersion == null? "Eclipse build" : buildVersion) + "\nNDL-OWL network editor for ORCA (Open Resource Control Architecture)" +
-	"\nDeveloped using Jena Semantic Web Framework, JUNG Java Universal Network/Graph Framework and Kiwi Swing toolkit." +
+	"\nDeveloped using Jena Semantic Web Framework, JUNG Java Universal Network/Graph Framework and Kiwi Swing toolkit. \nSplitButton adopted from implementation by Edward Scholl (edscholl@atwistedweb.com)" +
 	"\n\nCopyright 2011-2013 RENCI/UNC Chapel Hill";
 	private static final String FRAME_TITLE = "ORCA FLUKES - The ORCA Network Editor";
 	private static final String PREF_FILE = ".flukes.properties";
@@ -111,14 +111,8 @@ public class GUI implements ComponentListener {
 	private JPanel requestPanel, resourcePanel, manifestPanel;
 	private JMenuBar menuBar;
 	private JMenu fileNewMenu;
-	private JMenuItem newMenuItem;
-	private JMenuItem openMenuItem, openManifestMenuItem;
-	private JMenuItem saveMenuItem, saveAsMenuItem;
-	private JMenuItem openIRodsMenuItem, saveIRodsMenuItem, openManifestIRodsMenuItem, saveManifestIRodsMenuItem;
 	private JSeparator separator;
-	private JMenuItem exitMenuItem;
 	private JMenu mnNewMenu, controllerMenu, outputMenu, layoutMenu;
-	private JMenuItem helpMenuItem, prefMenuItem, licenseMenuItem, relnotesMenuItem, aboutMenuItem;
 	private JSeparator separator_1, separator_2;
 	private Logger logger;
 	private String[] controllerUrls;
@@ -598,67 +592,32 @@ public class GUI implements ComponentListener {
 		fileNewMenu = new JMenu("File ");
 		menuBar.add(fileNewMenu);
 		
-		newMenuItem = new JMenuItem("New Request");
-		newMenuItem.setActionCommand("new");
-		newMenuItem.addActionListener(mListener);
-		fileNewMenu.add(newMenuItem);
-
-		openMenuItem = new JMenuItem("Open Request...");
-		openMenuItem.setActionCommand("open");
-		openMenuItem.addActionListener(mListener);
-		fileNewMenu.add(openMenuItem);
+		fileNewMenu.add(addMenuItem("New Request", "new", mListener));
+		fileNewMenu.add(addMenuItem("Open Request...", "open", mListener));
 		
-		if (withIRods) {
-			openIRodsMenuItem = new JMenuItem("Open Request from iRods ...");
-			openIRodsMenuItem.setActionCommand("openirods");
-			openIRodsMenuItem.addActionListener(mListener);
-			fileNewMenu.add(openIRodsMenuItem);
-		}
+		if (withIRods) 
+			fileNewMenu.add(addMenuItem("Open Request from iRods ...", "openirods", mListener));
 		
-		saveMenuItem = new JMenuItem("Save Request");
-		saveMenuItem.setActionCommand("save");
-		saveMenuItem.addActionListener(mListener);
-		fileNewMenu.add(saveMenuItem);
+		fileNewMenu.add(addMenuItem("Save Request", "save", mListener));
+		fileNewMenu.add(addMenuItem("Save Request As...", "saveas", mListener));
 		
-		saveAsMenuItem = new JMenuItem("Save Request As...");
-		saveAsMenuItem.setActionCommand("saveas");
-		saveAsMenuItem.addActionListener(mListener);
-		fileNewMenu.add(saveAsMenuItem);
-		
-		if (withIRods) {
-			saveIRodsMenuItem = new JMenuItem("Save Request into iRods ...");
-			saveIRodsMenuItem.setActionCommand("saveirods");
-			saveIRodsMenuItem.addActionListener(mListener);
-			fileNewMenu.add(saveIRodsMenuItem);
-		}
+		if (withIRods) 
+			fileNewMenu.add(addMenuItem("Save Request into iRods ...", "saveirods", mListener));
 		
 		JSeparator sep = new JSeparator();
 		fileNewMenu.add(sep);
 		
-		openManifestMenuItem = new JMenuItem("Open Manifest...");
-		openManifestMenuItem.setActionCommand("openmanifest");
-		openManifestMenuItem.addActionListener(mListener);
-		fileNewMenu.add(openManifestMenuItem);
+		fileNewMenu.add(addMenuItem("Open Manifest...", "openmanifest", mListener));
 		
 		if (withIRods) {
-			openManifestIRodsMenuItem = new JMenuItem("Open Manifest from iRods ...");
-			openManifestIRodsMenuItem.setActionCommand("openmanifestirods");
-			openManifestIRodsMenuItem.addActionListener(mListener);
-			fileNewMenu.add(openManifestIRodsMenuItem);
-			
-			saveManifestIRodsMenuItem = new JMenuItem("Save Manifest into iRods ...");
-			saveManifestIRodsMenuItem.setActionCommand("savemanifestirods");
-			saveManifestIRodsMenuItem.addActionListener(mListener);
-			fileNewMenu.add(saveManifestIRodsMenuItem);
+			fileNewMenu.add(addMenuItem("Open Manifest from iRods ...", "openmanifestirods", mListener));
+			fileNewMenu.add(addMenuItem("Save Manifest into iRods ...", "savemanifestirods", mListener));
 		}
 		
 		separator = new JSeparator();
 		fileNewMenu.add(separator);
 		
-		exitMenuItem = new JMenuItem("Exit");
-		exitMenuItem.setActionCommand("exit");
-		exitMenuItem.addActionListener(mListener);
-		fileNewMenu.add(exitMenuItem);
+		fileNewMenu.add(addMenuItem("Exit", "exit", mListener));
 		
 		// controller selection
 		controllerMenu = new JMenu("Orca Controller");
@@ -715,36 +674,19 @@ public class GUI implements ComponentListener {
 		mnNewMenu = new JMenu("Help");
 		menuBar.add(mnNewMenu);
 		
-		prefMenuItem = new JMenuItem("Preference settings");
-		prefMenuItem.setActionCommand("prefs");
-		prefMenuItem.addActionListener(mListener);
-		mnNewMenu.add(prefMenuItem);
+		mnNewMenu.add(addMenuItem("Preference settings", "prefs", mListener));
 		
 		separator_2 = new JSeparator();
 		mnNewMenu.add(separator_2);
 		
-		helpMenuItem = new JMenuItem("Help Contents (opens in external browser)");
-		helpMenuItem.setActionCommand("help");
-		helpMenuItem.addActionListener(mListener);
-		mnNewMenu.add(helpMenuItem);
+		mnNewMenu.add(addMenuItem("Help Contents (opens in external browser)", "help", mListener));
 		
 		separator_1 = new JSeparator();
 		mnNewMenu.add(separator_1);
 		
-		aboutMenuItem = new JMenuItem("About");
-		aboutMenuItem.setActionCommand("about");
-		aboutMenuItem.addActionListener(mListener);
-		mnNewMenu.add(aboutMenuItem);
-		
-		licenseMenuItem = new JMenuItem("License");
-		licenseMenuItem.setActionCommand("license");
-		licenseMenuItem.addActionListener(mListener);
-		mnNewMenu.add(licenseMenuItem);
-			
-		relnotesMenuItem = new JMenuItem("Release Notes");
-		relnotesMenuItem.setActionCommand("relnotes");
-		relnotesMenuItem.addActionListener(mListener);
-		mnNewMenu.add(relnotesMenuItem);
+		mnNewMenu.add(addMenuItem("About", "about", mListener));
+		mnNewMenu.add(addMenuItem("License", "license", mListener));
+		mnNewMenu.add(addMenuItem("Release Notes", "relnotes", mListener));
 	}
 	
 	public enum GuiTabs {
@@ -801,7 +743,7 @@ public class GUI implements ComponentListener {
 		}
 	}
 	
-	private static JMenuItem addNodeMenuItem(String name, String action, ActionListener al) {
+	private static JMenuItem addMenuItem(String name, String action, ActionListener al) {
 		JMenuItem i = new JMenuItem(name);
 		i.setActionCommand(action);
 		i.addActionListener(al);
@@ -888,11 +830,11 @@ public class GUI implements ComponentListener {
 			//first instantiate the control
 			splitNodeButton = new SplitButton(nodeButton, SwingConstants.SOUTH);
 		    JPopupMenu testMenu = new JPopupMenu("Node menu");
-		    testMenu.add(addNodeMenuItem("Node", "nodes", rbl));
-		    testMenu.add(addNodeMenuItem("Node Group", "nodegroups", rbl));
-		    testMenu.add(addNodeMenuItem("Broadcast Link", "bcastlinks", rbl));
-		    testMenu.add(addNodeMenuItem("Storage", "storage", rbl));
-		    testMenu.add(addNodeMenuItem("StitchPort", "stitchport", rbl));
+		    testMenu.add(addMenuItem("Node", "nodes", rbl));
+		    testMenu.add(addMenuItem("Node Group", "nodegroups", rbl));
+		    testMenu.add(addMenuItem("Broadcast Link", "bcastlinks", rbl));
+		    testMenu.add(addMenuItem("Storage", "storage", rbl));
+		    testMenu.add(addMenuItem("StitchPort", "stitchport", rbl));
 		    splitNodeButton.setMenu(testMenu);
 			toolBar.add(splitNodeButton);
 			

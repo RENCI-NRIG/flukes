@@ -59,8 +59,8 @@ public class SplitButton extends JButton implements ActionListener{
     //this.mainButton.setBorderPainted(false);
 
     //this.setPreferredSize(new Dimension(75, 34));
-    this.setMaximumSize(new Dimension(100, 20));
-    this.setMinimumSize(new Dimension(100, 20));
+    this.setMaximumSize(new Dimension(100, 25));
+    this.setMinimumSize(new Dimension(100, 25));
 
     this.setLayout(new BorderLayout());
     //this.setMargin(new Insets(-3, -3,-3,-3));
