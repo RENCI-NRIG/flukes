@@ -1,6 +1,9 @@
 Flukes Release Notes:
 ---------------------
 
+07/16/13:
+- Added support for storage request and manifests
+
 06/24/13:
 - Added direct support for .pem/.crt/.key credentials without intervening .jks 
 

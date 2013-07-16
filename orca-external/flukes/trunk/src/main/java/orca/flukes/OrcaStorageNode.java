@@ -1,9 +1,11 @@
 package orca.flukes;
 
+import java.util.Map;
 import java.util.Map.Entry;
 
 import javax.swing.ImageIcon;
 
+import edu.uci.ics.jung.graph.util.Pair;
 import edu.uci.ics.jung.visualization.LayeredIcon;
 
 /**
@@ -40,12 +42,13 @@ public class OrcaStorageNode extends OrcaNode {
 	public String getViewerText() {
 		String viewText = "";
 		viewText += "Storage node: " + name;
+		viewText += "\nStorage reservation state: " + (state != null ? state : NOT_SPECIFIED);
+		viewText += "\nReservation notice: " + (resNotice != null ? resNotice : NOT_SPECIFIED);
 		viewText += "Capacity: " + capacity;
-		if (interfaces.size() > 0) {
-			viewText += "\nInterfaces: ";
-			for(Entry<OrcaLink, String> e: interfaces.entrySet()) {
-				viewText += "\n    " + e.getKey().getName() + " : " + e.getValue();
-			}
+		
+		viewText += "\n\nInterfaces: ";
+		for(Map.Entry<OrcaLink, Pair<String>> e: addresses.entrySet()) {
+			viewText += "\n\t" + e.getKey().getName() + ": " + e.getValue().getFirst() + "/" + e.getValue().getSecond();
 		}
 		return viewText;
 	}

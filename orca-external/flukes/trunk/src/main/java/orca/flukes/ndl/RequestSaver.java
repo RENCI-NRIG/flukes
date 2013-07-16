@@ -293,6 +293,10 @@ public class RequestSaver {
 				(pn.getSecond().getDomain() != null) && 
 				(!pn.getSecond().getDomain().equals(pn.getFirst().getDomain()))))
 			throw new NdlException("Link " + l.getName() + " is invalid: it specifies a desired VLAN tag, but the nodes are bound to different domains");
+		
+		if ((pn.getFirst() instanceof OrcaStorageNode) &&
+				(pn.getSecond() instanceof OrcaStorageNode)) 
+			throw new NdlException("Link " + l.getName() + " in invalid: it connects two storage nodes together");
 	}
 	
 	/** 
@@ -362,9 +366,6 @@ public class RequestSaver {
 				n = pn.getFirst();
 			else if (!(pn.getSecond() instanceof OrcaCrossconnect))
 				n = pn.getSecond();
-			
-			if (n == null) 
-				throw new NdlException("Two VLANs linked together is not a valid combination");
 			
 			if (n instanceof OrcaStorageNode) 
 				snodes.add((OrcaStorageNode)n);
@@ -764,6 +765,8 @@ public class RequestSaver {
 			mapping = reverseLookupDomain_(dom, domainMap, "/Domain/vm");
 		if (mapping == null) 
 			mapping = reverseLookupDomain_(dom, netDomainMap, "/Domain/vlan");
+		if (mapping == null)
+			mapping = reverseLookupDomain_(dom, domainMap, "/Domain/lun");
 		
 		return mapping;
 	}

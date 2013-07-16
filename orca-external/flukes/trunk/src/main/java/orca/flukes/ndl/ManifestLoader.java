@@ -44,6 +44,7 @@ import orca.flukes.OrcaLink;
 import orca.flukes.OrcaNode;
 import orca.flukes.OrcaNodeGroup;
 import orca.flukes.OrcaStitchPort;
+import orca.flukes.OrcaStorageNode;
 import orca.ndl.INdlManifestModelListener;
 import orca.ndl.INdlRequestModelListener;
 import orca.ndl.NdlCommons;
@@ -256,8 +257,8 @@ public class ManifestLoader implements INdlManifestModelListener, INdlRequestMod
 			// reservation notice
 			ol.setReservationNotice(NdlCommons.getResourceReservationNotice(l));
 			links.put(getTrueName(l), ol);
-		} else {
-			GUI.logger().debug("  Adding multi-point crossconnect " + getTrueName(l));
+		} else {			
+			GUI.logger().debug("  Adding multi-point crossconnect " + getTrueName(l) + " (has " + interfaces.size() + " interfaces)");
 			// multi-point link
 			// create a crossconnect then use interfaceToNode mapping to create links to it
 			OrcaCrossconnect ml = new OrcaCrossconnect(getPrettyName(l));
@@ -267,7 +268,6 @@ public class ManifestLoader implements INdlManifestModelListener, INdlRequestMod
 			ml.setState(NdlCommons.getResourceStateAsString(l));
 			ml.setDomain(RequestSaver.reverseLookupDomain(NdlCommons.getDomain(l)));
 
-			
 			if (ml.getState() != null)
 				ml.setIsResource();
 			
@@ -276,6 +276,7 @@ public class ManifestLoader implements INdlManifestModelListener, INdlRequestMod
 			// remember the interfaces
 			while(it.hasNext()) {
 				Resource intR = it.next();
+				GUI.logger().debug("  Remembering interface " + intR + " of " + ml);
 				interfaceToNode.put(getTrueName(intR), ml);
 			}
 			
@@ -445,6 +446,7 @@ public class ManifestLoader implements INdlManifestModelListener, INdlRequestMod
 		
 		if (NdlCommons.isStitchingNodeInManifest(ce)) {
 			OrcaStitchPort sp = new OrcaStitchPort(getPrettyName(ce));
+			sp.setIsResource();
 			// get the interface (first)
 			if (interfaces.size() == 1) {
 				sp.setLabel(NdlCommons.getLayerLabelLiteral(interfaces.get(0)));
@@ -452,8 +454,14 @@ public class ManifestLoader implements INdlManifestModelListener, INdlRequestMod
 					sp.setPort(NdlCommons.getLinkTo(interfaces.get(0)).toString());
 			} 
 			newNode = sp;
-		} else 
+		} if (NdlCommons.isNetworkStorage(ce)) {
+			newNode = new OrcaStorageNode(getPrettyName(ce));
+			newNode.setIsResource();
+		} else
 			newNode = new OrcaNode(getPrettyName(ce));
+		
+		for (Resource ii: interfaces)
+			GUI.logger().debug("  With interface " + ii);
 		
 		// set common properties
 		setCommonNodeProperties(newNode, ce);
