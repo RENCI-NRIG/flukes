@@ -447,7 +447,6 @@ public class ManifestLoader implements INdlManifestModelListener, INdlRequestMod
 		if (NdlCommons.isStitchingNodeInManifest(ce)) {
 			GUI.logger().debug("  is a stitching port");
 			OrcaStitchPort sp = new OrcaStitchPort(getPrettyName(ce));
-			sp.setIsResource();
 			// get the interface (first)
 			if (interfaces.size() == 1) {
 				sp.setLabel(NdlCommons.getLayerLabelLiteral(interfaces.get(0)));
@@ -549,8 +548,9 @@ public class ManifestLoader implements INdlManifestModelListener, INdlRequestMod
 		// state
 		on.setState(NdlCommons.getResourceStateAsString(nr));
 		
-		if (on.getState() != null)
+		if (on.getState() != null) {
 			on.setIsResource();
+		}
 		
 		// reservation notice
 		on.setReservationNotice(NdlCommons.getResourceReservationNotice(nr));
