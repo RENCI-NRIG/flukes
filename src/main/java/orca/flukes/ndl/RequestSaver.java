@@ -229,6 +229,9 @@ public class RequestSaver {
 		
 		if (n instanceof OrcaStitchPort) {
 			OrcaStitchPort sp = (OrcaStitchPort)n;
+			if ((sp.getPort() == null) || (sp.getPort().length() == 0) || 
+					(sp.getLabel() == null) || (sp.getLabel().length() == 0))
+				throw new NdlException("URL and label must be specified in StitchPort");
 			intI = ngen.declareExistingInterface(sp.getPort());
 			ngen.addLabelToIndividual(intI, sp.getLabel());
 		} else 
@@ -405,6 +408,8 @@ public class RequestSaver {
 			Individual intI;
 			if (n instanceof OrcaStitchPort) {
 				OrcaStitchPort sp = (OrcaStitchPort)n;
+				if ((sp.getLabel() == null) || (sp.getLabel().length() == 0))
+					throw new NdlException("URL and label must be specified in StitchPort");
 				intI = ngen.declareExistingInterface(sp.getPort());
 				ngen.addLabelToIndividual(intI, sp.getLabel());
 			} else

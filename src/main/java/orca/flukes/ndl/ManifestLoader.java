@@ -445,6 +445,7 @@ public class ManifestLoader implements INdlManifestModelListener, INdlRequestMod
 		OrcaNode newNode;
 		
 		if (NdlCommons.isStitchingNodeInManifest(ce)) {
+			GUI.logger().debug("  is a stitching port");
 			OrcaStitchPort sp = new OrcaStitchPort(getPrettyName(ce));
 			sp.setIsResource();
 			// get the interface (first)
@@ -454,11 +455,14 @@ public class ManifestLoader implements INdlManifestModelListener, INdlRequestMod
 					sp.setPort(NdlCommons.getLinkTo(interfaces.get(0)).toString());
 			} 
 			newNode = sp;
-		} if (NdlCommons.isNetworkStorage(ce)) {
+		} else if (NdlCommons.isNetworkStorage(ce)) {
+			GUI.logger().debug("  is a storage node");
 			newNode = new OrcaStorageNode(getPrettyName(ce));
 			newNode.setIsResource();
-		} else
+		} else {
+			GUI.logger().debug("  is a regular node");
 			newNode = new OrcaNode(getPrettyName(ce));
+		}
 		
 		for (Resource ii: interfaces)
 			GUI.logger().debug("  With interface " + ii);
