@@ -54,10 +54,6 @@ public class PasswordDialog extends ComponentDialog {
 
 	@Override
 	public boolean accept() {
-		char[] pass = passField.getPassword();
-		
-		if (pass.length == 0)
-			return false;
 		
 		return true;
 	}
