@@ -14,6 +14,7 @@ import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -446,13 +447,10 @@ public class OrcaSMXMLRPCProxy {
 			throw new Exception("Unable to load user public ssh key " + keyPath);
 
 		Map<String, Object> userEntry = new HashMap<String, Object>();
-		// FIXME: probably should get they urn from somewhere?
-		String userName = System.getProperties().getProperty("user.name");
-		userEntry.put("urn", (userName == null ? "authorized_user" : userName));
+
+		userEntry.put("login", "root");
 		List<String> keys = new ArrayList<String>();
 		keys.add(userKey);
-		userEntry.put("keys", keys);
-		users.add(userEntry);
 
 		// any additional keys?
 		keyPathStr = GUI.getInstance().getPreference(GUI.PrefsEnum.SSH_OTHER_PUBKEY);
@@ -465,16 +463,20 @@ public class OrcaSMXMLRPCProxy {
 		}
 		String otherUserKey = getUserKeyFile(keyPath);
 
-		// add other ssh keys
 		if (otherUserKey != null) {
-			userEntry = new HashMap<String, Object>();
-			userEntry.put("urn", "other_authorized_users");
-			keys = new ArrayList<String>();
-			keys.add(otherUserKey);
-			userEntry.put("keys", keys);
-			users.add(userEntry);
+			if (GUI.getInstance().getPreference(GUI.PrefsEnum.SSH_OTHER_LOGIN).equals("root")) {
+				keys.add(otherUserKey);
+			} else {
+				Map<String, Object> otherUserEntry = new HashMap<String, Object>();
+				otherUserEntry.put("login", GUI.getInstance().getPreference(GUI.PrefsEnum.SSH_OTHER_LOGIN));
+				otherUserEntry.put("keys", Collections.singletonList(otherUserKey));
+				users.add(otherUserEntry);
+			}
 		}
 
+		userEntry.put("keys", keys);
+		users.add(userEntry);
+		
 		// submit the request
 		return createSlice(sliceId, resReq, users);
 	}

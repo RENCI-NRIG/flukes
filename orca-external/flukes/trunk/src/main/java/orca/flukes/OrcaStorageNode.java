@@ -1,7 +1,6 @@
 package orca.flukes;
 
 import java.util.Map;
-import java.util.Map.Entry;
 
 import javax.swing.ImageIcon;
 
@@ -15,9 +14,11 @@ import edu.uci.ics.jung.visualization.LayeredIcon;
  */
 public class OrcaStorageNode extends OrcaNode {
 	private static final String STORAGE = "Storage";
-	private long capacity = 0;
+	protected long capacity = 0;
 	// is this a storage on shared or dedicated network?
-	private boolean sharedNetworkStorage = true;
+	protected boolean sharedNetworkStorage = true;
+	protected boolean doFormat = true;
+	protected String hasFSType = "ext4", hasFSParam = "-F -b 2048", hasMntPoint = "/mnt/target"; 
 	
 	public OrcaStorageNode(String name) {
 		super(name, 
@@ -63,5 +64,31 @@ public class OrcaStorageNode extends OrcaNode {
 	
 	public boolean getSharedNetwork() {
 		return sharedNetworkStorage;
+	}
+	
+	public void setDoFormat(boolean m) {
+		doFormat = m;
+	}
+	
+	public boolean getDoFormat() {
+		return doFormat;
+	}
+	
+	public void setFS(String t, String p, String m) {
+		hasFSType = t;
+		hasFSParam = p;
+		hasMntPoint = m;
+	}
+	
+	public String getFSType() {
+		return hasFSType;
+	}
+	
+	public String getFSParam() {
+		return hasFSParam;
+	}
+	
+	public String getMntPoint() {
+		return hasMntPoint;
 	}
 }

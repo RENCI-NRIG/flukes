@@ -508,7 +508,10 @@ public class RequestSaver {
 						ngen.addResourceToReservation(reservation, ni);
 					} else if (n instanceof OrcaStorageNode) {
 						OrcaStorageNode snode = (OrcaStorageNode)n;
-						ni = ngen.declareISCSIStorageNode(snode.getName(), snode.getCapacity());
+						ni = ngen.declareISCSIStorageNode(snode.getName(), 
+								snode.getCapacity(),
+								snode.getFSType(), snode.getFSParam(), snode.getMntPoint(), 
+								snode.getDoFormat());
 						if (!globalDomain && (n.getDomain() != null)) {
 							if (!GUIRequestState.getInstance().isAKnownDomain(n.getDomain()))
 								throw new NdlException("Domain " + n.getDomain() + " of node " + n + " is not visible from this SM!");

@@ -4,15 +4,15 @@ import java.awt.Component;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.awt.event.ActionEvent;
 
+import javax.swing.AbstractAction;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JList;
-import javax.swing.JScrollPane;
-import javax.swing.ListSelectionModel;
-import javax.swing.ScrollPaneConstants;
 
 import com.hyperrealm.kiwi.text.FormatConstants;
+import com.hyperrealm.kiwi.ui.KCheckBox;
 import com.hyperrealm.kiwi.ui.KPanel;
 import com.hyperrealm.kiwi.ui.KTextField;
 import com.hyperrealm.kiwi.ui.NumericField;
@@ -22,10 +22,13 @@ import com.hyperrealm.kiwi.ui.dialog.KMessageDialog;
 public class OrcaStoragePropertyDialog extends ComponentDialog {
 	JFrame parent;
 	OrcaStorageNode storageNode;
-	protected KTextField name;
+	protected KTextField name, fstype, fsparam, fsmntpoint;
+	protected KCheckBox formatCb;
 	protected NumericField capacityField;
 	private JList domainList;
 	private GridBagLayout gbl_contentPanel;
+	protected boolean doFormat;
+	private ComponentDialog dialog;
 	
 	KPanel kp;
 	
@@ -35,15 +38,19 @@ public class OrcaStoragePropertyDialog extends ComponentDialog {
 		
 		assert(c != null);
 		
+		this.dialog = this;
+		
 		setComment("Storage " + c.getName() + " properties");
 		this.parent = parent;
 		this.storageNode = c;
 		name.setObject(c.getName());
 		capacityField.setText(c.getCapacity() + "");
+		doFormat = c.getDoFormat();
+		formatCb.setSelected(doFormat);
+		fstype.setObject(c.getFSType());
+		fsparam.setObject(c.getFSParam());
+		fsmntpoint.setObject(c.getMntPoint());
 		
-		int ycoord = 2;
-		domainList = OrcaNodePropertyDialog.addSelectList(kp, gbl_contentPanel, ycoord++, 
-				GUIRequestState.getInstance().getAvailableDomains(), "Select domain: ", false, 3);
 		
 		// set what domain it is assigned to
 		OrcaNodePropertyDialog.setListSelectedIndex(domainList, GUIRequestState.getInstance().getAvailableDomains(), c.getDomain());
@@ -51,7 +58,8 @@ public class OrcaStoragePropertyDialog extends ComponentDialog {
 	
 	@Override
 	public boolean accept() {
-		if ((name.getObject().length() == 0) || (!capacityField.validateInput()))
+		if ((name.getObject().length() == 0) || (!capacityField.validateInput()) || 
+				(fstype.getObject().length() == 0) || (fsparam.getObject().length() == 0) || (fsmntpoint.getObject().length() == 0))
 			return false;
 		if (!GUIRequestState.getInstance().nodeCreator.checkUniqueNodeName(storageNode, name.getObject())) {
 			KMessageDialog kmd = new KMessageDialog(parent, "Storage name not unique", true);
@@ -64,6 +72,9 @@ public class OrcaStoragePropertyDialog extends ComponentDialog {
 		storageNode.setCapacity((long)capacityField.getValue());
 		// domain
 		storageNode.setDomainWithGlobalReset(GUIRequestState.getNodeDomainProper(GUIRequestState.getInstance().getAvailableDomains()[domainList.getSelectedIndex()]));
+		// fs stuff
+		storageNode.setFS(fstype.getObject(), fsparam.getObject(), fsmntpoint.getObject());
+		storageNode.setDoFormat(doFormat);
 		return true;
 	}
 	
@@ -96,6 +107,10 @@ public class OrcaStoragePropertyDialog extends ComponentDialog {
 			kp.add(name, gbc_list);
 		}
 		
+		domainList = OrcaNodePropertyDialog.addSelectList(kp, gbl_contentPanel, y++, 
+				GUIRequestState.getInstance().getAvailableDomains(), "Select domain: ", false, 3);
+
+		
 		{
 			JLabel lblNewLabel_1 = new JLabel("Capacity: ");
 			GridBagConstraints gbc_lblNewLabel_1 = new GridBagConstraints();
@@ -117,6 +132,92 @@ public class OrcaStoragePropertyDialog extends ComponentDialog {
 			gbc_list.gridx = 1;
 			gbc_list.gridy = y++;
 			kp.add(capacityField, gbc_list);
+		}
+		
+		{
+			JLabel lblNewLabel_1 = new JLabel("Filesystem Type: ");
+			GridBagConstraints gbc_lblNewLabel_1 = new GridBagConstraints();
+			gbc_lblNewLabel_1.anchor = GridBagConstraints.WEST;
+			gbc_lblNewLabel_1.insets = new Insets(0, 0, 5, 5);
+			gbc_lblNewLabel_1.gridx = 0;
+			gbc_lblNewLabel_1.gridy = y;
+			kp.add(lblNewLabel_1, gbc_lblNewLabel_1);
+		}
+		{
+			fstype = new KTextField(10);
+			GridBagConstraints gbc_list = new GridBagConstraints();
+			gbc_list.insets = new Insets(0, 0, 5, 5);
+			gbc_list.fill = GridBagConstraints.HORIZONTAL;
+			gbc_list.gridwidth = 10;
+			gbc_list.gridx = 1;
+			gbc_list.gridy = y++;
+			kp.add(fstype, gbc_list);
+		}
+		
+		{
+			JLabel lblNewLabel_1 = new JLabel("Filesystem format parameters: ");
+			GridBagConstraints gbc_lblNewLabel_1 = new GridBagConstraints();
+			gbc_lblNewLabel_1.anchor = GridBagConstraints.WEST;
+			gbc_lblNewLabel_1.insets = new Insets(0, 0, 5, 5);
+			gbc_lblNewLabel_1.gridx = 0;
+			gbc_lblNewLabel_1.gridy = y;
+			kp.add(lblNewLabel_1, gbc_lblNewLabel_1);
+		}
+		{
+			fsparam = new KTextField(10);
+			GridBagConstraints gbc_list = new GridBagConstraints();
+			gbc_list.insets = new Insets(0, 0, 5, 5);
+			gbc_list.fill = GridBagConstraints.HORIZONTAL;
+			gbc_list.gridwidth = 10;
+			gbc_list.gridx = 1;
+			gbc_list.gridy = y++;
+			kp.add(fsparam, gbc_list);
+		}
+		
+		{
+			JLabel lblNewLabel_1 = new JLabel("Filesystem mount point: ");
+			GridBagConstraints gbc_lblNewLabel_1 = new GridBagConstraints();
+			gbc_lblNewLabel_1.anchor = GridBagConstraints.WEST;
+			gbc_lblNewLabel_1.insets = new Insets(0, 0, 5, 5);
+			gbc_lblNewLabel_1.gridx = 0;
+			gbc_lblNewLabel_1.gridy = y;
+			kp.add(lblNewLabel_1, gbc_lblNewLabel_1);
+		}
+		{
+			fsmntpoint = new KTextField(10);
+			GridBagConstraints gbc_list = new GridBagConstraints();
+			gbc_list.insets = new Insets(0, 0, 5, 5);
+			gbc_list.fill = GridBagConstraints.HORIZONTAL;
+			gbc_list.gridwidth = 10;
+			gbc_list.gridx = 1;
+			gbc_list.gridy = y++;
+			kp.add(fsmntpoint, gbc_list);
+		}
+		
+		{
+			JLabel lblNewLabel_1 = new JLabel("Format filesystem: ");
+			GridBagConstraints gbc_lblNewLabel_1 = new GridBagConstraints();
+			gbc_lblNewLabel_1.anchor = GridBagConstraints.WEST;
+			gbc_lblNewLabel_1.insets = new Insets(0, 0, 5, 5);
+			gbc_lblNewLabel_1.gridx = 0;
+			gbc_lblNewLabel_1.gridy = y;
+			kp.add(lblNewLabel_1, gbc_lblNewLabel_1);
+		}
+		{
+			formatCb = new KCheckBox(new AbstractAction() {
+				
+				public void actionPerformed(ActionEvent e) {
+					doFormat = !doFormat;
+					dialog.pack();
+				}
+			});
+			formatCb.setSelected(doFormat);
+			GridBagConstraints gbc_tf= new GridBagConstraints();
+			gbc_tf.anchor = GridBagConstraints.WEST;
+			gbc_tf.insets = new Insets(0, 0, 5, 5);
+			gbc_tf.gridx = 1;
+			gbc_tf.gridy = y;
+			kp.add(formatCb, gbc_tf);
 		}
 		
 		return kp;
