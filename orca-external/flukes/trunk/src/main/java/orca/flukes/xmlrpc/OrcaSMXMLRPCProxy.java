@@ -470,6 +470,7 @@ public class OrcaSMXMLRPCProxy {
 				Map<String, Object> otherUserEntry = new HashMap<String, Object>();
 				otherUserEntry.put("login", GUI.getInstance().getPreference(GUI.PrefsEnum.SSH_OTHER_LOGIN));
 				otherUserEntry.put("keys", Collections.singletonList(otherUserKey));
+				otherUserEntry.put("sudo", GUI.getInstance().getPreference(GUI.PrefsEnum.SSH_OTHER_SUDO));
 				users.add(otherUserEntry);
 			}
 		}
