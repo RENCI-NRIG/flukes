@@ -1101,6 +1101,7 @@ public class GUI implements ComponentListener {
 		SSH_KEY("ssh.key", "~/.ssh/id_dsa", 
 			"SSH Private Key to use to access VM instances(public will be installed into instances). You can use ~ to denote user home directory."),
 		SSH_PUBKEY("ssh.pubkey", "~/.ssh/id_dsa.pub", "SSH Public key to install into VM instances"),
+		SSH_OTHER_LOGIN("ssh.other.login", "root", "Secondary login (works with ssh.other.pubkey)"),
 		SSH_OTHER_PUBKEY("ssh.other.pubkey", "~/.ssh/id_rsa.pub", "Secondary public SSH keys (perhaps belonging to other users) that should be installed in the slice."),
 		SSH_OPTIONS("ssh.options", "-o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no", 
 			"Options for invoking SSH (the default set turns off checking .ssh/known_hosts)"),

@@ -1,6 +1,9 @@
 Flukes Release Notes:
 ---------------------
 
+07/30/13:
+- Added storage parameterization
+
 07/16/13:
 - Added support for storage request and manifests
 
