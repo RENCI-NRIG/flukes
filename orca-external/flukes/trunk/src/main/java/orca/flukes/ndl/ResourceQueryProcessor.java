@@ -65,7 +65,7 @@ public class ResourceQueryProcessor {
 				continue;
 			}
 			// create a model from the description
-			OntModel amModel = NdlCommons.getModelFromString(fullRdf, null, true);
+			OntModel amModel = NdlCommons.getModelFromString(fullRdf, null, true, true);
 			// query
 			String query = NdlCommons.createQueryStringDomainLocationDetails();
 			ResultSet rs = OntProcessor.rdfQuery(amModel, query);
