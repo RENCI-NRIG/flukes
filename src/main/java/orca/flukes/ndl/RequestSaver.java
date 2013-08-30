@@ -322,33 +322,7 @@ public class RequestSaver {
 	 */
 	private void checkCrossconnectSanity(OrcaCrossconnect n) throws NdlException {
 		// sanity checks
-		// 1) nodes can't be from different domains
-		
-		Collection<OrcaLink> iLinks = GUIRequestState.getInstance().getGraph().getIncidentEdges(n);
-		String domain = null;
-		boolean flag = false;
-		for(OrcaLink l: iLinks) {
-			// count how many nodes or node groups we're connected to
-			Pair<OrcaNode> pn = GUIRequestState.getInstance().getGraph().getEndpoints(l);
-			if (!(pn.getFirst() instanceof OrcaCrossconnect)) {
-				if (pn.getFirst().getDomain() != null) {
-					if (!flag) {
-						flag = true;
-						domain = pn.getFirst().getDomain();
-					} else if (!pn.getFirst().getDomain().equals(domain))
-						throw new NdlException("You cannot split broadcast link " + n.getName() + " between domains.");
-				} 
-			} else 
-				if (!(pn.getSecond() instanceof OrcaCrossconnect)) {
-					if (pn.getSecond().getDomain() != null) {
-						if (!flag) {
-							flag = true;
-							domain = pn.getSecond().getDomain();
-						} else if (!pn.getSecond().getDomain().equals(domain))
-							throw new NdlException("You cannot split broadcast link " + n.getName() + " between domains.");
-					}
-				}
-		}
+		// 1) nodes can't be from different domains (obsoleted 08/28/13 /ib)
 	}
 	
 	private void addCrossConnectStorageDependency(OrcaCrossconnect oc) throws NdlException {

@@ -458,6 +458,10 @@ public class ManifestLoader implements INdlManifestModelListener, INdlRequestMod
 			GUI.logger().debug("  is a storage node");
 			newNode = new OrcaStorageNode(getPrettyName(ce));
 			newNode.setIsResource();
+		} else if (NdlCommons.isMulticastDevice(ce)) {
+			GUI.logger().debug("  is a multicast root");
+			newNode = new OrcaCrossconnect(getPrettyName(ce));
+			newNode.setIsResource();
 		} else {
 			GUI.logger().debug("  is a regular node");
 			newNode = new OrcaNode(getPrettyName(ce));
@@ -596,11 +600,22 @@ public class ManifestLoader implements INdlManifestModelListener, INdlRequestMod
 
 	@Override
 	public void ndlNetworkConnectionPath(Resource c, OntModel m,
-			List<Resource> path) {
+			List<List<Resource>> path) {
 		
 		// ignore request items
 		if (requestPhase)
 			return;
+		
+		if (path != null) {
+			System.out.println("Printing paths");
+			for (List<Resource> p: path) {
+				System.out.print("  Path: ");
+				for (Resource r: p) {
+					System.out.print(r + " ");
+				}
+				System.out.println("");
+			}
+		}
 		
 		// nothing to do in this case
 		GUI.logger().debug("Network Connection Path: " + c);
