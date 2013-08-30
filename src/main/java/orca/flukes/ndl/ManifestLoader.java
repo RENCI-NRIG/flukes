@@ -600,26 +600,27 @@ public class ManifestLoader implements INdlManifestModelListener, INdlRequestMod
 
 	@Override
 	public void ndlNetworkConnectionPath(Resource c, OntModel m,
-			List<List<Resource>> path) {
-		
+			List<List<Resource>> path, List<Resource> roots) {
+
 		// ignore request items
 		if (requestPhase)
 			return;
-		
-		if (path != null) {
-			System.out.println("Printing paths");
-			for (List<Resource> p: path) {
-				System.out.print("  Path: ");
-				for (Resource r: p) {
-					System.out.print(r + " ");
-				}
-				System.out.println("");
-			}
-		}
-		
+
 		// nothing to do in this case
 		GUI.logger().debug("Network Connection Path: " + c);
-	}
+		if (path != null) {
+			GUI.logger().debug("Printing paths");
+			StringBuilder sb =  new StringBuilder();
+			for (List<Resource> p: path) {
+				sb.append("   Path: ");
+				for (Resource r: p) {
+					sb.append(r + " ");
+				}
+				GUI.logger().debug(sb.toString());
+			}
+		} else 
+			GUI.logger().debug("   None");
+	} 
 
 	/**
 	 * Request items - mostly ignored
