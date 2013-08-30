@@ -1,6 +1,9 @@
 Flukes Release Notes:
 ---------------------
 
+08/30/13:
+- Added support for multicast domains
+
 07/30/13:
 - Added storage parameterization
 - Added sudo option on second account
