@@ -441,10 +441,11 @@ public class GUI implements ComponentListener {
 					gui.processPreferences();
 					gui.getImagesFromPreferences();
 					gui.getImagesFromRegistry();
+
 					gui.getControllersFromPreferences();
 					gui.getIRodsPreferences();
 					gui.getCustomInstancePreferences();
-
+					
 					gui.initialize();
 					gui.getFrame().setVisible(true);					
 				} catch (Exception e) {
