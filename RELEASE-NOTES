@@ -1,6 +1,9 @@
 Flukes Release Notes:
 ---------------------
 
+10/10/13:
+- Added explicit 'No dependencies' option to node dependencies field
+
 08/30/13:
 - Added support for multicast domains
 
