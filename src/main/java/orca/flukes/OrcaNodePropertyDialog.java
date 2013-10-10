@@ -122,9 +122,8 @@ public class OrcaNodePropertyDialog extends ComponentDialog implements ActionLis
 		}
 		
 		// don't show dependency list if not needed
-		if (GUIRequestState.getInstance().getAvailableDependencies(node).length > 0)
-			dependencyList = addSelectList(kp, gbl_contentPanel, ycoord++, 
-					GUIRequestState.getInstance().getAvailableDependencies(node), "Select dependencies: ", true, 5);
+		dependencyList = addSelectList(kp, gbl_contentPanel, ycoord++, 
+				GUIRequestState.getInstance().getAvailableDependenciesWithNone(node), "Select dependencies: ", true, 5);
 		
 		name.setObject(n.getName());
 
@@ -138,8 +137,7 @@ public class OrcaNodePropertyDialog extends ComponentDialog implements ActionLis
 		setListSelectedIndex(typeList, GUIRequestState.getInstance().getAvailableNodeTypes(), n.getNodeType());
 		
 		// set dependencies
-		if (dependencyList != null)
-			setListSelectedIndices(dependencyList, GUIRequestState.getInstance().getAvailableDependencies(node), node.getDependencyNames());
+		setListSelectedIndices(dependencyList, GUIRequestState.getInstance().getAvailableDependenciesWithNone(node), node.getDependencyNames());
 		
 		// list of open ports on management network
 		// not used for now /ib 05/10/2013
@@ -183,7 +181,8 @@ public class OrcaNodePropertyDialog extends ComponentDialog implements ActionLis
 	 * @param item
 	 */
 	public static void setListSelectedIndices(JList list, String[] options, Set<String> items) {
-		if (items.size() == 0) {
+		if ((items == null) || (items.size() == 0)) {
+			list.addSelectionInterval(0, 0);
 			return;
 		}
 		int index = 0;
@@ -282,12 +281,11 @@ public class OrcaNodePropertyDialog extends ComponentDialog implements ActionLis
 		node.setNodeType(GUIRequestState.getNodeTypeProper(GUIRequestState.getInstance().getAvailableNodeTypes()[typeList.getSelectedIndex()]));
 		
 		// dependencies 
-		if (dependencyList != null) {
-			Object[] deps = dependencyList.getSelectedValues();
-			node.clearDependencies();
-			for (Object depName: deps) {
+		Object[] deps = dependencyList.getSelectedValues();
+		node.clearDependencies();
+		for (Object depName: deps) {
+			if (!GUIRequestState.NO_NODE_DEPS.equals(depName))
 				node.addDependency(GUIRequestState.getInstance().getNodeByName((String)depName));
-			}
 		}
 		
 		// get IP addresses from GUI and set the on the node
