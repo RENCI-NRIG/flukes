@@ -372,6 +372,20 @@ public class GUIRequestState extends GUICommonState implements IDeleteEdgeCallBa
 		return ret;
 	}
 	
+	public String[] getAvailableDependenciesWithNone(OrcaNode subject) {
+		Collection<OrcaNode> knownNodes = g.getVertices();
+		String[] ret = new String[knownNodes.size()];
+		ret[0] = NO_NODE_DEPS;
+		int i = 1;
+		for (OrcaNode n: knownNodes) {
+			if ((!n.equals(subject)) && !(n instanceof OrcaCrossconnect)) {
+				ret[i] = n.getName();
+				i++;
+			}
+		}
+		return ret;
+	}
+	
 	public OrcaNode getNodeByName(String nm) {
 		if (nm == null)
 			return null;
