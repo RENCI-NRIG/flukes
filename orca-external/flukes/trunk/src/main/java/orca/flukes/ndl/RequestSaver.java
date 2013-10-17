@@ -95,6 +95,10 @@ public class RequestSaver {
 		dm.put("UH (Houston, TX USA) XO Rack", "uhvmsite.rdf#uhvmsite");
 		dm.put("NCSU (Raleigh, NC USA) XO Rack", "ncsuvmsite.rdf#ncsuvmsite");
 		dm.put("UvA (Amsterdam, The Netherlands) XO Rack", "uvanlvmsite.rdf#uvanlvmsite");
+		dm.put("UFL (Gainesville, FL USA) XO Rack", "uflvmsite.rdf#uflvmsite");
+		dm.put("UCD (Davis, CA USA) XO Rack", "ucdvmsite.rdf#ucdvmsite");
+		dm.put("OSF (Oakland, CA USA) XO Rack", "osfvmsite.rdf#osfvmsite");
+		dm.put("SL (Chicago, IL USA) XO Rack", "slvmsite.rdf#slvmsite");
 		dm.put(OrcaStitchPort.STITCHING_DOMAIN_SHORT_NAME, "orca.rdf#Stitching");
 
 		domainMap = Collections.unmodifiableMap(dm);
@@ -107,9 +111,21 @@ public class RequestSaver {
 		ndm.put("RENCI XO Rack Net", "rciNet.rdf#rciNet");
 		ndm.put("BBN/GPO XO Rack Net", "bbnNet.rdf#bbnNet");
 		ndm.put("FIU XO Rack Net", "fiuNet.rdf#fiuNet");
+		ndm.put("Duke CS Rack Net", "dukeNet.rdf#dukeNet");
+		ndm.put("NICTA XO Rack Net", "nictaNet.rdf#nictaNet");
+		ndm.put("FIU XO Rack Net", "fiuNet.rdf#fiuNet");
+		ndm.put("UH XO Rack Net", "uhNet.rdf#uhNet");
+		ndm.put("NCSU XO Rack Net", "ncsuNet.rdf#ncsuNet");
+		ndm.put("UvA XO Rack Net", "uvanlNet.rdf#uvanlNet");
+		ndm.put("UFL XO Rack Net", "uflNet.rdf#uflNet");
+		ndm.put("UCD XO Rack Net", "ucdNet.rdf#ucdNet");
+		ndm.put("OSF XO Rack Net", "osfNet.rdf#osfNet");
+		ndm.put("SL XO Rack Net", "slNet.rdf#slNet");
+		
+		ndm.put("I2 ION/AL2S", "ion.rdf#ion");
 		ndm.put("NLR Net", "nlr.rdf#nlr");
 		ndm.put("BEN Net", "ben.rdf#ben");
-		
+	
 		netDomainMap = Collections.unmodifiableMap(ndm);
 	}
 	
