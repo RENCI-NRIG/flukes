@@ -1,6 +1,9 @@
 Flukes Release Notes:
 ---------------------
 
+10/17/13:
+- Added new racks (UFL, SL, OSF, UCD)
+
 10/10/13:
 - Added explicit 'No dependencies' option to node dependencies field
 
