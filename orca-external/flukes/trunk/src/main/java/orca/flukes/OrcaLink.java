@@ -51,6 +51,18 @@ public class OrcaLink implements OrcaResource {
         this.name = name;
     }
 
+    public OrcaLink(OrcaLink ol) {
+    	bandwidth = ol.bandwidth;
+    	latency = ol.latency;
+    	label = ol.label;
+    	realName = ol.realName;
+    	name = ol.name;
+    	state = ol.state;
+    	resNotice = ol.resNotice;
+    	isResource = ol.isResource;
+    }
+    
+    
     interface ILinkCreator {
     	public OrcaLink create(String prefix);
     	public OrcaLink create(String nm, long bw);

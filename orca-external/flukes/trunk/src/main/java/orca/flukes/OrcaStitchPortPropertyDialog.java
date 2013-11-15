@@ -59,7 +59,7 @@ public class OrcaStitchPortPropertyDialog extends ComponentDialog {
 			return false;
 		}
 		stitchPort.setName(name.getObject().trim());
-		if ((long)label.getValue() > 0)
+		if ((long)label.getValue() > 0) 
 			stitchPort.setLabel("" + (long)label.getValue());
 		else
 			stitchPort.setLabel(null);
