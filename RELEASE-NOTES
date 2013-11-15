@@ -1,6 +1,9 @@
 Flukes Release Notes:
 ---------------------
 
+11/15/13:
+- Modified to support broadcast connections with common links
+
 10/17/13:
 - Added new racks (UFL, SL, OSF, UCD)
 

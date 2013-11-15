@@ -27,6 +27,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStreamReader;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
@@ -69,7 +71,7 @@ import edu.uci.ics.jung.graph.util.Pair;
  */
 public class ManifestLoader implements INdlManifestModelListener, INdlRequestModelListener {
 
-	private Map<String, OrcaNode> interfaceToNode = new HashMap<String, OrcaNode>();
+	private Map<String, List<OrcaNode>> interfaceToNode = new HashMap<String, List<OrcaNode>>();
 	private Map<String, OrcaNode> nodes = new HashMap<String, OrcaNode>();
 	private Map<String, OrcaLink> links = new HashMap<String, OrcaLink>();
 	boolean requestPhase = true;
@@ -171,6 +173,14 @@ public class ManifestLoader implements INdlManifestModelListener, INdlRequestMod
 		return rname;
 	}
 	
+	private void addNodeToInterface(String iface, OrcaNode n) {
+		List<OrcaNode> others = interfaceToNode.get(iface);
+		if (others != null) 
+			others.add(n);
+		else
+			interfaceToNode.put(iface, new ArrayList<OrcaNode>(Arrays.asList(n)));
+	}
+	
 	// get domain name from inter-domain resource name
 	private String getInterDomainName(Resource r) {
 		String trueName = getTrueName(r);
@@ -208,46 +218,6 @@ public class ManifestLoader implements INdlManifestModelListener, INdlRequestMod
 			GUI.logger().debug("  Adding p-to-p link");
 			OrcaLink ol = GUIManifestState.getInstance().getLinkCreator().create(getPrettyName(l), NdlCommons.getResourceBandwidth(l));
 			ol.setLabel(label);
-
-			// maybe point-to-point link
-			// the ends
-			Resource if1 = it.next(), if2 = it.next();
-			
-			if ((if1 != null) && (if2 != null)) {
-				OrcaNode if1Node = interfaceToNode.get(getTrueName(if1));
-				OrcaNode if2Node = interfaceToNode.get(getTrueName(if2));
-				
-				if ((if1Node != null) && if1Node.equals(if2Node)) {
-					// degenerate case of a node on a shared vlan
-					OrcaCrossconnect oc = new OrcaCrossconnect(getPrettyName(l));
-					oc.setLabel(label);
-					oc.setDomain(RequestSaver.reverseLookupDomain(NdlCommons.getDomain(l)));
-					nodes.put(getTrueName(l), oc);
-					// save one interface
-					interfaceToNode.put(getTrueName(if1), oc);
-					GUIManifestState.getInstance().getGraph().addVertex(oc);
-					return;
-				}
-				
-				// get the bandwidth of crossconnects if possible
-				long bw1 = 0, bw2 = 0;
-				if (if1Node instanceof OrcaCrossconnect) {
-					OrcaCrossconnect oc = (OrcaCrossconnect)if1Node;
-					bw1 = oc.getBandwidth();
-				} 
-				if (if2Node instanceof OrcaCrossconnect) {
-					OrcaCrossconnect oc = (OrcaCrossconnect)if2Node;
-					bw2 = oc.getBandwidth();
-				}
-				ol.setBandwidth(bw1 > bw2 ? bw1 : bw2);
-				
-				// have to be there
-				if ((if1Node != null) && (if2Node != null)) {
-					GUI.logger().debug("  Creating a link " + ol.getName() + " from " + if1Node + " to " + if2Node);
-					GUIManifestState.getInstance().getGraph().addEdge(ol, new Pair<OrcaNode>(if1Node, if2Node), 
-							EdgeType.UNDIRECTED);
-				}
-			}
 			// state
 			ol.setState(NdlCommons.getResourceStateAsString(l));
 			
@@ -257,6 +227,62 @@ public class ManifestLoader implements INdlManifestModelListener, INdlRequestMod
 			// reservation notice
 			ol.setReservationNotice(NdlCommons.getResourceReservationNotice(l));
 			links.put(getTrueName(l), ol);
+
+			// maybe point-to-point link
+			// the ends
+			Resource if1 = it.next(), if2 = it.next();
+			
+			boolean usedOnce = false;
+			if ((if1 != null) && (if2 != null)) {
+				List<OrcaNode> if1List = interfaceToNode.get(getTrueName(if1));
+				List<OrcaNode> if2List = interfaceToNode.get(getTrueName(if2));
+				
+				if (if1List != null) {
+					for(OrcaNode if1Node: if1List) {
+						if (if2List != null) {
+							for (OrcaNode if2Node: if2List) {
+								
+								if ((if1Node != null) && if1Node.equals(if2Node)) {
+									// degenerate case of a node on a shared vlan
+									OrcaCrossconnect oc = new OrcaCrossconnect(getPrettyName(l));
+									oc.setLabel(label);
+									oc.setDomain(RequestSaver.reverseLookupDomain(NdlCommons.getDomain(l)));
+									nodes.put(getTrueName(l), oc);
+									// save one interface
+									//interfaceToNode.put(getTrueName(if1), oc);
+									addNodeToInterface(getTrueName(if1), oc);
+									GUIManifestState.getInstance().getGraph().addVertex(oc);
+									return;
+								}
+								
+								if (!usedOnce) {
+									// get the bandwidth of crossconnects if possible
+									long bw1 = 0, bw2 = 0;
+									if (if1Node instanceof OrcaCrossconnect) {
+										OrcaCrossconnect oc = (OrcaCrossconnect)if1Node;
+										bw1 = oc.getBandwidth();
+									} 
+									if (if2Node instanceof OrcaCrossconnect) {
+										OrcaCrossconnect oc = (OrcaCrossconnect)if2Node;
+										bw2 = oc.getBandwidth();
+									}
+									ol.setBandwidth(bw1 > bw2 ? bw1 : bw2);
+								} else
+									ol = new OrcaLink(ol);
+								
+								// have to be there
+								if ((if1Node != null) && (if2Node != null)) {
+									GUI.logger().debug("  Creating a link " + ol.getName() + " from " + if1Node + " to " + if2Node);
+									GUIManifestState.getInstance().getGraph().addEdge(ol, new Pair<OrcaNode>(if1Node, if2Node), 
+											EdgeType.UNDIRECTED);
+									usedOnce = true;
+								}
+							}
+						}
+					}
+				}
+			}
+
 		} else {			
 			GUI.logger().debug("  Adding multi-point crossconnect " + getTrueName(l) + " (has " + interfaces.size() + " interfaces)");
 			// multi-point link
@@ -277,7 +303,8 @@ public class ManifestLoader implements INdlManifestModelListener, INdlRequestMod
 			while(it.hasNext()) {
 				Resource intR = it.next();
 				GUI.logger().debug("  Remembering interface " + intR + " of " + ml);
-				interfaceToNode.put(getTrueName(intR), ml);
+				//interfaceToNode.put(getTrueName(intR), ml);
+				addNodeToInterface(getTrueName(intR), ml);
 			}
 			
 			// add crossconnect to the graph
@@ -420,7 +447,8 @@ public class ManifestLoader implements INdlManifestModelListener, INdlRequestMod
 		// process interfaces
 		for (Iterator<Resource> it = interfaces.iterator(); it.hasNext();) {
 			Resource intR = it.next();
-			interfaceToNode.put(getTrueName(intR), oc);
+			//interfaceToNode.put(getTrueName(intR), oc);
+			addNodeToInterface(getTrueName(intR), oc);
 		}
 		
 		nodes.put(getTrueName(c), oc);
@@ -476,7 +504,8 @@ public class ManifestLoader implements INdlManifestModelListener, INdlRequestMod
 		// process interfaces
 		for (Iterator<Resource> it = interfaces.iterator(); it.hasNext();) {
 			Resource intR = it.next();
-			interfaceToNode.put(getTrueName(intR), newNode);
+			//interfaceToNode.put(getTrueName(intR), newNode);
+			addNodeToInterface(getTrueName(intR), newNode);
 		}
 		
 		// disk image
@@ -527,7 +556,8 @@ public class ManifestLoader implements INdlManifestModelListener, INdlRequestMod
 			// process interfaces. if there is an interface that leads to
 			// a link, this is an intra-domain case, so we can delete the parent later
 			for (Resource intR: NdlCommons.getResourceInterfaces(tmpR)) {
-				interfaceToNode.put(getTrueName(intR), on);
+				//interfaceToNode.put(getTrueName(intR), on);
+				addNodeToInterface(getTrueName(intR), on);
 				// HACK: for now check that this interface connects to something
 				// and is not just hanging there with IP address
 				List<Resource> hasI = NdlCommons.getWhoHasInterface(intR, om);
@@ -608,10 +638,16 @@ public class ManifestLoader implements INdlManifestModelListener, INdlRequestMod
 
 		// nothing to do in this case
 		GUI.logger().debug("Network Connection Path: " + c);
+		if (roots != null) {
+			GUI.logger().debug("Printing roots");
+			for (Resource rr: roots) {
+				GUI.logger().debug(rr);
+			}
+		}
 		if (path != null) {
 			GUI.logger().debug("Printing paths");
-			StringBuilder sb =  new StringBuilder();
 			for (List<Resource> p: path) {
+				StringBuilder sb =  new StringBuilder();
 				sb.append("   Path: ");
 				for (Resource r: p) {
 					sb.append(r + " ");
