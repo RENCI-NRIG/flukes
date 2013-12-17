@@ -98,7 +98,7 @@ public class RequestSaver {
 		dm.put("UFL (Gainesville, FL USA) XO Rack", "uflvmsite.rdf#uflvmsite");
 		dm.put("UCD (Davis, CA USA) XO Rack", "ucdvmsite.rdf#ucdvmsite");
 		dm.put("OSF (Oakland, CA USA) XO Rack", "osfvmsite.rdf#osfvmsite");
-		dm.put("SL (Chicago, IL USA) XO Rack", "slvmsite.rdf#sltvmsite");
+		dm.put("SL (Chicago, IL USA) XO Rack", "slvmsite.rdf#slvmsite");
 		dm.put(OrcaStitchPort.STITCHING_DOMAIN_SHORT_NAME, "orca.rdf#Stitching");
 
 		domainMap = Collections.unmodifiableMap(dm);
