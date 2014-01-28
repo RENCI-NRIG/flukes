@@ -187,12 +187,13 @@ public class GUIResourceState extends GUICommonState {
 				onf, olf);
 		
 		// add the plugin
-		PopupVertexEdgeMenuMousePlugin<OrcaNode, OrcaLink> myPlugin = new PopupVertexEdgeMenuMousePlugin<OrcaNode, OrcaLink>();
+		//PopupVertexEdgeMenuMousePlugin<OrcaNode, OrcaLink> myPlugin = new PopupVertexEdgeMenuMousePlugin<OrcaNode, OrcaLink>();
+		PopupMultiVertexEdgeMenuMousePlugin myPlugin = new PopupMultiVertexEdgeMenuMousePlugin();
 		
 		// Add some popup menus for the edges and vertices to our mouse plugin.
 		// mode menu is not set for manifests
 		//myPlugin.setEdgePopup(new MouseMenus.ManifestEdgeMenu());
-		myPlugin.setVertexPopup(new MouseMenus.ResourceNodeMenu());
+		//myPlugin.setVertexPopup(new MouseMenus.ResourceNodeMenu());
 		
 		// add map pre-renderer
 		ImageIcon mapIcon = null;

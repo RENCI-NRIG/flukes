@@ -26,7 +26,20 @@ import java.util.Collection;
 import java.util.Map.Entry;
 
 import javax.swing.ImageIcon;
+import javax.swing.JPopupMenu;
 
+import orca.flukes.GUI.PrefsEnum;
+import orca.flukes.MouseMenus.DomainDisplay;
+import orca.flukes.MouseMenus.ImageDisplay;
+import orca.flukes.MouseMenus.IncreaseByNodeGroupItem;
+import orca.flukes.MouseMenus.NodeColorItem;
+import orca.flukes.MouseMenus.NodeLoginItem;
+import orca.flukes.MouseMenus.NodePropItem;
+import orca.flukes.MouseMenus.NodeTypeDisplay;
+import orca.flukes.MouseMenus.NodeViewItem;
+import orca.flukes.OrcaNode.ManifestMenu;
+import orca.flukes.OrcaNode.RequestMenu;
+import orca.flukes.OrcaNode.ResourceMenu;
 import edu.uci.ics.jung.graph.util.Pair;
 import edu.uci.ics.jung.visualization.LayeredIcon;
 
@@ -128,4 +141,53 @@ public class OrcaCrossconnect extends OrcaNode {
 		}
 		return false;
     }
+    
+    //
+    // Menus for the nodes
+    //
+	public static class RequestMenu extends JPopupMenu {
+		public RequestMenu() {
+			super("Broadcast Link Menu");
+			this.add(new DeleteVertexMenuItem<OrcaNode, OrcaLink>(GUIRequestState.getInstance()));
+			this.addSeparator();
+			this.add(new DomainDisplay());
+			this.add(new NodeTypeDisplay());
+			this.addSeparator();
+			this.add(new NodePropItem(GUI.getInstance().getFrame()));
+			this.addSeparator();
+			this.add(new NodeColorItem(GUI.getInstance().getFrame(), true));
+		}
+	}
+	
+	public static class ManifestMenu extends JPopupMenu {
+		public ManifestMenu() {
+			super("Broadcast Link Menu");
+			this.add(new DomainDisplay());
+			this.add(new NodeTypeDisplay());
+			this.addSeparator();
+			this.add(new NodeViewItem(GUI.getInstance().getFrame()));
+			this.addSeparator();
+			this.add(new NodeColorItem(GUI.getInstance().getFrame(), false));
+		}
+	}
+	
+	private static JPopupMenu requestMenu, manifestMenu, resourceMenu;
+	
+	{
+		requestMenu = new RequestMenu();
+		manifestMenu = new ManifestMenu();
+		resourceMenu = new ResourceMenu();
+	}
+	
+	public JPopupMenu requestMenu() {
+		return requestMenu;
+	}
+	
+	public JPopupMenu manifestMenu() {
+		return manifestMenu;
+	}
+	
+	public JPopupMenu resourceMenu() {
+		return resourceMenu;
+	}
 }

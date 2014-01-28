@@ -23,7 +23,21 @@
 package orca.flukes;
 
 import javax.swing.ImageIcon;
+import javax.swing.JPopupMenu;
 
+import orca.flukes.GUI.PrefsEnum;
+import orca.flukes.MouseMenus.DomainDisplay;
+import orca.flukes.MouseMenus.ImageDisplay;
+import orca.flukes.MouseMenus.IncreaseByNodeGroupItem;
+import orca.flukes.MouseMenus.MultiDomainDisplay;
+import orca.flukes.MouseMenus.NodeColorItem;
+import orca.flukes.MouseMenus.NodeLoginItem;
+import orca.flukes.MouseMenus.NodePropItem;
+import orca.flukes.MouseMenus.NodeTypeDisplay;
+import orca.flukes.MouseMenus.NodeViewItem;
+import orca.flukes.OrcaNode.ManifestMenu;
+import orca.flukes.OrcaNode.RequestMenu;
+import orca.flukes.OrcaNode.ResourceMenu;
 import edu.uci.ics.jung.graph.util.Pair;
 import edu.uci.ics.jung.visualization.LayeredIcon;
 
@@ -87,32 +101,54 @@ public class OrcaNodeGroup extends OrcaNode {
 		return splittable;
 	}
 	
-	/* no more internal vlans
-	public void setInternalVlan(boolean f) {
-		internalVlan = f;
+    //
+    // Menus for the node groups
+    //
+	public static class RequestMenu extends JPopupMenu {
+		public RequestMenu() {
+			super("Node Group Menu");
+			this.add(new DeleteVertexMenuItem<OrcaNode, OrcaLink>(GUIRequestState.getInstance()));
+			this.addSeparator();
+			this.add(new ImageDisplay());
+			this.add(new DomainDisplay());
+			this.add(new NodeTypeDisplay());
+			this.addSeparator();
+			this.add(new NodePropItem(GUI.getInstance().getFrame()));
+			this.addSeparator();
+			this.add(new NodeColorItem(GUI.getInstance().getFrame(), true));
+		}
 	}
 	
-	public boolean getInternalVlan() {
-		return internalVlan;
+	public static class ManifestMenu extends JPopupMenu {
+		public ManifestMenu() {
+			super("Node Group Menu");
+			this.add(new ImageDisplay());
+			this.add(new DomainDisplay());
+			this.add(new NodeTypeDisplay());
+			this.addSeparator();
+			this.add(new NodeViewItem(GUI.getInstance().getFrame()));
+			this.addSeparator();
+			this.add(new NodeColorItem(GUI.getInstance().getFrame(), false));
+		}
 	}
 	
-	public void setInternalVlanBw(long bw) {
-		internalVlanBw = bw;
+	private static JPopupMenu requestMenu, manifestMenu, resourceMenu;
+	
+	{
+		requestMenu = new RequestMenu();
+		manifestMenu = new ManifestMenu();
+		resourceMenu = new ResourceMenu();
 	}
 	
-	public long getInternalVlanBw() {
-		return internalVlanBw;
+	public JPopupMenu requestMenu() {
+		return requestMenu;
 	}
 	
-    public void setInternalVlanLabel(String l) {
-    	if ((l != null) && l.length() > 0)
-    		internalVlanLabel = l;
-    	else
-    		internalVlanLabel = null;
-    }
-
-    public String getInternalVlanLabel() {
-    	return internalVlanLabel;
-    }
-    */
+	public JPopupMenu manifestMenu() {
+		return manifestMenu;
+	}
+	
+	public JPopupMenu resourceMenu() {
+		return resourceMenu;
+	}
 }

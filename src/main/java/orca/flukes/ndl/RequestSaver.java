@@ -39,11 +39,14 @@ import java.util.Map;
 
 import orca.flukes.GUI;
 import orca.flukes.GUIRequestState;
+import orca.flukes.OrcaColor;
+import orca.flukes.OrcaColorLink;
 import orca.flukes.OrcaCrossconnect;
 import orca.flukes.OrcaImage;
 import orca.flukes.OrcaLink;
 import orca.flukes.OrcaNode;
 import orca.flukes.OrcaNodeGroup;
+import orca.flukes.OrcaResource;
 import orca.flukes.OrcaStitchPort;
 import orca.flukes.OrcaStorageNode;
 import orca.ndl.NdlCommons;
@@ -331,6 +334,12 @@ public class RequestSaver {
 		return false;
 	}
 	
+	private boolean colorLink(OrcaLink e) {
+		if (e instanceof OrcaColorLink) 
+			return true;
+		return false;
+	}
+	
 	/**
 	 * Check the sanity of a crossconnect
 	 * @param n
@@ -577,7 +586,7 @@ public class RequestSaver {
 					}
 				}
 				
-				// node dependencies (done afterwards to be sure all nodes are declared)
+				// node dependencies and color extensions (done afterwards to be sure all nodes are declared)
 				for (OrcaNode n: GUIRequestState.getInstance().getGraph().getVertices()) {
 					Individual ni = ngen.getRequestIndividual(n.getName());
 					for(OrcaNode dep: n.getDependencies()) {
@@ -586,6 +595,8 @@ public class RequestSaver {
 							ngen.addDependOnToIndividual(depI, ni);
 						}
 					}
+					// see if any color extensions have been added
+					processColorOnNE(n);
 				}
 				
 				// crossconnects are vertices in the graph, but are actually a kind of link
@@ -622,6 +633,11 @@ public class RequestSaver {
 						if (fakeLink(e))
 							continue;
 						
+						if (colorLink(e)) {
+							processColorLink((OrcaColorLink)e);
+							continue;
+						}
+						
 						checkLinkSanity(e);
 						
 						Individual ei = ngen.declareNetworkConnection(e.getName());
@@ -641,6 +657,9 @@ public class RequestSaver {
 						Pair<OrcaNode> pn = GUIRequestState.getInstance().getGraph().getEndpoints(e);
 						processNodeAndLink(pn.getFirst(), e, ei);
 						processNodeAndLink(pn.getSecond(), e, ei);
+						
+						// link color extensions
+						processColorOnNE(e);
 					}
 				}
 				
@@ -811,5 +830,42 @@ public class RequestSaver {
 	public static String sanitizePostBootScript(String s) {
 		// no longer needed
 		return s;
+	}
+	
+	// FIXME: order of nodes is random here and color links must
+	// be directional
+	private void processColorLink(OrcaColorLink e) throws NdlException {
+		// Declare a new color and save its key map and blob
+		
+		Individual colorI = ngen.declareColor(e.getColor().getLabel(), 
+				e.getColor().getKeys(), e.getColor().getBlob(), e.getColor().getXMLBlobState());
+		
+		Pair<OrcaNode> pn = GUIRequestState.getInstance().getGraph().getEndpoints(e);
+		
+		Individual fromI = ngen.getRequestIndividual(pn.getFirst().getName());
+		Individual toI = ngen.getRequestIndividual(pn.getSecond().getName());
+		
+		if ((fromI != null) && (toI != null)) {
+			ngen.encodeColorDependency(fromI, toI, colorI);
+		} else
+			throw new NdlException("Null resource as head or tail of color link " + e.getLabel());
+	}
+	
+	/**
+	 * good for nodes and links
+	 * @param or
+	 * @throws NdlException
+	 */
+	private void processColorOnNE(OrcaResource or) throws NdlException {
+		for(OrcaColor color: or.getColors()) {
+			Individual colorI = ngen.declareColor(color.getLabel(), 
+				color.getKeys(), color.getBlob(), color.getXMLBlobState());
+			Individual neI = ngen.getRequestIndividual(or.getName());
+			if (neI != null) { 
+				ngen.addColorToIndividual(neI, colorI);
+			} else
+				throw new NdlException("Null resource" + or.getName() + " with color extension");
+				
+		}
 	}
 }

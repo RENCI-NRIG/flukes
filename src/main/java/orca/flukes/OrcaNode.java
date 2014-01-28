@@ -35,6 +35,18 @@ import java.util.Set;
 
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
+import javax.swing.JPopupMenu;
+
+import orca.flukes.GUI.PrefsEnum;
+import orca.flukes.MouseMenus.DomainDisplay;
+import orca.flukes.MouseMenus.ImageDisplay;
+import orca.flukes.MouseMenus.IncreaseByNodeGroupItem;
+import orca.flukes.MouseMenus.MultiDomainDisplay;
+import orca.flukes.MouseMenus.NodeColorItem;
+import orca.flukes.MouseMenus.NodeLoginItem;
+import orca.flukes.MouseMenus.NodePropItem;
+import orca.flukes.MouseMenus.NodeTypeDisplay;
+import orca.flukes.MouseMenus.NodeViewItem;
 
 import org.apache.commons.collections15.Factory;
 import org.apache.commons.collections15.Transformer;
@@ -43,11 +55,10 @@ import edu.uci.ics.jung.graph.util.Pair;
 import edu.uci.ics.jung.visualization.LayeredIcon;
 import edu.uci.ics.jung.visualization.renderers.Checkmark;
 
-public class OrcaNode implements OrcaResource {
+public class OrcaNode extends OrcaResource {
 
 	protected static final String NOT_SPECIFIED = "Not specified";
 	public static final String NODE_NETMASK="32";
-	protected String name;
 	protected String url;
 	protected String image = null;
 	protected String domain = null;
@@ -59,19 +70,13 @@ public class OrcaNode implements OrcaResource {
 	protected List<String> managementAccess = null;
 	
 	protected final LayeredIcon icon;
-	
-	protected boolean isResource=false;
-	
+
 	protected Map<String, String> substrateInfo = new HashMap<String, String>();
 
 	// specific node type 
 	protected String nodeType = null;
 	// post-boot script
 	protected String postBootScript = null;
-	// reservation state
-	protected String state = null;
-	// reservation notice
-	protected String resNotice = null;
 	// list of open ports
 	protected String openPorts = null;
 	
@@ -94,10 +99,6 @@ public class OrcaNode implements OrcaResource {
 		return ret;
 	}
 	
-	public String toString() {
-		return name;
-	}
-	
 	// Icon transformer for GUI
 	public static class OrcaNodeIconTransformer implements Transformer<OrcaNode, Icon> {
 
@@ -105,15 +106,7 @@ public class OrcaNode implements OrcaResource {
 			return node.icon;
 		}
 	}
-	
-	public boolean isResource() {
-		return isResource;
-	}
-	
-	public void setIsResource() {
-		isResource = true;
-	}
-	
+
 	
 	// Icon shape transformer for GUI (to make sure icon clickable shape roughly matches the icon)
 	public static class OrcaNodeIconShapeTransformer implements Transformer<OrcaNode, Shape> {
@@ -155,7 +148,7 @@ public class OrcaNode implements OrcaResource {
     }
 	
 	public OrcaNode(String name) {
-		this.name = name;
+		super(name);
 		this.addresses = new HashMap<OrcaLink, Pair<String>>();
 		this.macAddresses = new HashMap<OrcaLink, String>();
 		this.icon = new LayeredIcon(new ImageIcon(GUIRequestState.class.getResource(OrcaNodeEnum.CE.getIconName())).getImage());
@@ -163,7 +156,7 @@ public class OrcaNode implements OrcaResource {
 
 	// inherit some properties from parent
 	public OrcaNode(String name, OrcaNode parent) {
-		this.name = name;
+		super(name);
 		this.addresses = new HashMap<OrcaLink, Pair<String>>();
 		this.macAddresses = new HashMap<OrcaLink, String>();
 		this.icon = new LayeredIcon(new ImageIcon(GUIRequestState.class.getResource(OrcaNodeEnum.CE.getIconName())).getImage());
@@ -182,18 +175,10 @@ public class OrcaNode implements OrcaResource {
 	 * @param icon
 	 */
 	protected OrcaNode(String name, LayeredIcon icon) {
-		this.name = name;
+		super(name);
 		this.addresses = new HashMap<OrcaLink, Pair<String>>();
 		this.macAddresses = new HashMap<OrcaLink, String>();
 		this.icon = icon;
-	}
-	
-	public String getName() {
-		return name;
-	}
-
-	public void setName(String name) {
-		this.name = name;
 	}
 
 	public void setUrl(String u) {
@@ -364,22 +349,6 @@ public class OrcaNode implements OrcaResource {
 		return null;
 	}
 	
-	public void setState(String s) {
-		state = s;
-	}
-	
-	public String getState() {
-		return state;
-	}
-	
-	public void setReservationNotice(String n) {
-		resNotice = n;
-	}
-	
-	public String getReservationNotice() {
-		return resNotice;
-	}
-	
 	public String getPortsList() {
 		return openPorts;
 	}
@@ -473,4 +442,70 @@ public class OrcaNode implements OrcaResource {
     public String getSubstrateInfo(String t) {
     	return substrateInfo.get(t);
     }
+    
+    //
+    // Menus for the nodes
+    //
+	public static class RequestMenu extends JPopupMenu {
+		public RequestMenu() {
+			super("Node Menu");
+			this.add(new DeleteVertexMenuItem<OrcaNode, OrcaLink>(GUIRequestState.getInstance()));
+			this.addSeparator();
+			this.add(new ImageDisplay());
+			this.add(new DomainDisplay());
+			this.add(new NodeTypeDisplay());
+			this.addSeparator();
+			this.add(new NodePropItem(GUI.getInstance().getFrame()));
+			this.addSeparator();
+			this.add(new NodeColorItem(GUI.getInstance().getFrame(), true));
+		}
+	}
+	
+	public static class ManifestMenu extends JPopupMenu {
+		public ManifestMenu() {
+			super("Node Menu");
+			this.add(new ImageDisplay());
+			this.add(new DomainDisplay());
+			this.add(new NodeTypeDisplay());
+			this.addSeparator();
+			if ((GUI.getInstance().getPreference(PrefsEnum.ENABLE_MODIFY).equalsIgnoreCase("true")) ||
+					(GUI.getInstance().getPreference(PrefsEnum.ENABLE_MODIFY).equalsIgnoreCase("yes"))) {
+				this.add(new DeleteVertexMenuItem<OrcaNode, OrcaLink>(GUIManifestState.getInstance()));
+				this.add(new IncreaseByNodeGroupItem(GUI.getInstance().getFrame()));
+				this.addSeparator();
+			}
+			this.add(new NodeViewItem(GUI.getInstance().getFrame()));
+			this.add(new NodeLoginItem(GUI.getInstance().getFrame()));
+			this.addSeparator();
+			this.add(new NodeColorItem(GUI.getInstance().getFrame(), false));
+		}
+	}
+	
+	
+	public static class ResourceMenu extends JPopupMenu {
+		public ResourceMenu() {
+			super("Site Menu");
+			this.add(new MultiDomainDisplay());
+		}
+	}
+	
+	private static JPopupMenu requestMenu, manifestMenu, resourceMenu;
+	
+	{
+		requestMenu = new RequestMenu();
+		manifestMenu = new ManifestMenu();
+		resourceMenu = new ResourceMenu();
+	}
+	
+	public JPopupMenu requestMenu() {
+		return requestMenu;
+	}
+	
+	public JPopupMenu manifestMenu() {
+		return manifestMenu;
+	}
+	
+	public JPopupMenu resourceMenu() {
+		return resourceMenu;
+	}
 }

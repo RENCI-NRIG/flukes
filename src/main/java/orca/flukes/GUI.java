@@ -117,7 +117,7 @@ public class GUI implements ComponentListener {
 	private Logger logger;
 	private String[] controllerUrls;
 	private String selectedControllerUrl;
-	private SplitButton splitNodeButton;
+	private SplitButton splitNodeButton, splitLinkButton;
 	
 	private boolean withIRods = false;
 	
@@ -753,6 +753,7 @@ public class GUI implements ComponentListener {
 	
 	void hideNodeMenu() {
 		splitNodeButton.hideMenu();
+		splitLinkButton.hideMenu();
 	}
 	
 	/**
@@ -830,13 +831,13 @@ public class GUI implements ComponentListener {
 			
 			//first instantiate the control
 			splitNodeButton = new SplitButton(nodeButton, SwingConstants.SOUTH);
-		    JPopupMenu testMenu = new JPopupMenu("Node menu");
-		    testMenu.add(addMenuItem("Node", "nodes", rbl));
-		    testMenu.add(addMenuItem("Node Group", "nodegroups", rbl));
-		    testMenu.add(addMenuItem("Broadcast Link", "bcastlinks", rbl));
-		    testMenu.add(addMenuItem("Storage", "storage", rbl));
-		    testMenu.add(addMenuItem("StitchPort", "stitchport", rbl));
-		    splitNodeButton.setMenu(testMenu);
+		    JPopupMenu nodeMenu = new JPopupMenu("Node menu");
+		    nodeMenu.add(addMenuItem("Node", "nodes", rbl));
+		    nodeMenu.add(addMenuItem("Node Group", "nodegroups", rbl));
+		    nodeMenu.add(addMenuItem("Broadcast Link", "bcastlinks", rbl));
+		    nodeMenu.add(addMenuItem("Storage", "storage", rbl));
+		    nodeMenu.add(addMenuItem("StitchPort", "stitchport", rbl));
+		    splitNodeButton.setMenu(nodeMenu);
 			toolBar.add(splitNodeButton);
 			
 			/*
@@ -878,6 +879,24 @@ public class GUI implements ComponentListener {
 			toolBar.add(stitchPortButton);
 			
 			*/
+			
+			horizontalStrut = Box.createHorizontalStrut(10);
+			toolBar.add(horizontalStrut);
+			
+			JButton linkButton = new JButton("Link Type");
+			linkButton.setToolTipText("Choose linnk type");
+			linkButton.setActionCommand("links");
+			linkButton.addActionListener(rbl);
+			linkButton.setVerticalAlignment(SwingConstants.TOP);
+			toolBar.add(linkButton);
+			
+			//first instantiate the control
+			splitLinkButton = new SplitButton(linkButton, SwingConstants.SOUTH);
+		    JPopupMenu linkMenu = new JPopupMenu("Link menu");
+		    linkMenu.add(addMenuItem("Topo link", "topo", rbl));
+		    linkMenu.add(addMenuItem("Color Link", "color", rbl));
+		    splitLinkButton.setMenu(linkMenu);
+			toolBar.add(splitLinkButton);
 			
 			horizontalStrut = Box.createHorizontalStrut(10);
 			toolBar.add(horizontalStrut);
