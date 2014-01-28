@@ -51,10 +51,48 @@ public class ChooserWithNewDialog<T> extends ItemChooserDialog<T> {
 		addNewButton(al);
 	}
 	
+	public void setDeleteActionListener(ActionListener al) {
+		addDeleteButton(al);
+	}
+	
+	public void setEditActionListener(ActionListener al) {
+		addEditButton(al);
+	}
+	
 	private void addNewButton(ActionListener newAction) {
 		JButton nb = new JButton("New");
-		if (newAction != null)
+		if (newAction != null) {
 			nb.addActionListener(newAction);
+			nb.setActionCommand("new");
+		}
+		
+		Container cp = getContentPane();
+		KPanel kp = (KPanel)cp.getComponent(0);
+		ButtonPanel bp = (ButtonPanel)kp.getComponent(1);
+
+		bp.addButton(nb);
+	}
+	
+	private void addDeleteButton(ActionListener newAction) {
+		JButton nb = new JButton("Delete");
+		if (newAction != null) {
+			nb.addActionListener(newAction);
+			nb.setActionCommand("delete");
+		}
+		
+		Container cp = getContentPane();
+		KPanel kp = (KPanel)cp.getComponent(0);
+		ButtonPanel bp = (ButtonPanel)kp.getComponent(1);
+
+		bp.addButton(nb);
+	}
+	
+	private void addEditButton(ActionListener newAction) {
+		JButton nb = new JButton("Edit");
+		if (newAction != null) {
+			nb.addActionListener(newAction);
+			nb.setActionCommand("edit");
+		}
 		
 		Container cp = getContentPane();
 		KPanel kp = (KPanel)cp.getComponent(0);

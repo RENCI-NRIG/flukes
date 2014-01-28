@@ -139,34 +139,6 @@ public class MouseMenus {
 
 	}
 
-	public static class RequestEdgeMenu extends JPopupMenu {        
-		// private JFrame frame; 
-		public RequestEdgeMenu() {
-			super("Edge Menu");
-			// this.frame = frame;
-			this.add(new DeleteEdgeMenuItem<OrcaNode, OrcaLink>(GUIRequestState.getInstance()));
-			this.addSeparator();
-			//this.add(new LatencyDisplay());
-			this.add(new BandwidthDisplay());
-			this.add(new LabelDisplay());
-			this.addSeparator();
-			this.add(new EdgePropItem(GUI.getInstance().getFrame()));           
-		}
-
-	}
-
-	public static class ManifestEdgeMenu extends JPopupMenu {        
-		// private JFrame frame; 
-		public ManifestEdgeMenu() {
-			super("Edge Menu");
-			//this.add(new LatencyDisplay());
-			this.add(new BandwidthDisplay());
-			this.add(new LabelDisplay());
-			this.addSeparator();
-			this.add(new EdgeViewerItem(GUI.getInstance().getFrame()));           
-		}
-	}
-
 	public static class EdgePropItem extends JMenuItem implements EdgeMenuListener<OrcaNode, OrcaLink>,
 	MenuPointListener {
 		OrcaLink edge;
@@ -186,7 +158,11 @@ public class MouseMenus {
 			super("Edit Properties...");
 			this.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
-					if (!edge.linkToBroadcast()) {
+					if (edge instanceof OrcaColorLink) {
+						OrcaColorDialog dialog = new OrcaColorDialog(frame, (OrcaColorLink)edge);
+						dialog.pack();
+						dialog.setVisible(true);
+					} else if (!edge.linkToBroadcast()) {
 						OrcaLinkPropertyDialog dialog = new OrcaLinkPropertyDialog(frame, edge);
 						dialog.pack();
 						dialog.setVisible(true);
@@ -258,44 +234,6 @@ public class MouseMenus {
 					this.setText(PREFIX_LABEL + UNSPECIFIED);
 				else
 					this.setText(PREFIX_LABEL + e.getLabel());
-		}
-	}
-
-	public static class RequestNodeMenu extends JPopupMenu {
-		public RequestNodeMenu() {
-			super("Node Menu");
-			this.add(new DeleteVertexMenuItem<OrcaNode, OrcaLink>(GUIRequestState.getInstance()));
-			this.addSeparator();
-			this.add(new ImageDisplay());
-			this.add(new DomainDisplay());
-			this.add(new NodeTypeDisplay());
-			this.addSeparator();
-			this.add(new NodePropItem(GUI.getInstance().getFrame()));
-		}
-	}
-
-	public static class ManifestNodeMenu extends JPopupMenu {
-		public ManifestNodeMenu() {
-			super("Node Menu");
-			this.add(new ImageDisplay());
-			this.add(new DomainDisplay());
-			this.add(new NodeTypeDisplay());
-			this.addSeparator();
-			if ((GUI.getInstance().getPreference(PrefsEnum.ENABLE_MODIFY).equalsIgnoreCase("true")) ||
-					(GUI.getInstance().getPreference(PrefsEnum.ENABLE_MODIFY).equalsIgnoreCase("yes"))) {
-				this.add(new DeleteVertexMenuItem<OrcaNode, OrcaLink>(GUIManifestState.getInstance()));
-				this.add(new IncreaseByNodeGroupItem(GUI.getInstance().getFrame()));
-				this.addSeparator();
-			}
-			this.add(new NodeViewItem(GUI.getInstance().getFrame()));
-			this.add(new NodeLoginItem(GUI.getInstance().getFrame()));
-		}
-	}
-
-	public static class ResourceNodeMenu extends JPopupMenu {
-		public ResourceNodeMenu() {
-			super("Site Menu");
-			this.add(new MultiDomainDisplay());
 		}
 	}
 
@@ -579,5 +517,73 @@ public class MouseMenus {
 			this.point = point;			
 		}
 
+	}
+	
+	// Edge and Node Coloring 
+	
+	public static class EdgeColorItem extends JMenuItem implements EdgeMenuListener<OrcaNode, OrcaLink>,
+	MenuPointListener {
+		OrcaLink edge;
+		VisualizationViewer<OrcaNode, OrcaLink> visComp;
+		Point2D point;
+
+		public void setEdgeAndView(OrcaLink edge, VisualizationViewer<OrcaNode, OrcaLink> visComp) {
+			this.edge = edge;
+			this.visComp = visComp;
+		}
+
+		public void setPoint(Point2D point) {
+			this.point = point;
+		}
+
+		public  EdgeColorItem(final JFrame frame, final boolean modify) {            
+			super((modify ? "Edit Color..." : "View Color..."));
+			this.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					if (edge instanceof OrcaColorLink) {
+						if (modify) {
+							OrcaColorDialog dialog = new OrcaColorDialog(frame, (OrcaColorLink)edge);
+							dialog.pack();
+							dialog.setVisible(true);
+						} else {
+							OrcaColorViewer dialog = new OrcaColorViewer(frame, ((OrcaColorLink)edge).getColor());
+							dialog.pack();
+							dialog.setVisible(true);
+						}
+					} else if (!edge.linkToBroadcast()) {
+						ColorListDialog dialog = new ColorListDialog(frame, edge, modify);
+						dialog.pack();
+						dialog.setVisible(true);
+					}
+				}
+			});
+		}
+	}
+
+	public static class NodeColorItem extends JMenuItem implements NodeMenuListener<OrcaNode, OrcaLink>, MenuPointListener {
+		OrcaNode node;
+		VisualizationViewer<OrcaNode, OrcaLink> visComp;
+		Point2D point;
+
+		public  NodeColorItem(final JFrame frame, final boolean modify) {    
+			super((modify ? "Edit Color..." : "View Color..."));
+			this.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					ColorListDialog dialog = new ColorListDialog(frame, node, modify);
+					dialog.pack();
+					dialog.setVisible(true);
+				}
+			});
+		}
+
+		public void setNodeAndView(OrcaNode v,
+				VisualizationViewer<OrcaNode, OrcaLink> visView) {
+			visComp = visView;
+			node = v;
+		}
+
+		public void setPoint(Point2D point) {
+			this.point = point;
+		}	
 	}
 }

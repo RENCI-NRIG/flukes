@@ -32,10 +32,42 @@ public class OrcaLinkCreator implements ILinkCreator {
     private long defaultBandwidth = 10000000;
     private long defaultLatency = 50;
     private final SparseMultigraph<OrcaNode, OrcaLink> g;
+    // by default links are topology
+    private OrcaLinkType currentLinkType = OrcaLinkType.COLOR;
+    
+    public enum OrcaLinkType {
+    	TOPO("Link"), COLOR("ColorLink");
+    	
+    	private String prefix;
+    	private int linkCount = 0;
+    	
+    	
+    	private OrcaLinkType(String n) {
+    		prefix = n;
+    	}
+    	
+    	public String getPrefix() {
+    		return prefix;
+    	}
+    	
+    	public int getNextCount() {
+    		return linkCount++;
+    	}
+    	
+    	public void resetCount() {
+    		linkCount = 0;
+    	}
+    }
+    
+    // change the link type used by the creator
+    public void setLinkType(OrcaLinkType olt) {
+    	currentLinkType = olt;
+    }
     
 	public OrcaLinkCreator(SparseMultigraph<OrcaNode, OrcaLink> g) {
 		this.g = g;
 	}
+	
 	/**
 	 * Check if the link name is unique
 	 * @param nm
@@ -65,16 +97,24 @@ public class OrcaLinkCreator implements ILinkCreator {
     				name = prefix; 
     			else
     				name = "";
-    			name += "Link" + linkCount++;
+    			name += currentLinkType.getPrefix() + linkCount++;
     		} while (!checkUniqueLinkName(null, name));
-    		OrcaLink link = new OrcaLink(name);
-    		link.setBandwidth(defaultBandwidth);
-    		link.setLatency(defaultLatency);
-    		
+    		OrcaLink link = null;
+    		switch(currentLinkType) {
+    		case TOPO:
+        		link = new OrcaLink(name);
+        		link.setBandwidth(defaultBandwidth);
+        		link.setLatency(defaultLatency);
+    			break;
+    		case COLOR:
+    			link = new OrcaColorLink(name);
+    			break;
+    		}
     		return link;
     	}
 	}
 	
+	// Creates *only* TOPO links
 	@Override
 	public OrcaLink create(String nm, long bw) {
 		String dispName = nm;
@@ -88,8 +128,16 @@ public class OrcaLinkCreator implements ILinkCreator {
 		return link;
 	}
 	
+	// reset counters for all types
 	public void reset() {
-		linkCount = 0;
+		for(OrcaLinkType olt: OrcaLinkType.values()) {
+			olt.resetCount();
+		}
+	}
+	
+	// reset counter for specific type
+	public void reset(OrcaLinkType olt) {
+		olt.resetCount();
 	}
 	
     public long getDefaultLatency() {

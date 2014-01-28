@@ -36,14 +36,18 @@ import java.util.Set;
 
 import orca.flukes.GUI;
 import orca.flukes.GUIRequestState;
+import orca.flukes.OrcaColor;
+import orca.flukes.OrcaColorLink;
 import orca.flukes.OrcaCrossconnect;
 import orca.flukes.OrcaImage;
 import orca.flukes.OrcaLink;
 import orca.flukes.OrcaNode;
 import orca.flukes.OrcaNodeGroup;
 import orca.flukes.OrcaReservationTerm;
+import orca.flukes.OrcaResource;
 import orca.flukes.OrcaStitchPort;
 import orca.flukes.OrcaStorageNode;
+import orca.ndl.INdlColorRequestListener;
 import orca.ndl.INdlRequestModelListener;
 import orca.ndl.NdlCommons;
 import orca.ndl.NdlRequestParser;
@@ -58,12 +62,12 @@ import com.hyperrealm.kiwi.ui.dialog.ExceptionDialog;
 import edu.uci.ics.jung.graph.util.EdgeType;
 import edu.uci.ics.jung.graph.util.Pair;
 
-public class RequestLoader implements INdlRequestModelListener {
+public class RequestLoader implements INdlRequestModelListener, INdlColorRequestListener {
 
 	private OrcaReservationTerm term = new OrcaReservationTerm();
 	private String reservationDomain = null;
 	private Map<String, OrcaNode> nodes = new HashMap<String, OrcaNode>();
-	private Map<String, Object> links = new HashMap<String, Object>();
+	private Map<String, OrcaResource> links = new HashMap<String, OrcaResource>();
 	private Map<String, OrcaNode> interfaceToNode = new HashMap<String, OrcaNode>();
 
 	/**
@@ -88,6 +92,7 @@ public class RequestLoader implements INdlRequestModelListener {
 			bin.close();
 			
 			NdlRequestParser nrp = new NdlRequestParser(sb.toString(), this);
+			nrp.addColorListener(this);
 			GUI.logger().debug("Parsing request");
 			nrp.processRequest();
 			
@@ -105,7 +110,7 @@ public class RequestLoader implements INdlRequestModelListener {
 	}
 	
 	/**
-	 * Load from string
+	 * Load from model contained in a string
 	 * @param f
 	 * @return
 	 */
@@ -428,5 +433,62 @@ public class RequestLoader implements INdlRequestModelListener {
 			}
 		}
 		links.put(bl.getURI(), oc);
+	}
+
+	@Override
+	public void ndlResourceColor(Resource ne, Resource color, String label) {
+		//System.out.println("Found color resource " + color + ":" + label + " on network element " + ne);
+		
+		//System.out.println(NdlCommons.getColorBlob(color));
+		//System.out.println(NdlCommons.getColorBlobXML(color, true));
+		//System.out.println(NdlCommons.getColorKeys(color));
+		
+		// find the resource
+		OrcaResource or = null;
+		
+		if (nodes.get(ne.getURI()) != null)
+			or = nodes.get(ne.getURI());
+		else if (links.get(ne.getURI()) != null)
+			or = links.get(ne.getURI());
+			
+		OrcaColor oc = new OrcaColor(label);
+		oc.addKeys(NdlCommons.getColorKeys(color));
+		if (NdlCommons.getColorBlob(color) != null)
+			oc.setBlob(NdlCommons.getColorBlob(color));
+		else { 
+			oc.setBlob(NdlCommons.getColorBlobXML(color, true));
+			oc.setXMLBlobState(true);
+		}
+		
+		if (or != null)
+			or.addColor(oc);
+	}
+
+	@Override
+	public void ndlColorDependency(Resource fromNe, Resource toNe, Resource color, String label) {
+		//System.out.println("Found color dependency from " + fromNe + " to " + toNe + " with color " + color + ":" + label);
+		
+		//System.out.println(NdlCommons.getColorBlob(color));
+		//System.out.println(NdlCommons.getColorBlobXML(color, true));
+		//System.out.println(NdlCommons.getColorKeys(color));
+		
+		OrcaNode fromOr = null, toOr = null;
+		
+		fromOr = nodes.get(fromNe.getURI());
+		toOr = nodes.get(toNe.getURI());
+		
+		if ((fromOr == null) || (toOr == null))
+			return;
+		
+		OrcaColorLink ocl = new OrcaColorLink(label);
+		
+		ocl.getColor().addKeys(NdlCommons.getColorKeys(color));
+		if (NdlCommons.getColorBlob(color) != null)
+			ocl.getColor().setBlob(NdlCommons.getColorBlob(color));
+		else { 
+			ocl.getColor().setBlob(NdlCommons.getColorBlobXML(color, true));
+			ocl.getColor().setXMLBlobState(true);
+		}
+		GUIRequestState.getInstance().getGraph().addEdge(ocl, new Pair<OrcaNode>(fromOr, toOr), EdgeType.UNDIRECTED);
 	}
 }

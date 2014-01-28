@@ -40,13 +40,17 @@ import java.util.Set;
 import orca.flukes.GUI;
 import orca.flukes.GUIManifestState;
 import orca.flukes.GUIRequestState;
+import orca.flukes.OrcaColor;
+import orca.flukes.OrcaColorLink;
 import orca.flukes.OrcaCrossconnect;
 import orca.flukes.OrcaImage;
 import orca.flukes.OrcaLink;
 import orca.flukes.OrcaNode;
 import orca.flukes.OrcaNodeGroup;
+import orca.flukes.OrcaResource;
 import orca.flukes.OrcaStitchPort;
 import orca.flukes.OrcaStorageNode;
+import orca.ndl.INdlColorRequestListener;
 import orca.ndl.INdlManifestModelListener;
 import orca.ndl.INdlRequestModelListener;
 import orca.ndl.NdlCommons;
@@ -69,7 +73,7 @@ import edu.uci.ics.jung.graph.util.Pair;
  * @author ibaldin
  *
  */
-public class ManifestLoader implements INdlManifestModelListener, INdlRequestModelListener {
+public class ManifestLoader implements INdlManifestModelListener, INdlRequestModelListener , INdlColorRequestListener {
 
 	private Map<String, List<OrcaNode>> interfaceToNode = new HashMap<String, List<OrcaNode>>();
 	private Map<String, OrcaNode> nodes = new HashMap<String, OrcaNode>();
@@ -101,6 +105,7 @@ public class ManifestLoader implements INdlManifestModelListener, INdlRequestMod
 			// for now do less strict checking so we can get IP info
 			// 07/2012/ib
 			nrp.doLessStrictChecking();
+			nrp.addColorListener(this);
 			nrp.processRequest();
 			nrp.freeModel();
 			
@@ -624,6 +629,9 @@ public class ManifestLoader implements INdlManifestModelListener, INdlRequestMod
 		if (requestPhase)
 			return;
 		
+		// process colors
+		processColors();
+		
 		// nothing to do in this case
 		GUI.logger().debug("Parse complete.");
 	}
@@ -726,4 +734,99 @@ public class ManifestLoader implements INdlManifestModelListener, INdlRequestMod
 		
 	}
 
+	//
+	// Dealing with color - early
+	//
+	
+	private class NEColor {
+		Resource ne;
+		OrcaColor oc;
+		
+		NEColor(Resource n, OrcaColor o) {
+			ne = n;
+			oc = o;
+		}
+	}
+
+	private class ColorDependency {
+		Resource fromNe, toNe;
+		OrcaColorLink ocl;
+		
+		ColorDependency(Resource f, Resource t, OrcaColorLink o) {
+			fromNe = f;
+			toNe = t;
+			ocl = o;
+		}
+	}
+	
+	private List<NEColor> necolors = new ArrayList<NEColor>();
+	private List<ColorDependency> colorDependencies = new ArrayList<ColorDependency>();
+	
+	@Override
+	public void ndlResourceColor(Resource ne, Resource color, String label) {
+			
+		OrcaColor oc = new OrcaColor(label);
+		oc.addKeys(NdlCommons.getColorKeys(color));
+		if (NdlCommons.getColorBlob(color) != null)
+			oc.setBlob(NdlCommons.getColorBlob(color));
+		else { 
+			oc.setBlob(NdlCommons.getColorBlobXML(color, true));
+			oc.setXMLBlobState(true);
+		}
+
+		necolors.add(new NEColor(ne, oc));
+
+	}
+
+	@Override
+	public void ndlColorDependency(Resource fromNe, Resource toNe,
+			Resource color, String label) {
+		
+
+		
+		OrcaColorLink ocl = new OrcaColorLink(label);
+		
+		ocl.getColor().addKeys(NdlCommons.getColorKeys(color));
+		if (NdlCommons.getColorBlob(color) != null)
+			ocl.getColor().setBlob(NdlCommons.getColorBlob(color));
+		else { 
+			ocl.getColor().setBlob(NdlCommons.getColorBlobXML(color, true));
+			ocl.getColor().setXMLBlobState(true);
+		}
+	
+		colorDependencies.add(new ColorDependency(fromNe, toNe, ocl));
+
+	}
+	
+	/**
+	 * Re-add colors collected previously in request parse phase
+	 */
+	private void processColors() {
+		
+		// attach colors to network elements
+		for(NEColor nec: necolors) {
+			OrcaResource or = null;
+			if (nodes.get(getTrueName(nec.ne)) != null)
+				or = nodes.get(getTrueName(nec.ne));
+			else if (links.get(getTrueName(nec.ne)) != null)
+				or = links.get(getTrueName(nec.ne));
+			
+			if (or != null) {
+				or.addColor(nec.oc);
+			} 
+		}
+		
+		// add dependencies between elements
+		for(ColorDependency cd: colorDependencies) {
+			OrcaNode fromOr = null, toOr = null;
+			
+			fromOr = nodes.get(getTrueName(cd.fromNe));
+			toOr = nodes.get(getTrueName(cd.toNe));
+			
+			if ((fromOr == null) || (toOr == null)) {
+				return;
+			}
+			GUIManifestState.getInstance().getGraph().addEdge(cd.ocl, new Pair<OrcaNode>(fromOr, toOr), EdgeType.UNDIRECTED);
+		}
+	}
 }

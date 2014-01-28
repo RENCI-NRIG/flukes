@@ -36,31 +36,30 @@ public class ImageChooserDialog extends ChooserWithNewDialog<String> implements 
 		super(parent, "Images", "Defined Images", GUIRequestState.getInstance().getImageShortNamesIterator());
 		super.setLocationRelativeTo(parent);
 		setNewActionListener(this);
+		setEditActionListener(this);
 	}
 	
 	public void actionPerformed(ActionEvent e) {
-		OrcaImageDialog oid = new OrcaImageDialog(GUI.getInstance().getFrame());
-		oid.pack();
-		GUIRequestState.getInstance().addingNewImage = true;
-		oid.setVisible(true);
-	}
-	
-	@Override
-	protected boolean accept() {
-		GUIRequestState.getInstance().addingNewImage = false;
-		String st = getSelectedItem();
-		
-		// open image dialog with image details
-		if (st != null) {
+		if (e.getActionCommand().equals("new")) {
 			OrcaImageDialog oid = new OrcaImageDialog(GUI.getInstance().getFrame());
-			//oid.setFields(st, GUIRequestState.getInstance().definedImages.get(st).getUrl(), 
-			//		GUIRequestState.getInstance().definedImages.get(st).getHash());
-			oid.setImage(GUIRequestState.getInstance().getImageByName(st));
 			oid.pack();
+			GUIRequestState.getInstance().addingNewImage = true;
 			oid.setVisible(true);
+		} else if (e.getActionCommand().equals("edit")) {
+			GUIRequestState.getInstance().addingNewImage = false;
+			String st = getSelectedItem();
+			
+			// open image dialog with image details
+			if (st != null) {
+				OrcaImageDialog oid = new OrcaImageDialog(GUI.getInstance().getFrame());
+				//oid.setFields(st, GUIRequestState.getInstance().definedImages.get(st).getUrl(), 
+				//		GUIRequestState.getInstance().definedImages.get(st).getHash());
+				oid.setImage(GUIRequestState.getInstance().getImageByName(st));
+				oid.pack();
+				oid.setVisible(true);
+			}
 		}
-		
-		return true;
+		repaint();
 	}
 	
 	@Override

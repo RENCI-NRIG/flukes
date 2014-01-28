@@ -346,11 +346,11 @@ public class GUIManifestState extends GUICommonState implements IDeleteEdgeCallB
 		Layout<OrcaNode, OrcaLink> layout = new FRLayout<OrcaNode, OrcaLink>(g);
 		
 		//layout.setSize(new Dimension(1000,800));
-		vv = 
-			new VisualizationViewer<OrcaNode,OrcaLink>(layout);
+		vv = new VisualizationViewer<OrcaNode,OrcaLink>(layout);
 		// Show vertex and edge labels
 		vv.getRenderContext().setVertexLabelTransformer(new ToStringLabeller<OrcaNode>());
 		vv.getRenderContext().setEdgeLabelTransformer(new ToStringLabeller<OrcaLink>());
+		vv.getRenderContext().setEdgeDrawPaintTransformer(new GUICommonState.LinkPaint());
 		
 		// Create a graph mouse and add it to the visualization viewer
 		OrcaNode.OrcaNodeFactory onf = new OrcaNode.OrcaNodeFactory(nodeCreator);
@@ -359,12 +359,13 @@ public class GUIManifestState extends GUICommonState implements IDeleteEdgeCallB
 				onf, olf);
 		
 		// add the plugin
-		PopupVertexEdgeMenuMousePlugin<OrcaNode, OrcaLink> myPlugin = new PopupVertexEdgeMenuMousePlugin<OrcaNode, OrcaLink>();
+		//PopupVertexEdgeMenuMousePlugin<OrcaNode, OrcaLink> myPlugin = new PopupVertexEdgeMenuMousePlugin<OrcaNode, OrcaLink>();
+		PopupMultiVertexEdgeMenuMousePlugin myPlugin = new PopupMultiVertexEdgeMenuMousePlugin();
 		
 		// Add some popup menus for the edges and vertices to our mouse plugin.
 		// mode menu is not set for manifests
-		myPlugin.setEdgePopup(new MouseMenus.ManifestEdgeMenu());
-		myPlugin.setVertexPopup(new MouseMenus.ManifestNodeMenu());
+		//myPlugin.setEdgePopup(new MouseMenus.ManifestEdgeMenu());
+		//myPlugin.setVertexPopup(new MouseMenus.ManifestNodeMenu());
 		
 		gm.remove(gm.getPopupEditingPlugin());  // Removes the existing popup editing plugin
 		gm.add(myPlugin);

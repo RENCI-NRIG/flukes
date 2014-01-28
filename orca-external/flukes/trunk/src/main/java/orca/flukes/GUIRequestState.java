@@ -492,6 +492,12 @@ public class GUIRequestState extends GUICommonState implements IDeleteEdgeCallBa
 				nodeCreator.setCurrent(OrcaNodeEnum.STITCHPORT);
 			} else if (e.getActionCommand().equals("storage")) {
 				nodeCreator.setCurrent(OrcaNodeEnum.STORAGE);
+			} else if (e.getActionCommand().equals("links")) {
+				linkCreator.setLinkType(OrcaLinkCreator.OrcaLinkType.TOPO);
+			} else if (e.getActionCommand().equals("topo")) {
+				linkCreator.setLinkType(OrcaLinkCreator.OrcaLinkType.TOPO);
+			} else if (e.getActionCommand().equals("color")) {
+				linkCreator.setLinkType(OrcaLinkCreator.OrcaLinkType.COLOR);
 			} else if (e.getActionCommand().equals("autoip")) {
 				if (!autoAssignIPAddresses()) {
 					KMessageDialog kmd = new KMessageDialog(GUI.getInstance().getFrame());
@@ -615,6 +621,7 @@ public class GUIRequestState extends GUICommonState implements IDeleteEdgeCallBa
 		// Show vertex and edge labels
 		vv.getRenderContext().setVertexLabelTransformer(new ToStringLabeller<OrcaNode>());
 		vv.getRenderContext().setEdgeLabelTransformer(new ToStringLabeller<OrcaLink>());
+		vv.getRenderContext().setEdgeDrawPaintTransformer(new GUICommonState.LinkPaint());
 		
 		// Create a graph mouse and add it to the visualization viewer
 		OrcaNode.OrcaNodeFactory onf = new OrcaNode.OrcaNodeFactory(nodeCreator);
@@ -627,11 +634,13 @@ public class GUIRequestState extends GUICommonState implements IDeleteEdgeCallBa
 				onf, olf);
 
 		// add the plugin
-		PopupVertexEdgeMenuMousePlugin<OrcaNode, OrcaLink> myPlugin = new PopupVertexEdgeMenuMousePlugin<OrcaNode, OrcaLink>();
+		//PopupVertexEdgeMenuMousePlugin<OrcaNode, OrcaLink> myPlugin = new PopupVertexEdgeMenuMousePlugin<OrcaNode, OrcaLink>();
+		PopupMultiVertexEdgeMenuMousePlugin myPlugin = new PopupMultiVertexEdgeMenuMousePlugin();
+		
 		
 		// Add some popup menus for the edges and vertices to our mouse plugin.
-		myPlugin.setEdgePopup(new MouseMenus.RequestEdgeMenu());
-		myPlugin.setVertexPopup(new MouseMenus.RequestNodeMenu());
+		//myPlugin.setEdgePopup(new MouseMenus.RequestEdgeMenu());
+		//myPlugin.setVertexPopup(new MouseMenus.RequestNodeMenu());
 		myPlugin.setModePopup(new MouseMenus.ModeMenu());
 		gm.remove(gm.getPopupEditingPlugin());  // Removes the existing popup editing plugin
 		gm.add(myPlugin);

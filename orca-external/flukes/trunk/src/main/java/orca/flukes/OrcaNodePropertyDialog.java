@@ -39,6 +39,7 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JScrollPane;
+import javax.swing.ListModel;
 import javax.swing.ListSelectionModel;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.event.ListSelectionEvent;
@@ -83,7 +84,7 @@ public class OrcaNodePropertyDialog extends ComponentDialog implements ActionLis
 	private NumericField ns;
 	private HashMap<OrcaLink, IpAddrField> ipFields;
 
-	int ycoord;
+	protected int ycoord;
 	// we're doing a closure AbstractAction for checkbox and it needs access to 'this'
 	// without calling it 'this'
 	private ComponentDialog dialog;
@@ -314,6 +315,8 @@ public class OrcaNodePropertyDialog extends ComponentDialog implements ActionLis
 			return;
 		}
 		for (OrcaLink e: nodeEdges) {
+			if (e instanceof OrcaColorLink)
+				continue;
 			if (e.linkToSharedStorage())
 				continue;
 			{
@@ -452,6 +455,38 @@ public class OrcaNodePropertyDialog extends ComponentDialog implements ActionLis
 	}
 
 	public static JList addSelectList(KPanel kp, GridBagLayout l, int starty, String[] options, String label, boolean multi, int rows) {
+		JList il;
+		{
+			JLabel lblNewLabel_1 = new JLabel(label);
+			GridBagConstraints gbc_lblNewLabel_1 = new GridBagConstraints();
+			gbc_lblNewLabel_1.anchor = GridBagConstraints.WEST;
+			gbc_lblNewLabel_1.insets = new Insets(0, 0, 5, 5);
+			gbc_lblNewLabel_1.gridx = 0;
+			gbc_lblNewLabel_1.gridy = starty;
+			kp.add(lblNewLabel_1, gbc_lblNewLabel_1);
+		}
+		{
+			il = new JList(options);
+			if (multi)
+				il.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
+			else
+				il.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+			il.setLayoutOrientation(JList.VERTICAL);
+			il.setVisibleRowCount(rows);
+			JScrollPane scrollPane = new JScrollPane(il);
+			scrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
+			scrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+			GridBagConstraints gbc_list = new GridBagConstraints();
+			gbc_list.insets = new Insets(0, 0, 5, 5);
+			gbc_list.fill = GridBagConstraints.HORIZONTAL;
+			gbc_list.gridx = 1;
+			gbc_list.gridy = starty;
+			kp.add(scrollPane, gbc_list);
+		}
+		return il;
+	}
+	
+	public static JList addSelectList(KPanel kp, GridBagLayout l, int starty, ListModel options, String label, boolean multi, int rows) {
 		JList il;
 		{
 			JLabel lblNewLabel_1 = new JLabel(label);
