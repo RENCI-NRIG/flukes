@@ -33,7 +33,7 @@ public class OrcaLinkCreator implements ILinkCreator {
     private long defaultLatency = 50;
     private final SparseMultigraph<OrcaNode, OrcaLink> g;
     // by default links are topology
-    private OrcaLinkType currentLinkType = OrcaLinkType.COLOR;
+    private OrcaLinkType currentLinkType = OrcaLinkType.TOPO;
     
     public enum OrcaLinkType {
     	TOPO("Link"), COLOR("ColorLink");
