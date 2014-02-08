@@ -2,6 +2,7 @@ package orca.flukes.ndl;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import orca.ndl.INdlAbstractDelegationModelListener;
 import orca.ndl.elements.LabelSet;
@@ -19,8 +20,8 @@ public class AdLoader implements INdlAbstractDelegationModelListener {
 	
 	@Override
 	public void ndlNetworkDomain(Resource dom, OntModel m,
-			List<Resource> netServices, List<LabelSet> labelSets,
-			List<Resource> interfaces) {
+			List<Resource> netServices, List<Resource> interfaces,
+			List<LabelSet> labelSets, Map<Resource, List<LabelSet>> netLabelSets) {
 		domains.add(dom.toString());
 	}
 
