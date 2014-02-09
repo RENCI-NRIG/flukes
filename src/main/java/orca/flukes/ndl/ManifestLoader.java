@@ -37,6 +37,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import java.awt.GraphicsEnvironment;
 import java.awt.HeadlessException;
 
 import orca.flukes.GUI;
@@ -151,19 +152,17 @@ public class ManifestLoader implements INdlManifestModelListener, INdlRequestMod
 			requestPhase = false;
 			NdlManifestParser nmp = new NdlManifestParser(s, this);
 			nmp.processManifest();	
-			nmp.freeModel();			
-			GUIManifestState.getInstance().setManifestTerm(creationTime, expirationTime);
-			GUIManifestState.getInstance().launchResourceStateViewer(creationTime, expirationTime);
-			
+			nmp.freeModel();
+
+			if (GraphicsEnvironment.isHeadless())
+				GUIManifestState.getInstance().printResourceState(creationTime, expirationTime);
+			else
+				GUIManifestState.getInstance().launchResourceStateViewer(creationTime, expirationTime);
 		} catch (Exception e) {
-			try {
-				ExceptionDialog ed = new ExceptionDialog(GUI.getInstance().getFrame(), "Exception");
-				ed.setLocationRelativeTo(GUI.getInstance().getFrame());
-				ed.setException("Exception encountered while parsing manifest(m): ", e);
-				ed.setVisible(true);
-			} catch (HeadlessException hle) {
-				e.printStackTrace();
-			}
+			ExceptionDialog ed = new ExceptionDialog(GUI.getInstance().getFrame(), "Exception");
+			ed.setLocationRelativeTo(GUI.getInstance().getFrame());
+			ed.setException("Exception encountered while parsing manifest(m): ", e);
+			ed.setVisible(true);
 			return false;
 		} 
 		return true;
