@@ -154,10 +154,14 @@ public class ManifestLoader implements INdlManifestModelListener, INdlRequestMod
 			GUIManifestState.getInstance().launchResourceStateViewer(creationTime, expirationTime);
 			
 		} catch (Exception e) {
-			ExceptionDialog ed = new ExceptionDialog(GUI.getInstance().getFrame(), "Exception");
-			ed.setLocationRelativeTo(GUI.getInstance().getFrame());
-			ed.setException("Exception encountered while parsing manifest(m): ", e);
-			ed.setVisible(true);
+			try {
+				ExceptionDialog ed = new ExceptionDialog(GUI.getInstance().getFrame(), "Exception");
+				ed.setLocationRelativeTo(GUI.getInstance().getFrame());
+				ed.setException("Exception encountered while parsing manifest(m): ", e);
+				ed.setVisible(true);
+			} catch (HeadlessException hle) {
+				e.printStackTrace();
+			}
 			return false;
 		} 
 		return true;
