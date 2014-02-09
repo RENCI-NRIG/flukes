@@ -14,6 +14,7 @@ public class TestColorExtension {
 	
 @Test
 public void readColorRequest() throws IOException {
+	System.setProperty("java.awt.headless", "true");
 	InputStream is = this.getClass().getResourceAsStream("/test-color-extension.rdf");
 	assert(is != null);
 	String t = new Scanner(is).useDelimiter("\\A").next();
@@ -23,6 +24,7 @@ public void readColorRequest() throws IOException {
 
 @Test
 public void readColorManifest() throws IOException {
+	System.setProperty("java.awt.headless", "true");
 	InputStream is = this.getClass().getResourceAsStream("/test-color-extension-manifest.rdf");
 	assert(is != null);
 	String t = new Scanner(is).useDelimiter("\\A").next();
