@@ -37,6 +37,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import java.awt.HeadlessException;
+
 import orca.flukes.GUI;
 import orca.flukes.GUIManifestState;
 import orca.flukes.GUIRequestState;
