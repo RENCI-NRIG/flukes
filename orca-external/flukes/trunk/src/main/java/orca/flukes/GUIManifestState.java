@@ -333,6 +333,42 @@ public class GUIManifestState extends GUICommonState implements IDeleteEdgeCallB
 		viewer.pack();
 		viewer.setVisible(true);
 	}
+
+	public void printResourceState(Date start, Date end) {
+		// get a list of nodes and links
+		List<OrcaResource> resources = new ArrayList<OrcaResource>();
+		
+		resources.addAll(g.getVertices());
+		resources.addAll(g.getEdges());
+
+		System.out.println("Printing resource state:");
+		for (OrcaResource r : resources) {
+			String resourceInfo =
+				"Name: " + r.getName() + ", " +
+				"IsResource: " + Boolean.toString(r.isResource()) + ", " +
+				"State: " + r.getState() + "\n";
+
+			resourceInfo += "ResNotice: ";
+			String resNotice = r.getReservationNotice();
+			if (resNotice != null)
+				resourceInfo += resNotice; // Contains "\n" on end.
+			else
+				resourceInfo += "None\n";
+
+			resourceInfo +=	"Colors: ";
+			List<OrcaColor> colors = r.getColors();
+			if (colors.size() > 0) {
+				resourceInfo += "|";
+				for (OrcaColor c : colors) {
+					resourceInfo += c.getLabel() + "|";
+				}
+			}
+			else {
+				resourceInfo += "None";
+			}
+			System.out.println(resourceInfo);
+                }
+	}
 	
 	ResourceButtonListener rbl = new ResourceButtonListener();
 	@Override
