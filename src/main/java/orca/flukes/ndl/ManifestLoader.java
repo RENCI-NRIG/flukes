@@ -163,8 +163,9 @@ public class ManifestLoader implements INdlManifestModelListener, INdlRequestMod
 				ed.setVisible(true);
 			} catch (HeadlessException hle) {
 				e.printStackTrace();
+			} finally {
+				return false;
 			}
-			return false;
 		} 
 		return true;
 	}
