@@ -153,6 +153,9 @@ public class ManifestLoader implements INdlManifestModelListener, INdlRequestMod
 			NdlManifestParser nmp = new NdlManifestParser(s, this);
 			nmp.processManifest();	
 			nmp.freeModel();
+			
+			GUIManifestState.getInstance().setManifestString(s);
+			GUIManifestState.getInstance().setManifestTerm(creationTime, expirationTime);
 
 			if (GraphicsEnvironment.isHeadless())
 				GUIManifestState.getInstance().printResourceState(creationTime, expirationTime);

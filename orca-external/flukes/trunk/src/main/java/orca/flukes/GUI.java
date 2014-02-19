@@ -756,6 +756,61 @@ public class GUI implements ComponentListener {
 		splitLinkButton.hideMenu();
 	}
 	
+	public enum Buttons {
+		// 
+		query("Query Registry", "Query Actor Registry"),
+		// requests
+		nodes("Add Nodes", "Add new nodes"),
+		links("Link Types", "Choose link type"),
+		images("Compute Images", "Add or edit compute images"),
+		autoip("Auto IP", "Auto-assign IP addresses"),
+		reservation("Reservation Details", "Edit reservation details"),
+		submit("Submit", "Submit request to selected ORCA controller"),
+		//manifests
+		listSlices("My Slices", "Query ORCA for list of slices with active reservations"),
+		manifest("Query for Manifest", "Query ORCA for slice manifest"),
+		raw("Raw Response", "View raw controller response"),
+		extend("Extend Reservation", "Extend the end date of the reservation"),
+		modify("Commit Modify Actions", "Commit modify slice actions"),
+		clearModify("Clear Modify Actions", "Clear modify slice actions"),
+		delete("Delete Slice", "Delete this slice");
+		
+		private String name, tooltip;
+		Buttons(String name, String tooltip) {
+			this.name = name;
+			this.tooltip = tooltip;
+		}
+		
+		public String getButton() {
+			return name;
+		}
+		
+		public String getToolTip() {
+			return tooltip;
+		}
+		
+		public String getCommand() {
+			return name();
+		}
+	}
+	
+	/**
+	 * Create a button, add to toolbar and attach a listener
+	 * @param b
+	 * @param tb
+	 * @param a
+	 * @return
+	 */
+	private JButton createButton(Buttons b, JToolBar tb, ActionListener a) {
+		JButton bb = new JButton(b.getButton());
+		bb.setToolTipText(b.getToolTip());
+		bb.setActionCommand(b.getCommand());
+		bb.addActionListener(a);
+		bb.setVerticalAlignment(SwingConstants.TOP);
+		tb.add(bb);
+		return bb;
+	}
+	
 	/**
 	 * Initialize the contents of the frame.
 	 */
@@ -797,12 +852,7 @@ public class GUI implements ComponentListener {
 			// add buttons to resource pane toolbar
 			ActionListener rbl = GUIResourceState.getInstance().getActionListener();
 			
-			JButton queryButton = new JButton("Query Registry");
-			queryButton.setToolTipText("Query Actor Registry");
-			queryButton.setActionCommand("query");
-			queryButton.addActionListener(rbl);
-			queryButton.setVerticalAlignment(SwingConstants.TOP);
-			toolBar.add(queryButton);
+			JButton queryButton = createButton(Buttons.query, toolBar, rbl);
 		}
 		
 		//
@@ -819,12 +869,7 @@ public class GUI implements ComponentListener {
 			// add buttons to request pane toolbar
 			ActionListener rbl = GUIRequestState.getInstance().getActionListener();
 			
-			JButton nodeButton = new JButton("Add Nodes");
-			nodeButton.setToolTipText("Add new nodes");
-			nodeButton.setActionCommand("nodes");
-			nodeButton.addActionListener(rbl);
-			nodeButton.setVerticalAlignment(SwingConstants.TOP);
-			toolBar.add(nodeButton);
+			JButton nodeButton = createButton(Buttons.nodes, toolBar, rbl);
 			
 			Component horizontalStrut = Box.createHorizontalStrut(10);
 			toolBar.add(horizontalStrut);
@@ -840,55 +885,10 @@ public class GUI implements ComponentListener {
 		    splitNodeButton.setMenu(nodeMenu);
 			toolBar.add(splitNodeButton);
 			
-			/*
-			JButton nodeGroupButton = new JButton("Add Node Groups");
-			nodeGroupButton.setToolTipText("Add new node groups");
-			nodeGroupButton.setActionCommand("nodegroups");
-			nodeGroupButton.addActionListener(rbl);
-			nodeGroupButton.setVerticalAlignment(SwingConstants.TOP);
-			toolBar.add(nodeGroupButton);
-			
 			horizontalStrut = Box.createHorizontalStrut(10);
 			toolBar.add(horizontalStrut);
 			
-			JButton bcastLinkButton = new JButton("Add Broadcast Links");
-			bcastLinkButton.setToolTipText("Add new broadcast links");
-			bcastLinkButton.setActionCommand("bcastlinks");
-			bcastLinkButton.addActionListener(rbl);
-			bcastLinkButton.setVerticalAlignment(SwingConstants.TOP);
-			toolBar.add(bcastLinkButton);
-			
-			horizontalStrut = Box.createHorizontalStrut(10);
-			toolBar.add(horizontalStrut);
-			
-			JButton storageButton = new JButton("Add Storage");
-			storageButton.setToolTipText("Add new storage node");
-			storageButton.setActionCommand("storage");
-			storageButton.addActionListener(rbl);
-			storageButton.setVerticalAlignment(SwingConstants.TOP);
-			toolBar.add(storageButton);
-			
-			horizontalStrut = Box.createHorizontalStrut(10);
-			toolBar.add(horizontalStrut);
-			
-			JButton stitchPortButton = new JButton("Add Stitch Port");
-			stitchPortButton.setToolTipText("Add new stitch port");
-			stitchPortButton.setActionCommand("stitchport");
-			stitchPortButton.addActionListener(rbl);
-			stitchPortButton.setVerticalAlignment(SwingConstants.TOP);
-			toolBar.add(stitchPortButton);
-			
-			*/
-			
-			horizontalStrut = Box.createHorizontalStrut(10);
-			toolBar.add(horizontalStrut);
-			
-			JButton linkButton = new JButton("Link Type");
-			linkButton.setToolTipText("Choose linnk type");
-			linkButton.setActionCommand("links");
-			linkButton.addActionListener(rbl);
-			linkButton.setVerticalAlignment(SwingConstants.TOP);
-			toolBar.add(linkButton);
+			JButton linkButton = createButton(Buttons.links, toolBar, rbl);
 			
 			//first instantiate the control
 			splitLinkButton = new SplitButton(linkButton, SwingConstants.SOUTH);
@@ -901,39 +901,22 @@ public class GUI implements ComponentListener {
 			horizontalStrut = Box.createHorizontalStrut(10);
 			toolBar.add(horizontalStrut);
 			
-			JButton imageButton = new JButton("Client Images");
-			imageButton.setToolTipText("Add or edit VM images");
-			imageButton.setActionCommand("images");
-			imageButton.addActionListener(rbl);
-			toolBar.add(imageButton);
+			JButton imageButton = createButton(Buttons.images, toolBar, rbl);
 			
 			horizontalStrut = Box.createHorizontalStrut(10);
 			toolBar.add(horizontalStrut);
 
-			JButton autoipButton = new JButton("Auto IP");
-			autoipButton.setToolTipText("Auto-assign IP addresses");
-			autoipButton.setActionCommand("autoip");
-			autoipButton.addActionListener(rbl);
-			toolBar.add(autoipButton);
+			JButton autoipButton = createButton(Buttons.autoip, toolBar, rbl);
 
 			horizontalStrut = Box.createHorizontalStrut(10);
 			toolBar.add(horizontalStrut);
 			
-			JButton reservationButton = new JButton("Reservation Details");
-			reservationButton.setToolTipText("Edit reservation details");
-			reservationButton.setActionCommand("reservation");
-			reservationButton.addActionListener(rbl);
-			toolBar.add(reservationButton);
+			JButton reservationButton = createButton(Buttons.reservation, toolBar, rbl);
 			
 			horizontalStrut = Box.createHorizontalStrut(10);
 			toolBar.add(horizontalStrut);
 			
-			JButton submitButton = new JButton("Submit Request");
-			submitButton.setToolTipText("Submit request to ORCA controller");
-			submitButton.setActionCommand("submit");
-			submitButton.addActionListener(rbl);
-			submitButton.setVerticalAlignment(SwingConstants.TOP);
-			toolBar.add(submitButton);
+			JButton submitButton = createButton(Buttons.submit, toolBar, rbl);
 			
 			horizontalStrut = Box.createHorizontalStrut(10);
 			toolBar.add(horizontalStrut);
@@ -958,22 +941,12 @@ public class GUI implements ComponentListener {
 			// add buttons to resource pane toolbar
 			ActionListener rbl = GUIManifestState.getInstance().getActionListener();
 			
-			JButton listSlicesButton = new JButton("My Slices");
-			listSlicesButton.setToolTipText("Query ORCA for list of slices with active reservations");
-			listSlicesButton.setActionCommand("listSlices");
-			listSlicesButton.addActionListener(rbl);
-			listSlicesButton.setVerticalAlignment(SwingConstants.TOP);
-			toolBar.add(listSlicesButton);
+			JButton listSlicesButton = createButton(Buttons.listSlices, toolBar, rbl);
 			
 			Component horizontalStrut = Box.createHorizontalStrut(10);
 			toolBar.add(horizontalStrut);
 			
-			JButton queryButton = new JButton("Query for Manifest");
-			queryButton.setToolTipText("Query ORCA for slice manifest");
-			queryButton.setActionCommand("manifest");
-			queryButton.addActionListener(rbl);
-			queryButton.setVerticalAlignment(SwingConstants.TOP);
-			toolBar.add(queryButton);
+			JButton queryButton = createButton(Buttons.manifest, toolBar, rbl);
 			
 			horizontalStrut = Box.createHorizontalStrut(10);
 			toolBar.add(horizontalStrut);
@@ -988,55 +961,30 @@ public class GUI implements ComponentListener {
 			horizontalStrut = Box.createHorizontalStrut(10);
 			toolBar.add(horizontalStrut);
 			
-			JButton rawButton = new JButton("View Raw Response");
-			rawButton.setToolTipText("View raw controller response");
-			rawButton.setActionCommand("raw");
-			rawButton.addActionListener(rbl);
-			rawButton.setVerticalAlignment(SwingConstants.TOP);
-			toolBar.add(rawButton);
+			JButton rawButton = createButton(Buttons.raw, toolBar, rbl);
 			
 			horizontalStrut = Box.createHorizontalStrut(10);
 			toolBar.add(horizontalStrut);
 
-			JButton extendButton = new JButton("Extend Reservation");
-			extendButton.setToolTipText("Extend the end date of the reservation");
-			extendButton.setActionCommand("extend");
-			extendButton.addActionListener(rbl);
-			extendButton.setVerticalAlignment(SwingConstants.TOP);
-			toolBar.add(extendButton);
+			JButton extendButton = createButton(Buttons.extend, toolBar, rbl);
 
 			horizontalStrut = Box.createHorizontalStrut(10);
 			toolBar.add(horizontalStrut);
 
 			if (getPreference(PrefsEnum.ENABLE_MODIFY).equalsIgnoreCase("true") ||
 					getPreference(PrefsEnum.ENABLE_MODIFY).equalsIgnoreCase("yes")) {
-				JButton modifyButton = new JButton("Commit Modify Actions");
-				modifyButton.setToolTipText("Commit modify slice actions");
-				modifyButton.setActionCommand("modify");
-				modifyButton.addActionListener(rbl);
-				modifyButton.setVerticalAlignment(SwingConstants.TOP);
-				toolBar.add(modifyButton);
+				JButton modifyButton = createButton(Buttons.modify, toolBar, rbl);
 
 				horizontalStrut = Box.createHorizontalStrut(10);
 				toolBar.add(horizontalStrut);
 
-				JButton modifyClearButton = new JButton("Clear Modify Actions");
-				modifyClearButton.setToolTipText("Clear modify slice actions");
-				modifyClearButton.setActionCommand("clearModify");
-				modifyClearButton.addActionListener(rbl);
-				modifyClearButton.setVerticalAlignment(SwingConstants.TOP);
-				toolBar.add(modifyClearButton);
+				JButton modifyClearButton = createButton(Buttons.clearModify, toolBar, rbl);
 
 				horizontalStrut = Box.createHorizontalStrut(10);
 				toolBar.add(horizontalStrut);
 			}
 			
-			JButton deleteButton = new JButton("Delete slice");
-			deleteButton.setToolTipText("Delete slice");
-			deleteButton.setActionCommand("delete");
-			deleteButton.addActionListener(rbl);
-			deleteButton.setVerticalAlignment(SwingConstants.TOP);
-			toolBar.add(deleteButton);
+			JButton deleteButton = createButton(Buttons.delete, toolBar, rbl);
 
 		} 
 		
@@ -1141,6 +1089,9 @@ public class GUI implements ComponentListener {
 		ENABLE_MODIFY("enable.modify", "false", "Enable experimental support for slice modify operations (at your own risk!)"),
 		ENABLE_IRODS("enable.irods", "false", "Enable experimental support for iRods (at your own risk!)"),
 		AUTOIP_MASK("autoip.mask", "25", "Length of netmask (in bits) to use when assigning IP addresses to groups and broadcast links (simple point-to-point links always use 30 bit masks)"),
+		ENABLE_GENISA("enable.genisa", "false", "Enable support for GENI Slice Authority"),
+		GENISA_URL("genisa.url", "https://ch.geni.net/SA", "URL of the GENI Slice Authority (defaults to GENI Portal SA)"),
+		GENISA_PROJECT("genisa.project.urn", "urn:publicid:IDN+ch.geni.net+project+SomeProject", "URN of a project you want this slice to belong to on SA (must be valid on this SA)"),
 		IRODS_FORMAT("irods.format", "ndl", "Specify the format in which requests and manifests should be saved to iRods ('ndl' or 'rspec')"),
 		IRODS_MANIFEST_TEMPLATE("irods.manifest.template", "${slice.name}/manifest-${date}.${irods.format}", 
 				"Specify the format for manifest file names (substitutions are performed, multiple directory levels are respected)"),
@@ -1183,7 +1134,7 @@ public class GUI implements ComponentListener {
 	/**
 	 * Read and process preferences file
 	 */
-	private void processPreferences() {
+	 void processPreferences() {
 		try {
 			File prefs = new File(System.getProperty("user.home"), PREF_FILE);
 			FileInputStream is = new FileInputStream(prefs);
@@ -1298,6 +1249,10 @@ public class GUI implements ComponentListener {
 	
 	public String getSelectedController() {
 		return selectedControllerUrl;
+	}
+	
+	public void setSelectedController(String url) {
+		selectedControllerUrl = url;
 	}
 	
 	private void getIRodsPreferences() {

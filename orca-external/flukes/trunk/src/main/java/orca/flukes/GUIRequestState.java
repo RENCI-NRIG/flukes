@@ -45,6 +45,7 @@ import orca.flukes.ndl.RequestSaver;
 import orca.flukes.ui.ChooserWithNewDialog;
 import orca.flukes.ui.TextAreaDialog;
 import orca.flukes.util.IP4Assign;
+import orca.flukes.xmlrpc.GENICHXMLRPCProxy;
 import orca.flukes.xmlrpc.NDLConverter;
 import orca.flukes.xmlrpc.OrcaSMXMLRPCProxy;
 import orca.ndl.NdlAbstractDelegationParser;
@@ -472,17 +473,17 @@ public class GUIRequestState extends GUICommonState implements IDeleteEdgeCallBa
 	public class RequestButtonListener implements ActionListener {
 		public void actionPerformed(ActionEvent e) {
 			GUI.getInstance().hideNodeMenu();
-			if (e.getActionCommand().equals("images")) {
+			if (e.getActionCommand().equals(GUI.Buttons.images.getCommand())) {
 				icd = new ImageChooserDialog(GUI.getInstance().getFrame());
 				icd.pack();
 				icd.setVisible(true);
-			} else if (e.getActionCommand().equals("reservation")) {
+			} else if (e.getActionCommand().equals(GUI.Buttons.reservation.getCommand())) {
 				rdd = new ReservationDetailsDialog(GUI.getInstance().getFrame());
 				rdd.setFields(getDomainInReservation(),
 						getTerm(), ofNeededVersion);
 				rdd.pack();
 				rdd.setVisible(true);
-			} else if (e.getActionCommand().equals("nodes")) {
+			} else if (e.getActionCommand().equals(GUI.Buttons.nodes.getCommand())) {
 				nodeCreator.setCurrent(OrcaNodeEnum.CE);
 			} else if (e.getActionCommand().equals("nodegroups")) {
 				nodeCreator.setCurrent(OrcaNodeEnum.NODEGROUP);
@@ -492,20 +493,20 @@ public class GUIRequestState extends GUICommonState implements IDeleteEdgeCallBa
 				nodeCreator.setCurrent(OrcaNodeEnum.STITCHPORT);
 			} else if (e.getActionCommand().equals("storage")) {
 				nodeCreator.setCurrent(OrcaNodeEnum.STORAGE);
-			} else if (e.getActionCommand().equals("links")) {
+			} else if (e.getActionCommand().equals(GUI.Buttons.links.getCommand())) {
 				linkCreator.setLinkType(OrcaLinkCreator.OrcaLinkType.TOPO);
 			} else if (e.getActionCommand().equals("topo")) {
 				linkCreator.setLinkType(OrcaLinkCreator.OrcaLinkType.TOPO);
 			} else if (e.getActionCommand().equals("color")) {
 				linkCreator.setLinkType(OrcaLinkCreator.OrcaLinkType.COLOR);
-			} else if (e.getActionCommand().equals("autoip")) {
+			} else if (e.getActionCommand().equals(GUI.Buttons.autoip.getCommand())) {
 				if (!autoAssignIPAddresses()) {
 					KMessageDialog kmd = new KMessageDialog(GUI.getInstance().getFrame());
 					kmd.setMessage("Unable auto-assign IP addresses.");
 					kmd.setLocationRelativeTo(GUI.getInstance().getFrame());
 					kmd.setVisible(true);
 				}
-			} else if (e.getActionCommand().equals("submit")) {
+			} else if (e.getActionCommand().equals(GUI.Buttons.submit.getCommand())) {
 				if ((sliceIdField.getText() == null) || 
 						(sliceIdField.getText().length() == 0)) {
 					KMessageDialog kmd = new KMessageDialog(GUI.getInstance().getFrame());
@@ -524,15 +525,33 @@ public class GUIRequestState extends GUICommonState implements IDeleteEdgeCallBa
 					return;
 				}
 				try {
-					String status = OrcaSMXMLRPCProxy.getInstance().createSlice(sliceIdField.getText(), ndl);
-					TextAreaDialog tad = new TextAreaDialog(GUI.getInstance().getFrame(), "ORCA Response", 
-							"ORCA Controller response", 
-							25, 50);
-					KTextArea ta = tad.getTextArea();
-					
-					ta.setText(status);
-					tad.pack();
-			        tad.setVisible(true);
+					// add slice to the SA
+					String sliceUrn = sliceIdField.getText();
+					boolean saError = false;
+					if (GUI.getInstance().getPreference(GUI.PrefsEnum.ENABLE_GENISA).equalsIgnoreCase("true") ||
+							GUI.getInstance().getPreference(GUI.PrefsEnum.ENABLE_GENISA).equalsIgnoreCase("yes")) {
+						try {
+							sliceUrn = GENICHXMLRPCProxy.getInstance().saCreateSlice(sliceUrn, 
+								GUI.getInstance().getPreference(GUI.PrefsEnum.GENISA_PROJECT));	
+						} catch (Exception ee) {
+							ExceptionDialog ed = new ExceptionDialog(GUI.getInstance().getFrame(), "Exception");
+							ed.setLocationRelativeTo(GUI.getInstance().getFrame());
+							ed.setException("Exception encountered while communicating with SA: ", ee);
+							ed.setVisible(true);
+							saError = true;
+						}
+					}
+					if (!saError) {
+						String status = OrcaSMXMLRPCProxy.getInstance().createSlice(sliceUrn, ndl);
+						TextAreaDialog tad = new TextAreaDialog(GUI.getInstance().getFrame(), "ORCA Response", 
+								"ORCA Controller response", 
+								25, 50);
+						KTextArea ta = tad.getTextArea();
+
+						ta.setText(status);
+						tad.pack();
+						tad.setVisible(true);
+					}
 				} catch (Exception ex) {
 					ExceptionDialog ed = new ExceptionDialog(GUI.getInstance().getFrame(), "Exception");
 					ed.setLocationRelativeTo(GUI.getInstance().getFrame());

@@ -26,11 +26,16 @@ import java.awt.BorderLayout;
 import java.awt.Container;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
+import java.util.TimeZone;
 
 import orca.flukes.GUI.GuiTabs;
 import orca.flukes.GUI.PrefsEnum;
@@ -39,6 +44,8 @@ import orca.flukes.irods.IRodsICommands;
 import orca.flukes.ndl.ManifestLoader;
 import orca.flukes.ndl.ModifySaver;
 import orca.flukes.ui.TextAreaDialog;
+import orca.flukes.xmlrpc.GENICHXMLRPCProxy;
+import orca.flukes.xmlrpc.GENICHXMLRPCProxy.SaField;
 import orca.flukes.xmlrpc.NDLConverter;
 import orca.flukes.xmlrpc.OrcaSMXMLRPCProxy;
 
@@ -80,7 +87,7 @@ public class GUIManifestState extends GUICommonState implements IDeleteEdgeCallB
 	public void setNewEndDate(Date s) {
 
 		if ((start == null) || (end == null))
-			return;
+ 			return;
 		
 		Long diff = s.getTime() - start.getTime();
 		if (diff < 0)
@@ -212,11 +219,11 @@ public class GUIManifestState extends GUICommonState implements IDeleteEdgeCallB
 		public void actionPerformed(ActionEvent e) {
 			assert(sliceIdField != null);
 
-			if (e.getActionCommand().equals("manifest")) {
+			if (e.getActionCommand().equals(GUI.Buttons.manifest.getCommand())) {
 				// run request manifest from controller
 				queryManifest();
 			} else 
-				if (e.getActionCommand().equals("raw")) {
+				if (e.getActionCommand().equals(GUI.Buttons.raw.getCommand())) {
 					TextAreaDialog tad = new TextAreaDialog(GUI.getInstance().getFrame(), "Raw manifest", 
 							"Raw manifest", 
 							30, 50);
@@ -227,7 +234,7 @@ public class GUIManifestState extends GUICommonState implements IDeleteEdgeCallB
 					tad.pack();
 					tad.setVisible(true);
 				} else 
-					if (e.getActionCommand().equals("delete")) {
+					if (e.getActionCommand().equals(GUI.Buttons.delete.getCommand())) {
 						if ((sliceIdField.getText() == null) || 
 								(sliceIdField.getText().length() == 0)) {
 							KMessageDialog kmd = new KMessageDialog(GUI.getInstance().getFrame());
@@ -246,7 +253,7 @@ public class GUIManifestState extends GUICommonState implements IDeleteEdgeCallB
 						deleteSlice(sliceIdField.getText());
 
 					} else 
-						if (e.getActionCommand().equals("listSlices")) {
+						if (e.getActionCommand().equals(GUI.Buttons.listSlices.getCommand())) {
 							try {
 								String[] slices = OrcaSMXMLRPCProxy.getInstance().listMySlices();
 								OrcaSliceList osl = new OrcaSliceList(GUI.getInstance().getFrame(), slices);
@@ -259,7 +266,7 @@ public class GUIManifestState extends GUICommonState implements IDeleteEdgeCallB
 								ed.setVisible(true);
 							}
 						} else 
-							if (e.getActionCommand().equals("modify")) {
+							if (e.getActionCommand().equals(GUI.Buttons.modify.getCommand())) {
 								try {
 									if ((sliceIdField.getText() == null) || 
 											(sliceIdField.getText().length() == 0)) {
@@ -285,31 +292,63 @@ public class GUIManifestState extends GUICommonState implements IDeleteEdgeCallB
 									ed.setVisible(true);
 								} 
 							} else
-								if (e.getActionCommand().equals("modifyClear")) {
+								if (e.getActionCommand().equals(GUI.Buttons.clearModify.getCommand())) {
 									ModifySaver.getInstance().clear();
 								} else
-									if (e.getActionCommand().equals("extend")) {
+									if (e.getActionCommand().equals(GUI.Buttons.extend.getCommand())) {
 										ReservationExtensionDialog red = new ReservationExtensionDialog(GUI.getInstance().getFrame());
 										red.setFields(new Date());
 										red.pack();
 										red.setVisible(true);
 										
+										String sliceUrn = sliceIdField.getText();
+										
 										if (newEnd != null) {
-											try {
-												Boolean res = OrcaSMXMLRPCProxy.getInstance().renewSlice(sliceIdField.getText(), newEnd);
-												KMessageDialog kd = new KMessageDialog(GUI.getInstance().getFrame(), "Result", true);
-												kd.setMessage("The extend operation returned: " + res);
-												kd.setLocationRelativeTo(GUI.getInstance().getFrame());
-												kd.setVisible(true);
-												if (res)
-													resetEndDate();
-												else
-													newEnd = null;
-											} catch (Exception ee) {
-												ExceptionDialog ed = new ExceptionDialog(GUI.getInstance().getFrame(), "Exception");
-												ed.setLocationRelativeTo(GUI.getInstance().getFrame());
-												ed.setException("Exception encountered while extending slice: ", ee);
-												ed.setVisible(true);
+											boolean saException = false;
+											// check slice expiration with SA and extend if necessary
+											if (GUI.getInstance().getPreference(GUI.PrefsEnum.ENABLE_GENISA).equalsIgnoreCase("true") ||
+													GUI.getInstance().getPreference(GUI.PrefsEnum.ENABLE_GENISA).equalsIgnoreCase("yes")) {
+												try {
+													Map<String, Object> r = GENICHXMLRPCProxy.getInstance().saLookupSlice(sliceUrn, 
+															new SaField[] {	GENICHXMLRPCProxy.SaField.SLICE_EXPIRATION});
+													String dateString = (String)((Map<String, Object>)r.get(sliceUrn)).get(GENICHXMLRPCProxy.SaField.SLICE_EXPIRATION.name());
+													DateFormat df = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss", Locale.ENGLISH);
+													df.setTimeZone(TimeZone.getTimeZone("UTC"));
+													Date result =  df.parse(dateString);
+													if (result.before(newEnd)) {
+														// update slice expiration on SA
+														df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mmZ");
+														df.setTimeZone(TimeZone.getTimeZone("UTC"));
+														String nowAsISO = df.format(newEnd);
+														
+														GENICHXMLRPCProxy.getInstance().saUpdateSlice(sliceUrn, SaField.SLICE_EXPIRATION, nowAsISO);
+													}
+												} catch (Exception sae) {
+													ExceptionDialog ed = new ExceptionDialog(GUI.getInstance().getFrame(), "Exception");
+													ed.setLocationRelativeTo(GUI.getInstance().getFrame());
+													ed.setException("Unable to extend slice on the SA: ", sae);
+													ed.setVisible(true);
+													saException = true;
+												}
+											}
+
+											if (!saException) {
+												try {
+													Boolean res = OrcaSMXMLRPCProxy.getInstance().renewSlice(sliceUrn, newEnd);
+													KMessageDialog kd = new KMessageDialog(GUI.getInstance().getFrame(), "Result", true);
+													kd.setMessage("The extend operation returned: " + res);
+													kd.setLocationRelativeTo(GUI.getInstance().getFrame());
+													kd.setVisible(true);
+													if (res)
+														resetEndDate();
+													else
+														newEnd = null;
+												} catch (Exception ee) {
+													ExceptionDialog ed = new ExceptionDialog(GUI.getInstance().getFrame(), "Exception");
+													ed.setLocationRelativeTo(GUI.getInstance().getFrame());
+													ed.setException("Exception encountered while extending slice: ", ee);
+													ed.setVisible(true);
+												}
 											}
 										} else {
 											KMessageDialog kmd = new KMessageDialog(GUI.getInstance().getFrame());
