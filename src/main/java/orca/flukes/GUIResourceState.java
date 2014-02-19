@@ -111,7 +111,7 @@ public class GUIResourceState extends GUICommonState {
 	 */
 	public class ResourceButtonListener implements ActionListener {
 		public void actionPerformed(ActionEvent e) {
-			if (e.getActionCommand().equals("query")) {
+			if (e.getActionCommand().equals(GUI.Buttons.query.getCommand())) {
 				// run XMLRPC query
 
 				try {

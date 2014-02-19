@@ -1,6 +1,12 @@
 Flukes Release Notes:
 ---------------------
 
+02/19/14:
+- Added support for Federation Slice authority and GENI Portal (see Help)
+
+02/13/14:
+- Updated path search algorithm
+
 1/28/14:
 - Enabled support for color extension
 

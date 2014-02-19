@@ -27,7 +27,7 @@ public class OrcaSliceList extends ComponentDialog {
 		sliceList = OrcaNodePropertyDialog.addSelectList(kp, gbl_contentPanel, 0, 
 				slices, "Select slice: ", false, 5);
 		
-		sliceList.setPrototypeCellValue("012345678901234567890123456789");
+		sliceList.setPrototypeCellValue("01234567890123456789012345678901234567890123456789");
 	}
 
 	
