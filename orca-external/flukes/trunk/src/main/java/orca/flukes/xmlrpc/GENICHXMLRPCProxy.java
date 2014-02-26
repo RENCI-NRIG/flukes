@@ -214,8 +214,7 @@ public class GENICHXMLRPCProxy extends OrcaXMLRPCBase {
 
 			((Map<String, Object>)options.get(SaField.fields.name())).put(field.name(), val);
 
-			// URN and type are inverted for now /ib 2/18/14
-			rr = (Map<String, Object>)client.execute(SaCall.update.name(), new Object[]{sliceUrn, SaObjectType.SLICE.name(), new Object[]{}, options});
+			rr = (Map<String, Object>)client.execute(SaCall.update.name(), new Object[]{SaObjectType.SLICE.name(), sliceUrn, new Object[]{}, options});
 
 			checkAPIError(rr);
 			
