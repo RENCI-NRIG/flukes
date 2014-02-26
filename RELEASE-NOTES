@@ -1,6 +1,9 @@
 Flukes Release Notes:
 ---------------------
 
+02/26/14:
+- Updated to support fixes to CH API
+
 02/19/14:
 - Added support for Federation Slice authority and GENI Portal (see Help)
 
