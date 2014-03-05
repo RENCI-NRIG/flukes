@@ -1,6 +1,9 @@
 Flukes Release Notes:
 ---------------------
 
+03/05/14:
+- Added WVN, NCSU, NCSU2 racks
+
 02/26/14:
 - Updated to support fixes to CH API
 
