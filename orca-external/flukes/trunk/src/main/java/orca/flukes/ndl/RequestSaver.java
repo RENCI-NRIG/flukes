@@ -96,7 +96,6 @@ public class RequestSaver {
 		dm.put("NICTA (Sydney, Australia) XO Rack", "nictavmsite.rdf#nictavmsite");
 		dm.put("FIU (Miami, FL USA) XO Rack", "fiuvmsite.rdf#fiuvmsite");
 		dm.put("UH (Houston, TX USA) XO Rack", "uhvmsite.rdf#uhvmsite");
-		dm.put("NCSU (Raleigh, NC USA) XO Rack", "ncsuvmsite.rdf#ncsuvmsite");
 		dm.put("UvA (Amsterdam, The Netherlands) XO Rack", "uvanlvmsite.rdf#uvanlvmsite");
 		dm.put("UFL (Gainesville, FL USA) XO Rack", "uflvmsite.rdf#uflvmsite");
 		dm.put("UCD (Davis, CA USA) XO Rack", "ucdvmsite.rdf#ucdvmsite");
@@ -116,8 +115,8 @@ public class RequestSaver {
 
 		ndm.put("RENCI XO Rack Net", "rciNet.rdf#rciNet");
 		ndm.put("BBN/GPO XO Rack Net", "bbnNet.rdf#bbnNet");
-		ndm.put("FIU XO Rack Net", "fiuNet.rdf#fiuNet");
 		ndm.put("Duke CS Rack Net", "dukeNet.rdf#dukeNet");
+		ndm.put("UNC BEN XO Rack Net", "uncNet.rdf#uncNet");
 		ndm.put("NICTA XO Rack Net", "nictaNet.rdf#nictaNet");
 		ndm.put("FIU XO Rack Net", "fiuNet.rdf#fiuNet");
 		ndm.put("UH XO Rack Net", "uhNet.rdf#uhNet");
@@ -127,6 +126,9 @@ public class RequestSaver {
 		ndm.put("UCD XO Rack Net", "ucdNet.rdf#ucdNet");
 		ndm.put("OSF XO Rack Net", "osfNet.rdf#osfNet");
 		ndm.put("SL XO Rack Net", "slNet.rdf#slNet");
+		ndm.put("WVN XO Rack Net", "wvnNet.rdf#wvnNet");
+		ndm.put("NCSU XO Rack Net", "ncsuNet.rdf#ncsuNet");
+		ndm.put("NCSU2 XO Rack Net", "ncs2Net.rdf#ncsuNet");
 		
 		ndm.put("I2 ION/AL2S", "ion.rdf#ion");
 		ndm.put("NLR Net", "nlr.rdf#nlr");
