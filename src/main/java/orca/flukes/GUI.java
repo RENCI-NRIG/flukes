@@ -852,7 +852,7 @@ public class GUI implements ComponentListener {
 			// add buttons to resource pane toolbar
 			ActionListener rbl = GUIResourceState.getInstance().getActionListener();
 			
-			JButton queryButton = createButton(Buttons.query, toolBar, rbl);
+			createButton(Buttons.query, toolBar, rbl);
 		}
 		
 		//
@@ -882,6 +882,7 @@ public class GUI implements ComponentListener {
 		    nodeMenu.add(addMenuItem("Broadcast Link", "bcastlinks", rbl));
 		    nodeMenu.add(addMenuItem("Storage", "storage", rbl));
 		    nodeMenu.add(addMenuItem("StitchPort", "stitchport", rbl));
+
 		    splitNodeButton.setMenu(nodeMenu);
 			toolBar.add(splitNodeButton);
 			
@@ -901,22 +902,22 @@ public class GUI implements ComponentListener {
 			horizontalStrut = Box.createHorizontalStrut(10);
 			toolBar.add(horizontalStrut);
 			
-			JButton imageButton = createButton(Buttons.images, toolBar, rbl);
+			createButton(Buttons.images, toolBar, rbl);
 			
 			horizontalStrut = Box.createHorizontalStrut(10);
 			toolBar.add(horizontalStrut);
 
-			JButton autoipButton = createButton(Buttons.autoip, toolBar, rbl);
+			createButton(Buttons.autoip, toolBar, rbl);
 
 			horizontalStrut = Box.createHorizontalStrut(10);
 			toolBar.add(horizontalStrut);
 			
-			JButton reservationButton = createButton(Buttons.reservation, toolBar, rbl);
+			createButton(Buttons.reservation, toolBar, rbl);
 			
 			horizontalStrut = Box.createHorizontalStrut(10);
 			toolBar.add(horizontalStrut);
 			
-			JButton submitButton = createButton(Buttons.submit, toolBar, rbl);
+			createButton(Buttons.submit, toolBar, rbl);
 			
 			horizontalStrut = Box.createHorizontalStrut(10);
 			toolBar.add(horizontalStrut);
@@ -941,12 +942,12 @@ public class GUI implements ComponentListener {
 			// add buttons to resource pane toolbar
 			ActionListener rbl = GUIManifestState.getInstance().getActionListener();
 			
-			JButton listSlicesButton = createButton(Buttons.listSlices, toolBar, rbl);
+			createButton(Buttons.listSlices, toolBar, rbl);
 			
 			Component horizontalStrut = Box.createHorizontalStrut(10);
 			toolBar.add(horizontalStrut);
 			
-			JButton queryButton = createButton(Buttons.manifest, toolBar, rbl);
+			createButton(Buttons.manifest, toolBar, rbl);
 			
 			horizontalStrut = Box.createHorizontalStrut(10);
 			toolBar.add(horizontalStrut);
@@ -961,30 +962,30 @@ public class GUI implements ComponentListener {
 			horizontalStrut = Box.createHorizontalStrut(10);
 			toolBar.add(horizontalStrut);
 			
-			JButton rawButton = createButton(Buttons.raw, toolBar, rbl);
+			createButton(Buttons.raw, toolBar, rbl);
 			
 			horizontalStrut = Box.createHorizontalStrut(10);
 			toolBar.add(horizontalStrut);
 
-			JButton extendButton = createButton(Buttons.extend, toolBar, rbl);
+			createButton(Buttons.extend, toolBar, rbl);
 
 			horizontalStrut = Box.createHorizontalStrut(10);
 			toolBar.add(horizontalStrut);
 
 			if (getPreference(PrefsEnum.ENABLE_MODIFY).equalsIgnoreCase("true") ||
 					getPreference(PrefsEnum.ENABLE_MODIFY).equalsIgnoreCase("yes")) {
-				JButton modifyButton = createButton(Buttons.modify, toolBar, rbl);
+				createButton(Buttons.modify, toolBar, rbl);
 
 				horizontalStrut = Box.createHorizontalStrut(10);
 				toolBar.add(horizontalStrut);
 
-				JButton modifyClearButton = createButton(Buttons.clearModify, toolBar, rbl);
+				createButton(Buttons.clearModify, toolBar, rbl);
 
 				horizontalStrut = Box.createHorizontalStrut(10);
 				toolBar.add(horizontalStrut);
 			}
 			
-			JButton deleteButton = createButton(Buttons.delete, toolBar, rbl);
+			createButton(Buttons.delete, toolBar, rbl);
 
 		} 
 		
