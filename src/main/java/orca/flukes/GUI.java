@@ -838,7 +838,7 @@ public class GUI implements ComponentListener {
 		manifestPanel.setLayout(new BoxLayout(manifestPanel, BoxLayout.PAGE_AXIS));
 		manifestPanel.addComponentListener(this);
 		
-		frmOrcaFlukes.setBounds(100, 100, 1100, 800);
+		frmOrcaFlukes.setBounds(100, 100, 1200, 800);
 		frmOrcaFlukes.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		
 		{
