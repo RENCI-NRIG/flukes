@@ -10,13 +10,15 @@ import orca.flukes.xmlrpc.GENICHXMLRPCProxy;
 import orca.flukes.xmlrpc.GENICHXMLRPCProxy.SaField;
 import orca.flukes.xmlrpc.OrcaSMXMLRPCProxy;
 
+import org.junit.Ignore;
+
 /**
  * Testing GENI CH API
  * @author ibaldin
  *
  */
 public class TestCHApi {
-	
+	@Ignore
 	public static void main(String[] argv) {
 		
 		GUI.getInstance().processPreferences();
