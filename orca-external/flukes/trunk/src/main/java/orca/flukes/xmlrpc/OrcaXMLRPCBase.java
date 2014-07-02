@@ -8,6 +8,7 @@ import java.net.URL;
 import java.security.KeyStore;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
+import java.security.Provider;
 import java.security.PrivateKey;
 import java.security.Security;
 import java.security.cert.Certificate;
@@ -215,6 +216,11 @@ public class OrcaXMLRPCBase {
 				if (Security.getProvider("BC") == null) {
 					Security.addProvider(new BouncyCastleProvider());
 				}
+				System.out.println("Currently loaded security providers:");
+				for (Provider p: Security.getProviders()) {
+					System.out.println("Provider " + p + " - " +  p.getName());
+				}
+				System.out.println("End of security provider list.");
 				return null;
 			}
 		});
