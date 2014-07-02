@@ -6,6 +6,8 @@ import java.io.FileInputStream;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.security.KeyStore;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.security.PrivateKey;
 import java.security.Security;
 import java.security.cert.Certificate;
@@ -208,9 +210,14 @@ public class OrcaXMLRPCBase {
 	private KeyStore loadX509Data(FileInputStream certIS, FileInputStream keyIS, String keyAlias,
 			String keyPassword) throws Exception {
 
-		if (Security.getProvider("BC") == null) {
-			Security.addProvider(new BouncyCastleProvider());
-		}
+		AccessController.doPrivileged(new PrivilegedAction<Void>() {
+			public Void run() {
+				if (Security.getProvider("BC") == null) {
+					Security.addProvider(new BouncyCastleProvider());
+				}
+				return null;
+			}
+		});
 
 		JcaPEMKeyConverter keyConverter =
 				new JcaPEMKeyConverter().setProvider("BC");
