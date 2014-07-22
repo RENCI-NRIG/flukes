@@ -1,6 +1,9 @@
 Flukes Release Notes:
 ---------------------
 
+07/22/14:
+- Trim user-provided properties to ensure no extra whitespaces
+
 06/18/14:
 - Added TAMU, WSU, UMass, UAF and PSC
 
