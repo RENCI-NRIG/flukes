@@ -121,10 +121,10 @@ public class RequestSaver {
 		ndm.put("RENCI XO Rack Net", "rciNet.rdf#rciNet");
 		ndm.put("BBN/GPO XO Rack Net", "bbnNet.rdf#bbnNet");
 		ndm.put("Duke CS Rack Net", "dukeNet.rdf#dukeNet");
-		ndm.put("UNC BEN XO Rack Net", "uncNet.rdf#uncNet");
+		ndm.put("UNC BEN XO Rack Net", "uncNet.rdf#UNCNet");
 		ndm.put("NICTA XO Rack Net", "nictaNet.rdf#nictaNet");
 		ndm.put("FIU XO Rack Net", "fiuNet.rdf#fiuNet");
-		ndm.put("UH XO Rack Net", "uhNet.rdf#uhNet");
+		ndm.put("UH XO Rack Net", "uhNet.rdf#UHNet");
 		ndm.put("NCSU XO Rack Net", "ncsuNet.rdf#ncsuNet");
 		ndm.put("UvA XO Rack Net", "uvanlNet.rdf#uvanlNet");
 		ndm.put("UFL XO Rack Net", "uflNet.rdf#uflNet");
