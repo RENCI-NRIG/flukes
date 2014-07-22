@@ -1050,7 +1050,7 @@ public class GUI implements ComponentListener {
 		if (prefProperties == null)
 			return e.getDefaultValue();
 		if (prefProperties.containsKey(e.getPropName()))
-			return prefProperties.getProperty(e.getPropName());
+			return prefProperties.getProperty(e.getPropName()).trim();
 		else
 			return e.getDefaultValue();
 	}

@@ -458,7 +458,7 @@ public class MouseMenus {
 									Runtime rt = Runtime.getRuntime();
 									String[] cmdArr = new String[] {puttyCmd, "-ssh", mgtHostInfo[0], "-P", mgtHostInfo[1],
 											"-i", mgtPrivKeyPath.getCanonicalPath()};
-									System.out.println(cmdArr);
+									//System.out.println(cmdArr);
 									rt.exec(cmdArr);
 								}
 							}
