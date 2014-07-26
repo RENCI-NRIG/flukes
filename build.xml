@@ -33,7 +33,7 @@
     </sequential>
 </macrodef>
 
-<target name="unsign" description="Unsign bouncycastle jars fetched automatically by maven. Use if jarsigned fails for 'mvn install'" >
+<target name="unsign" description="Unsign bouncycastle jars fetched automatically by maven. Use if jarsigner fails for 'mvn install'" >
 <!--
 	<unsignjar jar="/Users/ibaldin/.m2/repository/org/bouncycastle/bcprov-ext-jdk15/1.45/bcprov-ext-jdk15-1.45.jar"/>
 	<unsignjar jar="/Users/ibaldin/.m2/repository/bouncycastle/bcprov-jdk16/bcprov-jdk16/145/bcprov-jdk16-145.jar"/>
