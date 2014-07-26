@@ -144,6 +144,11 @@
          			<!-- The path where the libraries are stored within the jnlp structure. not required. by default the libraries are within the working directory -->
          			<libPath>lib</libPath>
 
+                                <updateManifestEntries>
+					<Permissions>all-permissions</Permissions>
+					<Codebase>*</Codebase>
+				</updateManifestEntries>
+
          			<!-- [optional] transitive dependencies filter - if omitted, all transitive dependencies are included -->
          			<dependencies>
 	           			<!-- Note that only groupId and artifactId must be specified here. because of a limitation of the Include/ExcludesArtifactFilter -->
