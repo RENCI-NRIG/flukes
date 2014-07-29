@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.PrintWriter;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -183,31 +184,78 @@ public class OrcaSMXMLRPCProxy extends OrcaXMLRPCBase {
 	public String createSlice(String sliceId, String resReq) throws Exception {
 		setSSLIdentity(null, GUI.getInstance().getSelectedController());
 
-		// collect user credentials from $HOME/.ssh
+		// collect user credentials from $HOME/.ssh or load from portal
 
 		// create an array
 		List<Map<String, ?>> users = new ArrayList<Map<String, ?>>();
-		String keyPathStr = GUI.getInstance().getPreference(GUI.PrefsEnum.SSH_PUBKEY);
+		String keyPathStr = null;
+		String userKey = null;
 		File keyPath;
-		if (keyPathStr.startsWith("~/")) {
-			keyPathStr = keyPathStr.replaceAll("~/", "/");
-			keyPath = new File(System.getProperty("user.home"), keyPathStr);
-		}
-		else {
-			keyPath = new File(keyPathStr);
-		}
+		
+		if ("file".equals(GUI.getInstance().getPreference(GUI.PrefsEnum.SSH_KEY_SOURCE))) {
+			keyPathStr = GUI.getInstance().getPreference(GUI.PrefsEnum.SSH_PUBKEY);
+			if (keyPathStr.startsWith("~/")) {
+				keyPathStr = keyPathStr.replaceAll("~/", "/");
+				keyPath = new File(System.getProperty("user.home"), keyPathStr);
+			}
+			else {
+				keyPath = new File(keyPathStr);
+			}
 
-		String userKey = getUserKeyFile(keyPath);
+			userKey = getUserKeyFile(keyPath);
 
-		if (userKey == null) 
-			throw new Exception("Unable to load user public ssh key " + keyPath);
+			if (userKey == null) 
+				throw new Exception("Unable to load user public ssh key " + keyPath);
+		} else if ((GUI.getInstance().getPreference(GUI.PrefsEnum.ENABLE_GENIMA).equalsIgnoreCase("true") ||
+				GUI.getInstance().getPreference(GUI.PrefsEnum.ENABLE_GENISA).equalsIgnoreCase("yes")) &&
+				("portal".equals(GUI.getInstance().getPreference(GUI.PrefsEnum.SSH_KEY_SOURCE)))) {
+			// get our urn based on the established cert
+			String urn = getAltNameUrn();
+			if (urn == null) {
+				throw new Exception("Unable to obtain user GENI URN from the certificate file, cannot query GENI portal for the SSH keys, please change the '" + 
+						GUI.PrefsEnum.SSH_KEY_SOURCE.name() + "' property to  'file'");
+			}
+			
+			GUI.logger().info("Querying CH MA for SSH keys");
+			GENICHXMLRPCProxy chp = GENICHXMLRPCProxy.getInstance();
+			// this is a map that has a bunch of entries, including KEY_PRIVATE and KEY_PUBLIC
+			// Map looks like this: SSH Keys: {_GENI_KEY_MEMBER_UID=c7578309-b14c-4b4a-b555-1eff10f1b092, 
+			// _GENI_KEY_FILENAME=id_dsa.pub, 
+			// KEY_PUBLIC=ssh-dss <key material>= user@hostname, 
+			// KEY_TYPE=<key material> or null, KEY_DESCRIPTION=Kobol, KEY_MEMBER=urn:publicid:IDN+ch.geni.net+user+ibaldin, KEY_PRIVATE=null, KEY_ID=13}
+			// we should not use it unless both entries are present
+			Map<String, Object> keys = chp.maLookupLatestSSHKeys(urn);
+			
+			if ((keys == null) || 
+					(keys.get(GENICHXMLRPCProxy.SSH_KEY_PUBLIC) == null)) {
+				throw new Exception("Unable to obtain public SSH key from the portal for user " + urn + ", please change the '" +
+						GUI.PrefsEnum.SSH_KEY_SOURCE.name() + "' property to  'file'");
+			}
+			GUI.logger().info("Using public SSH key obtained from the portal");
+			userKey = (String)keys.get(GENICHXMLRPCProxy.SSH_KEY_PUBLIC);
+			
+			// if private key is available, save it and change the ssh.key preference property to point to it
+			if (keys.get(GENICHXMLRPCProxy.SSH_KEY_PRIVATE) != null) {
+				String portalPrivateKey = (String)keys.get(GENICHXMLRPCProxy.SSH_KEY_PRIVATE);
+				String keyFileName = "portal-" + (String)keys.get(GENICHXMLRPCProxy.SSH_KEY_ID) + "-key";
+				File portalKeyFile = File.createTempFile(keyFileName, "");
+				GUI.logger().info("Saving private key from the portal to " + portalKeyFile.getAbsolutePath());
+				portalKeyFile.deleteOnExit();
+				PrintWriter out = new PrintWriter(portalKeyFile.getAbsolutePath());
+				GUI.getInstance().setPreference(GUI.PrefsEnum.SSH_KEY, portalKeyFile.getAbsolutePath());
+				out.println(portalPrivateKey);
+				out.close();
+			}
+		}
 
 		Map<String, Object> userEntry = new HashMap<String, Object>();
 
 		userEntry.put("login", "root");
 		List<String> keys = new ArrayList<String>();
 		keys.add(userKey);
-
+		userEntry.put("keys", keys);
+		users.add(userEntry);
+		
 		// any additional keys?
 		keyPathStr = GUI.getInstance().getPreference(GUI.PrefsEnum.SSH_OTHER_PUBKEY);
 		if (keyPathStr.startsWith("~/")) {
@@ -231,9 +279,6 @@ public class OrcaSMXMLRPCProxy extends OrcaXMLRPCBase {
 			}
 		}
 
-		userEntry.put("keys", keys);
-		users.add(userEntry);
-		
 		// submit the request
 		return createSlice(sliceId, resReq, users);
 	}

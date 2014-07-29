@@ -1056,6 +1056,15 @@ public class GUI implements ComponentListener {
 	}
 	
 	/**
+	 * Programmatically overwrite a preference setting
+	 * @param e
+	 * @param val
+	 */
+	public void setPreference(PrefsEnum e, String val) {
+		prefProperties.setProperty(e.getPropName(), val);
+	}
+	
+	/**
 	 * Allowed properties
 	 * @author ibaldin
 	 *
@@ -1067,6 +1076,8 @@ public class GUI implements ComponentListener {
 			"Path to PuTTY executable on your system (Windows-specific)"), 
 		SCRIPT_COMMENT_SEPARATOR("script.comment.separator", "#", 
 			"Default comment character used in post-boot scripts"),
+		SSH_KEY_SOURCE("ssh.key.source", "file", 
+			"Where do SSH keys come from - the file system (then using ssh.key and ssh.pubkey parameters) or Member Authority/GENI Portal. Can be set to 'file' or 'portal'. The MA/portal must have both private and public keys for this to work."),
 		SSH_KEY("ssh.key", "~/.ssh/id_dsa", 
 			"SSH Private Key to use to access VM instances(public will be installed into instances). You can use ~ to denote user home directory."),
 		SSH_PUBKEY("ssh.pubkey", "~/.ssh/id_dsa.pub", "SSH Public key to install into VM instances"),
@@ -1091,7 +1102,9 @@ public class GUI implements ComponentListener {
 		ENABLE_IRODS("enable.irods", "false", "Enable experimental support for iRods (at your own risk!)"),
 		AUTOIP_MASK("autoip.mask", "25", "Length of netmask (in bits) to use when assigning IP addresses to groups and broadcast links (simple point-to-point links always use 30 bit masks)"),
 		ENABLE_GENISA("enable.genisa", "false", "Enable support for GENI Slice Authority"),
+		ENABLE_GENIMA("enable.genima", "false", "Enable support for GENI Member Authority"),
 		GENISA_URL("genisa.url", "https://ch.geni.net/SA", "URL of the GENI Slice Authority (defaults to GENI Portal SA)"),
+		GENIMA_URL("genima.url", "https://ch.geni.net/MA", "URL of the GENI Member Authority (defaults to GENI Portal MA)"),
 		GENISA_PROJECT("genisa.project.urn", "urn:publicid:IDN+ch.geni.net+project+SomeProject", "URN of a project you want this slice to belong to on SA (must be valid on this SA)"),
 		IRODS_FORMAT("irods.format", "ndl", "Specify the format in which requests and manifests should be saved to iRods ('ndl' or 'rspec')"),
 		IRODS_MANIFEST_TEMPLATE("irods.manifest.template", "${slice.name}/manifest-${date}.${irods.format}", 

@@ -2,6 +2,8 @@ package orca.flukes.xmlrpc;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -28,11 +30,16 @@ import org.apache.xmlrpc.serializer.NullSerializer;
  */
 public class GENICHXMLRPCProxy extends OrcaXMLRPCBase {
 
-	private static final String SA_VERSION = "2";
+	public static final String SSH_KEY_PRIVATE = "KEY_PRIVATE";
+	public static final String SSH_KEY_PUBLIC = "KEY_PUBLIC";
+	public static final String SSH_KEY_ID = "KEY_ID";
+	public static final String SSH_KEY_MEMBER_GUID = "_GENI_KEY_MEMBER_UID";
 
-	private static boolean saVersionMatch = false;
+	private static final String FED_VERSION = "2";
 
-	public enum SaField {
+	private static boolean saVersionMatch = false, maVersionMatch = false;
+
+	public enum FedField {
 		VERSION, 
 		code, 
 		value,
@@ -46,16 +53,21 @@ public class GENICHXMLRPCProxy extends OrcaXMLRPCBase {
 		SLICE_NAME, 
 		SLICE_PROJECT_URN,
 		SLICE_URN,
-		SLICE_EXPIRATION;
+		SLICE_EXPIRATION,
+		KEY_MEMBER;
 	}
 
-	public enum SaCall {
+	public enum FedAgent {
+		SA, MA
+	}
+	
+	public enum FedCall {
 		get_version, create, 
 		lookup, update;
 	}
 
-	public enum SaObjectType {
-		SLICE, PROJECT, SLIVER;
+	public enum FedObjectType {
+		SLICE, PROJECT, SLIVER, KEY;
 	}
 
 	private static GENICHXMLRPCProxy instance = new GENICHXMLRPCProxy();
@@ -91,9 +103,18 @@ public class GENICHXMLRPCProxy extends OrcaXMLRPCBase {
 		return instance;
 	}
 
-	private XmlRpcClient setupClient() throws MalformedURLException {
+	private XmlRpcClient setupClient(FedAgent a) throws MalformedURLException {
+		String agentUrl = null;
+		switch(a) {
+		case SA:
+			agentUrl = GUI.getInstance().getPreference(PrefsEnum.GENISA_URL);
+			break;
+		case MA:
+			agentUrl = GUI.getInstance().getPreference(PrefsEnum.GENIMA_URL);
+			break;
+		}
 		XmlRpcClientConfigImpl config = new XmlRpcClientConfigImpl();
-		config.setServerURL(new URL(GUI.getInstance().getPreference(PrefsEnum.GENISA_URL)));
+		config.setServerURL(new URL(agentUrl));
 		XmlRpcClient client = new XmlRpcClient();
 		config.setEnabledForExtensions(true);
 		client.setConfig(config);
@@ -107,26 +128,36 @@ public class GENICHXMLRPCProxy extends OrcaXMLRPCBase {
 	}
 
 	@SuppressWarnings("unchecked")
-	public Map<String, Object> saGetVersion() throws Exception {
-		setSSLIdentity(null, GUI.getInstance().getPreference(PrefsEnum.GENISA_URL));
+	public Map<String, Object> fedGetVersion(FedAgent a) throws Exception {
+		String agentUrl = null;
+		
+		switch (a) {
+		case SA: 
+			agentUrl = GUI.getInstance().getPreference(PrefsEnum.GENISA_URL);
+			break;
+		case MA:
+			agentUrl = GUI.getInstance().getPreference(PrefsEnum.GENIMA_URL);
+			break;
+		}
+		setSSLIdentity(null, agentUrl);
 
 		Map<String, Object> rr = null;
 		try {
-			XmlRpcClient client = setupClient();
+			XmlRpcClient client = setupClient(a);
 
 			// create slice on SA
-			rr = (Map<String, Object>)client.execute(SaCall.get_version.name(), new Object[]{});
+			rr = (Map<String, Object>)client.execute(FedCall.get_version.name(), new Object[]{});
 			
 			checkAPIError(rr);
 			
-			return (Map<String, Object>)rr.get(SaField.value.name());
+			return (Map<String, Object>)rr.get(FedField.value.name());
 		} catch (MalformedURLException e) {
-			throw new Exception("Please check the SA URL " + GUI.getInstance().getPreference(PrefsEnum.GENISA_URL));
+			throw new Exception("Please check the " + a + " URL " + agentUrl);
 		} catch (XmlRpcException e) {
 			e.printStackTrace();
-			throw new Exception("Unable to contact SA " + GUI.getInstance().getPreference(PrefsEnum.GENISA_URL) + " due to " + e);
+			throw new Exception("Unable to contact " + a + " " + agentUrl + " due to " + e);
 		} catch (Exception e) {
-			throw new Exception("Unable to create slice on SA:  " + GUI.getInstance().getPreference(PrefsEnum.GENISA_URL) + " due to " + e);
+			throw new Exception("Unable to create slice on " + a + ":  " + agentUrl + " due to " + e);
 		}
 	}
 
@@ -134,18 +165,18 @@ public class GENICHXMLRPCProxy extends OrcaXMLRPCBase {
 	 * Check that we are talking to SA of the right version
 	 * @return
 	 */
-	public void saCheckVersion() throws Exception {
+	public void fedCheckVersion(FedAgent a) throws Exception {
 		try {
-			Map<String, Object> fields = saGetVersion();
+			Map<String, Object> fields = fedGetVersion(a);
 
 			if (fields == null)
-				throw new Exception("SA " + GUI.getInstance().getPreference(PrefsEnum.GENISA_URL) + " returned invalid values");
-			if ((fields.get(SaField.VERSION.name()) != null) && ((String)fields.get(SaField.VERSION.name())).startsWith(SA_VERSION))
+				throw new Exception(a + " returned invalid values");
+			if ((fields.get(FedField.VERSION.name()) != null) && ((String)fields.get(FedField.VERSION.name())).startsWith(FED_VERSION))
 				return;
 			else
-				throw new Exception("SA " + GUI.getInstance().getPreference(PrefsEnum.GENISA_URL) + " version [" + fields.get(SaField.VERSION.name()) + "] is not compatible with this version of Flukes");
+				throw new Exception(a + " version [" + fields.get(FedField.VERSION.name()) + "] is not compatible with this version of Flukes");
 		} catch (Exception e) {
-			throw new Exception("Unable to communicate with SA "+ GUI.getInstance().getPreference(PrefsEnum.GENISA_URL) + " due to " + e);
+			throw new Exception("Unable to communicate with " + a + " due to " + e);
 		}
 	}
 
@@ -167,20 +198,20 @@ public class GENICHXMLRPCProxy extends OrcaXMLRPCBase {
 
 		Map<String, Object> rr = null;
 		try {
-			XmlRpcClient client = setupClient();
+			XmlRpcClient client = setupClient(FedAgent.SA);
 
 			// create slice on SA
 			Map<String, Object> options = new HashMap<String, Object>();
-			options.put(SaField.fields.name(), new HashMap<String, Object>());
+			options.put(FedField.fields.name(), new HashMap<String, Object>());
 
-			((Map<String, Object>)options.get(SaField.fields.name())).put(SaField.SLICE_NAME.name(), name);
-			((Map<String, Object>)options.get(SaField.fields.name())).put(SaField.SLICE_PROJECT_URN.name(), projectUrn);
+			((Map<String, Object>)options.get(FedField.fields.name())).put(FedField.SLICE_NAME.name(), name);
+			((Map<String, Object>)options.get(FedField.fields.name())).put(FedField.SLICE_PROJECT_URN.name(), projectUrn);
 
-			rr = (Map<String, Object>)client.execute(SaCall.create.name(), new Object[]{SaObjectType.SLICE.name(), new Object[]{}, options});
+			rr = (Map<String, Object>)client.execute(FedCall.create.name(), new Object[]{FedObjectType.SLICE.name(), new Object[]{}, options});
 
 			checkAPIError(rr);
 			
-			return (String)((Map<String, Object>)rr.get(SaField.value.name())).get(SaField.SLICE_URN.name());
+			return (String)((Map<String, Object>)rr.get(FedField.value.name())).get(FedField.SLICE_URN.name());
 		} catch (MalformedURLException e) {
 			throw new Exception("Please check the SA URL " + GUI.getInstance().getPreference(PrefsEnum.GENISA_URL));
 		} catch (XmlRpcException e) {
@@ -196,7 +227,7 @@ public class GENICHXMLRPCProxy extends OrcaXMLRPCBase {
 	 * @return
 	 */
 	@SuppressWarnings("unchecked")
-	public void saUpdateSlice(String sliceUrn, SaField field, Object val) throws Exception {
+	public void saUpdateSlice(String sliceUrn, FedField field, Object val) throws Exception {
 		if ((sliceUrn == null) || (sliceUrn.length() == 0))
 			throw new Exception("Invalid slice Urn: " + sliceUrn);
 
@@ -206,15 +237,15 @@ public class GENICHXMLRPCProxy extends OrcaXMLRPCBase {
 
 		Map<String, Object> rr = null;
 		try {
-			XmlRpcClient client = setupClient();
+			XmlRpcClient client = setupClient(FedAgent.SA);
 
 			// create slice on SA
 			Map<String, Object> options = new HashMap<String, Object>();
-			options.put(SaField.fields.name(), new HashMap<String, Object>());
+			options.put(FedField.fields.name(), new HashMap<String, Object>());
 
-			((Map<String, Object>)options.get(SaField.fields.name())).put(field.name(), val);
+			((Map<String, Object>)options.get(FedField.fields.name())).put(field.name(), val);
 
-			rr = (Map<String, Object>)client.execute(SaCall.update.name(), new Object[]{SaObjectType.SLICE.name(), sliceUrn, new Object[]{}, options});
+			rr = (Map<String, Object>)client.execute(FedCall.update.name(), new Object[]{FedObjectType.SLICE.name(), sliceUrn, new Object[]{}, options});
 
 			checkAPIError(rr);
 			
@@ -229,7 +260,7 @@ public class GENICHXMLRPCProxy extends OrcaXMLRPCBase {
 	}
 
 	@SuppressWarnings("unchecked")
-	public Map<String, Object> saLookupSlice(String sliceUrn, SaField[] fields) throws Exception {
+	public Map<String, Object> saLookupSlice(String sliceUrn, FedField[] fields) throws Exception {
 		if ((sliceUrn == null) || (sliceUrn.length() == 0))
 			throw new Exception("Invalid slice Urn: " + sliceUrn);
 
@@ -239,26 +270,26 @@ public class GENICHXMLRPCProxy extends OrcaXMLRPCBase {
 
 		Map<String, Object> rr = null;
 		try {
-			XmlRpcClient client = setupClient();
+			XmlRpcClient client = setupClient(FedAgent.SA);
 
 			// create slice on SA
 			Map<String, Object> options = new HashMap<String, Object>();
-			options.put(SaField.match.name(), new HashMap<String, Object>());
+			options.put(FedField.match.name(), new HashMap<String, Object>());
 
-			((Map<String, Object>)options.get(SaField.match.name())).put(SaField.SLICE_URN.name(), new String[] {sliceUrn});
+			((Map<String, Object>)options.get(FedField.match.name())).put(FedField.SLICE_URN.name(), new String[] {sliceUrn});
 
 			if ((fields != null) && (fields.length > 0)) {
 				String[] fieldNames = new String[fields.length];
 				for(int i = 0; i < fields.length; i++)
 					fieldNames[i] = fields[i].name();
-				options.put(SaField.filter.name(), fieldNames);
+				options.put(FedField.filter.name(), fieldNames);
 			}
 
-			rr = (Map<String, Object>)client.execute(SaCall.lookup.name(), new Object[]{SaObjectType.SLICE.name(), new Object[]{}, options});
+			rr = (Map<String, Object>)client.execute(FedCall.lookup.name(), new Object[]{FedObjectType.SLICE.name(), new Object[]{}, options});
 
 			checkAPIError(rr);
 			
-			return (Map<String, Object>)rr.get(SaField.value.name());
+			return (Map<String, Object>)rr.get(FedField.value.name());
 		} catch (MalformedURLException e) {
 			throw new Exception("Please check the SA URL " + GUI.getInstance().getPreference(PrefsEnum.GENISA_URL));
 		} catch (XmlRpcException e) {
@@ -276,14 +307,86 @@ public class GENICHXMLRPCProxy extends OrcaXMLRPCBase {
 	 * @return
 	 * @throws Exception
 	 */
-	public Map<String, Object> saLookupSlice(String sliceUrn, List<SaField> fields) throws Exception {
-		return saLookupSlice(sliceUrn, fields.toArray(new SaField[fields.size()]));
+	public Map<String, Object> saLookupSlice(String sliceUrn, List<FedField> fields) throws Exception {
+		return saLookupSlice(sliceUrn, fields.toArray(new FedField[fields.size()]));
 	}
 
+	/**
+	 * MA Call to get all public and private SSH keys of a user
+	 * @param userUrn
+	 * @param fields
+	 * @return
+	 * @throws Exception
+	 */
+	@SuppressWarnings("unchecked")
+	public Map<String, Object> maLookupAllSSHKeys(String userUrn) throws Exception {
+		if ((userUrn == null) || (userUrn.length() == 0))
+			throw new Exception("Invalid user Urn: " + userUrn);
+
+		setSSLIdentity(null, GUI.getInstance().getPreference(PrefsEnum.GENIMA_URL));
+
+		maCompatible();
+
+		Map<String, Object> rr = null;
+		try {
+			XmlRpcClient client = setupClient(FedAgent.MA);
+
+			Map<String, Object> options = new HashMap<String, Object>();
+			options.put(FedField.match.name(), new HashMap<String, Object>());
+
+			((Map<String, Object>)options.get(FedField.match.name())).put(FedField.KEY_MEMBER.name(), new String[] {userUrn});
+
+			rr = (Map<String, Object>)client.execute(FedCall.lookup.name(), new Object[]{FedObjectType.KEY.name(), new Object[]{}, options});
+
+			checkAPIError(rr);
+			
+			return (Map<String, Object>)rr.get(FedField.value.name());
+		} catch (MalformedURLException e) {
+			throw new Exception("Please check the MA URL " + GUI.getInstance().getPreference(PrefsEnum.GENIMA_URL));
+		} catch (XmlRpcException e) {
+			e.printStackTrace();
+			throw new Exception("Unable to contact MA " + GUI.getInstance().getPreference(PrefsEnum.GENIMA_URL) + " due to " + e);
+		} catch (Exception e) {
+			throw new Exception("Unable to lookup SSH keys for " + userUrn + " on MA:  " + GUI.getInstance().getPreference(PrefsEnum.GENIMA_URL) + " due to " + e);
+		}
+	}
+	
+	/**
+	 * Get the latest pair of private (if available) and public SSH keys. 
+	 * @param userUrn
+	 * @return a map with up to two keys: KEY_PUBLIC and KEY_PRIVATE. 
+	 * @throws Exception
+	 */
+	public Map<String, Object> maLookupLatestSSHKeys(String userUrn) throws Exception {
+		
+		Map<String, Object> ret = maLookupAllSSHKeys(userUrn);
+		
+		List<String> keys = new ArrayList<String>(ret.keySet());
+		java.util.Collections.sort(keys, new Comparator<String>() {
+
+			@Override
+			public int compare(String o1, String o2) {
+				try {
+					// these are numbers
+					return Integer.parseInt(o1) - Integer.parseInt(o2);
+				} catch (NumberFormatException nfe) {
+					// default to lexicographic comparison
+					return o1.compareTo(o2);
+				}
+			}
+		});
+		if (keys.size() < 1) {
+			throw new Exception("No SSH keys available for user " + userUrn + " from MA " + GUI.getInstance().getPreference(PrefsEnum.GENIMA_URL));
+		}
+		Map<String, Object> latestKeys = (Map<String, Object>)ret.get(keys.get(0));
+		
+		return latestKeys;
+	}
+	
 	private void checkAPIError(Map<String, Object> r) throws Exception {
-		if ((r.get(SaField.code.name()) != null) &&
-				((Integer)r.get(SaField.code.name()) != 0)) 
-			throw new Exception("SA API Error: [" + r.get(SaField.code.name()) + "]: " + r.get(SaField.output.name()));
+		if ((r.get(FedField.code.name()) != null) &&
+				((Integer)r.get(FedField.code.name()) != 0)) 
+			throw new Exception("FED API Error: [" + r.get(FedField.code.name()) + "]: " + r.get(FedField.output.name()));
 	}
 
 	/**
@@ -292,8 +395,19 @@ public class GENICHXMLRPCProxy extends OrcaXMLRPCBase {
 	 */
 	private synchronized void saCompatible() throws Exception {
 		if (!saVersionMatch) { 
-			saCheckVersion();
+			fedCheckVersion(FedAgent.SA);
 			saVersionMatch = true;
+		}
+	}
+	
+	/**
+	 * Ensure we're compatible with this SA
+	 * @throws Exception
+	 */
+	private synchronized void maCompatible() throws Exception {
+		if (!maVersionMatch) { 
+			fedCheckVersion(FedAgent.MA);
+			maVersionMatch = true;
 		}
 	}
 }

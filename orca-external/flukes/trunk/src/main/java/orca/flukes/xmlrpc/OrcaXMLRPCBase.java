@@ -5,18 +5,23 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStreamReader;
 import java.net.URL;
-import java.security.KeyStore;
 import java.security.AccessController;
+import java.security.KeyStore;
+import java.security.PrivateKey;
 import java.security.PrivilegedAction;
 import java.security.Provider;
-import java.security.PrivateKey;
 import java.security.Security;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateExpiredException;
 import java.security.cert.CertificateNotYetValidException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Enumeration;
+import java.util.Iterator;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
@@ -46,6 +51,8 @@ public class OrcaXMLRPCBase {
 	private static MultiKeyManager mkm = null;
 	private static ContextualSSLProtocolSocketFactory regSslFact = null;
 	boolean sslIdentitySet = false;
+	// alternative names set on the cert that is in use. Only valid when identity is set
+	Collection<List<?>> altNames = null;
 
 	static {
 		mkm = new MultiKeyManager();
@@ -154,6 +161,7 @@ public class OrcaXMLRPCBase {
 
 			if (ks.getCertificate(keyAlias).getType().equals("X.509")) {
 				X509Certificate x509Cert = (X509Certificate)ks.getCertificate(keyAlias);
+				altNames = x509Cert.getSubjectAlternativeNames();
 				try {
 					x509Cert.checkValidity();
 				} catch (Exception e) {
@@ -177,6 +185,7 @@ public class OrcaXMLRPCBase {
 					ctrlrUrl.getHost(), port);
 
 			sslIdentitySet = true;
+			
 		} catch (Exception e) {
 			GUI.getInstance().resetKeystoreAliasAndPassword();
 			e.printStackTrace();
@@ -280,6 +289,41 @@ public class OrcaXMLRPCBase {
 				keyPassword.toCharArray(), certs.toArray(new Certificate[certs.size()]));
 
 		return ks;
+	}
+	
+	/**
+	 * Get all alt names contained in a cert (only invocable after SSL identity is set)
+	 * @return
+	 * @throws Exception
+	 */
+	public Collection<List<?>> getAltNames() throws Exception {
+		if (sslIdentitySet) 
+			return altNames;
+		else
+			throw new Exception("SSL Identity is not set, alternative names are not known");
+	}	
+	
+	/**
+	 * Get the GENI URN in a cert, if available (only invocable after SSL identity is set)
+	 * @return - the URN that matches "urn:publicid:IDN.+\\+user\\+.+" or null
+	 * @throws Exception
+	 */
+	public String getAltNameUrn() throws Exception {
+		Collection<List<?>> altNames = getAltNames();
+
+		String urn = null;
+		Iterator <List<?>> it = altNames.iterator();
+		while(it.hasNext()) {
+			List<?> altName = it.next();
+			if ((Integer)altName.get(0) != 6)
+				continue;
+			Pattern pat = Pattern.compile("urn:publicid:IDN.+\\+user\\+.+");
+			Matcher mat = pat.matcher((String)altName.get(1));
+			if (mat.matches())  {
+				urn = (String)altName.get(1);
+			}
+		}
+		return urn;
 	}
 
 }
