@@ -45,7 +45,7 @@ import orca.flukes.ndl.ManifestLoader;
 import orca.flukes.ndl.ModifySaver;
 import orca.flukes.ui.TextAreaDialog;
 import orca.flukes.xmlrpc.GENICHXMLRPCProxy;
-import orca.flukes.xmlrpc.GENICHXMLRPCProxy.SaField;
+import orca.flukes.xmlrpc.GENICHXMLRPCProxy.FedField;
 import orca.flukes.xmlrpc.NDLConverter;
 import orca.flukes.xmlrpc.OrcaSMXMLRPCProxy;
 
@@ -310,8 +310,8 @@ public class GUIManifestState extends GUICommonState implements IDeleteEdgeCallB
 													GUI.getInstance().getPreference(GUI.PrefsEnum.ENABLE_GENISA).equalsIgnoreCase("yes")) {
 												try {
 													Map<String, Object> r = GENICHXMLRPCProxy.getInstance().saLookupSlice(sliceUrn, 
-															new SaField[] {	GENICHXMLRPCProxy.SaField.SLICE_EXPIRATION});
-													String dateString = (String)((Map<String, Object>)r.get(sliceUrn)).get(GENICHXMLRPCProxy.SaField.SLICE_EXPIRATION.name());
+															new FedField[] { GENICHXMLRPCProxy.FedField.SLICE_EXPIRATION});
+													String dateString = (String)((Map<String, Object>)r.get(sliceUrn)).get(GENICHXMLRPCProxy.FedField.SLICE_EXPIRATION.name());
 													DateFormat df = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss", Locale.ENGLISH);
 													df.setTimeZone(TimeZone.getTimeZone("UTC"));
 													Date result =  df.parse(dateString);
@@ -321,7 +321,7 @@ public class GUIManifestState extends GUICommonState implements IDeleteEdgeCallB
 														df.setTimeZone(TimeZone.getTimeZone("UTC"));
 														String nowAsISO = df.format(newEnd);
 														
-														GENICHXMLRPCProxy.getInstance().saUpdateSlice(sliceUrn, SaField.SLICE_EXPIRATION, nowAsISO);
+														GENICHXMLRPCProxy.getInstance().saUpdateSlice(sliceUrn, FedField.SLICE_EXPIRATION, nowAsISO);
 													}
 												} catch (Exception sae) {
 													ExceptionDialog ed = new ExceptionDialog(GUI.getInstance().getFrame(), "Exception");
