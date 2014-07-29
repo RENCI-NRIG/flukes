@@ -108,7 +108,7 @@ public class OrcaBroadcastLinkPropertyDialog extends ComponentDialog {
 		}
 		
 		{
-			JLabel lblNewLabel_1 = new JLabel("Bandwidth: ");
+			JLabel lblNewLabel_1 = new JLabel("Bandwidth (bps): ");
 			GridBagConstraints gbc_lblNewLabel_1 = new GridBagConstraints();
 			gbc_lblNewLabel_1.anchor = GridBagConstraints.WEST;
 			gbc_lblNewLabel_1.insets = new Insets(0, 0, 5, 5);

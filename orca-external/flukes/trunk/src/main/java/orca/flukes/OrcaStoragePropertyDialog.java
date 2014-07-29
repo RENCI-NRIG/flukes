@@ -112,7 +112,7 @@ public class OrcaStoragePropertyDialog extends ComponentDialog {
 
 		
 		{
-			JLabel lblNewLabel_1 = new JLabel("Capacity: ");
+			JLabel lblNewLabel_1 = new JLabel("Capacity (GB): ");
 			GridBagConstraints gbc_lblNewLabel_1 = new GridBagConstraints();
 			gbc_lblNewLabel_1.anchor = GridBagConstraints.WEST;
 			gbc_lblNewLabel_1.insets = new Insets(0, 0, 5, 5);
