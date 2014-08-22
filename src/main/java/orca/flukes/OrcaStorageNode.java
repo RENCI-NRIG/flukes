@@ -56,6 +56,7 @@ public class OrcaStorageNode extends OrcaNode {
 	public String getViewerText() {
 		String viewText = "";
 		viewText += "Storage node: " + name;
+		viewText += "\nReservation ID: " + reservationGuid;
 		viewText += "\nStorage reservation state: " + (state != null ? state : NOT_SPECIFIED);
 		viewText += "\nReservation notice: " + (resNotice != null ? resNotice : NOT_SPECIFIED);
 		viewText += "Capacity: " + capacity;

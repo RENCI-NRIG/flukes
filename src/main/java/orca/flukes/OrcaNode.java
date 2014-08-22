@@ -45,6 +45,7 @@ import orca.flukes.MouseMenus.MultiDomainDisplay;
 import orca.flukes.MouseMenus.NodeColorItem;
 import orca.flukes.MouseMenus.NodeLoginItem;
 import orca.flukes.MouseMenus.NodePropItem;
+import orca.flukes.MouseMenus.NodePropertiesItem;
 import orca.flukes.MouseMenus.NodeTypeDisplay;
 import orca.flukes.MouseMenus.NodeViewItem;
 
@@ -379,6 +380,7 @@ public class OrcaNode extends OrcaResource {
 	public String getViewerText() {
 		String viewText = "";
 		viewText += "Node name: " + name;
+		viewText += "\nReservation ID: " + reservationGuid;
 		viewText += "\nNode reservation state: " + (state != null ? state : NOT_SPECIFIED);
 		viewText += "\nReservation notice: " + (resNotice != null ? resNotice : NOT_SPECIFIED);
 //		viewText += "\nNode Type: " + node.getNodeType();
@@ -475,6 +477,7 @@ public class OrcaNode extends OrcaResource {
 				this.addSeparator();
 			}
 			this.add(new NodeViewItem(GUI.getInstance().getFrame()));
+			this.add(new NodePropertiesItem(GUI.getInstance().getFrame()));
 			this.add(new NodeLoginItem(GUI.getInstance().getFrame()));
 			this.addSeparator();
 			this.add(new NodeColorItem(GUI.getInstance().getFrame(), false));
