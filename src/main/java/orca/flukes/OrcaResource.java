@@ -19,6 +19,7 @@ public abstract class OrcaResource {
 	protected String name;
 	protected String state = null;
 	protected String resNotice = null;
+	protected String reservationGuid = null;
 	protected Set<OrcaColor> colors = new HashSet<OrcaColor>();
 	
 	protected OrcaResource(String n) {
@@ -59,6 +60,14 @@ public abstract class OrcaResource {
 
 	public void setReservationNotice(String s) {
 		resNotice = s;
+	}
+	
+	public String getReservationGuid() {
+		return reservationGuid;
+	}
+	
+	public void setReservationGuid(String g) {
+		reservationGuid = g;
 	}
 	
 	public List<OrcaColor> getColors() {
