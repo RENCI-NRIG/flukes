@@ -1,6 +1,9 @@
 Flukes Release Notes:
 ---------------------
 
+08/22/14:
+- Added the ability to query for node unit properties (to e.g. get the boot console)
+
 07/22/14:
 - Trim user-provided properties to ensure no extra whitespaces
 

@@ -16,6 +16,7 @@ import java.awt.event.ActionListener;
 import java.awt.geom.Point2D;
 import java.io.File;
 import java.io.IOException;
+import java.util.Map;
 import java.util.Set;
 
 import javax.swing.ButtonGroup;
@@ -24,7 +25,7 @@ import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.JRadioButtonMenuItem;
 
-import orca.flukes.GUI.PrefsEnum;
+import orca.flukes.xmlrpc.OrcaSMXMLRPCProxy;
 import orca.ndl.ScaledFormatPrinter;
 
 import com.hyperrealm.kiwi.ui.dialog.ExceptionDialog;
@@ -496,6 +497,54 @@ public class MouseMenus {
 					} catch (IOException ex) {
 						ExceptionDialog ked = new ExceptionDialog(GUI.getInstance().getFrame(),
 								"Unable to login due to exception!");
+						ked.setException("Exception encountered: ", ex);
+						ked.setLocationRelativeTo(GUI.getInstance().getFrame());
+						ked.setVisible(true);
+						return;
+					}
+				}
+			});
+		}
+
+		@Override
+		public void setNodeAndView(OrcaNode v,
+				VisualizationViewer<OrcaNode, OrcaLink> visView) {
+			visComp = visView;
+			node = v;
+		}
+
+		@Override
+		public void setPoint(Point2D point) {
+			this.point = point;			
+		}
+
+	}
+	
+	public static class NodePropertiesItem extends JMenuItem implements NodeMenuListener<OrcaNode, OrcaLink>, MenuPointListener {
+		OrcaNode node;
+		VisualizationViewer<OrcaNode, OrcaLink> visComp;
+		Point2D point;
+
+		public  NodePropertiesItem(final JFrame frame) {
+			super("Get Node properties ...");
+			this.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					try {
+						if (node.getReservationGuid() != null) {
+
+							OrcaResourcePropertyViewer viewer = new OrcaResourcePropertyViewer(GUI.getInstance().getFrame(), 
+									OrcaSMXMLRPCProxy.getInstance().
+									getSliverProperties(GUIManifestState.getInstance().
+									getSliceName(), 
+									node.getReservationGuid()));
+							viewer.pack();
+							viewer.setVisible(true);
+						} else {
+							throw new Exception("No reservation ID is associated with the node.");
+						}
+					} catch (Exception ex) {
+						ExceptionDialog ked = new ExceptionDialog(GUI.getInstance().getFrame(),
+								"Unable to get node properties due to exception!");
 						ked.setException("Exception encountered: ", ex);
 						ked.setLocationRelativeTo(GUI.getInstance().getFrame());
 						ked.setVisible(true);

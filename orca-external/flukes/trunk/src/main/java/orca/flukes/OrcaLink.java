@@ -117,6 +117,11 @@ public class OrcaLink extends OrcaResource {
     	else
     		viewText += "\nLabel: " + label;
     	
+    	if (reservationGuid == null) 
+    		viewText += "\nLink reservation ID: unspecified";
+    	else
+    		viewText += "\nLink reservation ID: " + reservationGuid;
+    	
     	if (state == null)
     		viewText += "\nLink reservation state: unspecified";
     	else

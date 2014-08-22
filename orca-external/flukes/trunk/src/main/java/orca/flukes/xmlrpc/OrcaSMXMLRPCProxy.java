@@ -9,6 +9,7 @@ import java.io.PrintWriter;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
@@ -41,6 +42,7 @@ public class OrcaSMXMLRPCProxy extends OrcaXMLRPCBase {
 	private static final String RENEW_SLICE = "orca.renewSlice";
 	private static final String LIST_SLICES = "orca.listSlices";
 	private static final String LIST_RESOURCES = "orca.listResources";
+	private static final String GET_SLIVER_PROPERTIES = "orca.getSliverProperties";
 	private static final String SSH_DSA_PUBKEY_FILE = "id_dsa.pub";
 	private static final String SSH_RSA_PUBKEY_FILE = "id_rsa.pub";
 
@@ -353,13 +355,56 @@ public class OrcaSMXMLRPCProxy extends OrcaXMLRPCBase {
 			throw new Exception("Unable to contact SM " + GUI.getInstance().getSelectedController());
 
 		if ((Boolean)rr.get(ERR_RET_FIELD))
-			throw new Exception("Unable to get sliver status: " + rr.get(MSG_RET_FIELD));
+			throw new Exception("Unable to get slice status: " + rr.get(MSG_RET_FIELD));
 
 		result = (String)rr.get(RET_RET_FIELD);
 
 		return result;
 	}
 
+	@SuppressWarnings("unchecked")
+	public List<Map<String, String>> getSliverProperties(String sliceId, String reservationId)  throws Exception {
+		assert((sliceId != null) && (reservationId != null));
+
+		setSSLIdentity(null, GUI.getInstance().getSelectedController());
+
+		Map<String, Object> rr = null;
+		try {
+			XmlRpcClientConfigImpl config = new XmlRpcClientConfigImpl();
+			config.setServerURL(new URL(GUI.getInstance().getSelectedController()));
+			XmlRpcClient client = new XmlRpcClient();
+			client.setConfig(config);
+
+			// set this transport factory for host-specific SSLContexts to work
+			XmlRpcCommonsTransportFactory f = new XmlRpcCommonsTransportFactory(client);
+			client.setTransportFactory(f);
+
+			// sliver status
+			rr = (Map<String, Object>)client.execute(GET_SLIVER_PROPERTIES, new Object[]{ sliceId, reservationId, new Object[]{}});
+
+		} catch (MalformedURLException e) {
+			throw new Exception("Please check the SM URL " + GUI.getInstance().getSelectedController());
+		} catch (XmlRpcException e) {
+			throw new Exception("Unable to contact SM " + GUI.getInstance().getSelectedController() + " due to " + e);
+		} catch (Exception e) {
+			throw new Exception("Unable to contact SM " + GUI.getInstance().getSelectedController());
+		}
+
+		if (rr == null)
+			throw new Exception("Unable to contact SM " + GUI.getInstance().getSelectedController());
+
+		if ((Boolean)rr.get(ERR_RET_FIELD))
+			throw new Exception("Unable to get sliver properties: " + rr.get(MSG_RET_FIELD));
+
+		Object[] tmpL = (Object[]) rr.get(RET_RET_FIELD);
+		List<Map<String, String>> t1 = new ArrayList<Map<String, String>>();
+		for(Object o: tmpL) {
+			t1.add((Map<String, String>)o);
+		}
+
+		return t1;
+	}
+	
 	@SuppressWarnings("unchecked")
 	public String[] listMySlices() throws Exception {
 		String[] result = null;

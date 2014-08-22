@@ -881,14 +881,15 @@ public class ManifestLoader implements INdlManifestModelListener, INdlRequestMod
 	 */
 	private static Pattern noticeGuidPattern = Pattern.compile(NOTICE_GUID_PATTERN);
 	private static String getGuidFromNotice(String notice) {
-		java.util.regex.Matcher m = noticeGuidPattern.matcher(notice);
-		if (m.matches()) 
+		java.util.regex.Matcher m = noticeGuidPattern.matcher(notice.trim());
+		if (m.matches()) {
 			return m.group(1);
+		}
 		return null;
 	}
 	
 	public static void main(String[] argv) {
-		String msg = "Reservation a6dae2e0-fe47-472c-87fe-875a3d841e7a (Slice geno-snapshot) is in state [Active,None]";
+		String msg = "Reservation e9a9602d-096c-45dc-a5ad-3794d1b334da (Slice test-slice) is in state [Active,None]\n";
 		System.out.println(getGuidFromNotice(msg));
 	}
 }
