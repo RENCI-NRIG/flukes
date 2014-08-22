@@ -22,6 +22,7 @@
 */
 package orca.flukes.ndl;
 
+import java.awt.GraphicsEnvironment;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -36,9 +37,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
-import java.awt.GraphicsEnvironment;
-import java.awt.HeadlessException;
+import java.util.regex.Pattern;
 
 import orca.flukes.GUI;
 import orca.flukes.GUIManifestState;
@@ -63,7 +62,6 @@ import orca.ndl.NdlToRSpecHelper;
 
 import org.apache.commons.lang.StringUtils;
 
-import com.hp.hpl.jena.graph.Node;
 import com.hp.hpl.jena.ontology.OntModel;
 import com.hp.hpl.jena.rdf.model.Literal;
 import com.hp.hpl.jena.rdf.model.Resource;
@@ -80,6 +78,7 @@ import edu.uci.ics.jung.graph.util.Pair;
  */
 public class ManifestLoader implements INdlManifestModelListener, INdlRequestModelListener , INdlColorRequestListener {
 
+	private static final String NOTICE_GUID_PATTERN = "^Reservation\\s+([a-zA-Z0-9-]+)\\s+.+$";
 	private Map<String, List<OrcaNode>> interfaceToNode = new HashMap<String, List<OrcaNode>>();
 	private Map<String, OrcaNode> nodes = new HashMap<String, OrcaNode>();
 	private Map<String, OrcaLink> links = new HashMap<String, OrcaLink>();
@@ -248,6 +247,7 @@ public class ManifestLoader implements INdlManifestModelListener, INdlRequestMod
 			
 			// reservation notice
 			ol.setReservationNotice(NdlCommons.getResourceReservationNotice(l));
+			ol.setReservationGuid(getGuidFromNotice(ol.getReservationNotice()));
 			links.put(getTrueName(l), ol);
 
 			// maybe point-to-point link
@@ -313,6 +313,7 @@ public class ManifestLoader implements INdlManifestModelListener, INdlRequestMod
 
 			ml.setLabel(label);
 			ml.setReservationNotice(NdlCommons.getResourceReservationNotice(l));
+			ml.setReservationGuid(getGuidFromNotice(ml.getReservationNotice()));
 			ml.setState(NdlCommons.getResourceStateAsString(l));
 			ml.setDomain(RequestSaver.reverseLookupDomain(NdlCommons.getDomain(l)));
 
@@ -611,6 +612,7 @@ public class ManifestLoader implements INdlManifestModelListener, INdlRequestMod
 		
 		// reservation notice
 		on.setReservationNotice(NdlCommons.getResourceReservationNotice(nr));
+		on.setReservationGuid(getGuidFromNotice(on.getReservationNotice()));
 		
 		// domain
 		Resource domain = NdlCommons.getDomain(nr);
@@ -872,5 +874,21 @@ public class ManifestLoader implements INdlManifestModelListener, INdlRequestMod
 			}
 			GUIManifestState.getInstance().getGraph().addEdge(cd.ocl, new Pair<OrcaNode>(fromOr, toOr), EdgeType.UNDIRECTED);
 		}
+	}
+	
+	/**
+	 * As a temporary measure we allow extracting guid from reservation notice /ib 08/20/14
+	 */
+	private static Pattern noticeGuidPattern = Pattern.compile(NOTICE_GUID_PATTERN);
+	private static String getGuidFromNotice(String notice) {
+		java.util.regex.Matcher m = noticeGuidPattern.matcher(notice);
+		if (m.matches()) 
+			return m.group(1);
+		return null;
+	}
+	
+	public static void main(String[] argv) {
+		String msg = "Reservation a6dae2e0-fe47-472c-87fe-875a3d841e7a (Slice geno-snapshot) is in state [Active,None]";
+		System.out.println(getGuidFromNotice(msg));
 	}
 }
