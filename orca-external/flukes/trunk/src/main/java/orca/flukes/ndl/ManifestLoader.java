@@ -881,6 +881,8 @@ public class ManifestLoader implements INdlManifestModelListener, INdlRequestMod
 	 */
 	private static Pattern noticeGuidPattern = Pattern.compile(NOTICE_GUID_PATTERN);
 	private static String getGuidFromNotice(String notice) {
+		if (notice == null)
+			return null;
 		java.util.regex.Matcher m = noticeGuidPattern.matcher(notice.trim());
 		if (m.matches()) {
 			return m.group(1);
