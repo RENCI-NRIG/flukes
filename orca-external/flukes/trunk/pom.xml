@@ -2,7 +2,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>orca</groupId>
   <artifactId>flukes</artifactId>
-  <version>0.4-SNAPSHOT</version>
+  <version>0.5-SNAPSHOT</version>
   <name>FLUKES</name>
   <description>FLUKES - ORCA NDL graph editor</description>
   <url>http://geni-images.renci.org/webstart</url>
@@ -396,5 +396,10 @@
 		<artifactId>guava</artifactId>
 		<version>14.0.1</version>
 	</dependency>
+    <dependency>
+    	<groupId>org.renci</groupId>
+    	<artifactId>xmpp-pubsub</artifactId>
+    	<version>1.0</version>
+    </dependency>
   </dependencies>
 </project>
