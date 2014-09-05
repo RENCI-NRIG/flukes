@@ -1,6 +1,9 @@
 Flukes Release Notes:
 ---------------------
 
+09/05/14:
+- Moved to 5.0 ORCA artifacts
+
 08/22/14:
 - Added the ability to query for node unit properties (to e.g. get the boot console)
 
