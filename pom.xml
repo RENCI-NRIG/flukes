@@ -145,6 +145,7 @@
          			<libPath>lib</libPath>
 
                                 <updateManifestEntries>
+					<Application-Name>Flukes</Application-Name>
 					<Permissions>all-permissions</Permissions>
 					<Codebase>*</Codebase>
 				</updateManifestEntries>
