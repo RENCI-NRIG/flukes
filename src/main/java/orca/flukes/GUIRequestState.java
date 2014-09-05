@@ -736,6 +736,17 @@ public class GUIRequestState extends GUICommonState implements IDeleteEdgeCallBa
 			if ((pn.getFirst() instanceof OrcaCrossconnect) ||
 					(pn.getSecond() instanceof OrcaCrossconnect))
 				continue;
+			
+			// if one end is storage, also ignore
+			if ((pn.getFirst() instanceof OrcaStorageNode) || 
+					(pn.getSecond() instanceof OrcaStorageNode))
+				continue;
+			
+			// if one end is stitchport, also ignore
+			if ((pn.getFirst() instanceof OrcaStitchPort) ||
+					(pn.getSecond() instanceof OrcaStitchPort))
+				continue;
+			
 			int nodeCt1, nodeCt2;
 			if (pn.getFirst() instanceof OrcaNodeGroup) {
 				OrcaNodeGroup ong = (OrcaNodeGroup)pn.getFirst();
