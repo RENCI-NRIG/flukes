@@ -225,11 +225,6 @@ public class OrcaXMLRPCBase {
 				if (Security.getProvider("BC") == null) {
 					Security.addProvider(new BouncyCastleProvider());
 				}
-				System.out.println("Currently loaded security providers:");
-				for (Provider p: Security.getProviders()) {
-					System.out.println("Provider " + p + " - " +  p.getName());
-				}
-				System.out.println("End of security provider list.");
 				return null;
 			}
 		});
