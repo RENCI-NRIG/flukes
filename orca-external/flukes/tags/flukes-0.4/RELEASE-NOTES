@@ -1,0 +1,151 @@
+Flukes Release Notes:
+---------------------
+
+08/22/14:
+- Added the ability to query for node unit properties (to e.g. get the boot console)
+
+07/22/14:
+- Trim user-provided properties to ensure no extra whitespaces
+
+06/18/14:
+- Added TAMU, WSU, UMass, UAF and PSC
+
+03/31/14:
+- Added NCSU2 net
+
+03/05/14:
+- Added WVN, NCSU, NCSU2 racks
+
+02/26/14:
+- Updated to support fixes to CH API
+
+02/19/14:
+- Added support for Federation Slice authority and GENI Portal (see Help)
+
+02/13/14:
+- Updated path search algorithm
+
+1/28/14:
+- Enabled support for color extension
+
+11/15/13:
+- Renamed SL to starlight to support SL site
+
+11/15/13:
+- Modified to support broadcast connections with common links
+
+10/17/13:
+- Added new racks (UFL, SL, OSF, UCD)
+
+10/10/13:
+- Added explicit 'No dependencies' option to node dependencies field
+
+08/30/13:
+- Added support for multicast domains
+
+07/30/13:
+- Added storage parameterization
+- Added sudo option on second account
+
+07/16/13:
+- Added support for storage request and manifests
+
+06/24/13:
+- Added direct support for .pem/.crt/.key credentials without intervening .jks 
+
+06/16/13:
+- Added user cert validity check
+
+06/03/13:
+- Updated the list of known sites
+
+05/28/13:
+- Added support for additional SSH public keys
+
+05/23/13:
+- Added mac addresses to displayed properties
+
+05/21/13:
+- Added support for image registry
+
+05/01/13:
+- Added support for stitch port manifest 
+
+04/30/13:
+- Added support for stitching port requests
+
+04/02/13:
+- Added experimental support for automatic IP address assignment
+
+03/18/13:
+- Shortened names of links in inter-domain cases
+
+03/13/13:
+- Added NCSU site
+
+03/07/13:
+- Added ability to extend slice lifetime
+- Improved readability of names in manifests
+- Added ability to save manifest into iRods
+
+02/15/13:
+- Added FIU
+
+01/28/13:
+- New base image with non-blocking NEuca tools upgrade
+
+01/04/13:
+- Updated for New/Save bug
+
+12/21/12:
+- 'End-of-the-world' release, last in 0.3 series.
+
+12/17/12:
+- Added checks for image when saving and loading requests
+
+11/30/12:
+- Updated standard Debian image
+
+11/20/12:
+- Added new standard Debian image
+
+11/11/12:
+- Renamed modify buttons to make purpose clearer
+
+11/7/12:
+- Added generation of modify requests on manifests (increase and remove) from manifest
+
+11/2/12:
+- Flukes now preserves the namespace of saved requests across save/submission
+
+10/31/12:
+- Added ability to lookup available domains from SM. Domain list shown in Node Properties is the list of domains available at this SM.
+- Added 'Delete' button to slice list, so you can delete a slice without querying for it
+- Fixed issues with double-links created when switching between Edit and Pick modes
+- Added ability to generate a self-contained app, in addition to JNLP
+- Fixed Windows 7 startup bug
+- Added call to modifySlice protected by enable.modify property
+
+10/22/12:
+- Added reverse domain name remapping for network domains
+- Added case handling single node on shared vlan
+
+09/25/12:
+- Changed the model closing to be done in request and manifest parser
+
+09/05/12:
+- Fixed a bug with model closing by modifying NdlGenerator to use a dynamic, rather than static reference model.
+
+08/14/12:
+- Fixed a bug related to manifest parsing, which overrides reservation-level domain setting in the request
+
+08/10/12:
+- Added ability for user to list slices belonging to her in a particular controller (Manifest View)
+
+- Added the listing of configured dataplane interfaces with IP addresses to node properties in manifest
+
+- Added the listing of worker node and instance id in node properties in manifest
+
+- Modified to support the latest manifest format
+
+- Reordered menu items under 'File'
