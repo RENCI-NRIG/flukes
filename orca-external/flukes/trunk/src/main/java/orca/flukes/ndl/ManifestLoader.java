@@ -678,7 +678,7 @@ public class ManifestLoader implements INdlManifestModelListener, INdlRequestMod
 				
 				Iterator<Resource> pIter = p.iterator();
 				Resource first = pIter.next();
-				if (first == null) 
+				if (first == null)
 					continue;
 				while(pIter.hasNext()) {
 					// only take nodes, skip interfaces on the path
