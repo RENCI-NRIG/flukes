@@ -178,9 +178,36 @@
 	           			<!-- this is perhaps going to change -->
 	           			<mainClass>orca.flukes.GUI</mainClass>
          			</jnlp>
+				<jnlpExtensions>
+					<jnlpExtension>
+						<name>bcprov</name>
+						<title>bcprov-jdk15on</title>
+						<vendor>Sun MicroSystems, Inc.</vendor>
+						<includes>
+						        <include>org.bouncycastle:bcprov-jdk15on</include>
+						</includes>
+					</jnlpExtension>
+                                        <jnlpExtension>
+						<name>bcprov-ext</name>
+						<title>bcprov-ext-jdk15on</title>
+						<vendor>Sun MicroSystems, Inc.</vendor>
+						<includes>
+						        <include>org.bouncycastle:bcprov-ext-jdk15on</include>
+						</includes>
+					</jnlpExtension>
+					<jnlpExtension>
+					        <name>bcpkix</name>
+						<title>bcpkix-jdk15on</title>
+						<vendor>Sun MicroSystems, Inc.</vendor>
+						<includes>
+							<include>org.bouncycastle:bcpkix-jdk15on</include>
+					        </includes>
+					</jnlpExtension>
+				</jnlpExtensions>
 
          			<!-- SIGNING -->
          			<!-- defining this will automatically sign the jar and its dependencies, if necessary -->
+				<canUnsign>false</canUnsign>
          			<sign>
          				<!-- we need to override passwords easily from the command line. ${keypass} -->
          				<!-- ${storepass} -->
