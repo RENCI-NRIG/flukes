@@ -28,6 +28,7 @@ import orca.flukes.GUIResourceState;
 import orca.flukes.OrcaResourceSite;
 import orca.flukes.xmlrpc.RegistryXMLRPCProxy;
 import orca.ndl.NdlCommons;
+import orca.ndl.NdlModel;
 import orca.ndl.OntProcessor;
 
 import com.hp.hpl.jena.ontology.OntModel;
@@ -65,7 +66,7 @@ public class ResourceQueryProcessor {
 				continue;
 			}
 			// create a model from the description
-			OntModel amModel = NdlCommons.getModelFromString(fullRdf, null, true, true);
+			OntModel amModel = NdlModel.getModelFromString(fullRdf, null, true);
 			// query
 			String query = NdlCommons.createQueryStringDomainLocationDetails();
 			ResultSet rs = OntProcessor.rdfQuery(amModel, query);
