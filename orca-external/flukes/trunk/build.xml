@@ -44,9 +44,11 @@
 	<unsignjar jar="/Users/ibaldin/.m2/repository/org/bouncycastle/bcprov-ext-jdk15on/1.49/bcprov-ext-jdk15on-1.49.jar"/>
 	<unsignjar jar="/Users/ibaldin/.m2/repository/org/bouncycastle/bcprov-jdk15on/1.49/bcprov-jdk15on-1.49.jar"/>
 -->
+<!--
 	<unsignjar jar="/Users/ibaldin/.m2/repository/org/bouncycastle/bcpkix-jdk15on/1.50/bcpkix-jdk15on-1.50.jar"/>
 	<unsignjar jar="/Users/ibaldin/.m2/repository/org/bouncycastle/bcprov-ext-jdk15on/1.50/bcprov-ext-jdk15on-1.50.jar"/>
 	<unsignjar jar="/Users/ibaldin/.m2/repository/org/bouncycastle/bcprov-jdk15on/1.50/bcprov-jdk15on-1.50.jar"/>
+-->
 </target>
 
 <target name="install" description="Install flukes onto specified host and unpack for JNLP use">

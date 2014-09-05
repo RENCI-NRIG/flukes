@@ -429,6 +429,12 @@
     	<groupId>orca.core</groupId>
     	<artifactId>util</artifactId>
     	<version>5.0-SNAPSHOT</version>
+        <exclusions>
+                <exclusion>
+                        <artifactId>bcprov-jdk16</artifactId>
+                        <groupId>bouncycastle.bcprov-jdk16</groupId>
+                </exclusion>
+        </exclusions>
     </dependency>
     <dependency>
 		<groupId>com.google.guava</groupId>
