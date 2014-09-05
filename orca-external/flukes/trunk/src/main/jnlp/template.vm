@@ -17,9 +17,7 @@
 	<resources>
 		<j2se version="1.6+" max-heap-size="1024m" />
 		$dependencies
-		<extension name="BouncyCastle Provider library" href="bcprov.jnlp"/>
-		<extension name="BouncyCastle Provider Extensions library" href="bcprov-ext.jnlp"/>
-		<extension name="BouncyCastle Public Key Infrastructure library" href="bcpkix.jnlp"/>
+		<extension name="BouncyCastle cryptography libraries" href="bcprov.jnlp"/>
 	</resources>
 	<application-desc main-class="$mainClass"/>
 </jnlp>
