@@ -12,7 +12,7 @@ import org.junit.Test;
 // load a sample file with color extension
 public class TestColorExtension {
 	
-@Test
+
 public void readColorRequest() throws IOException {
 	System.setProperty("java.awt.headless", "true");
 	InputStream is = this.getClass().getResourceAsStream("/test-color-extension.rdf");
@@ -22,7 +22,7 @@ public void readColorRequest() throws IOException {
 	rl.loadGraph(t);
 }
 
-@Test
+
 public void readColorManifest() throws IOException {
 	System.setProperty("java.awt.headless", "true");
 	InputStream is = this.getClass().getResourceAsStream("/test-color-extension-manifest.rdf");
