@@ -1,6 +1,9 @@
 Flukes Release Notes:
 ---------------------
 
+09/08/14:
+- Separated BC provider into a JNLP extension
+
 09/05/14:
 - Moved to 5.0 ORCA artifacts
 
