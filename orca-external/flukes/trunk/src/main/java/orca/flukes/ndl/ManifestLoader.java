@@ -677,19 +677,21 @@ public class ManifestLoader implements INdlManifestModelListener, INdlRequestMod
 				GUI.logger().debug(sb.toString());
 				
 				Iterator<Resource> pIter = p.iterator();
+				
 				Resource first = pIter.next();
 				if (first == null)
 					continue;
 				while(pIter.hasNext()) {
-					// only take nodes, skip interfaces on the path
+					// only take nodes, skip links on the path
 					pIter.next();
 					if (!pIter.hasNext())
 						break;
 					Resource second = pIter.next();
 					OrcaNode firstNode = nodes.get(getTrueName(first));
 					OrcaNode secondNode = nodes.get(getTrueName(second));
-					if (secondNode == null)
+					if ((firstNode == null) || (secondNode == null)) {
 						break;
+					}
 
 					GUI.logger().debug("  Adding p-to-p link");
 					OrcaLink ol = GUIManifestState.getInstance().getLinkCreator().create("Unnamed");
