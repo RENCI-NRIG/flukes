@@ -90,9 +90,9 @@ public class IP4Assign {
 		if (InetAddresses.coerceToInteger(ppCurrent) == mpStartInt)
 			return null;
 		
-		ret[0] = ppCurrent.getHostName();
+		ret[0] = ppCurrent.getHostAddress();
 		InetAddress tmp = InetAddresses.increment(ppCurrent);
-		ret[1] = tmp.getHostName();
+		ret[1] = tmp.getHostAddress();
 		
 		int ppCurrentInt = InetAddresses.coerceToInteger(ppCurrent);
 		ppCurrentInt += 1L << (32 - ppMaskSize);
@@ -118,7 +118,7 @@ public class IP4Assign {
 		
 		InetAddress tmp = mpCurrent;
 		for(int i = 0; ct > 0; ct--, i++) {
-			ret[i] = tmp.getHostName();
+			ret[i] = tmp.getHostAddress();
 			tmp = InetAddresses.increment(tmp);
 		}
 		
