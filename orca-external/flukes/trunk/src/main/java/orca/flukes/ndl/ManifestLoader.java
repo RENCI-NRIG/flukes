@@ -224,12 +224,12 @@ public class ManifestLoader implements INdlManifestModelListener, INdlRequestMod
 		
 		GUI.logger().debug("Link Connection: " + l + " with interfaces " + interfaces);
 		
+		// ignore links that are part of network connections
 		if (parent != null) {
 			GUI.logger().debug("    ignoring due to parent " + parent);
 			return;
 		}
 		
-		// find what nodes it connects (should be two)
 		Iterator<Resource> it = interfaces.iterator(); 
 		
 		String label = NdlCommons.getResourceLabel(l);
@@ -322,12 +322,43 @@ public class ManifestLoader implements INdlManifestModelListener, INdlRequestMod
 			
 			nodes.put(getTrueName(l), ml);
 			
+			// special case handling - if storage is one side of the link
+			// (only for shared vlan storage), then we only remember
+			// interfaces with ip addresses on them (others are duplicates) /ib 09/18/14
+			boolean sharedVlanStorageLink = false;
+			for(Resource ti: interfaces) {
+				List<Resource> attached = NdlCommons.getWhoHasInterface(ti, m);
+				if (attached == null)
+					continue;
+				for(Resource ta: attached) {
+					if (NdlCommons.isISCSINetworkStorage(ta)) {
+						sharedVlanStorageLink = true;
+						break;
+					}
+				}
+				if (sharedVlanStorageLink)
+					break;
+			}
+			
 			// remember the interfaces
 			while(it.hasNext()) {
 				Resource intR = it.next();
-				GUI.logger().debug("  Remembering interface " + intR + " of " + ml);
 				//interfaceToNode.put(getTrueName(intR), ml);
-				addNodeToInterface(getTrueName(intR), ml);
+				if (sharedVlanStorageLink) {
+					// does it have an IP address? - then we use it
+					if (NdlCommons.getInterfaceIP(intR) != null) {
+						GUI.logger().debug("  Remembering interface " + intR + " of " + ml);
+						addNodeToInterface(getTrueName(intR), ml);
+					} else {
+						// otherwise it came from request and we don't need it 
+						// this will be fixed by changing the manifest model to reuse request interfaces later /ib 09/18/14
+						GUI.logger().debug("  Skipping/deleting interface " + intR + " of " + ml + " that has no IP address");
+						interfaceToNode.remove(getTrueName(intR));
+					}
+				} else {
+					GUI.logger().debug("  Remembering interface " + intR + " of " + ml);					
+					addNodeToInterface(getTrueName(intR), ml);
+				}
 			}
 			
 			// add crossconnect to the graph
@@ -411,10 +442,16 @@ public class ManifestLoader implements INdlManifestModelListener, INdlRequestMod
 			} else if (crs != null) {
 				// for individual nodes
 				// create link from node to crossconnect and assign IP if it doesn't exist
-				GUI.logger().debug("  Creating a link  from " + on + " to " + crs);
-				ol = GUIManifestState.getInstance().getLinkCreator().create("Unnamed");
-				GUIManifestState.getInstance().getGraph().addEdge(ol, new Pair<OrcaNode>(on, crs), 
-						EdgeType.UNDIRECTED);
+				
+				// check if the nodes are listed in the map
+				
+				if (interfaceToNode.get(getTrueName(intf)) != null) {
+					GUI.logger().debug("  Creating a link  from " + on + " to " + crs);
+					ol = GUIManifestState.getInstance().getLinkCreator().create("Unnamed");
+					GUIManifestState.getInstance().getGraph().addEdge(ol, new Pair<OrcaNode>(on, crs), 
+							EdgeType.UNDIRECTED);
+				} else
+					GUI.logger().debug("  Skipping a link from " + on + " to " + crs + " as interface isn't remembered");
 				on.setIp(ol, ip, nmInt);
 				on.setMac(ol, NdlCommons.getAddressMAC(intf));
 			}
