@@ -381,8 +381,8 @@ public class ManifestLoader implements INdlManifestModelListener, INdlRequestMod
 					if (NdlCommons.getInterfaceIP(intR) != null) {
 						// if it has IP, it is shared and we don't need it, however we need
 						// IP address from it
-						GUI.logger().debug("  Skipping/deleting interface " + intR + " of " + ml + " that has IP address");
-						interfaceToNode.remove(getTrueName(intR));
+						//GUI.logger().debug("  Skipping/deleting interface " + intR + " of " + ml + " that has IP address");
+						//interfaceToNode.remove(getTrueName(intR));
 					} else {
 						// if it doesn't have IP, we need it for proper topology visualization
 						GUI.logger().debug("  Remembering interface " + intR + " of " + ml);
@@ -607,6 +607,7 @@ public class ManifestLoader implements INdlManifestModelListener, INdlRequestMod
 		for (Iterator<Resource> it = interfaces.iterator(); it.hasNext();) {
 			Resource intR = it.next();
 			//interfaceToNode.put(getTrueName(intR), newNode);
+			GUI.logger().debug("Remembering interface " + intR + " of node " + ce);
 			addNodeToInterface(getTrueName(intR), newNode);
 		}
 		
