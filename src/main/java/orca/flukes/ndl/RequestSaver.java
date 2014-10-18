@@ -282,37 +282,6 @@ public class RequestSaver {
 		}
 	}
 	
-	/**
-	 * Special handling for node group internal vlan
-	 * @param ong
-	 * @throws NdlException
-	 */
-	private void processNodeGroupInternalVlan(Individual reservation, OrcaNodeGroup ong) throws NdlException {
-		Individual netI = ngen.declareNetworkConnection("private-vlan-" + ong.getName());
-		ngen.addLayerToConnection(netI, "ethernet", "EthernetNetworkElement");
-		ngen.addResourceToReservation(reservation, netI);
-		
-		Individual intI = ngen.declareInterface("private-vlan-intf-" + ong.getName());
-		ngen.addInterfaceToIndividual(intI, netI);
-		
-		Individual nodeI = ngen.getRequestIndividual(ong.getName());
-		ngen.addInterfaceToIndividual(intI, nodeI);
-		
-		/* no more internal vlans
-		if (ong.getInternalVlanBw() > 0) 
-			ngen.addBandwidthToConnection(netI, ong.getInternalVlanBw());
-		
-		if (ong.getInternalVlanLabel() != null)
-			ngen.addLabelToIndividual(netI, ong.getInternalVlanLabel());
-		*/
-		
-		if (ong.getInternalIp() != null) {
-			Individual ipInd = ngen.addUniqueIPToIndividual(ong.getInternalIp(), "private-vlan-intf-" + ong.getName(), intI);
-			if (ong.getInternalNm() != null) 
-				ngen.addNetmaskToIP(ipInd, netmaskIntToString(Integer.parseInt(ong.getInternalNm())));
-		}
-	}
-	
 	private void checkLinkSanity(OrcaLink l) throws NdlException {
 		// sanity checks
 		// 1) if label is specified, nodes cannot be in different domains
