@@ -641,7 +641,8 @@ public class ManifestLoader implements INdlManifestModelListener, INdlRequestMod
 				String imageHash = NdlCommons.getIndividualsImageHash(ce);
 				GUIRequestState.getInstance().addImage(new OrcaImage(di.getLocalName(), 
 						new URL(imageURL), imageHash), null);
-				newNode.setImage(di.getLocalName());
+				String imgName = di.getURI().replaceAll("http.+#", "").replace("+", " ");
+				newNode.setImage(imgName);
 			} catch (Exception e) {
 				// FIXME: ?
 				;
