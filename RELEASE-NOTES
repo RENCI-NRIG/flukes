@@ -1,6 +1,9 @@
 Flukes Release Notes:
 ---------------------
 
+12/2/14:
+- Fixed long standing image name bug in manifest display
+
 09/08/14:
 - Separated BC provider into a JNLP extension
 
