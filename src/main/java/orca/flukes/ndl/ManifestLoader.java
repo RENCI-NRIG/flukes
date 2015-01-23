@@ -920,8 +920,11 @@ public class ManifestLoader implements INdlManifestModelListener, INdlRequestMod
 		if (NdlCommons.getColorBlob(color) != null)
 			oc.setBlob(NdlCommons.getColorBlob(color));
 		else { 
-			oc.setBlob(NdlToRSpecHelper.stripXmlNs(NdlToRSpecHelper.stripXmlHead(NdlCommons.getColorBlobXML(color, true))));
-			oc.setXMLBlobState(true);
+			String blob = NdlCommons.getColorBlobXML(color, true);
+			if (blob != null) {
+				oc.setBlob(NdlToRSpecHelper.stripXmlNs(NdlToRSpecHelper.stripXmlHead(blob)));
+				oc.setXMLBlobState(true);
+			}
 		}
 
 		necolors.add(new NEColor(ne, oc));
@@ -931,8 +934,6 @@ public class ManifestLoader implements INdlManifestModelListener, INdlRequestMod
 	@Override
 	public void ndlColorDependency(Resource fromNe, Resource toNe,
 			Resource color, String label) {
-		
-
 		
 		OrcaColorLink ocl = new OrcaColorLink(label);
 		
