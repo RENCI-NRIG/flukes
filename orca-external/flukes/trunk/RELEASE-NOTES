@@ -1,6 +1,9 @@
 Flukes Release Notes:
 ---------------------
 
+02/03/15:
+- Fixes for storage properties loaded from previously saved request file
+
 12/2/14:
 - Fixed long standing image name bug in manifest display
 
