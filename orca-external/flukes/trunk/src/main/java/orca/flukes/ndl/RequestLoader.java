@@ -193,6 +193,10 @@ public class RequestLoader implements INdlRequestModelListener, INdlColorRequest
 				// storage node
 				OrcaStorageNode snode = new OrcaStorageNode(ce.getLocalName());
 				snode.setCapacity(NdlCommons.getResourceStorageCapacity(ce));
+				snode.setFS(NdlCommons.getResourceStorageFSType(ce), 
+						NdlCommons.getResourceStorageFSParam(ce), 
+						NdlCommons.getResourceStorageMntPoint(ce));
+				snode.setDoFormat(NdlCommons.getResourceStorageDoFormat(ce));
 				newNode = snode;
 			} else // default just a node
 				newNode = new OrcaNode(ce.getLocalName());
