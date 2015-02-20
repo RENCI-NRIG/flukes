@@ -5,18 +5,11 @@ import java.util.Map;
 import javax.swing.ImageIcon;
 import javax.swing.JPopupMenu;
 
-import orca.flukes.GUI.PrefsEnum;
 import orca.flukes.MouseMenus.DomainDisplay;
-import orca.flukes.MouseMenus.ImageDisplay;
-import orca.flukes.MouseMenus.IncreaseByNodeGroupItem;
 import orca.flukes.MouseMenus.NodeColorItem;
-import orca.flukes.MouseMenus.NodeLoginItem;
 import orca.flukes.MouseMenus.NodePropItem;
 import orca.flukes.MouseMenus.NodeTypeDisplay;
 import orca.flukes.MouseMenus.NodeViewItem;
-import orca.flukes.OrcaNode.ManifestMenu;
-import orca.flukes.OrcaNode.RequestMenu;
-import orca.flukes.OrcaNode.ResourceMenu;
 import edu.uci.ics.jung.graph.util.Pair;
 import edu.uci.ics.jung.visualization.LayeredIcon;
 
@@ -88,6 +81,12 @@ public class OrcaStorageNode extends OrcaNode {
 		return doFormat;
 	}
 	
+	/**
+	 * Set FS prameters
+	 * @param t type
+	 * @param p params
+	 * @param m mnt point
+	 */
 	public void setFS(String t, String p, String m) {
 		hasFSType = t;
 		hasFSParam = p;
