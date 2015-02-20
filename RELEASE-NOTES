@@ -1,5 +1,7 @@
 Flukes Release Notes:
 ---------------------
+02/20/15:
+- Updated semantic verification ruleset in NDL Commons
 
 02/03/15:
 - Fixes for storage properties loaded from previously saved request file
