@@ -55,8 +55,10 @@ import orca.ndl.NdlRequestParser;
 import org.apache.commons.lang.StringUtils;
 
 import com.hp.hpl.jena.ontology.OntModel;
+import com.hp.hpl.jena.query.ResultSet;
 import com.hp.hpl.jena.rdf.model.Literal;
 import com.hp.hpl.jena.rdf.model.Resource;
+import com.hp.hpl.jena.sparql.core.ResultBinding;
 import com.hyperrealm.kiwi.ui.dialog.ExceptionDialog;
 
 import edu.uci.ics.jung.graph.util.EdgeType;
@@ -330,7 +332,16 @@ public class RequestLoader implements INdlRequestModelListener, INdlColorRequest
 		if (on != null) {
 			if (on instanceof OrcaStitchPort) {
 				OrcaStitchPort sp = (OrcaStitchPort)on;
-				sp.setPort(intf.toString());
+				// find where it is being adapted from
+				ResultSet rs = NdlCommons.getLayerAdapatationOf(om, intf.toString());
+				if (rs.hasNext()) {
+					ResultBinding result = (ResultBinding)rs.next();
+					Resource res = (Resource)result.get("r");
+					if (res != null)
+						sp.setPort(res.toString());
+					if (rs.hasNext())
+						GUI.logger().warn("Interface " + intf + " is adapted to by more than one entity " + res);
+				}
 				sp.setLabel(NdlCommons.getLayerLabelLiteral(intf));
 			}
 			if (on instanceof OrcaStorageNode) {
