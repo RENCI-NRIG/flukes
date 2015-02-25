@@ -1,5 +1,8 @@
 Flukes Release Notes:
 ---------------------
+02/25/15:
+- Added support for new-style stitchport definitions
+
 02/20/15:
 - Updated semantic verification ruleset in NDL Commons
 

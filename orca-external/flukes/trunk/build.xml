@@ -52,12 +52,12 @@
 </target>
 
 <target name="install" description="Install flukes onto specified host and unpack for JNLP use">
-	<property name="flukes.zip" value="flukes-0.5-SNAPSHOT.zip"/>
+	<property name="flukes.zip" value="flukes-0.6-SNAPSHOT.zip"/>
 	<property name="flukes.host" value="geni-images.renci.org"/>
+	<property name="flukes.dir" value="/images/webstart/0.6-SNAPSHOT"/>
 <!--
-	<property name="flukes.dir" value="/images/webstart/0.5-SNAPSHOT"/>
--->
 	<property name="flukes.dir" value="/images/webstart"/>
+-->
 	<description>Install flukes onto ${flukes.host} and unpack for JNLP use</description>
 	<scp file="target/${flukes.zip}" todir="${user.name}@${flukes.host}:${flukes.dir}" keyfile="${user.home}/.ssh/id_dsa" />
 	<sshexec host="${flukes.host}" username="${user.name}" keyfile="${user.home}/.ssh/id_dsa" command="cd ${flukes.dir}; unzip -o ${flukes.zip}"/>

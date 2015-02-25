@@ -261,8 +261,12 @@ public class RequestSaver {
 			if ((sp.getPort() == null) || (sp.getPort().length() == 0) || 
 					(sp.getLabel() == null) || (sp.getLabel().length() == 0))
 				throw new NdlException("URL and label must be specified in StitchPort");
-			intI = ngen.declareExistingInterface(sp.getPort());
+			//intI = ngen.declareExistingInterface(sp.getPort());
+			intI = ngen.declareExistingInterface(generateStitchPortInterfaceUrl(sp));
 			ngen.addLabelToIndividual(intI, sp.getLabel());
+			// declare adaptation
+			Individual intM = ngen.declareExistingInterface(sp.getPort());
+			ngen.addEthernetAdaptation(intM, intI);
 		} else 
 			intI = ngen.declareInterface(e.getName()+"-"+n.getName());
 		// add to link
@@ -317,6 +321,22 @@ public class RequestSaver {
 		if (e instanceof OrcaColorLink) 
 			return true;
 		return false;
+	}
+	
+	/**
+	 * Unique name generator for stitchport interfaces: interface URL + "/" + label
+	 * @param osp
+	 * @return
+	 * @throws NdlException
+	 */
+	private String generateStitchPortInterfaceUrl(OrcaStitchPort osp) throws NdlException {
+		if ((osp.getPort() == null) || (osp.getLabel() == null))
+			throw new NdlException("Stitchport " + osp + " does not specify URL or label");
+		
+		if (osp.getPort().endsWith("/"))
+			return osp.getPort() + osp.getLabel();
+		else
+			return osp.getPort() + "/" + osp.getLabel();
 	}
 	
 	/**
@@ -388,8 +408,12 @@ public class RequestSaver {
 				OrcaStitchPort sp = (OrcaStitchPort)n;
 				if ((sp.getLabel() == null) || (sp.getLabel().length() == 0))
 					throw new NdlException("URL and label must be specified in StitchPort");
-				intI = ngen.declareExistingInterface(sp.getPort());
+				// declare adaptations to this port
+				intI = ngen.declareExistingInterface(generateStitchPortInterfaceUrl(sp));
 				ngen.addLabelToIndividual(intI, sp.getLabel());
+				// add adaptation
+				Individual intM = ngen.declareExistingInterface(sp.getPort());
+				ngen.addEthernetAdaptation(intM, intI);
 			} else
 				intI = ngen.declareInterface(oc.getName()+"-"+n.getName());
 			
