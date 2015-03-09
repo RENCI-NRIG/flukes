@@ -1100,6 +1100,8 @@ public class GUI implements ComponentListener {
 			"Options for invoking SSH (the default set turns off checking .ssh/known_hosts)"),
 		ORCA_REGISTRY("orca.registry.url", "http://geni.renci.org:15080/registry/",
 			"URL of the ORCA actor registry to query"),
+		ORCA_REGISTRY_USER("orca.registry.user", "someuser", "Username for actor registry"),
+		ORCA_REGISTRY_PASS("orca.registry.pass", "pass", "Password for actor registry"),
 		ORCA_REGISTRY_CERT_FINGERPRINT("orca.registry.certfingerprint", "78:B6:1A:F0:6C:F8:C7:0F:C0:05:10:13:06:79:E0:AC",
 			"MD5 fingerprint of the certificate used by the registry"),
 		USER_KEYSTORE("user.keystore", "~/.ssl/user.jks", 
