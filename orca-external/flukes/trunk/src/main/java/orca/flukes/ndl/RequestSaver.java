@@ -109,6 +109,8 @@ public class RequestSaver {
 		dm.put("WSU (Detroit, MI, USA) XO Rack", "wsuvmsite.rdf#wsuvmsite");
 		dm.put("UAF (Fairbanks, AK, USA) XO Rack", "uafvmsite.rdf#uafvmsite");
 		dm.put("PSC (Pittsburgh, PA, USA) XO Rack", "pscvmsite.rdf#pscvmsite");
+		dm.put("GWU (Washington DC,  USA) XO Rack", "gwuvmsite.rdf#gwuvmsite");
+		dm.put("CIENA (Ottawa,  CA) XO Rack", "cienvmsite.rdf#cienvmsite");
 		dm.put(OrcaStitchPort.STITCHING_DOMAIN_SHORT_NAME, "orca.rdf#Stitching");
 
 		domainMap = Collections.unmodifiableMap(dm);
@@ -134,6 +136,14 @@ public class RequestSaver {
 		ndm.put("WVN XO Rack Net", "wvnNet.rdf#wvnNet");
 		ndm.put("NCSU XO Rack Net", "ncsuNet.rdf#ncsuNet");
 		ndm.put("NCSU2 XO Rack Net", "ncs2Net.rdf#ncsuNet");
+		ndm.put("TAMU XO Rack Net",  "tamuNet.rdf#tamuNet");
+		ndm.put("UMass XO Rack Net",  "umassNet.rdf#umassNet");
+		ndm.put("WSU XO Rack Net",  "wsuNet.rdf#wsuNet");
+		ndm.put("UAF XO Rack Net",  "uafNet.rdf#uafNet");
+		ndm.put("PSC XO Rack Net",  "pscNet.rdf#pscNet");
+		ndm.put("GWU XO Rack Net",  "gwuNet.rdf#gwuNet");
+		ndm.put("CIENA XO Rack Net",  "cienNet.rdf#cienNet");
+		
 		
 		ndm.put("I2 ION/AL2S", "ion.rdf#ion");
 		ndm.put("NLR Net", "nlr.rdf#nlr");
@@ -147,11 +157,11 @@ public class RequestSaver {
 	static {
 		Map<String, Pair<String>> nt = new HashMap<String, Pair<String>>();
 		nt.put(BAREMETAL, new Pair<String>(EXOGENI_NS, "ExoGENI-M4"));
-		nt.put("Euca m1.small", new Pair<String>(EUCALYPTUS_NS, "EucaM1Small"));
-		nt.put("Euca c1.medium", new Pair<String>(EUCALYPTUS_NS, "EucaC1Medium"));
-		nt.put("Euca m1.large", new Pair<String>(EUCALYPTUS_NS, "EucaM1Large"));
-		nt.put("Euca m1.xlarge", new Pair<String>(EUCALYPTUS_NS, "EucaM1XLarge"));
-		nt.put("Euca c1.xlarge", new Pair<String>(EUCALYPTUS_NS, "EucaC1XLarge"));
+		//nt.put("Euca m1.small", new Pair<String>(EUCALYPTUS_NS, "EucaM1Small"));
+		//nt.put("Euca c1.medium", new Pair<String>(EUCALYPTUS_NS, "EucaC1Medium"));
+		//nt.put("Euca m1.large", new Pair<String>(EUCALYPTUS_NS, "EucaM1Large"));
+		//nt.put("Euca m1.xlarge", new Pair<String>(EUCALYPTUS_NS, "EucaM1XLarge"));
+		//nt.put("Euca c1.xlarge", new Pair<String>(EUCALYPTUS_NS, "EucaC1XLarge"));
 		nt.put("XO Small", new Pair<String>(EXOGENI_NS, "XOSmall"));
 		nt.put("XO Medium", new Pair<String>(EXOGENI_NS, "XOMedium"));
 		nt.put("XO Large", new Pair<String>(EXOGENI_NS, "XOLarge"));
