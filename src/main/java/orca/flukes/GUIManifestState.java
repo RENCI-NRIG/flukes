@@ -312,7 +312,7 @@ public class GUIManifestState extends GUICommonState implements IDeleteEdgeCallB
 													Map<String, Object> r = GENICHXMLRPCProxy.getInstance().saLookupSlice(sliceUrn, 
 															new FedField[] { GENICHXMLRPCProxy.FedField.SLICE_EXPIRATION});
 													String dateString = (String)((Map<String, Object>)r.get(sliceUrn)).get(GENICHXMLRPCProxy.FedField.SLICE_EXPIRATION.name());
-													DateFormat df = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss", Locale.ENGLISH);
+													DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'hh:mm:ss", Locale.ENGLISH);
 													df.setTimeZone(TimeZone.getTimeZone("UTC"));
 													Date result =  df.parse(dateString);
 													if (result.before(newEnd)) {
@@ -514,6 +514,19 @@ public class GUIManifestState extends GUICommonState implements IDeleteEdgeCallB
 			ed.setLocationRelativeTo(GUI.getInstance().getFrame());
 			ed.setException("Exception encountered while saving manifest to iRods: ", e);
 			ed.setVisible(true);
+		}
+	}
+	public static void main(String[] argv) {
+		try {
+		String dateString = "2015-04-07T19:33:10Z";
+		DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.ENGLISH);
+		System.out.println("*** DATE STRING FORM SA " + dateString);
+		df.setTimeZone(TimeZone.getTimeZone("UTC"));
+		Date result =  df.parse(dateString);
+		System.out.println(result);
+		} catch (Exception e) {
+			System.out.println(e);
+			e.printStackTrace();
 		}
 	}
 }
