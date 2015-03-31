@@ -1,5 +1,8 @@
 Flukes Release Notes:
 ---------------------
+03/31/15:
+- Fixed the date parsing issue with extend with SA
+
 03/09/15:
 - Addded support for GWU and CIENA racks, removed old size definitions
 
