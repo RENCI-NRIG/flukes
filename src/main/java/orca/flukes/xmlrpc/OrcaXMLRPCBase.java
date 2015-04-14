@@ -9,7 +9,6 @@ import java.security.AccessController;
 import java.security.KeyStore;
 import java.security.PrivateKey;
 import java.security.PrivilegedAction;
-import java.security.Provider;
 import java.security.Security;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateExpiredException;
@@ -33,6 +32,7 @@ import orca.util.ssl.MultiKeySSLContextFactory;
 
 import org.apache.commons.httpclient.protocol.Protocol;
 import org.apache.commons.httpclient.protocol.ProtocolSocketFactory;
+import org.bouncycastle.asn1.pkcs.PrivateKeyInfo;
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
@@ -241,6 +241,11 @@ public class OrcaXMLRPCBase {
 		PrivateKey privKey = null;
 
 		while ((object = pemParser.readObject()) != null) {
+			if (object instanceof PrivateKeyInfo) {
+				PrivateKeyInfo pki = (PrivateKeyInfo)object;
+				privKey = keyConverter.getPrivateKey(pki);
+				break;
+			}
 			if (object instanceof PKCS8EncryptedPrivateKeyInfo) {
 				InputDecryptorProvider decProv =
 						new JceOpenSSLPKCS8DecryptorProviderBuilder().build(keyPassword.toCharArray());
@@ -262,7 +267,7 @@ public class OrcaXMLRPCBase {
 			}
 		}
 
-		if (privKey == null)
+		if (privKey == null) 
 			throw new Exception("Private key file did not contain a private key.");
 
 		pemParser = new PEMParser(new BufferedReader(new InputStreamReader(certIS, "UTF-8")));
