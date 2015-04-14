@@ -1,5 +1,8 @@
 Flukes Release Notes:
 ---------------------
+04/14/15:
+- Added another type of PEM-encoded private key
+
 03/31/15:
 - Fixed the date parsing issue with extend with SA
 
