@@ -48,6 +48,11 @@ import orca.flukes.xmlrpc.GENICHXMLRPCProxy;
 import orca.flukes.xmlrpc.GENICHXMLRPCProxy.FedField;
 import orca.flukes.xmlrpc.NDLConverter;
 import orca.flukes.xmlrpc.OrcaSMXMLRPCProxy;
+import twitter4j.Paging;
+import twitter4j.Status;
+import twitter4j.Twitter;
+import twitter4j.TwitterException;
+import twitter4j.TwitterFactory;
 
 import com.hyperrealm.kiwi.ui.KTextArea;
 import com.hyperrealm.kiwi.ui.dialog.ExceptionDialog;
@@ -357,7 +362,27 @@ public class GUIManifestState extends GUICommonState implements IDeleteEdgeCallB
 											kmd.setVisible(true);
 											return;
 										}
-									}
+									} else
+										if (e.getActionCommand().equals(GUI.Buttons.twitter.getCommand())) {
+											TextAreaDialog tad = new TextAreaDialog(GUI.getInstance().getFrame(), "Recent Twitter Status Updates", "", 8,50);
+											KTextArea ta = tad.getTextArea();
+
+											StringBuilder sb = new StringBuilder();
+											try {
+												Twitter twitter = TwitterFactory.getSingleton();
+												Paging p = new Paging(1,10);
+												List<Status> statuses = twitter.getUserTimeline("exogeni_ops", p);
+												for(int l=statuses.size() - 1; l >= 0; l--) {
+													sb.append(statuses.get(l).getCreatedAt() + ":\n\t" + statuses.get(l).getText() + "\n");
+												}
+											} catch (TwitterException te) {
+												sb.append("Unable to retrieve Twitter status: " + te.getMessage());
+											}
+
+											ta.setText(sb.toString());
+											tad.pack();
+											tad.setVisible(true);
+										}
 		}
 	}
 	

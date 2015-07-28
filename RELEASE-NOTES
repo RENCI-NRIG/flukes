@@ -1,5 +1,8 @@
 Flukes Release Notes:
 ---------------------
+07/28/15:
+- Added simple Twitter support and sorted out access to registry
+
 04/14/15:
 - Added another type of PEM-encoded private key
 

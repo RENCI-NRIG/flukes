@@ -785,7 +785,8 @@ public class GUI implements ComponentListener {
 		extend("Extend Reservation", "Extend the end date of the reservation"),
 		modify("Commit Modify Actions", "Commit modify slice actions"),
 		clearModify("Clear Modify Actions", "Clear modify slice actions"),
-		delete("Delete Slice", "Delete this slice");
+		delete("Delete Slice", "Delete this slice"),
+		twitter("Twitter", "Check Twitter");
 		
 		private String name, tooltip;
 		Buttons(String name, String tooltip) {
@@ -997,7 +998,11 @@ public class GUI implements ComponentListener {
 				toolBar.add(horizontalStrut);
 			}
 			
+			horizontalStrut = Box.createHorizontalStrut(10);
 			createButton(Buttons.delete, toolBar, rbl);
+			toolBar.add(horizontalStrut);
+			
+			createButton(Buttons.twitter, toolBar, rbl);
 
 		} 
 		
@@ -1098,7 +1103,7 @@ public class GUI implements ComponentListener {
 		SSH_OTHER_SUDO("ssh.other.sudo", "yes", "Should the secondary account have sudo privileges"),
 		SSH_OPTIONS("ssh.options", "-o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no", 
 			"Options for invoking SSH (the default set turns off checking .ssh/known_hosts)"),
-		ORCA_REGISTRY("orca.registry.url", "http://geni.renci.org:15080/registry/",
+		ORCA_REGISTRY("orca.registry.url", "https://geni.renci.org:15443/registry/",
 			"URL of the ORCA actor registry to query"),
 		ORCA_REGISTRY_USER("orca.registry.user", "someuser", "Username for actor registry"),
 		ORCA_REGISTRY_PASS("orca.registry.pass", "pass", "Password for actor registry"),

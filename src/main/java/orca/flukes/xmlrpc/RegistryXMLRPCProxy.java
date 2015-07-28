@@ -3,6 +3,8 @@ package orca.flukes.xmlrpc;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.security.KeyManagementException;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.X509Certificate;
@@ -17,6 +19,7 @@ import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSession;
 import javax.net.ssl.TrustManager;
+import javax.net.ssl.TrustManagerFactory;
 import javax.net.ssl.X509TrustManager;
 import javax.security.cert.CertificateException;
 
@@ -70,6 +73,30 @@ public class RegistryXMLRPCProxy {
         // so we can speak to the registry
     	TrustManager[] trustAllCerts = new TrustManager[] {
     			new X509TrustManager() {
+    				boolean initState = false;
+    				X509TrustManager defaultTrustManager = null;
+    				
+    				private void init() {
+    					if (initState) 
+    						return;
+    					initState = true;
+    					try {
+    						TrustManagerFactory trustMgrFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
+    						trustMgrFactory.init((KeyStore)null);
+    						TrustManager trustManagers[] = trustMgrFactory.getTrustManagers();
+    						for (int i = 0; i < trustManagers.length; i++) {
+    		                    if (trustManagers[i] instanceof X509TrustManager) {
+    		                        defaultTrustManager = (X509TrustManager) trustManagers[i];
+    		                        return;
+    		                    }
+    		                }
+    					} catch(NoSuchAlgorithmException nsae) {
+    						;
+    					} catch(KeyStoreException kse) {
+    						;
+    					}
+    				}
+    				
     				public X509Certificate[] getAcceptedIssuers() {
     					return null;
     				}
@@ -79,7 +106,9 @@ public class RegistryXMLRPCProxy {
     				}
 
     				public void checkServerTrusted(X509Certificate[] certs, String authType) {
-    					// Trust always
+
+    					init();
+    					
     					MessageDigest md = null;
     					try {
     						md = MessageDigest.getInstance("MD5");
@@ -88,12 +117,19 @@ public class RegistryXMLRPCProxy {
     							throw new CertificateException();
 
     						byte[] certDigest = md.digest(certs[0].getEncoded());
+    						// note that this TM is used to validate different certs:
+    						// 1. The registry cert (whose fingerprint we want to match)
+    						// 2. https://geni-orca.renci.org/owl
+    						// 3. https://api.twitter.com/ 
+    						// and so on. 
     						if (!Arrays.equals(certDigest, registryCertDigest)) {
-    							throw new CertificateException();
+    							if (defaultTrustManager != null)
+    								defaultTrustManager.checkServerTrusted(certs, authType);
     						}
     					} catch (NoSuchAlgorithmException e) {
     						;
     					} catch (Exception e) {
+    						e.printStackTrace();
     						ExceptionDialog ed = new ExceptionDialog(GUI.getInstance().getFrame(), "Exception");
     						ed.setLocationRelativeTo(GUI.getInstance().getFrame());
     						ed.setException("Exception encountered while contacting ORCA registry " + 
