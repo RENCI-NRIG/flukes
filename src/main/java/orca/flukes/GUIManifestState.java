@@ -37,6 +37,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TimeZone;
 
+import javax.swing.JTextPane;
+
 import orca.flukes.GUI.GuiTabs;
 import orca.flukes.GUI.PrefsEnum;
 import orca.flukes.irods.IRodsException;
@@ -44,6 +46,7 @@ import orca.flukes.irods.IRodsICommands;
 import orca.flukes.ndl.ManifestLoader;
 import orca.flukes.ndl.ModifySaver;
 import orca.flukes.ui.TextAreaDialog;
+import orca.flukes.ui.TextHTMLPaneDialog;
 import orca.flukes.xmlrpc.GENICHXMLRPCProxy;
 import orca.flukes.xmlrpc.GENICHXMLRPCProxy.FedField;
 import orca.flukes.xmlrpc.NDLConverter;
@@ -364,21 +367,23 @@ public class GUIManifestState extends GUICommonState implements IDeleteEdgeCallB
 										}
 									} else
 										if (e.getActionCommand().equals(GUI.Buttons.twitter.getCommand())) {
-											TextAreaDialog tad = new TextAreaDialog(GUI.getInstance().getFrame(), "Recent Twitter Status Updates", "", 8,50);
-											KTextArea ta = tad.getTextArea();
+											TextHTMLPaneDialog tad = new TextHTMLPaneDialog(GUI.getInstance().getFrame(), "Recent Twitter Status Updates", "", "https://groups.google.com/forum/#!forum/geni-orca-users");
+											JTextPane ta = tad.getTextPane();
 
 											StringBuilder sb = new StringBuilder();
+											sb.append("<html>");
 											try {
 												Twitter twitter = TwitterFactory.getSingleton();
 												Paging p = new Paging(1,10);
 												List<Status> statuses = twitter.getUserTimeline("exogeni_ops", p);
 												for(int l=statuses.size() - 1; l >= 0; l--) {
-													sb.append(statuses.get(l).getCreatedAt() + ":\n\t" + statuses.get(l).getText() + "\n");
+													sb.append("<p>" + statuses.get(l).getCreatedAt() + ":<font color=\"red\">   " + statuses.get(l).getText() + "</font></p>");
+													sb.append("<hr/>");
 												}
 											} catch (TwitterException te) {
 												sb.append("Unable to retrieve Twitter status: " + te.getMessage());
 											}
-
+											sb.append("</html>");
 											ta.setText(sb.toString());
 											tad.pack();
 											tad.setVisible(true);
