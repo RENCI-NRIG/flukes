@@ -1,5 +1,8 @@
 Flukes Release Notes:
 ---------------------
+07/30/15:
+- Added resource availability query to request view
+
 07/28/15:
 - Added simple Twitter support and sorted out access to registry
 

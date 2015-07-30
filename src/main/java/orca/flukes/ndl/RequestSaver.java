@@ -126,7 +126,7 @@ public class RequestSaver {
 		ndm.put("UNC BEN XO Rack Net", "uncNet.rdf#UNCNet");
 		ndm.put("NICTA XO Rack Net", "nictaNet.rdf#nictaNet");
 		ndm.put("FIU XO Rack Net", "fiuNet.rdf#fiuNet");
-		ndm.put("UH XO Rack Net", "uhNet.rdf#UHNet");
+		ndm.put("UH XO Rack Net", "uhNet.rdf#uhNet");
 		ndm.put("NCSU XO Rack Net", "ncsuNet.rdf#ncsuNet");
 		ndm.put("UvA XO Rack Net", "uvanlNet.rdf#uvanlNet");
 		ndm.put("UFL XO Rack Net", "uflNet.rdf#uflNet");
@@ -797,6 +797,8 @@ public class RequestSaver {
 			mapping = reverseLookupDomain_(dom, netDomainMap, "/Domain/vlan");
 		if (mapping == null)
 			mapping = reverseLookupDomain_(dom, domainMap, "/Domain/lun");
+		if (mapping == null)
+			mapping = reverseLookupDomain_(dom, domainMap, "/Domain/baremetalce");
 		
 		return mapping;
 	}
@@ -813,6 +815,12 @@ public class RequestSaver {
 		String mapping = reverseLookupDomain_(dom, domainMap, "/Domain");
 		if (mapping == null)
 			mapping = reverseLookupDomain_(dom, domainMap, "/Domain/vm");
+		if (mapping == null)
+			mapping = reverseLookupDomain_(dom, domainMap, "/Domain/lun");
+		if (mapping == null) 
+			mapping = reverseLookupDomain_(dom, domainMap, "/Domain/vlan");
+		if (mapping == null)
+			mapping = reverseLookupDomain_(dom, domainMap, "/Domain/baremetalce");
 		if (mapping == null) 
 			mapping = reverseLookupDomain_(dom, netDomainMap, "/Domain/vlan");
 		

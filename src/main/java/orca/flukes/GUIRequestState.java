@@ -29,13 +29,18 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
+
+import javax.swing.JTextPane;
 
 import orca.flukes.GUI.PrefsEnum;
 import orca.flukes.irods.IRodsException;
@@ -44,6 +49,7 @@ import orca.flukes.ndl.AdLoader;
 import orca.flukes.ndl.RequestSaver;
 import orca.flukes.ui.ChooserWithNewDialog;
 import orca.flukes.ui.TextAreaDialog;
+import orca.flukes.ui.TextHTMLPaneDialog;
 import orca.flukes.util.IP4Assign;
 import orca.flukes.xmlrpc.GENICHXMLRPCProxy;
 import orca.flukes.xmlrpc.NDLConverter;
@@ -91,6 +97,9 @@ public class GUIRequestState extends GUICommonState implements IDeleteEdgeCallBa
 	// VM images defined by the user
 	HashMap<String, OrcaImage> definedImages; 
 	
+	// Resource availability of the current SM
+	private Map<String, Map<String, Integer>> resourceSlots = null;
+	
 	ChooserWithNewDialog<String> icd = null;
 	ReservationDetailsDialog rdd = null;
 	
@@ -111,7 +120,6 @@ public class GUIRequestState extends GUICommonState implements IDeleteEdgeCallBa
 		;
 	}
 
-	
 	private GUIRequestState() {
 		term = new OrcaReservationTerm();
 		definedImages = new HashMap<String, OrcaImage>();
@@ -304,6 +312,33 @@ public class GUIRequestState extends GUICommonState implements IDeleteEdgeCallBa
 		}
 		
 		return itemList;
+	}
+	
+	private Calendar checkDate = null;
+	
+	/**
+	 * Query for resource avialability on current controller
+	 * @return
+	 */
+	public Map<String, Map<String, Integer>> updateResourceSlots() {
+		// checkDate may well need to be reset every time controller
+		// is changed, however since that also involves calling listSMResources(),
+		// it's ok not to do that /ib
+		if ((resourceSlots == null) || (checkDate == null)) { 
+			System.out.println("CALLING HERE");
+			checkDate = Calendar.getInstance();
+			listSMResources();
+		} else {
+			checkDate.add(Calendar.MINUTE, 1);
+			if (Calendar.getInstance().after(checkDate)) {
+				System.out.println("CALLING");
+				checkDate = Calendar.getInstance();
+				listSMResources();
+			}
+		}
+
+		// Yes, I know it is shallow /ib
+		return Collections.unmodifiableMap(resourceSlots);
 	}
 	
 	/**
@@ -506,6 +541,27 @@ public class GUIRequestState extends GUICommonState implements IDeleteEdgeCallBa
 					kmd.setLocationRelativeTo(GUI.getInstance().getFrame());
 					kmd.setVisible(true);
 				}
+			} else if (e.getActionCommand().equals(GUI.Buttons.availres.getCommand())) {
+				// want to get keys sorted, use tree map
+				Map<String, Map<String, Integer>> tm = new TreeMap<String, Map<String, Integer>>(updateResourceSlots());
+				TextHTMLPaneDialog tad = new TextHTMLPaneDialog(GUI.getInstance().getFrame(), "Resources available on " + GUI.getInstance().getSelectedController(), "", 
+						"https://wiki.exogeni.net/doku.php?id=public:experimenters:resource_types:start");
+				JTextPane ta = tad.getTextPane();
+
+				StringBuilder sb = new StringBuilder();
+				sb.append("<html>");
+				for (Map.Entry<String, Map<String, Integer>> entry : tm.entrySet()) {
+					sb.append("<p>" + entry.getKey() + ": ");
+					sb.append("<table>");
+					for(Map.Entry<String, Integer> ee: entry.getValue().entrySet()) {
+						sb.append("<tr><td>" + ee.getKey() + "</td><td>" + ee.getValue() + "</td></tr>");
+					}
+					sb.append("</table><hr/>");
+				}
+				sb.append("</html>");
+				ta.setText(sb.toString());
+				tad.pack();
+				tad.setVisible(true);
 			} else if (e.getActionCommand().equals(GUI.Buttons.submit.getCommand())) {
 				if ((sliceIdField.getText() == null) || 
 						(sliceIdField.getText().length() == 0)) {
@@ -573,8 +629,10 @@ public class GUIRequestState extends GUICommonState implements IDeleteEdgeCallBa
 	public void listSMResources() {
 		// query the selected controller for resources
 		try {
-			// re-initialize known domains
+			// re-initialize known domains and resource slots
 			knownDomains = new ArrayList<String>();
+			resourceSlots = new TreeMap<String, Map<String, Integer>>();
+			
 			String ads = OrcaSMXMLRPCProxy.getInstance().listResources();
 			List<String> domains = new ArrayList<String>();
 
@@ -598,7 +656,13 @@ public class GUIRequestState extends GUICommonState implements IDeleteEdgeCallBa
 					// this will call the callbacks
 					nadp.processDelegationModel();
 					
-					domains.addAll(adl.getDomains());
+					domains.add(adl.getDomain());
+					
+					// id comes out looking exogeni.net:rciNet or exogeni.net:rcivmsite, so we strip off exogeni.net
+					String domShortName = RequestSaver.reverseLookupDomain(adl.getDomain());
+					if (!resourceSlots.containsKey(domShortName))
+						resourceSlots.put(domShortName, new TreeMap<String, Integer>());
+					resourceSlots.get(domShortName).putAll(adl.getSlots());
 					
 					nadp.freeModel();
 					

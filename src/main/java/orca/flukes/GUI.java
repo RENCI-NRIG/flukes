@@ -778,6 +778,7 @@ public class GUI implements ComponentListener {
 		autoip("Auto IP", "Auto-assign IP addresses"),
 		reservation("Reservation Details", "Edit reservation details"),
 		submit("Submit", "Submit request to selected ORCA controller"),
+		availres("Available Resources", "View resource availability of the currently selected controller"),
 		//manifests
 		listSlices("My Slices", "Query ORCA for list of slices with active reservations"),
 		manifest("Query for Manifest", "Query ORCA for slice manifest"),
@@ -940,6 +941,11 @@ public class GUI implements ComponentListener {
 			ktf.setToolTipText("Enter slice id");
 			ktf.setMaximumSize(ktf.getMinimumSize());
 			toolBar.add(ktf);
+			
+			horizontalStrut = Box.createHorizontalStrut(10);
+			toolBar.add(horizontalStrut);
+			
+			createButton(Buttons.availres, toolBar, rbl);
 		} 
 		//
 		// add button panel to manifest pane

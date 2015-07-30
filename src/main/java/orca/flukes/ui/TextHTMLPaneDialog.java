@@ -117,7 +117,7 @@ public class TextHTMLPaneDialog extends ComponentDialog {
 	@Override
 	protected Component buildDialogUI() {
 		kp = new KPanel();
-		
+
 		urlBut = new JButton("More Information");
 		urlBut.setActionCommand("moreinfo");
 		final ComponentDialog me = this;
@@ -135,7 +135,7 @@ public class TextHTMLPaneDialog extends ComponentDialog {
 			}
 		});
 		addButton(urlBut);
-		
+
 		return kp;
 	}
 	
