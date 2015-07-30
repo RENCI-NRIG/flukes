@@ -325,13 +325,11 @@ public class GUIRequestState extends GUICommonState implements IDeleteEdgeCallBa
 		// is changed, however since that also involves calling listSMResources(),
 		// it's ok not to do that /ib
 		if ((resourceSlots == null) || (checkDate == null)) { 
-			System.out.println("CALLING HERE");
 			checkDate = Calendar.getInstance();
 			listSMResources();
 		} else {
 			checkDate.add(Calendar.MINUTE, 1);
 			if (Calendar.getInstance().after(checkDate)) {
-				System.out.println("CALLING");
 				checkDate = Calendar.getInstance();
 				listSMResources();
 			}
