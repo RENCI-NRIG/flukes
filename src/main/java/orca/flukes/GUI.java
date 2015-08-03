@@ -48,6 +48,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.TreeMap;
 
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -62,6 +63,7 @@ import javax.swing.JPopupMenu;
 import javax.swing.JRadioButtonMenuItem;
 import javax.swing.JSeparator;
 import javax.swing.JTabbedPane;
+import javax.swing.JTextPane;
 import javax.swing.JToolBar;
 import javax.swing.SwingConstants;
 import javax.swing.filechooser.FileFilter;
@@ -73,6 +75,7 @@ import orca.flukes.ui.KeystoreDialog;
 import orca.flukes.ui.PasswordDialog;
 import orca.flukes.ui.SplitButton;
 import orca.flukes.ui.TextAreaDialog;
+import orca.flukes.ui.TextHTMLPaneDialog;
 import orca.flukes.xmlrpc.OrcaSMXMLRPCProxy;
 import orca.flukes.xmlrpc.RegistryXMLRPCProxy;
 import orca.ndl.NdlCommons;
@@ -81,6 +84,12 @@ import org.apache.log4j.ConsoleAppender;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.log4j.SimpleLayout;
+
+import twitter4j.Paging;
+import twitter4j.Status;
+import twitter4j.Twitter;
+import twitter4j.TwitterException;
+import twitter4j.TwitterFactory;
 
 import com.hyperrealm.kiwi.ui.KFileChooser;
 import com.hyperrealm.kiwi.ui.KTextArea;
@@ -115,7 +124,7 @@ public class GUI implements ComponentListener {
 	private JMenuBar menuBar;
 	private JMenu fileNewMenu;
 	private JSeparator separator;
-	private JMenu mnNewMenu, controllerMenu, outputMenu, layoutMenu;
+	private JMenu mnNewMenu, controllerMenu, outputMenu, layoutMenu, xoMenu;
 	private JSeparator separator_1, separator_2;
 	private Logger logger;
 	private String[] controllerUrls;
@@ -350,7 +359,50 @@ public class GUI implements ComponentListener {
 				md.setVisible(true);
 			} else if (e.getActionCommand().equals("savemanifestirods")) {
 				GUIManifestState.getInstance().saveManifestToIRods();
-			} else {
+			} else if (e.getActionCommand().equals("resources")) {
+				// want to get keys sorted, use tree map
+				Map<String, Map<String, Integer>> tm = new TreeMap<String, Map<String, Integer>>(GUIRequestState.getInstance().updateResourceSlots());
+				TextHTMLPaneDialog tad = new TextHTMLPaneDialog(GUI.getInstance().getFrame(), "Resources available on " + GUI.getInstance().getSelectedController(), "", 
+						"https://wiki.exogeni.net/doku.php?id=public:experimenters:resource_types:start");
+				JTextPane ta = tad.getTextPane();
+
+				StringBuilder sb = new StringBuilder();
+				sb.append("<html>");
+				for (Map.Entry<String, Map<String, Integer>> entry : tm.entrySet()) {
+					sb.append("<p>" + entry.getKey() + ": ");
+					sb.append("<table>");
+					for(Map.Entry<String, Integer> ee: entry.getValue().entrySet()) {
+						sb.append("<tr><td>" + ee.getKey() + "</td><td>" + ee.getValue() + "</td></tr>");
+					}
+					sb.append("</table><hr/>");
+				}
+				sb.append("</html>");
+				ta.setText(sb.toString());
+				tad.pack();
+				tad.setVisible(true);
+			} else if (e.getActionCommand().equals("twitter")) {
+					TextHTMLPaneDialog tad = new TextHTMLPaneDialog(GUI.getInstance().getFrame(), "Recent Twitter Status Updates", "", 
+							"https://groups.google.com/forum/#!forum/geni-orca-users");
+					JTextPane ta = tad.getTextPane();
+
+					StringBuilder sb = new StringBuilder();
+					sb.append("<html>");
+					try {
+						Twitter twitter = TwitterFactory.getSingleton();
+						Paging p = new Paging(1,10);
+						List<Status> statuses = twitter.getUserTimeline("exogeni_ops", p);
+						for(int l=statuses.size() - 1; l >= 0; l--) {
+							sb.append("<p>" + statuses.get(l).getCreatedAt() + ":<font color=\"red\">   " + statuses.get(l).getText() + "</font></p>");
+							sb.append("<hr/>");
+						}
+					} catch (TwitterException te) {
+						sb.append("Unable to retrieve Twitter status: " + te.getMessage());
+					}
+					sb.append("</html>");
+					ta.setText(sb.toString());
+					tad.pack();
+					tad.setVisible(true);
+				}else {
 				// catchall
 				KMessageDialog md = new KMessageDialog(GUI.getInstance().getFrame(), "Not implemented.", true);
 				md.setMessage("Unknown or unimplemented function!");
@@ -654,6 +706,13 @@ public class GUI implements ComponentListener {
 			cbg.add(mi);
 		}
 		
+		// ExoGENI menu
+		xoMenu = new JMenu("ExoGENI Info");
+		menuBar.add(xoMenu);
+		
+		xoMenu.add(addMenuItem("Available Resources ...", "resources", mListener));
+		xoMenu.add(addMenuItem("Twitter ...", "twitter", mListener));
+		
 		// output format selection
 		outputMenu = new JMenu("Output Format");
 		menuBar.add(outputMenu);
@@ -778,7 +837,6 @@ public class GUI implements ComponentListener {
 		autoip("Auto IP", "Auto-assign IP addresses"),
 		reservation("Reservation Details", "Edit reservation details"),
 		submit("Submit", "Submit request to selected ORCA controller"),
-		availres("Available Resources", "View resource availability of the currently selected controller"),
 		//manifests
 		listSlices("My Slices", "Query ORCA for list of slices with active reservations"),
 		manifest("Query for Manifest", "Query ORCA for slice manifest"),
@@ -786,8 +844,7 @@ public class GUI implements ComponentListener {
 		extend("Extend Reservation", "Extend the end date of the reservation"),
 		modify("Commit Modify Actions", "Commit modify slice actions"),
 		clearModify("Clear Modify Actions", "Clear modify slice actions"),
-		delete("Delete Slice", "Delete this slice"),
-		twitter("Twitter", "Check Twitter");
+		delete("Delete Slice", "Delete this slice");
 		
 		private String name, tooltip;
 		Buttons(String name, String tooltip) {
@@ -941,11 +998,7 @@ public class GUI implements ComponentListener {
 			ktf.setToolTipText("Enter slice id");
 			ktf.setMaximumSize(ktf.getMinimumSize());
 			toolBar.add(ktf);
-			
-			horizontalStrut = Box.createHorizontalStrut(10);
-			toolBar.add(horizontalStrut);
-			
-			createButton(Buttons.availres, toolBar, rbl);
+
 		} 
 		//
 		// add button panel to manifest pane
@@ -1006,10 +1059,6 @@ public class GUI implements ComponentListener {
 			
 			horizontalStrut = Box.createHorizontalStrut(10);
 			createButton(Buttons.delete, toolBar, rbl);
-			toolBar.add(horizontalStrut);
-			
-			createButton(Buttons.twitter, toolBar, rbl);
-
 		} 
 		
 		GUIResourceState.getInstance().addPane(resourcePanel);

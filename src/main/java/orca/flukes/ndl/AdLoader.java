@@ -42,19 +42,9 @@ public class AdLoader implements INdlAbstractDelegationModelListener {
 			if (DomainResourceType.VM_RESOURCE_TYPE.equals(ls.LabelType)) {
 				htName = ORCA_HT_CLOUD;
 				hardwareTypeSlots.put(htName, ls.getSetSize());
-				// create virtualization types on the fly
-				//List<Resource> virts = NdlCommons.getXOVirtualizationType(m, "VM");
-				//for (Resource rv: virts) {
-				//	System.out.println(rv.getLocalName());
-				//}
 			} else if (DomainResourceType.BM_RESOURCE_TYPE.equals(ls.LabelType)) {
 				htName = ORCA_XCAT_CLOUD;
 				hardwareTypeSlots.put(htName, ls.getSetSize());
-				// extract available virtualization types
-				//List<Resource> virts = NdlCommons.getXOVirtualizationType(m, "baremetalce");
-				//for (Resource rv: virts) {
-				//	System.out.println(rv.getLocalName());
-				//}
 			} else if (DomainResourceType.VLAN_RESOURCE_TYPE.equals(ls.LabelType)) {
 				if (interfaces.size() == 1) {
 					// local vlans - should not happen - 

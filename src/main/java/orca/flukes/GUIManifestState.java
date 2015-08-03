@@ -365,29 +365,7 @@ public class GUIManifestState extends GUICommonState implements IDeleteEdgeCallB
 											kmd.setVisible(true);
 											return;
 										}
-									} else
-										if (e.getActionCommand().equals(GUI.Buttons.twitter.getCommand())) {
-											TextHTMLPaneDialog tad = new TextHTMLPaneDialog(GUI.getInstance().getFrame(), "Recent Twitter Status Updates", "", "https://groups.google.com/forum/#!forum/geni-orca-users");
-											JTextPane ta = tad.getTextPane();
-
-											StringBuilder sb = new StringBuilder();
-											sb.append("<html>");
-											try {
-												Twitter twitter = TwitterFactory.getSingleton();
-												Paging p = new Paging(1,10);
-												List<Status> statuses = twitter.getUserTimeline("exogeni_ops", p);
-												for(int l=statuses.size() - 1; l >= 0; l--) {
-													sb.append("<p>" + statuses.get(l).getCreatedAt() + ":<font color=\"red\">   " + statuses.get(l).getText() + "</font></p>");
-													sb.append("<hr/>");
-												}
-											} catch (TwitterException te) {
-												sb.append("Unable to retrieve Twitter status: " + te.getMessage());
-											}
-											sb.append("</html>");
-											ta.setText(sb.toString());
-											tad.pack();
-											tad.setVisible(true);
-										}
+									} 
 		}
 	}
 	

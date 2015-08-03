@@ -539,27 +539,6 @@ public class GUIRequestState extends GUICommonState implements IDeleteEdgeCallBa
 					kmd.setLocationRelativeTo(GUI.getInstance().getFrame());
 					kmd.setVisible(true);
 				}
-			} else if (e.getActionCommand().equals(GUI.Buttons.availres.getCommand())) {
-				// want to get keys sorted, use tree map
-				Map<String, Map<String, Integer>> tm = new TreeMap<String, Map<String, Integer>>(updateResourceSlots());
-				TextHTMLPaneDialog tad = new TextHTMLPaneDialog(GUI.getInstance().getFrame(), "Resources available on " + GUI.getInstance().getSelectedController(), "", 
-						"https://wiki.exogeni.net/doku.php?id=public:experimenters:resource_types:start");
-				JTextPane ta = tad.getTextPane();
-
-				StringBuilder sb = new StringBuilder();
-				sb.append("<html>");
-				for (Map.Entry<String, Map<String, Integer>> entry : tm.entrySet()) {
-					sb.append("<p>" + entry.getKey() + ": ");
-					sb.append("<table>");
-					for(Map.Entry<String, Integer> ee: entry.getValue().entrySet()) {
-						sb.append("<tr><td>" + ee.getKey() + "</td><td>" + ee.getValue() + "</td></tr>");
-					}
-					sb.append("</table><hr/>");
-				}
-				sb.append("</html>");
-				ta.setText(sb.toString());
-				tad.pack();
-				tad.setVisible(true);
 			} else if (e.getActionCommand().equals(GUI.Buttons.submit.getCommand())) {
 				if ((sliceIdField.getText() == null) || 
 						(sliceIdField.getText().length() == 0)) {
@@ -656,7 +635,6 @@ public class GUIRequestState extends GUICommonState implements IDeleteEdgeCallBa
 					
 					domains.add(adl.getDomain());
 					
-					// id comes out looking exogeni.net:rciNet or exogeni.net:rcivmsite, so we strip off exogeni.net
 					String domShortName = RequestSaver.reverseLookupDomain(adl.getDomain());
 					if (!resourceSlots.containsKey(domShortName))
 						resourceSlots.put(domShortName, new TreeMap<String, Integer>());
