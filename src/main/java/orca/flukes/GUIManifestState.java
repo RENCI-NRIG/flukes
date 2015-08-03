@@ -376,7 +376,8 @@ public class GUIManifestState extends GUICommonState implements IDeleteEdgeCallB
 		resources.addAll(g.getVertices());
 		resources.addAll(g.getEdges());
 		
-		OrcaResourceStateViewer viewer = new OrcaResourceStateViewer(GUI.getInstance().getFrame(), resources, start, end);
+		//OrcaResourceStateViewer viewer = new OrcaTableResourceStateViewer(GUI.getInstance().getFrame(), resources, start, end);
+		OrcaResourceStateViewer viewer = new OrcaHtmlResourceStateViewer(GUI.getInstance().getFrame(), resources, start, end);
 		viewer.pack();
 		viewer.setVisible(true);
 	}

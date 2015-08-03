@@ -14,7 +14,7 @@ import javax.swing.JPopupMenu;
  * @author ibaldin
  *
  */
-public abstract class OrcaResource {
+public abstract class OrcaResource implements Comparable<OrcaResource> {
 	private boolean isResource = false;
 	protected String name;
 	protected String state = null;
@@ -123,5 +123,11 @@ public abstract class OrcaResource {
     public abstract JPopupMenu requestMenu();
     public abstract JPopupMenu manifestMenu();
     public abstract JPopupMenu resourceMenu();
+    
+    // comparable (lexicographic, based on name)
+    @Override
+    public int compareTo(OrcaResource o) {
+    	return this.getName().compareTo(o.getName());
+    }
     
 }
