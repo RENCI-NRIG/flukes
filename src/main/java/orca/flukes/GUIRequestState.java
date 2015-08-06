@@ -40,8 +40,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
-import javax.swing.JTextPane;
-
 import orca.flukes.GUI.PrefsEnum;
 import orca.flukes.irods.IRodsException;
 import orca.flukes.irods.IRodsICommands;
@@ -49,7 +47,6 @@ import orca.flukes.ndl.AdLoader;
 import orca.flukes.ndl.RequestSaver;
 import orca.flukes.ui.ChooserWithNewDialog;
 import orca.flukes.ui.TextAreaDialog;
-import orca.flukes.ui.TextHTMLPaneDialog;
 import orca.flukes.util.IP4Assign;
 import orca.flukes.xmlrpc.GENICHXMLRPCProxy;
 import orca.flukes.xmlrpc.NDLConverter;
@@ -636,6 +633,9 @@ public class GUIRequestState extends GUICommonState implements IDeleteEdgeCallBa
 					domains.add(adl.getDomain());
 					
 					String domShortName = RequestSaver.reverseLookupDomain(adl.getDomain());
+					if (domShortName == null)
+						domShortName = adl.getDomain();
+					
 					if (!resourceSlots.containsKey(domShortName))
 						resourceSlots.put(domShortName, new TreeMap<String, Integer>());
 					resourceSlots.get(domShortName).putAll(adl.getSlots());

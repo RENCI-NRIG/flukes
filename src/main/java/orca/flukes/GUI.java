@@ -130,6 +130,7 @@ public class GUI implements ComponentListener {
 	private String[] controllerUrls;
 	private String selectedControllerUrl;
 	private SplitButton splitNodeButton, splitLinkButton;
+	private String[] twitterRedWords = { "maintenance", "stop", "emergency", "interruption", "problem", "down", "disabled", "unreachable", "offline" };
 	
 	private boolean withIRods = false;
 	
@@ -392,7 +393,16 @@ public class GUI implements ComponentListener {
 						Paging p = new Paging(1,10);
 						List<Status> statuses = twitter.getUserTimeline("exogeni_ops", p);
 						for(int l=statuses.size() - 1; l >= 0; l--) {
-							sb.append("<p>" + statuses.get(l).getCreatedAt() + ":<font color=\"red\">   " + statuses.get(l).getText() + "</font></p>");
+							String color = "green";
+							String announcement = statuses.get(l).getText();
+							if (announcement != null) {
+								for (String redWord: twitterRedWords)
+									if (announcement.contains(redWord)) {
+										color = "red";
+										break;
+									}
+							}
+							sb.append("<p>" + statuses.get(l).getCreatedAt() + ":<font color=\"" + color + "\">   " + statuses.get(l).getText() + "</font></p>");
 							sb.append("<hr/>");
 						}
 					} catch (TwitterException te) {
