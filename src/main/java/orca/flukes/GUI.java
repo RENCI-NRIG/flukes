@@ -130,7 +130,7 @@ public class GUI implements ComponentListener {
 	private String[] controllerUrls;
 	private String selectedControllerUrl;
 	private SplitButton splitNodeButton, splitLinkButton;
-	private String[] twitterRedWords = { "maintenance", "stop", "emergency", "interruption", "problem", "down", "disabled", "unreachable", "offline" };
+	private String[] twitterRedWords = { "maintenance", "stop", "emergency", "interruption", "problem", "down", "disabled", "unreachable", "offline", "unavailable", "cut off" };
 	
 	private boolean withIRods = false;
 	

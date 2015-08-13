@@ -24,7 +24,7 @@ public class OrcaHtmlResourceStateViewer extends OrcaResourceStateViewer {
 			Date end) {
 		tp = new JTextPane();
 		tp.setContentType("text/html");
-		tp.setPreferredSize(new Dimension(500, 600));
+		tp.setPreferredSize(new Dimension(800, 600));
 		tp.setEditable(false);
 		JScrollPane areaScrollPane = new JScrollPane(tp);
 		areaScrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
@@ -42,6 +42,8 @@ public class OrcaHtmlResourceStateViewer extends OrcaResourceStateViewer {
 		String color = null;
 		Collections.sort(resources);
 		for(OrcaResource res: resources) {
+			if (!res.isResource())
+				continue;
 			color = "black";
 			if ("failed".equalsIgnoreCase(res.getState())) 
 				color = "red";
