@@ -40,6 +40,8 @@ import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Constructor;
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -223,7 +225,7 @@ public class GUI implements ComponentListener {
 	 * Menu actions
 	 */
 	public class MenuListener implements ActionListener {
-		
+
 		public void actionPerformed(ActionEvent e) {
 			if (e.getActionCommand().equals("exit")) 
 				quit();
@@ -382,37 +384,54 @@ public class GUI implements ComponentListener {
 				tad.pack();
 				tad.setVisible(true);
 			} else if (e.getActionCommand().equals("twitter")) {
-					TextHTMLPaneDialog tad = new TextHTMLPaneDialog(GUI.getInstance().getFrame(), "Recent Twitter Status Updates", "", 
-							"https://groups.google.com/forum/#!forum/geni-orca-users");
-					JTextPane ta = tad.getTextPane();
+				TextHTMLPaneDialog tad = new TextHTMLPaneDialog(GUI.getInstance().getFrame(), "Recent Twitter Status Updates", "", 
+						"https://groups.google.com/forum/#!forum/geni-orca-users");
+				JTextPane ta = tad.getTextPane();
 
-					StringBuilder sb = new StringBuilder();
-					sb.append("<html>");
-					try {
-						Twitter twitter = TwitterFactory.getSingleton();
-						Paging p = new Paging(1,10);
-						List<Status> statuses = twitter.getUserTimeline("exogeni_ops", p);
-						for(int l=statuses.size() - 1; l >= 0; l--) {
-							String color = "green";
-							String announcement = statuses.get(l).getText();
-							if (announcement != null) {
-								for (String redWord: twitterRedWords)
-									if (announcement.contains(redWord)) {
-										color = "red";
-										break;
-									}
-							}
-							sb.append("<p>" + statuses.get(l).getCreatedAt() + ":<font color=\"" + color + "\">   " + statuses.get(l).getText() + "</font></p>");
-							sb.append("<hr/>");
+				StringBuilder sb = new StringBuilder();
+				sb.append("<html>");
+				try {
+					Twitter twitter = TwitterFactory.getSingleton();
+					Paging p = new Paging(1,10);
+					List<Status> statuses = twitter.getUserTimeline("exogeni_ops", p);
+					for(int l=statuses.size() - 1; l >= 0; l--) {
+						String color = "green";
+						String announcement = statuses.get(l).getText();
+						if (announcement != null) {
+							for (String redWord: twitterRedWords)
+								if (announcement.contains(redWord)) {
+									color = "red";
+									break;
+								}
 						}
-					} catch (TwitterException te) {
-						sb.append("Unable to retrieve Twitter status: " + te.getMessage());
+						sb.append("<p>" + statuses.get(l).getCreatedAt() + ":<font color=\"" + color + "\">   " + statuses.get(l).getText() + "</font></p>");
+						sb.append("<hr/>");
 					}
-					sb.append("</html>");
-					ta.setText(sb.toString());
-					tad.pack();
-					tad.setVisible(true);
-				}else {
+				} catch (TwitterException te) {
+					sb.append("Unable to retrieve Twitter status: " + te.getMessage());
+				}
+				sb.append("</html>");
+				ta.setText(sb.toString());
+				tad.pack();
+				tad.setVisible(true);
+			} else if (e.getActionCommand().equals("sliceproblem")) {
+				try {
+					String sName = GUIManifestState.getInstance().getSliceName();
+					if (sName.length() == 0)
+						sName = "unknown";
+					String controller = GUI.getInstance().getSelectedController();
+					java.awt.Desktop.getDesktop().mail(
+							new URI("mailto:geni-orca-users@googlegroups.com?subject=Problem%20with%20slice%20" + 
+									sName + 
+									"&body=Slice:%20" + sName + "%0D" + "Controller:%20" + controller + "%0D%0D" +   
+									"Describe%20the%20problem%20here.%20Attach%20the%20request%20file%20if%20needed."));
+				} catch (Exception ioe) {
+					KMessageDialog md = new KMessageDialog(GUI.getInstance().getFrame(), "Error opening email client.", true);
+					md.setMessage("Unable to open the email client: " + ioe);
+					md.setLocationRelativeTo(GUI.getInstance().getFrame());
+					md.setVisible(true);
+				} 
+			} else {
 				// catchall
 				KMessageDialog md = new KMessageDialog(GUI.getInstance().getFrame(), "Not implemented.", true);
 				md.setMessage("Unknown or unimplemented function!");
@@ -722,6 +741,7 @@ public class GUI implements ComponentListener {
 		
 		xoMenu.add(addMenuItem("Available Resources ...", "resources", mListener));
 		xoMenu.add(addMenuItem("Twitter ...", "twitter", mListener));
+		xoMenu.add(addMenuItem("Report slice problem ...", "sliceproblem", mListener));
 		
 		// output format selection
 		outputMenu = new JMenu("Output Format");
