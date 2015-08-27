@@ -16,6 +16,7 @@
 		<url>http://ci-dev.renci.org/hudson</url>
 	</ciManagement>
 	<scm>
+		<developerConnection>scm:git:https://github.com/RENCI-NRIG/flukes.git</developerConnection>
 		<connection>scm:git:https://github.com/RENCI-NRIG/flukes.git</connection>
 		<url>https://github.com/RENCI-NRIG/flukes</url>
 	</scm>
