@@ -35,6 +35,7 @@ import java.util.Map;
 import java.util.Set;
 
 import orca.flukes.GUI;
+import orca.flukes.GUIImageList;
 import orca.flukes.GUIRequestState;
 import orca.flukes.OrcaColor;
 import orca.flukes.OrcaColorLink;
@@ -235,7 +236,7 @@ public class RequestLoader implements INdlRequestModelListener, INdlColorRequest
 			try {
 				String imageURL = NdlCommons.getIndividualsImageURL(ce);
 				String imageHash = NdlCommons.getIndividualsImageHash(ce);
-				String imName = GUIRequestState.getInstance().addImage(new OrcaImage(di.getLocalName(), 
+				String imName = GUIImageList.getInstance().addImage(new OrcaImage(di.getLocalName(), 
 						new URL(imageURL), imageHash), null);
 				newNode.setImage(imName);
 			} catch (Exception e) {

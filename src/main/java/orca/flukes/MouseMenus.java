@@ -248,7 +248,7 @@ public class MouseMenus {
 				if ((v.getImage() != null) && (v.getImage().length() > 0))
 					this.setText(PREFIX_IMAGE + v.getImage());
 				else
-					this.setText(PREFIX_IMAGE + GUIRequestState.NO_GLOBAL_IMAGE);
+					this.setText(PREFIX_IMAGE + GUIImageList.NO_GLOBAL_IMAGE);
 			}
 		}
 	}

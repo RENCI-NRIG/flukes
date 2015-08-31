@@ -38,6 +38,7 @@ import java.util.List;
 import java.util.Map;
 
 import orca.flukes.GUI;
+import orca.flukes.GUIImageList;
 import orca.flukes.GUIRequestState;
 import orca.flukes.OrcaColor;
 import orca.flukes.OrcaColorLink;
@@ -560,7 +561,7 @@ public class RequestSaver {
 						// check if node has its own image
 						if (n.getImage() != null) {
 							// check if image is set in this node
-							OrcaImage im = GUIRequestState.getInstance().getImageByName(n.getImage());
+							OrcaImage im = GUIImageList.getInstance().getImageByName(n.getImage());
 							if (im != null) {
 								Individual imI = ngen.declareDiskImage(im.getUrl().toString(), im.getHash(), im.getShortName());
 								ngen.addDiskImageToIndividual(imI, ni);

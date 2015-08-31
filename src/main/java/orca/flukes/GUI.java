@@ -73,6 +73,7 @@ import javax.swing.filechooser.FileFilter;
 import orca.flukes.ndl.ManifestLoader;
 import orca.flukes.ndl.RequestLoader;
 import orca.flukes.ndl.RequestSaver;
+import orca.flukes.ui.ChooserWithNewDialog;
 import orca.flukes.ui.KeystoreDialog;
 import orca.flukes.ui.PasswordDialog;
 import orca.flukes.ui.SplitButton;
@@ -133,6 +134,8 @@ public class GUI implements ComponentListener {
 	private String selectedControllerUrl;
 	private SplitButton splitNodeButton, splitLinkButton;
 	private String[] twitterRedWords = { "maintenance", "stop", "emergency", "interruption", "problem", "down", "disabled", "unreachable", "offline", "unavailable", "cut off" };
+	
+	private ChooserWithNewDialog<String> icd = null;
 	
 	private boolean withIRods = false;
 	
@@ -383,6 +386,10 @@ public class GUI implements ComponentListener {
 				ta.setText(sb.toString());
 				tad.pack();
 				tad.setVisible(true);
+			} else if (e.getActionCommand().equals("images")) {
+				icd = new ImageChooserDialog(GUI.getInstance().getFrame());
+				icd.pack();
+				icd.setVisible(true);
 			} else if (e.getActionCommand().equals("twitter")) {
 				TextHTMLPaneDialog tad = new TextHTMLPaneDialog(GUI.getInstance().getFrame(), "Recent Twitter Status Updates", "", 
 						"https://groups.google.com/forum/#!forum/geni-orca-users");
@@ -502,6 +509,14 @@ public class GUI implements ComponentListener {
 		switchLayout(tab, savedLayout.get(tab));
 	}
 	
+	public void destroyImageDialog() {
+		if (icd != null) {
+			icd.setVisible(false);
+			icd.destroy();
+			icd = null;
+		}
+	}
+	
 	private void quit() {
 		KQuestionDialog kqd = new KQuestionDialog(GUI.getInstance().getFrame(), "Exit", true);
 		kqd.setMessage("Are you sure you want to exit?");
@@ -523,8 +538,7 @@ public class GUI implements ComponentListener {
 					GUI gui = GUI.getInstance();
 
 					gui.processPreferences();
-					gui.getImagesFromPreferences();
-					gui.getImagesFromRegistry();
+					GUIImageList.getInstance().collectAllKnownImages();
 
 					gui.getControllersFromPreferences();
 					gui.getIRodsPreferences();
@@ -714,7 +728,7 @@ public class GUI implements ComponentListener {
 		fileNewMenu.add(addMenuItem("Exit", "exit", mListener));
 		
 		// controller selection
-		controllerMenu = new JMenu("Orca Controller");
+		controllerMenu = new JMenu("Select ExoGENI Controller");
 		menuBar.add(controllerMenu);
 		
 		ButtonGroup cbg = new ButtonGroup();
@@ -740,6 +754,7 @@ public class GUI implements ComponentListener {
 		menuBar.add(xoMenu);
 		
 		xoMenu.add(addMenuItem("Available Resources ...", "resources", mListener));
+		xoMenu.add(addMenuItem("Compute Images ...", "images", mListener));
 		xoMenu.add(addMenuItem("Twitter ...", "twitter", mListener));
 		xoMenu.add(addMenuItem("Report slice problem ...", "sliceproblem", mListener));
 		
@@ -863,7 +878,6 @@ public class GUI implements ComponentListener {
 		// requests
 		nodes("Add Nodes", "Add new nodes"),
 		links("Link Types", "Choose link type"),
-		images("Compute Images", "Add or edit compute images"),
 		autoip("Auto IP", "Auto-assign IP addresses"),
 		reservation("Reservation Details", "Edit reservation details"),
 		submit("Submit", "Submit request to selected ORCA controller"),
@@ -1003,11 +1017,6 @@ public class GUI implements ComponentListener {
 			horizontalStrut = Box.createHorizontalStrut(10);
 			toolBar.add(horizontalStrut);
 			
-			createButton(Buttons.images, toolBar, rbl);
-			
-			horizontalStrut = Box.createHorizontalStrut(10);
-			toolBar.add(horizontalStrut);
-
 			createButton(Buttons.autoip, toolBar, rbl);
 
 			horizontalStrut = Box.createHorizontalStrut(10);
@@ -1158,6 +1167,17 @@ public class GUI implements ComponentListener {
 	}
 	
 	/**
+	 * Get preference based on its name if specified, or null
+	 * @param p
+	 * @return
+	 */
+	public String getPreference(String p) {
+		if ((prefProperties == null) || (p == null))
+			return null;
+		return prefProperties.getProperty(p);
+	}
+	
+	/**
 	 * Programmatically overwrite a preference setting
 	 * @param e
 	 * @param val
@@ -1264,83 +1284,6 @@ public class GUI implements ComponentListener {
 		} catch (IOException e) {
 			;
 		}
-	}
-	
-	/**
-	 * Get images from preferences imageX.name imageX.url and imageX.hash
-	 * @return list of OrcaImage beans
-	 */
-	void getImagesFromPreferences() {
-		List<OrcaImage> images = new ArrayList<OrcaImage>();
-		
-		// add the default
-		try {
-			images.add(new OrcaImage(getPreference(PrefsEnum.IMAGE_NAME), 
-					new URL(getPreference(PrefsEnum.IMAGE_URL)), getPreference(PrefsEnum.IMAGE_HASH)));
-		} catch (MalformedURLException ue) {
-			;
-		}
-		
-		if (prefProperties == null)
-			return;
-		
-		// see if there are more
-		int i = 1;
-		while(true) {
-			String nmProp = "image" + i + ".name";
-			String urlProp = "image" + i + ".url";
-			String hashProp = "image" + i + ".hash";
-			
-			String nmPropVal = prefProperties.getProperty(nmProp);
-			String urlPropVal = prefProperties.getProperty(urlProp);
-			String hashPropVal = prefProperties.getProperty(hashProp);
-			if ((nmPropVal != null) && (urlPropVal != null) && (hashPropVal != null)) {
-				try {
-					if ((nmPropVal.trim().length() > 0) && (urlPropVal.trim().length() > 0) && (hashPropVal.trim().length() > 0))
-						images.add(new OrcaImage(nmPropVal.trim(), new URL(urlPropVal.trim()), hashPropVal.trim()));
-				} catch (MalformedURLException ue) {
-					;
-				}
-			} else
-				break;
-			i++;
-		}
-		
-		GUIRequestState.getInstance().addImages(images);
-	}
-	
-	/**
-	 * Get images from image registry
-	 */
-	void getImagesFromRegistry() {
-		List<OrcaImage> images = new ArrayList<OrcaImage>();
-		
-		List<Map<String, String>> regImages = null;
-		try {
-			regImages = RegistryXMLRPCProxy.getInstance().getImages();
-		} catch (Exception e) {
-			KMessageDialog md = new KMessageDialog(GUI.getInstance().getFrame(), "Unable to fetch images from image registry.", true);
-			md.setMessage("Unable to fetch images from image registry  " + PrefsEnum.ORCA_REGISTRY + ". This is not a fatal error.");
-			md.setLocationRelativeTo(GUI.getInstance().getFrame());
-			md.setVisible(true);
-			return;
-		}
-		
-		for (Map<String, String> regImg: regImages) {
-			if ((regImg.get("ImageName") != null) &&
-					(regImg.get("ImageURL") != null) && 
-					(regImg.get("ImageHash") != null)) {
-				try {
-					OrcaImage im = new OrcaImage(regImg.get("ImageName"), 
-							new URL(regImg.get("ImageURL")), 
-							regImg.get("ImageHash"));
-					images.add(im);
-				} catch (MalformedURLException me) {
-					continue;
-				}
-			}
-		}
-		GUIRequestState.getInstance().addImages(images);
 	}
 	
 	void getControllersFromPreferences() {

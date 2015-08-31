@@ -40,8 +40,8 @@ import java.util.Set;
 import java.util.regex.Pattern;
 
 import orca.flukes.GUI;
+import orca.flukes.GUIImageList;
 import orca.flukes.GUIManifestState;
-import orca.flukes.GUIRequestState;
 import orca.flukes.OrcaColor;
 import orca.flukes.OrcaColorLink;
 import orca.flukes.OrcaCrossconnect;
@@ -639,7 +639,7 @@ public class ManifestLoader implements INdlManifestModelListener, INdlRequestMod
 			try {
 				String imageURL = NdlCommons.getIndividualsImageURL(ce);
 				String imageHash = NdlCommons.getIndividualsImageHash(ce);
-				GUIRequestState.getInstance().addImage(new OrcaImage(di.getLocalName(), 
+				GUIImageList.getInstance().addImage(new OrcaImage(di.getLocalName(), 
 						new URL(imageURL), imageHash), null);
 				String imgName = di.getURI().replaceAll("http.+#", "").replace("+", " ");
 				newNode.setImage(imgName);

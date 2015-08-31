@@ -37,8 +37,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TimeZone;
 
-import javax.swing.JTextPane;
-
 import orca.flukes.GUI.GuiTabs;
 import orca.flukes.GUI.PrefsEnum;
 import orca.flukes.irods.IRodsException;
@@ -46,16 +44,10 @@ import orca.flukes.irods.IRodsICommands;
 import orca.flukes.ndl.ManifestLoader;
 import orca.flukes.ndl.ModifySaver;
 import orca.flukes.ui.TextAreaDialog;
-import orca.flukes.ui.TextHTMLPaneDialog;
 import orca.flukes.xmlrpc.GENICHXMLRPCProxy;
 import orca.flukes.xmlrpc.GENICHXMLRPCProxy.FedField;
 import orca.flukes.xmlrpc.NDLConverter;
 import orca.flukes.xmlrpc.OrcaSMXMLRPCProxy;
-import twitter4j.Paging;
-import twitter4j.Status;
-import twitter4j.Twitter;
-import twitter4j.TwitterException;
-import twitter4j.TwitterFactory;
 
 import com.hyperrealm.kiwi.ui.KTextArea;
 import com.hyperrealm.kiwi.ui.dialog.ExceptionDialog;
@@ -75,6 +67,11 @@ public class GUIManifestState extends GUICommonState implements IDeleteEdgeCallB
 	protected String manifestString;
 	private Date start = null, end = null, newEnd = null;
 
+	private GUIManifestState() {
+		super();
+		sState = SliceState.EXISTING;
+	}
+	
 	public static GUIManifestState getInstance() {
 		return instance;
 	}

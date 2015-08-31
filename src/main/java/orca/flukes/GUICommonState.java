@@ -47,6 +47,8 @@ public abstract class GUICommonState {
 	OrcaNodeCreator nodeCreator = new OrcaNodeCreator(g);
 	OrcaLinkCreator linkCreator = new OrcaLinkCreator(g);
 	KTextField sliceIdField = null;
+	enum SliceState { INVALID, NEW, EXISTING, CLOSED };
+	SliceState sState;
 	
 	EditingModalGraphMouse<OrcaNode, OrcaLink> gm = null;
 	
@@ -108,6 +110,10 @@ public abstract class GUICommonState {
 	
 	public String getSliceName() {
 		return sliceIdField.getText();
+	}
+	
+	public SliceState getSliceState() {
+		return sState;
 	}
 	
 	// a pane may have an action listener (e.g. for internal buttons)

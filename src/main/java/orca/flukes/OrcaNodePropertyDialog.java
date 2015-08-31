@@ -112,7 +112,7 @@ public class OrcaNodePropertyDialog extends ComponentDialog implements ActionLis
 		typeList.addListSelectionListener(this);
 		
 		imageList = addSelectList(kp, gbl_contentPanel, ycoord++, 
-				GUIRequestState.getInstance().getImageShortNamesWithNone(), "Select image: ", false, 3);
+				GUIImageList.getInstance().getImageShortNamesWithNone(), "Select image: ", false, 3);
 		
 		domainList = addSelectList(kp, gbl_contentPanel, ycoord++, 
 				GUIRequestState.getInstance().getAvailableDomains(), "Select domain: ", false, 3);
@@ -129,7 +129,7 @@ public class OrcaNodePropertyDialog extends ComponentDialog implements ActionLis
 		name.setObject(n.getName());
 
 		// set what image it is using
-		setListSelectedIndex(imageList, GUIRequestState.getInstance().getImageShortNamesWithNone(), n.getImage());
+		setListSelectedIndex(imageList, GUIImageList.getInstance().getImageShortNamesWithNone(), n.getImage());
 
 		// set what domain it is assigned to
 		setListSelectedIndex(domainList, GUIRequestState.getInstance().getAvailableDomains(), n.getDomain());
@@ -261,7 +261,7 @@ public class OrcaNodePropertyDialog extends ComponentDialog implements ActionLis
 		node.setName(name.getObject());
 		
 		// image
-		node.setImage(GUIRequestState.getNodeImageProper(GUIRequestState.getInstance().getImageShortNamesWithNone()[imageList.getSelectedIndex()]));
+		node.setImage(GUIImageList.getNodeImageProper(GUIImageList.getInstance().getImageShortNamesWithNone()[imageList.getSelectedIndex()]));
 
 		// domain
 		if (node instanceof OrcaNodeGroup) {

@@ -89,7 +89,7 @@ public class GUIResourceState extends GUICommonState {
 	}
 	
 	private GUIResourceState() {
-		;
+		sState = SliceState.INVALID;
 	}
 	
 	private static void initialize() {
