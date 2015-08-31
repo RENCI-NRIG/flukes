@@ -72,7 +72,7 @@ public class OrcaStitchPortPropertyDialog extends ComponentDialog {
 		kp = new KPanel();
 		int y = 0;
 		
-		GUIRequestState.getInstance().getAvailableDomains();
+		GUIDomainState.getInstance().getAvailableDomains();
 		
 		GridBagLayout gbl_contentPanel = new GridBagLayout();
 		kp.setLayout(gbl_contentPanel);

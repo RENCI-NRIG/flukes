@@ -38,6 +38,7 @@ import java.util.List;
 import java.util.Map;
 
 import orca.flukes.GUI;
+import orca.flukes.GUIDomainState;
 import orca.flukes.GUIImageList;
 import orca.flukes.GUIRequestState;
 import orca.flukes.OrcaColor;
@@ -502,7 +503,7 @@ public class RequestSaver {
 				
 				// is domain specified in the reservation?
 				if (GUIRequestState.getInstance().getDomainInReservation() != null) {
-					if (!GUIRequestState.getInstance().isAKnownDomain(GUIRequestState.getInstance().getDomainInReservation()))
+					if (!GUIDomainState.getInstance().isAKnownDomain(GUIRequestState.getInstance().getDomainInReservation()))
 						throw new NdlException("Domain " + GUIRequestState.getInstance().getDomainInReservation() + " is not visible from this SM!");
 					globalDomain = true;
 					Individual domI = ngen.declareDomain(domainMap.get(GUIRequestState.getInstance().getDomainInReservation()));
@@ -526,7 +527,7 @@ public class RequestSaver {
 								snode.getFSType(), snode.getFSParam(), snode.getMntPoint(), 
 								snode.getDoFormat());
 						if (!globalDomain && (n.getDomain() != null)) {
-							if (!GUIRequestState.getInstance().isAKnownDomain(n.getDomain()))
+							if (!GUIDomainState.getInstance().isAKnownDomain(n.getDomain()))
 								throw new NdlException("Domain " + n.getDomain() + " of node " + n + " is not visible from this SM!");
 							Individual domI = ngen.declareDomain(domainMap.get(n.getDomain()));
 							ngen.addNodeToDomain(domI, ni);
@@ -575,7 +576,7 @@ public class RequestSaver {
 
 						// if no global domain domain is set, declare a domain and add inDomain property
 						if (!globalDomain && (n.getDomain() != null)) {
-							if (!GUIRequestState.getInstance().isAKnownDomain(n.getDomain()))
+							if (!GUIDomainState.getInstance().isAKnownDomain(n.getDomain()))
 								throw new NdlException("Domain " + n.getDomain() + " of node " + n + " is not visible from this SM!");
 							Individual domI = ngen.declareDomain(domainMap.get(n.getDomain()));
 							ngen.addNodeToDomain(domI, ni);

@@ -53,7 +53,7 @@ public class OrcaStoragePropertyDialog extends ComponentDialog {
 		
 		
 		// set what domain it is assigned to
-		OrcaNodePropertyDialog.setListSelectedIndex(domainList, GUIRequestState.getInstance().getAvailableDomains(), c.getDomain());
+		OrcaNodePropertyDialog.setListSelectedIndex(domainList, GUIDomainState.getInstance().getAvailableDomains(), c.getDomain());
 	}
 	
 	@Override
@@ -71,7 +71,7 @@ public class OrcaStoragePropertyDialog extends ComponentDialog {
 		storageNode.setName(name.getObject().trim());
 		storageNode.setCapacity((long)capacityField.getValue());
 		// domain
-		storageNode.setDomainWithGlobalReset(GUIRequestState.getNodeDomainProper(GUIRequestState.getInstance().getAvailableDomains()[domainList.getSelectedIndex()]));
+		storageNode.setDomainWithGlobalReset(GUIDomainState.getNodeDomainProper(GUIDomainState.getInstance().getAvailableDomains()[domainList.getSelectedIndex()]));
 		// fs stuff
 		storageNode.setFS(fstype.getObject(), fsparam.getObject(), fsmntpoint.getObject());
 		storageNode.setDoFormat(doFormat);
@@ -83,7 +83,7 @@ public class OrcaStoragePropertyDialog extends ComponentDialog {
 		kp = new KPanel();
 		int y = 0;
 		
-		GUIRequestState.getInstance().getAvailableDomains();
+		GUIDomainState.getInstance().getAvailableDomains();
 		
 		gbl_contentPanel = new GridBagLayout();
 		kp.setLayout(gbl_contentPanel);
@@ -108,7 +108,7 @@ public class OrcaStoragePropertyDialog extends ComponentDialog {
 		}
 		
 		domainList = OrcaNodePropertyDialog.addSelectList(kp, gbl_contentPanel, y++, 
-				GUIRequestState.getInstance().getAvailableDomains(), "Select domain: ", false, 3);
+				GUIDomainState.getInstance().getAvailableDomains(), "Select domain: ", false, 3);
 
 		
 		{

@@ -347,7 +347,7 @@ public class GUI implements ComponentListener {
 				OrcaSMXMLRPCProxy.getInstance().resetSSLIdentity();
 				keyAlias = null;
 				keyPassword = null;
-				GUIRequestState.getInstance().listSMResources();
+				GUIDomainState.getInstance().listSMResources();
 			} else if (e.getActionCommand().equals("openirods")) {
 				KMessageDialog md = new KMessageDialog(GUI.getInstance().getFrame(), "Not implemented.", true);
 				md.setMessage("This function is not yet implemented!");
@@ -367,7 +367,7 @@ public class GUI implements ComponentListener {
 				GUIManifestState.getInstance().saveManifestToIRods();
 			} else if (e.getActionCommand().equals("resources")) {
 				// want to get keys sorted, use tree map
-				Map<String, Map<String, Integer>> tm = new TreeMap<String, Map<String, Integer>>(GUIRequestState.getInstance().updateResourceSlots());
+				Map<String, Map<String, Integer>> tm = new TreeMap<String, Map<String, Integer>>(GUIDomainState.getInstance().updateResourceSlots());
 				TextHTMLPaneDialog tad = new TextHTMLPaneDialog(GUI.getInstance().getFrame(), "Resources available on " + GUI.getInstance().getSelectedController(), "", 
 						"https://wiki.exogeni.net/doku.php?id=public:experimenters:resource_types:start");
 				JTextPane ta = tad.getTextPane();

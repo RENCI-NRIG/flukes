@@ -96,7 +96,7 @@ public class ReservationDetailsDialog extends ComponentDialog {
 	public void setFields(String domain, OrcaReservationTerm term, String ofVersion) {
 
 		OrcaNodePropertyDialog.setListSelectedIndex(domainList, 
-				GUIRequestState.getInstance().getAvailableDomains(), domain);
+				GUIDomainState.getInstance().getAvailableDomains(), domain);
 		isImmediate = term.isImmediate();
 		immCb.setSelected(isImmediate);
 		if (!isImmediate) {
@@ -150,7 +150,7 @@ public class ReservationDetailsDialog extends ComponentDialog {
 		int y = 0;
 
 		domainList = OrcaNodePropertyDialog.addSelectList(kp, gbl_contentPanel, y++, 
-				GUIRequestState.getInstance().getAvailableDomains(), "Select domain: ", false, 3);		
+				GUIDomainState.getInstance().getAvailableDomains(), "Select domain: ", false, 3);		
 
 		{
 			KLabel lblNewLabel = new KLabel("Openflow reservation:");
@@ -367,7 +367,7 @@ public class ReservationDetailsDialog extends ComponentDialog {
 		GUIRequestState.getInstance().getTerm().setDuration(df.getDays(), df.getHours(), df.getMinutes());
 		
 		// get the domain for reservation
-		String domName = GUIRequestState.getNodeDomainProper(GUIRequestState.getInstance().getAvailableDomains()[domainList.getSelectedIndex()]);
+		String domName = GUIDomainState.getNodeDomainProper(GUIDomainState.getInstance().getAvailableDomains()[domainList.getSelectedIndex()]);
 		GUIRequestState.getInstance().setDomainInReservation(domName);
 		
 		return true;

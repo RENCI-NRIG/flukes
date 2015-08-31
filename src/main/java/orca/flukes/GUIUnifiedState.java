@@ -5,6 +5,6 @@ package orca.flukes;
  * @author ibaldin
  *
  */
-public class GUIUniviedState {
+public class GUIUnifiedState {
 
 }

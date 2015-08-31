@@ -56,7 +56,7 @@ public class OrcaMultiNodePropertyDialog extends ComponentDialog {
 			// image
 			node.setImage(GUIImageList.getNodeImageProper(GUIImageList.getInstance().getImageShortNamesWithNone()[imageList.getSelectedIndex()]));
 			// domain
-			node.setDomainWithGlobalReset(GUIRequestState.getNodeDomainProper(GUIRequestState.getInstance().getAvailableDomains()[domainList.getSelectedIndex()]));
+			node.setDomainWithGlobalReset(GUIDomainState.getNodeDomainProper(GUIDomainState.getInstance().getAvailableDomains()[domainList.getSelectedIndex()]));
 		}
 		return true;
 	}
@@ -78,7 +78,7 @@ public class OrcaMultiNodePropertyDialog extends ComponentDialog {
 				GUIImageList.getInstance().getImageShortNamesWithNone(), "Select image: ", false, 3);
 		
 		domainList = OrcaNodePropertyDialog.addSelectList(kp, gbl_contentPanel, y++,
-				GUIRequestState.getInstance().getAvailableDomains(), "Select domain: ", false, 3);
+				GUIDomainState.getInstance().getAvailableDomains(), "Select domain: ", false, 3);
 		
 		typeList.setSelectedIndex(0);
 		imageList.setSelectedIndex(0);

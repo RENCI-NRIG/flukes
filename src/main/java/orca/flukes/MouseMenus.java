@@ -16,7 +16,6 @@ import java.awt.event.ActionListener;
 import java.awt.geom.Point2D;
 import java.io.File;
 import java.io.IOException;
-import java.util.Map;
 import java.util.Set;
 
 import javax.swing.ButtonGroup;
@@ -259,7 +258,7 @@ public class MouseMenus {
 			if ((v.getDomain() != null) && (v.getDomain().length() > 0))
 				this.setText(PREFIX_DOMAIN + v.getDomain());
 			else
-				this.setText(PREFIX_DOMAIN + GUIRequestState.NO_DOMAIN_SELECT);
+				this.setText(PREFIX_DOMAIN + GUIDomainState.NO_DOMAIN_SELECT);
 		}
 	}
 
@@ -277,7 +276,7 @@ public class MouseMenus {
 				if ((v.getDomain() != null) && (v.getDomain().length() > 0))
 					this.setText(PREFIX_DOMAIN + v.getDomain());
 				else
-					this.setText(PREFIX_DOMAIN + GUIRequestState.NO_DOMAIN_SELECT);
+					this.setText(PREFIX_DOMAIN + GUIDomainState.NO_DOMAIN_SELECT);
 		}
 	}
 

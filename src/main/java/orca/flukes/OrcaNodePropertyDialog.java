@@ -115,7 +115,7 @@ public class OrcaNodePropertyDialog extends ComponentDialog implements ActionLis
 				GUIImageList.getInstance().getImageShortNamesWithNone(), "Select image: ", false, 3);
 		
 		domainList = addSelectList(kp, gbl_contentPanel, ycoord++, 
-				GUIRequestState.getInstance().getAvailableDomains(), "Select domain: ", false, 3);
+				GUIDomainState.getInstance().getAvailableDomains(), "Select domain: ", false, 3);
 		
 		if (n instanceof OrcaNodeGroup) {
 			OrcaNodeGroup ong = (OrcaNodeGroup)n;
@@ -132,7 +132,7 @@ public class OrcaNodePropertyDialog extends ComponentDialog implements ActionLis
 		setListSelectedIndex(imageList, GUIImageList.getInstance().getImageShortNamesWithNone(), n.getImage());
 
 		// set what domain it is assigned to
-		setListSelectedIndex(domainList, GUIRequestState.getInstance().getAvailableDomains(), n.getDomain());
+		setListSelectedIndex(domainList, GUIDomainState.getInstance().getAvailableDomains(), n.getDomain());
 
 		// set node type
 		setListSelectedIndex(typeList, GUIRequestState.getInstance().getAvailableNodeTypes(), n.getNodeType());
@@ -270,12 +270,12 @@ public class OrcaNodePropertyDialog extends ComponentDialog implements ActionLis
 			ong.setSplittable(splittableState);
 			if (splittableState)
 				// set to system select
-				node.setDomainWithGlobalReset(GUIRequestState.getNodeDomainProper(GUIRequestState.getInstance().getAvailableDomains()[0]));
+				node.setDomainWithGlobalReset(GUIDomainState.getNodeDomainProper(GUIDomainState.getInstance().getAvailableDomains()[0]));
 			else
-				node.setDomainWithGlobalReset(GUIRequestState.getNodeDomainProper(GUIRequestState.getInstance().getAvailableDomains()[domainList.getSelectedIndex()]));
+				node.setDomainWithGlobalReset(GUIDomainState.getNodeDomainProper(GUIDomainState.getInstance().getAvailableDomains()[domainList.getSelectedIndex()]));
 		} else {
 			// domain
-			node.setDomainWithGlobalReset(GUIRequestState.getNodeDomainProper(GUIRequestState.getInstance().getAvailableDomains()[domainList.getSelectedIndex()]));
+			node.setDomainWithGlobalReset(GUIDomainState.getNodeDomainProper(GUIDomainState.getInstance().getAvailableDomains()[domainList.getSelectedIndex()]));
 		}
 
 		// node type
