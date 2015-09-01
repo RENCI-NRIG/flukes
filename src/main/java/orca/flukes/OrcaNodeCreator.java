@@ -25,9 +25,9 @@ package orca.flukes;
 import java.lang.reflect.Constructor;
 import java.util.Collection;
 
-import edu.uci.ics.jung.graph.SparseMultigraph;
-
 import orca.flukes.OrcaNode.INodeCreator;
+import orca.flukes.OrcaResource.ResourceType;
+import edu.uci.ics.jung.graph.SparseMultigraph;
 
 public class OrcaNodeCreator implements INodeCreator {
 	private OrcaNodeEnum currentSetting = OrcaNodeEnum.CE;
@@ -65,7 +65,7 @@ public class OrcaNodeCreator implements INodeCreator {
 	}
 	
 	@Override
-	public OrcaNode create() {
+	public OrcaNode create(ResourceType rt) {
 		OrcaNode node = null;
 		String name;
 
@@ -82,6 +82,7 @@ public class OrcaNodeCreator implements INodeCreator {
 		} catch (Exception e) {
 			;
 		}
+		node.setResourceType(rt);
 		return node;
 	}
 	

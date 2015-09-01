@@ -50,6 +50,7 @@ import orca.flukes.OrcaLink;
 import orca.flukes.OrcaNode;
 import orca.flukes.OrcaNodeGroup;
 import orca.flukes.OrcaResource;
+import orca.flukes.OrcaResource.ResourceType;
 import orca.flukes.OrcaStitchPort;
 import orca.flukes.OrcaStorageNode;
 import orca.ndl.INdlColorRequestListener;
@@ -266,7 +267,7 @@ public class ManifestLoader implements INdlManifestModelListener, INdlRequestMod
 		// limit to link connections not part of a network connection
 		if (interfaces.size() == 2){
 			GUI.logger().debug("  Adding p-to-p link");
-			OrcaLink ol = GUIManifestState.getInstance().getLinkCreator().create(getPrettyName(l), NdlCommons.getResourceBandwidth(l));
+			OrcaLink ol = GUIManifestState.getInstance().getLinkCreator().create(getPrettyName(l), NdlCommons.getResourceBandwidth(l), ResourceType.MANIFEST);
 			ol.setLabel(label);
 			// state
 			ol.setState(NdlCommons.getResourceStateAsString(l));
@@ -515,7 +516,7 @@ public class ManifestLoader implements INdlManifestModelListener, INdlRequestMod
 				
 				if (interfaceToNode.get(getTrueName(intf)) != null) {
 					GUI.logger().debug("  Creating a link  from " + on + " to " + crs);
-					ol = GUIManifestState.getInstance().getLinkCreator().create("Unnamed");
+					ol = GUIManifestState.getInstance().getLinkCreator().create("Unnamed", ResourceType.MANIFEST);
 					GUIManifestState.getInstance().getGraph().addEdge(ol, new Pair<OrcaNode>(on, crs), 
 							EdgeType.UNDIRECTED);
 				} else
@@ -669,7 +670,7 @@ public class ManifestLoader implements INdlManifestModelListener, INdlRequestMod
 			OrcaNode on = new OrcaNode(getTrueName(tmpR), parent);
 			nodes.put(getTrueName(tmpR), on);
 			GUIManifestState.getInstance().getGraph().addVertex(on);
-			OrcaLink ol = GUIManifestState.getInstance().getLinkCreator().create("Unnamed");
+			OrcaLink ol = GUIManifestState.getInstance().getLinkCreator().create("Unnamed", ResourceType.MANIFEST);
 			
 			// link to parent (a visual HACK)
 			links.put(ol.getName(), ol);
@@ -801,7 +802,7 @@ public class ManifestLoader implements INdlManifestModelListener, INdlRequestMod
 					}
 
 					GUI.logger().debug("  Adding p-to-p link");
-					OrcaLink ol = GUIManifestState.getInstance().getLinkCreator().create("Unnamed");
+					OrcaLink ol = GUIManifestState.getInstance().getLinkCreator().create("Unnamed", ResourceType.MANIFEST);
 					
 					GUI.logger().debug("  Creating a link " + ol.getName() + " from " + first + " to " + second);
 					GUIManifestState.getInstance().getGraph().addEdge(ol, new Pair<OrcaNode>(firstNode, secondNode), 

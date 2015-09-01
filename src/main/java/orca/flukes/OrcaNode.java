@@ -87,7 +87,7 @@ public class OrcaNode extends OrcaResource {
 	protected Map<OrcaLink, String> interfaces = new HashMap<OrcaLink, String>();
 	
 	interface INodeCreator {
-		public OrcaNode create();
+		public OrcaNode create(ResourceType rt);
 		public void reset();
 	}
 
@@ -428,7 +428,7 @@ public class OrcaNode extends OrcaResource {
         	if (inc == null)
         		return null;
         	synchronized(inc) {
-        		return inc.create();
+        		return inc.create(ResourceType.REQUEST);
         	}
         }       
     }

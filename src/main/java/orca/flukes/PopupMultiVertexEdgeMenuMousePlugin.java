@@ -39,18 +39,7 @@ public class PopupMultiVertexEdgeMenuMousePlugin extends AbstractPopupGraphMouse
         if(pickSupport != null) {
             final OrcaNode v = pickSupport.getVertex(vv.getGraphLayout(), p.getX(), p.getY());
             if (v != null) {
-            	JPopupMenu m = null;
-            	switch (GUI.getInstance().activeTab()) {
-            	case RESOURCE_VIEW:
-            		m = v.resourceMenu();
-            		break;
-            	case REQUEST_VIEW:
-            		m = v.requestMenu();
-            		break;
-            	case MANIFEST_VIEW:
-            		m = v.manifestMenu();
-            		break;
-            	}
+            	JPopupMenu m = v.contextMenu();
 
             	if (m != null) {
             		updateVertexMenu(v, m, vv, p); 
@@ -59,18 +48,8 @@ public class PopupMultiVertexEdgeMenuMousePlugin extends AbstractPopupGraphMouse
             } else {
                 final OrcaLink edge = pickSupport.getEdge(vv.getGraphLayout(), p.getX(), p.getY());
                 if (edge != null) {
-                	JPopupMenu m = null;
-                	switch (GUI.getInstance().activeTab()) {
-                	case RESOURCE_VIEW:
-                		m = edge.resourceMenu();
-                		break;
-                	case REQUEST_VIEW:
-                		m = edge.requestMenu();
-                		break;
-                	case MANIFEST_VIEW:
-                		m = edge.manifestMenu();
-                		break;
-                	}
+                	JPopupMenu m = edge.contextMenu();
+
                 	if (m != null) {
                 		updateEdgeMenu(edge, m, vv, p);
                 		m.show(vv, e.getX(), e.getY());

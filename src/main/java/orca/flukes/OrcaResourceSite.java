@@ -39,6 +39,7 @@ public class OrcaResourceSite extends OrcaNode {
 		domain = name;
 		this.lat = lat;
 		this.lon = lon;
+		setResourceType(ResourceType.RESOURCE);
 	}
 	
 	public float getLat() {

@@ -60,8 +60,8 @@ public class OrcaLink extends OrcaResource {
     
     
     interface ILinkCreator {
-    	public OrcaLink create(String prefix);
-    	public OrcaLink create(String nm, long bw);
+    	public OrcaLink create(String prefix, ResourceType rt);
+    	public OrcaLink create(String nm, long bw, ResourceType rt);
     	public void reset();
     }
     
@@ -146,7 +146,7 @@ public class OrcaLink extends OrcaResource {
         	if (inc == null)
         		return null;
         	synchronized(inc) {
-        		return inc.create(null);
+        		return inc.create(null, ResourceType.REQUEST);
         	}
         }    
     }

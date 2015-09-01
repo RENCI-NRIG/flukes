@@ -39,11 +39,7 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Constructor;
-import java.net.MalformedURLException;
 import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -80,7 +76,6 @@ import orca.flukes.ui.SplitButton;
 import orca.flukes.ui.TextAreaDialog;
 import orca.flukes.ui.TextHTMLPaneDialog;
 import orca.flukes.xmlrpc.OrcaSMXMLRPCProxy;
-import orca.flukes.xmlrpc.RegistryXMLRPCProxy;
 import orca.ndl.NdlCommons;
 
 import org.apache.log4j.ConsoleAppender;
@@ -876,8 +871,8 @@ public class GUI implements ComponentListener {
 		// 
 		query("Query Registry", "Query Actor Registry"),
 		// requests
-		nodes("Add Nodes", "Add new nodes"),
-		links("Link Types", "Choose link type"),
+		nodes("Add Nodes", "Select node type"),
+		links("Add Links", "Select link type"),
 		autoip("Auto IP", "Auto-assign IP addresses"),
 		reservation("Reservation Details", "Edit reservation details"),
 		submit("Submit", "Submit request to selected ORCA controller"),

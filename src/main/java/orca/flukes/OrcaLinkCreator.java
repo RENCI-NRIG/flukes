@@ -25,6 +25,7 @@ package orca.flukes;
 import java.util.Collection;
 
 import orca.flukes.OrcaLink.ILinkCreator;
+import orca.flukes.OrcaResource.ResourceType;
 import edu.uci.ics.jung.graph.SparseMultigraph;
 
 public class OrcaLinkCreator implements ILinkCreator {
@@ -89,7 +90,7 @@ public class OrcaLinkCreator implements ILinkCreator {
 	}
 
 	@Override
-	public OrcaLink create(String prefix) {
+	public OrcaLink create(String prefix, ResourceType rt) {
        	synchronized(this) {
     		String name;
     		do {
@@ -110,13 +111,14 @@ public class OrcaLinkCreator implements ILinkCreator {
     			link = new OrcaColorLink(name);
     			break;
     		}
+    		link.setResourceType(rt);
     		return link;
     	}
 	}
 	
 	// Creates *only* TOPO links
 	@Override
-	public OrcaLink create(String nm, long bw) {
+	public OrcaLink create(String nm, long bw, ResourceType rt) {
 		String dispName = nm;
 		if ((nm != null) && (nm.length() > 20)) {
 			dispName = nm.substring(0, 20) + "...";
@@ -125,6 +127,7 @@ public class OrcaLinkCreator implements ILinkCreator {
 		link.setRealName(nm);
 		link.setBandwidth(bw);
 		link.setLatency(defaultLatency);
+		link.setResourceType(rt);
 		return link;
 	}
 	

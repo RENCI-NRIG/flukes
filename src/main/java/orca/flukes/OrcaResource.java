@@ -22,6 +22,24 @@ public abstract class OrcaResource implements Comparable<OrcaResource> {
 	protected String reservationGuid = null;
 	protected Set<OrcaColor> colors = new HashSet<OrcaColor>();
 	
+	// distinguishing new and existing resources helps in determining
+	// which menus to show
+	public enum ResourceType { INVALID, RESOURCE, REQUEST, MANIFEST};
+	// by default assume resource already exists (has been provisioned)
+	private ResourceType myType = ResourceType.MANIFEST;
+	
+	/**
+	 * Allow to override resource type
+	 * @param rt
+	 */
+	public void setResourceType(ResourceType rt) {
+		myType = rt;
+	}
+	
+	public ResourceType getResourceType() {
+		return myType;
+	}
+	
 	protected OrcaResource(String n) {
 		name = n;
 	}
@@ -123,7 +141,19 @@ public abstract class OrcaResource implements Comparable<OrcaResource> {
     public abstract JPopupMenu requestMenu();
     public abstract JPopupMenu manifestMenu();
     public abstract JPopupMenu resourceMenu();
-    
+	
+	public JPopupMenu contextMenu() {
+		switch(getResourceType()) {
+		case RESOURCE:
+			return resourceMenu();
+		case REQUEST:
+			return requestMenu();
+		case MANIFEST:
+			return manifestMenu();
+		default: return null;
+		}
+	}
+	
     // comparable (lexicographic, based on name)
     @Override
     public int compareTo(OrcaResource o) {
