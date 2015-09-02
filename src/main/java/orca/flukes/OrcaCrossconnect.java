@@ -74,7 +74,7 @@ public class OrcaCrossconnect extends OrcaNode {
 	
 	public OrcaCrossconnect(String name) {
 		super(name, 
-				new LayeredIcon(new ImageIcon(GUIRequestState.class.getResource(OrcaNodeEnum.CROSSCONNECT.getIconName())).getImage()));
+				new LayeredIcon(new ImageIcon(GUIUnifiedState.class.getResource(OrcaNodeEnum.CROSSCONNECT.getIconName())).getImage()));
 	}
 
 	public void setLabel(String l) {
@@ -121,9 +121,9 @@ public class OrcaCrossconnect extends OrcaNode {
 	// is this crossconnect linked to shared storage?
     public boolean linkToSharedStorage() {
     	
-    	Collection<OrcaLink> iLinks = GUIRequestState.getInstance().getGraph().getIncidentEdges(this);
+    	Collection<OrcaLink> iLinks = GUIUnifiedState.getInstance().getGraph().getIncidentEdges(this);
 		for(OrcaLink l: iLinks) {
-			Pair<OrcaNode> pn = GUIRequestState.getInstance().getGraph().getEndpoints(l);
+			Pair<OrcaNode> pn = GUIUnifiedState.getInstance().getGraph().getEndpoints(l);
 			OrcaNode n = null;
 			// find the non-crossconnect side
 			if (!(pn.getFirst() instanceof OrcaCrossconnect))
@@ -149,7 +149,7 @@ public class OrcaCrossconnect extends OrcaNode {
 	public static class RequestMenu extends JPopupMenu {
 		public RequestMenu() {
 			super("Broadcast Link Menu");
-			this.add(new DeleteVertexMenuItem<OrcaNode, OrcaLink>(GUIRequestState.getInstance()));
+			this.add(new DeleteVertexMenuItem<OrcaNode, OrcaLink>(GUIUnifiedState.getInstance()));
 			this.addSeparator();
 			this.add(new DomainDisplay());
 			this.add(new NodeTypeDisplay());

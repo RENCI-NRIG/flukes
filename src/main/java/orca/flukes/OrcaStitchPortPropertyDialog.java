@@ -51,7 +51,7 @@ public class OrcaStitchPortPropertyDialog extends ComponentDialog {
 	public boolean accept() {
 		if ((name.getObject().length() == 0) || (!label.validateInput()) || (port.getText().length() == 0))
 			return false;
-		if (!GUIRequestState.getInstance().nodeCreator.checkUniqueNodeName(stitchPort, name.getObject())) {
+		if (!GUIUnifiedState.getInstance().nodeCreator.checkUniqueNodeName(stitchPort, name.getObject())) {
 			KMessageDialog kmd = new KMessageDialog(parent, "Stitch port name not unique", true);
 			kmd.setLocationRelativeTo(parent);
 			kmd.setMessage("Stitch port Name " + name.getObject() + " is not unique");

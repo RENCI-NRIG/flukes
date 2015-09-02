@@ -30,11 +30,9 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Set;
 import java.util.TimeZone;
 
 import orca.flukes.GUI.GuiTabs;
@@ -72,10 +70,11 @@ public class GUIManifestState extends GUICommonState implements IDeleteEdgeCallB
 		sState = SliceState.EXISTING;
 	}
 	
+	/*
 	public static GUIManifestState getInstance() {
 		return instance;
 	}
-
+*/
 	public void setManifestString(String s) {
 		manifestString = s;
 	}
@@ -108,21 +107,6 @@ public class GUIManifestState extends GUICommonState implements IDeleteEdgeCallB
 	public void resetEndDate() {
 		end = newEnd;
 		newEnd = null;
-	}
-	
-	/**
-	 * clear the manifest
-	 */
-	@Override
-	public void clear() {
-		super.clear();
-		
-		// clear the graph, 
-		if (g == null)
-			return;
-		Set<OrcaNode> nodes = new HashSet<OrcaNode>(g.getVertices());
-		for (OrcaNode n: nodes)
-			g.removeVertex(n);
 	}
 
 	void deleteSlice(String name) {
@@ -195,7 +179,7 @@ public class GUIManifestState extends GUICommonState implements IDeleteEdgeCallB
 		}
 
 		try {
-			GUIManifestState.getInstance().clear();
+			clear();
 
 			manifestString = OrcaSMXMLRPCProxy.getInstance().sliceStatus(sliceIdField.getText());
 
@@ -204,7 +188,7 @@ public class GUIManifestState extends GUICommonState implements IDeleteEdgeCallB
 			String realM = stripManifest(manifestString);
 			if (realM != null) {
 				if (ml.loadString(realM))
-					GUI.getInstance().kickLayout(GuiTabs.MANIFEST_VIEW);
+					GUI.getInstance().kickLayout(GuiTabs.UNIFIED_VIEW);
 			} else {
 				KMessageDialog kmd = new KMessageDialog(GUI.getInstance().getFrame());
 				kmd.setMessage("Error has occurred, check raw controller response for details.");
@@ -220,7 +204,7 @@ public class GUIManifestState extends GUICommonState implements IDeleteEdgeCallB
 		}
 	}
 	
-	public class ResourceButtonListener implements ActionListener {
+	public class ManifestButtonListener implements ActionListener {
 		public void actionPerformed(ActionEvent e) {
 			assert(sliceIdField != null);
 
@@ -382,16 +366,16 @@ public class GUIManifestState extends GUICommonState implements IDeleteEdgeCallB
 	public void printResourceState(Date start, Date end) {
 		// get a list of nodes and links
 		List<OrcaResource> resources = new ArrayList<OrcaResource>();
-		
+
 		resources.addAll(g.getVertices());
 		resources.addAll(g.getEdges());
 
 		System.out.println("Printing resource state:");
 		for (OrcaResource r : resources) {
 			String resourceInfo =
-				"Name: " + r.getName() + ", " +
-				"IsResource: " + Boolean.toString(r.isResource()) + ", " +
-				"State: " + r.getState() + "\n";
+					"Name: " + r.getName() + ", " +
+							"IsResource: " + Boolean.toString(r.isResource()) + ", " +
+							"State: " + r.getState() + "\n";
 
 			resourceInfo += "ResNotice: ";
 			String resNotice = r.getReservationNotice();
@@ -412,10 +396,10 @@ public class GUIManifestState extends GUICommonState implements IDeleteEdgeCallB
 				resourceInfo += "None";
 			}
 			System.out.println(resourceInfo);
-                }
+		}
 	}
 	
-	ResourceButtonListener rbl = new ResourceButtonListener();
+	ManifestButtonListener rbl = new ManifestButtonListener();
 	@Override
 	public ActionListener getActionListener() {
 		return rbl;
@@ -431,7 +415,7 @@ public class GUIManifestState extends GUICommonState implements IDeleteEdgeCallB
 		// Show vertex and edge labels
 		vv.getRenderContext().setVertexLabelTransformer(new ToStringLabeller<OrcaNode>());
 		vv.getRenderContext().setEdgeLabelTransformer(new ToStringLabeller<OrcaLink>());
-		vv.getRenderContext().setEdgeDrawPaintTransformer(new GUICommonState.LinkPaint());
+		vv.getRenderContext().setEdgeDrawPaintTransformer(new OrcaLink.LinkPaint());
 		
 		// Create a graph mouse and add it to the visualization viewer
 		OrcaNode.OrcaNodeFactory onf = new OrcaNode.OrcaNodeFactory(nodeCreator);
@@ -468,7 +452,7 @@ public class GUIManifestState extends GUICommonState implements IDeleteEdgeCallB
 		
 		c.add(vv);
 
-		gm.setMode(ModalGraphMouse.Mode.TRANSFORMING); // Start off in panning mode  
+		gm.setMode(ModalGraphMouse.Mode.EDITING); // Start off in panning mode  
 	}
 
 	@Override

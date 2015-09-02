@@ -1,8 +1,20 @@
 package orca.flukes.ui;
 
-import java.awt.*;
-import java.awt.event.*;
-import javax.swing.*;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Point;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JMenuItem;
+import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
+import javax.swing.JToolBar;
+import javax.swing.SwingConstants;
 import javax.swing.plaf.basic.BasicArrowButton;
 
 /**
@@ -28,7 +40,7 @@ public class SplitButton extends JButton implements ActionListener{
    * @param text String
    */
   public SplitButton(String text) {
-    this(new JButton(text), SwingConstants.SOUTH);
+    this(new JButton(text), SwingConstants.SOUTH, 100);
   }
 
   /**
@@ -38,7 +50,7 @@ public class SplitButton extends JButton implements ActionListener{
    * @param orientation int
    */
   public SplitButton(String text, int orientation) {
-    this(new JButton(text), orientation);
+    this(new JButton(text), orientation, 100);
   }
 
   /**
@@ -47,7 +59,7 @@ public class SplitButton extends JButton implements ActionListener{
    * @param mainButton JButton
    * @param orientation int
    */
-  public SplitButton(JButton mainButton, int orientation) {
+  public SplitButton(JButton mainButton, int orientation, int width) {
     super();
     this.mainButton = mainButton;
 
@@ -59,8 +71,8 @@ public class SplitButton extends JButton implements ActionListener{
     //this.mainButton.setBorderPainted(false);
 
     //this.setPreferredSize(new Dimension(75, 34));
-    this.setMaximumSize(new Dimension(100, 35));
-    this.setMinimumSize(new Dimension(100, 35));
+    this.setMaximumSize(new Dimension(width, 35));
+    this.setMinimumSize(new Dimension(width, 35));
 
     this.setLayout(new BorderLayout());
     //this.setMargin(new Insets(-3, -3,-3,-3));
@@ -145,7 +157,7 @@ public class SplitButton extends JButton implements ActionListener{
     JButton sbButton = new JButton("sb");
     sbButton.setBackground(Color.BLACK);
     sbButton.setContentAreaFilled(false);
-    SplitButton sb = new SplitButton(sbButton, SwingConstants.SOUTH);
+    SplitButton sb = new SplitButton(sbButton, SwingConstants.SOUTH, 100);
     
     toolBar.add(new JButton("test button"));
     toolBar.add(sb);

@@ -90,11 +90,8 @@ public class MouseMenus {
 			switch(GUI.getInstance().activeTab()) {
 			case RESOURCE_VIEW:
 				break;
-			case REQUEST_VIEW:
-				m = GUIRequestState.getInstance().gm;
-				break;
-			case MANIFEST_VIEW:
-				m = GUIManifestState.getInstance().gm;
+			case UNIFIED_VIEW:
+				m = GUIUnifiedState.getInstance().gm;
 				break;
 			}
 			if (m == null)
@@ -533,7 +530,7 @@ public class MouseMenus {
 
 							OrcaResourcePropertyViewer viewer = new OrcaResourcePropertyViewer(GUI.getInstance().getFrame(), 
 									OrcaSMXMLRPCProxy.getInstance().
-									getSliverProperties(GUIManifestState.getInstance().
+									getSliverProperties(GUIUnifiedState.getInstance().
 									getSliceName(), 
 									node.getReservationGuid()));
 							viewer.pack();

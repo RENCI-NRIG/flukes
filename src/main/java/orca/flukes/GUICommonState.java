@@ -22,12 +22,11 @@
 */
 package orca.flukes;
 
-import java.awt.BasicStroke;
-import java.awt.Color;
 import java.awt.Container;
 import java.awt.Paint;
-import java.awt.Stroke;
 import java.awt.event.ActionListener;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.apache.commons.collections15.Transformer;
 
@@ -52,23 +51,6 @@ public abstract class GUICommonState {
 	
 	EditingModalGraphMouse<OrcaNode, OrcaLink> gm = null;
 	
-	// standard  transformers for edges
-	protected class LinkPaint implements Transformer<OrcaLink, Paint> {
-	    public Paint transform(OrcaLink l) {
-	    	if (l instanceof OrcaColorLink)
-	    		return Color.RED;
-	    	return Color.BLACK;
-	    }
-	};
-	
-	protected class LinkStroke implements Transformer<OrcaLink, Stroke> {
-		float dash[] = { 10.0f };
-		public Stroke transform(OrcaLink l) {
-			return new BasicStroke(1.0f, BasicStroke.CAP_BUTT,
-					BasicStroke.JOIN_MITER, 10.0f, dash, 0.0f);
-		}
-	}
-
 	// where are we saving
 	String saveDirectory = null;
 	
@@ -104,6 +86,13 @@ public abstract class GUICommonState {
 	}
 	
 	public void clear() {
+		// clear the graph
+		if (g != null) {
+			Set<OrcaNode> nodes = new HashSet<OrcaNode>(g.getVertices());
+			for (OrcaNode n: nodes)
+				g.removeVertex(n);
+		}
+
 		nodeCreator.reset();
 		linkCreator.reset();
 	}

@@ -72,7 +72,7 @@ public class OrcaColorLink extends OrcaLink {
 		public RequestMenu() {
 			super("Edge Menu");
 			// this.frame = frame;
-			this.add(new DeleteEdgeMenuItem<OrcaNode, OrcaLink>(GUIRequestState.getInstance()));
+			this.add(new DeleteEdgeMenuItem<OrcaNode, OrcaLink>(GUIUnifiedState.getInstance()));
 			//this.addSeparator();
 			//this.add(new LatencyDisplay());
 			//this.add(new LabelDisplay());  

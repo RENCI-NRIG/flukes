@@ -45,7 +45,7 @@ public class OrcaSliceList extends ComponentDialog {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				if (e.getActionCommand().equals("delete")) {
-					GUIManifestState.getInstance().deleteSlice((String)sliceList.getSelectedValue());
+					GUIUnifiedState.getInstance().deleteSlice((String)sliceList.getSelectedValue());
 					me.setVisible(false);
 				}
 			}
@@ -57,8 +57,8 @@ public class OrcaSliceList extends ComponentDialog {
 	@Override
 	public boolean accept() {
 		String s = (String)sliceList.getSelectedValue();
-		GUIManifestState.getInstance().setSliceIdFieldText(s);
-		GUIManifestState.getInstance().queryManifest();
+		GUIUnifiedState.getInstance().setSliceIdFieldText(s);
+		GUIUnifiedState.getInstance().queryManifest();
 		return true;
 	}
 }

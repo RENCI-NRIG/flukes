@@ -40,7 +40,7 @@ import java.util.Map;
 import orca.flukes.GUI;
 import orca.flukes.GUIDomainState;
 import orca.flukes.GUIImageList;
-import orca.flukes.GUIRequestState;
+import orca.flukes.GUIUnifiedState;
 import orca.flukes.OrcaColor;
 import orca.flukes.OrcaColorLink;
 import orca.flukes.OrcaCrossconnect;
@@ -235,7 +235,7 @@ public class RequestSaver {
 		
 		// if the other end is storage, need to add dependency
 		if (e.linkToSharedStorage() && !(n instanceof OrcaStorageNode)) {
-			Pair<OrcaNode> pn = GUIRequestState.getInstance().getGraph().getEndpoints(e);
+			Pair<OrcaNode> pn = GUIUnifiedState.getInstance().getGraph().getEndpoints(e);
 			OrcaStorageNode osn = null;
 			try {
 				if (pn.getFirst() instanceof OrcaStorageNode)
@@ -302,7 +302,7 @@ public class RequestSaver {
 		// sanity checks
 		// 1) if label is specified, nodes cannot be in different domains
 
-		Pair<OrcaNode> pn = GUIRequestState.getInstance().getGraph().getEndpoints(l);
+		Pair<OrcaNode> pn = GUIUnifiedState.getInstance().getGraph().getEndpoints(l);
 		
 		if ((l.getLabel() != null) && 
 				(((pn.getFirst().getDomain() != null) && 
@@ -322,7 +322,7 @@ public class RequestSaver {
 	 * @return
 	 */
 	private boolean fakeLink(OrcaLink e) {
-		Pair<OrcaNode> pn = GUIRequestState.getInstance().getGraph().getEndpoints(e);
+		Pair<OrcaNode> pn = GUIUnifiedState.getInstance().getGraph().getEndpoints(e);
 		if ((pn.getFirst() instanceof OrcaCrossconnect) ||
 				(pn.getSecond() instanceof OrcaCrossconnect))
 			return true;
@@ -362,7 +362,7 @@ public class RequestSaver {
 	}
 	
 	private void addCrossConnectStorageDependency(OrcaCrossconnect oc) throws NdlException {
-		Collection<OrcaLink> iLinks = GUIRequestState.getInstance().getGraph().getIncidentEdges(oc);
+		Collection<OrcaLink> iLinks = GUIUnifiedState.getInstance().getGraph().getIncidentEdges(oc);
 		boolean sharedStorage = oc.linkToSharedStorage();
 		
 		if (!sharedStorage)
@@ -372,7 +372,7 @@ public class RequestSaver {
 		List<OrcaNode> otherNodes = new ArrayList<OrcaNode>();
 		
 		for(OrcaLink l: iLinks) {
-			Pair<OrcaNode> pn = GUIRequestState.getInstance().getGraph().getEndpoints(l);
+			Pair<OrcaNode> pn = GUIUnifiedState.getInstance().getGraph().getEndpoints(l);
 			OrcaNode n = null;
 			// find the non-crossconnect side
 			if (!(pn.getFirst() instanceof OrcaCrossconnect))
@@ -401,10 +401,10 @@ public class RequestSaver {
 		
 		addCrossConnectStorageDependency(oc);
 		
-		Collection<OrcaLink> iLinks = GUIRequestState.getInstance().getGraph().getIncidentEdges(oc);
+		Collection<OrcaLink> iLinks = GUIUnifiedState.getInstance().getGraph().getIncidentEdges(oc);
 		
 		for(OrcaLink l: iLinks) {
-			Pair<OrcaNode> pn = GUIRequestState.getInstance().getGraph().getEndpoints(l);
+			Pair<OrcaNode> pn = GUIUnifiedState.getInstance().getGraph().getEndpoints(l);
 			OrcaNode n = null;
 			// find the non-crossconnect side
 			if (!(pn.getFirst() instanceof OrcaCrossconnect))
@@ -474,27 +474,27 @@ public class RequestSaver {
 				Individual term = ngen.declareTerm();
 				
 				// not an immediate reservation? declare term beginning
-				if (GUIRequestState.getInstance().getTerm().getStart() != null) {
-					Individual tStart = ngen.declareTermBeginning(GUIRequestState.getInstance().getTerm().getStart());
+				if (GUIUnifiedState.getInstance().getTerm().getStart() != null) {
+					Individual tStart = ngen.declareTermBeginning(GUIUnifiedState.getInstance().getTerm().getStart());
 					ngen.addBeginningToTerm(tStart, term);
 				}
 				// now duration
-				GUIRequestState.getInstance().getTerm().normalizeDuration();
-				Individual duration = ngen.declareTermDuration(GUIRequestState.getInstance().getTerm().getDurationDays(), 
-						GUIRequestState.getInstance().getTerm().getDurationHours(), GUIRequestState.getInstance().getTerm().getDurationMins());
+				GUIUnifiedState.getInstance().getTerm().normalizeDuration();
+				Individual duration = ngen.declareTermDuration(GUIUnifiedState.getInstance().getTerm().getDurationDays(), 
+						GUIUnifiedState.getInstance().getTerm().getDurationHours(), GUIUnifiedState.getInstance().getTerm().getDurationMins());
 				ngen.addDurationToTerm(duration, term);
 				ngen.addTermToReservation(term, reservation);
 				
 				// openflow
-				ngen.addOpenFlowCapable(reservation, GUIRequestState.getInstance().getOfNeededVersion());
+				ngen.addOpenFlowCapable(reservation, GUIUnifiedState.getInstance().getOfNeededVersion());
 				
 				// add openflow details
-				if (GUIRequestState.getInstance().getOfNeededVersion() != null) {
+				if (GUIUnifiedState.getInstance().getOfNeededVersion() != null) {
 					Individual ofSliceI = ngen.declareOfSlice("of-slice");
 					ngen.addSliceToReservation(reservation, ofSliceI);
-					ngen.addOfPropertiesToSlice(GUIRequestState.getInstance().getOfUserEmail(), 
-							GUIRequestState.getInstance().getOfSlicePass(), 
-							GUIRequestState.getInstance().getOfCtrlUrl(), 
+					ngen.addOfPropertiesToSlice(GUIUnifiedState.getInstance().getOfUserEmail(), 
+							GUIUnifiedState.getInstance().getOfSlicePass(), 
+							GUIUnifiedState.getInstance().getOfCtrlUrl(), 
 							ofSliceI);
 				}
 				
@@ -502,17 +502,17 @@ public class RequestSaver {
 				boolean globalDomain = false;
 				
 				// is domain specified in the reservation?
-				if (GUIRequestState.getInstance().getDomainInReservation() != null) {
-					if (!GUIDomainState.getInstance().isAKnownDomain(GUIRequestState.getInstance().getDomainInReservation()))
-						throw new NdlException("Domain " + GUIRequestState.getInstance().getDomainInReservation() + " is not visible from this SM!");
+				if (GUIUnifiedState.getInstance().getDomainInReservation() != null) {
+					if (!GUIDomainState.getInstance().isAKnownDomain(GUIUnifiedState.getInstance().getDomainInReservation()))
+						throw new NdlException("Domain " + GUIUnifiedState.getInstance().getDomainInReservation() + " is not visible from this SM!");
 					globalDomain = true;
-					Individual domI = ngen.declareDomain(domainMap.get(GUIRequestState.getInstance().getDomainInReservation()));
+					Individual domI = ngen.declareDomain(domainMap.get(GUIUnifiedState.getInstance().getDomainInReservation()));
 					ngen.addDomainToIndividual(domI, reservation);
 				}
 				
 				// shove invidividual nodes onto the reservation/crossconnects are vertices, but not 'nodes'
 				// so require special handling
-				for (OrcaNode n: GUIRequestState.getInstance().getGraph().getVertices()) {
+				for (OrcaNode n: GUIUnifiedState.getInstance().getGraph().getVertices()) {
 					Individual ni;
 					if (n instanceof OrcaCrossconnect) {
 						continue;
@@ -602,7 +602,7 @@ public class RequestSaver {
 				}
 				
 				// node dependencies and color extensions (done afterwards to be sure all nodes are declared)
-				for (OrcaNode n: GUIRequestState.getInstance().getGraph().getVertices()) {
+				for (OrcaNode n: GUIUnifiedState.getInstance().getGraph().getVertices()) {
 					Individual ni = ngen.getRequestIndividual(n.getName());
 					for(OrcaNode dep: n.getDependencies()) {
 						Individual depI = ngen.getRequestIndividual(dep.getName());
@@ -615,7 +615,7 @@ public class RequestSaver {
 				}
 				
 				// crossconnects are vertices in the graph, but are actually a kind of link
-				for (OrcaNode n: GUIRequestState.getInstance().getGraph().getVertices()) {
+				for (OrcaNode n: GUIUnifiedState.getInstance().getGraph().getVertices()) {
 					Individual bl;
 					if (n instanceof OrcaCrossconnect) {
 						// sanity check
@@ -638,12 +638,12 @@ public class RequestSaver {
 				}
 				
 
-				if (GUIRequestState.getInstance().getGraph().getEdgeCount() == 0) {
+				if (GUIUnifiedState.getInstance().getGraph().getEdgeCount() == 0) {
 					// a bunch of disconnected nodes, no IP addresses 
 					
 				} else {
 					// edges, nodes, IP addresses oh my!
-					for (OrcaLink e: GUIRequestState.getInstance().getGraph().getEdges()) {
+					for (OrcaLink e: GUIUnifiedState.getInstance().getGraph().getEdges()) {
 						// skip links to crossconnects
 						if (fakeLink(e))
 							continue;
@@ -669,7 +669,7 @@ public class RequestSaver {
 
 						// TODO: latency
 						
-						Pair<OrcaNode> pn = GUIRequestState.getInstance().getGraph().getEndpoints(e);
+						Pair<OrcaNode> pn = GUIUnifiedState.getInstance().getGraph().getEndpoints(e);
 						processNodeAndLink(pn.getFirst(), e, ei);
 						processNodeAndLink(pn.getSecond(), e, ei);
 						
@@ -863,7 +863,7 @@ public class RequestSaver {
 		Individual colorI = ngen.declareColor(e.getColor().getLabel(), 
 				e.getColor().getKeys(), e.getColor().getBlob(), e.getColor().getXMLBlobState());
 		
-		Pair<OrcaNode> pn = GUIRequestState.getInstance().getGraph().getEndpoints(e);
+		Pair<OrcaNode> pn = GUIUnifiedState.getInstance().getGraph().getEndpoints(e);
 		
 		Individual fromI = ngen.getRequestIndividual(pn.getFirst().getName());
 		Individual toI = ngen.getRequestIndividual(pn.getSecond().getName());

@@ -174,8 +174,7 @@ public class GUIResourceState extends GUICommonState {
 				new GUIResourceState.LatLonPixelTransformer(new Dimension(7000,3500)));
 
 		//layout.setSize(new Dimension(1000,800));
-		vv = 
-			new VisualizationViewer<OrcaNode,OrcaLink>(layout);
+		vv = new VisualizationViewer<OrcaNode,OrcaLink>(layout);
 		// Show vertex and edge labels
 		vv.getRenderContext().setVertexLabelTransformer(new ToStringLabeller<OrcaNode>());
 		vv.getRenderContext().setEdgeLabelTransformer(new ToStringLabeller<OrcaLink>());
@@ -207,22 +206,22 @@ public class GUIResourceState extends GUICommonState {
         final ImageIcon icon = mapIcon;
 
         vv.addPreRenderPaintable(new VisualizationViewer.Paintable(){
-            public void paint(Graphics g) {
-                    Graphics2D g2d = (Graphics2D)g;
-                    AffineTransform oldXform = g2d.getTransform();
-                AffineTransform lat = 
-                    vv.getRenderContext().getMultiLayerTransformer().getTransformer(Layer.LAYOUT).getTransform();
-                AffineTransform vat = 
-                    vv.getRenderContext().getMultiLayerTransformer().getTransformer(Layer.VIEW).getTransform();
-                AffineTransform at = new AffineTransform();
-                at.concatenate(g2d.getTransform());
-                at.concatenate(vat);
-                at.concatenate(lat);
-                g2d.setTransform(at);
-                g.drawImage(icon.getImage(), 0, 0,
-                            icon.getIconWidth(),icon.getIconHeight(), vv);
-                g2d.setTransform(oldXform);
-            }
+        	public void paint(Graphics g) {
+        		Graphics2D g2d = (Graphics2D)g;
+        		AffineTransform oldXform = g2d.getTransform();
+        		AffineTransform lat = 
+        				vv.getRenderContext().getMultiLayerTransformer().getTransformer(Layer.LAYOUT).getTransform();
+        		AffineTransform vat = 
+        				vv.getRenderContext().getMultiLayerTransformer().getTransformer(Layer.VIEW).getTransform();
+        		AffineTransform at = new AffineTransform();
+        		at.concatenate(g2d.getTransform());
+        		at.concatenate(vat);
+        		at.concatenate(lat);
+        		g2d.setTransform(at);
+        		g.drawImage(icon.getImage(), 0, 0,
+        				icon.getIconWidth(),icon.getIconHeight(), vv);
+        		g2d.setTransform(oldXform);
+        	}
             public boolean useTransform() { return false; }
         });
 		

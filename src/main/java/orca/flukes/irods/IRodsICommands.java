@@ -13,8 +13,8 @@ import java.util.List;
 import java.util.Properties;
 
 import orca.flukes.GUI;
-import orca.flukes.GUIManifestState;
 import orca.flukes.GUI.PrefsEnum;
+import orca.flukes.GUIUnifiedState;
 import orca.flukes.util.SystemExecutor;
 
 // deal with irods using pre-installed icommands
@@ -110,10 +110,10 @@ public class IRodsICommands implements IIRods {
 		// collect the properties
 		Properties p = new Properties();
 		
-		String sName = GUIManifestState.getInstance().getSliceName();
+		String sName = GUIUnifiedState.getInstance().getSliceName();
 		if (sName == null)
 			return null;
-		p.setProperty("slice.name", GUIManifestState.getInstance().getSliceName());
+		p.setProperty("slice.name", GUIUnifiedState.getInstance().getSliceName());
 		Date date = new Date();
 		p.setProperty("date", date.toString().replace(" ", "-"));
 		p.setProperty("irods.format", GUI.getInstance().getPreference(PrefsEnum.IRODS_FORMAT));

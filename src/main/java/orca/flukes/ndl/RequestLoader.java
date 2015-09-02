@@ -36,7 +36,7 @@ import java.util.Set;
 
 import orca.flukes.GUI;
 import orca.flukes.GUIImageList;
-import orca.flukes.GUIRequestState;
+import orca.flukes.GUIUnifiedState;
 import orca.flukes.OrcaColor;
 import orca.flukes.OrcaColorLink;
 import orca.flukes.OrcaCrossconnect;
@@ -151,11 +151,11 @@ public class RequestLoader implements INdlRequestModelListener, INdlColorRequest
 		String u = i.getURI();
 		String guid = StringUtils.removeEnd(StringUtils.removeStart(u, NdlCommons.ORCA_NS), "#");
 		
-		GUIRequestState.getInstance().setNsGuid(guid);
+		GUIUnifiedState.getInstance().setNsGuid(guid);
 		
 		if (i != null) {
 			reservationDomain = RequestSaver.reverseLookupDomain(NdlCommons.getDomain(i));
-			GUIRequestState.getInstance().setOFVersion(NdlCommons.getOpenFlowVersion(i));
+			GUIUnifiedState.getInstance().setOFVersion(NdlCommons.getOpenFlowVersion(i));
 		}
 	}
 
@@ -254,7 +254,7 @@ public class RequestLoader implements INdlRequestModelListener, INdlColorRequest
 		nodes.put(ce.getURI(), newNode);
 		
 		// add nodes to the graph
-		GUIRequestState.getInstance().getGraph().addVertex(newNode);
+		GUIUnifiedState.getInstance().getGraph().addVertex(newNode);
 	}
 
 	/**
@@ -286,7 +286,7 @@ public class RequestLoader implements INdlRequestModelListener, INdlColorRequest
 				
 				// have to be there
 				if ((if1Node != null) && (if2Node != null)) {
-					GUIRequestState.getInstance().getGraph().addEdge(ol, new Pair<OrcaNode>(if1Node, if2Node), EdgeType.UNDIRECTED);
+					GUIUnifiedState.getInstance().getGraph().addEdge(ol, new Pair<OrcaNode>(if1Node, if2Node), EdgeType.UNDIRECTED);
 				}
 			}
 			// for now save only p-to-p links
@@ -356,7 +356,7 @@ public class RequestLoader implements INdlRequestModelListener, INdlColorRequest
 			}
 			// or broadcast
 			if (oc != null) {
-				OrcaLink fol = GUIRequestState.getInstance().getGraph().findEdge(on, oc);
+				OrcaLink fol = GUIUnifiedState.getInstance().getGraph().findEdge(on, oc);
 				if (fol != null) {
 					on.setIp(fol, ip, "" + RequestSaver.netmaskStringToInt(mask)); 
 					on.setInterfaceName(ol, getTrueName(conn) + getTrueName(intf));
@@ -383,17 +383,17 @@ public class RequestLoader implements INdlRequestModelListener, INdlColorRequest
 			Resource ofCtrl = NdlCommons.getOfCtrl(sl);
 			if (ofCtrl == null)
 				return;
-			GUIRequestState.getInstance().setOfCtrlUrl(NdlCommons.getURL(ofCtrl));
-			GUIRequestState.getInstance().setOfUserEmail(NdlCommons.getEmail(sl));
-			GUIRequestState.getInstance().setOfSlicePass(NdlCommons.getSlicePassword(sl));
-			if ((GUIRequestState.getInstance().getOfUserEmail() == null) ||
-					(GUIRequestState.getInstance().getOfSlicePass() == null) ||
-					(GUIRequestState.getInstance().getOfCtrlUrl() == null)) {
+			GUIUnifiedState.getInstance().setOfCtrlUrl(NdlCommons.getURL(ofCtrl));
+			GUIUnifiedState.getInstance().setOfUserEmail(NdlCommons.getEmail(sl));
+			GUIUnifiedState.getInstance().setOfSlicePass(NdlCommons.getSlicePassword(sl));
+			if ((GUIUnifiedState.getInstance().getOfUserEmail() == null) ||
+					(GUIUnifiedState.getInstance().getOfSlicePass() == null) ||
+					(GUIUnifiedState.getInstance().getOfCtrlUrl() == null)) {
 					// disable OF if invalid parameters
-					GUIRequestState.getInstance().setNoOF();
-					GUIRequestState.getInstance().setOfCtrlUrl(null);
-					GUIRequestState.getInstance().setOfSlicePass(null);
-					GUIRequestState.getInstance().setOfUserEmail(null);
+					GUIUnifiedState.getInstance().setNoOF();
+					GUIUnifiedState.getInstance().setOfCtrlUrl(null);
+					GUIUnifiedState.getInstance().setOfSlicePass(null);
+					GUIUnifiedState.getInstance().setOfUserEmail(null);
 			}
 		}	
 	}
@@ -405,8 +405,8 @@ public class RequestLoader implements INdlRequestModelListener, INdlColorRequest
 	public void ndlParseComplete() {
 		GUI.logger().debug("Done parsing.");
 		// set term etc
-		GUIRequestState.getInstance().setTerm(term);
-		GUIRequestState.getInstance().setDomainInReservation(reservationDomain);
+		GUIUnifiedState.getInstance().setTerm(term);
+		GUIUnifiedState.getInstance().setDomainInReservation(reservationDomain);
 	}
 
 	public void ndlNodeDependencies(Resource ni, OntModel m, Set<Resource> dependencies) {
@@ -445,7 +445,7 @@ public class RequestLoader implements INdlRequestModelListener, INdlColorRequest
 			Resource iff = it.next();
 			OrcaNode ifNode = interfaceToNode.get(iff.getURI());
 			if (ifNode != null) {
-				GUIRequestState.getInstance().getGraph().addEdge(ol, new Pair<OrcaNode>(ifNode, oc), EdgeType.UNDIRECTED);
+				GUIUnifiedState.getInstance().getGraph().addEdge(ol, new Pair<OrcaNode>(ifNode, oc), EdgeType.UNDIRECTED);
 			}
 		}
 		links.put(bl.getURI(), oc);
@@ -505,6 +505,6 @@ public class RequestLoader implements INdlRequestModelListener, INdlColorRequest
 			ocl.getColor().setBlob(NdlCommons.getColorBlobXML(color, true));
 			ocl.getColor().setXMLBlobState(true);
 		}
-		GUIRequestState.getInstance().getGraph().addEdge(ocl, new Pair<OrcaNode>(fromOr, toOr), EdgeType.UNDIRECTED);
+		GUIUnifiedState.getInstance().getGraph().addEdge(ocl, new Pair<OrcaNode>(fromOr, toOr), EdgeType.UNDIRECTED);
 	}
 }

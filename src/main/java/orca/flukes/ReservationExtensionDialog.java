@@ -139,7 +139,7 @@ public class ReservationExtensionDialog extends ComponentDialog {
 		if (lc.before(tc))
 			return false;
 
-		GUIManifestState.getInstance().setNewEndDate(lc.getTime());
+		GUIUnifiedState.getInstance().setNewEndDate(lc.getTime());
 		
 		return true;
 	}

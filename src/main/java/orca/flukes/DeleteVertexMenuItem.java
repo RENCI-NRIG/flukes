@@ -11,13 +11,14 @@
 
 package orca.flukes;
 
-import edu.uci.ics.jung.visualization.VisualizationViewer;
-import edu.uci.ics.jung.visualization.picking.PickedState;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+
 import javax.swing.JMenuItem;
 
 import com.hyperrealm.kiwi.ui.dialog.KQuestionDialog;
+
+import edu.uci.ics.jung.visualization.VisualizationViewer;
 
 /**
  * A class to implement the deletion of a vertex from within a 
@@ -40,9 +41,9 @@ public class DeleteVertexMenuItem<V, E> extends JMenuItem implements NodeMenuLis
         		kqd.setLocationRelativeTo(GUI.getInstance().getFrame());
         		kqd.setVisible(true);
         		if (kqd.getStatus()) {
-	            	ic.deleteNodeCallBack(vertex);
 	                visComp.getPickedVertexState().pick(vertex, false);
-	                visComp.getGraphLayout().getGraph().removeVertex(vertex);
+	            	ic.deleteNodeCallBack(vertex);
+	                //visComp.getGraphLayout().getGraph().removeVertex(vertex);
 	                visComp.repaint();
         		}
             }

@@ -15,6 +15,10 @@ import javax.swing.JPopupMenu;
  *
  */
 public abstract class OrcaResource implements Comparable<OrcaResource> {
+	public static final String ORCA_ACTIVE = "active";
+	public static final String ORCA_TICKETED = "ticketed";
+	public static final String ORCA_FAILED = "failed";
+	
 	private boolean isResource = false;
 	protected String name;
 	protected String state = null;

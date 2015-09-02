@@ -106,9 +106,9 @@ public class ReservationDetailsDialog extends ComponentDialog {
 		
 		if (ofVersion != null) {
 			openflowEnabled = true;
-			ofUserEmail.setObject(GUIRequestState.getInstance().getOfUserEmail());
-			ofUserPass.setText(GUIRequestState.getInstance().getOfSlicePass());
-			ofCtrlUrl.setObject(GUIRequestState.getInstance().getOfCtrlUrl().toString());
+			ofUserEmail.setObject(GUIUnifiedState.getInstance().getOfUserEmail());
+			ofUserPass.setText(GUIUnifiedState.getInstance().getOfSlicePass());
+			ofCtrlUrl.setObject(GUIUnifiedState.getInstance().getOfCtrlUrl().toString());
 		}
 		else {
 			openflowEnabled = false;
@@ -347,28 +347,28 @@ public class ReservationDetailsDialog extends ComponentDialog {
 			if (lc.before(tc))
 				return false;
 			
-			GUIRequestState.getInstance().getTerm().setStart(lc.getTime());
+			GUIUnifiedState.getInstance().getTerm().setStart(lc.getTime());
 		} else
-			GUIRequestState.getInstance().getTerm().setStart(null);
+			GUIUnifiedState.getInstance().getTerm().setStart(null);
 		
 		if (openflowEnabled) {
-			GUIRequestState.getInstance().setOF1_0();
+			GUIUnifiedState.getInstance().setOF1_0();
 			if ((!checkField(ofCtrlUrl.getObject())) ||
 					(!checkField(ofUserEmail.getObject())) ||
 							(!checkField(ofUserPass.getPassword().toString())))
 				return false;
-			GUIRequestState.getInstance().setOfUserEmail(ofUserEmail.getObject());
-			GUIRequestState.getInstance().setOfSlicePass(new String(ofUserPass.getPassword()));
-			GUIRequestState.getInstance().setOfCtrlUrl(ofCtrlUrl.getObject());
+			GUIUnifiedState.getInstance().setOfUserEmail(ofUserEmail.getObject());
+			GUIUnifiedState.getInstance().setOfSlicePass(new String(ofUserPass.getPassword()));
+			GUIUnifiedState.getInstance().setOfCtrlUrl(ofCtrlUrl.getObject());
 		} else
-			GUIRequestState.getInstance().setNoOF();
+			GUIUnifiedState.getInstance().setNoOF();
 		
 		// get duration
-		GUIRequestState.getInstance().getTerm().setDuration(df.getDays(), df.getHours(), df.getMinutes());
+		GUIUnifiedState.getInstance().getTerm().setDuration(df.getDays(), df.getHours(), df.getMinutes());
 		
 		// get the domain for reservation
 		String domName = GUIDomainState.getNodeDomainProper(GUIDomainState.getInstance().getAvailableDomains()[domainList.getSelectedIndex()]);
-		GUIRequestState.getInstance().setDomainInReservation(domName);
+		GUIUnifiedState.getInstance().setDomainInReservation(domName);
 		
 		return true;
 	}

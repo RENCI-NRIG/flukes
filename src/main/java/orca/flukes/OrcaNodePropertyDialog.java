@@ -108,7 +108,7 @@ public class OrcaNodePropertyDialog extends ComponentDialog implements ActionLis
 		ycoord = 1;
 		
 		typeList = addSelectList(kp, gbl_contentPanel, ycoord++, 
-				GUIRequestState.getInstance().getAvailableNodeTypes(), "Select node type: ", false, 3);
+				GUIUnifiedState.getInstance().getAvailableNodeTypes(), "Select node type: ", false, 3);
 		typeList.addListSelectionListener(this);
 		
 		imageList = addSelectList(kp, gbl_contentPanel, ycoord++, 
@@ -124,7 +124,7 @@ public class OrcaNodePropertyDialog extends ComponentDialog implements ActionLis
 		
 		// don't show dependency list if not needed
 		dependencyList = addSelectList(kp, gbl_contentPanel, ycoord++, 
-				GUIRequestState.getInstance().getAvailableDependenciesWithNone(node), "Select dependencies: ", true, 5);
+				GUIUnifiedState.getInstance().getAvailableDependenciesWithNone(node), "Select dependencies: ", true, 5);
 		
 		name.setObject(n.getName());
 
@@ -135,10 +135,10 @@ public class OrcaNodePropertyDialog extends ComponentDialog implements ActionLis
 		setListSelectedIndex(domainList, GUIDomainState.getInstance().getAvailableDomains(), n.getDomain());
 
 		// set node type
-		setListSelectedIndex(typeList, GUIRequestState.getInstance().getAvailableNodeTypes(), n.getNodeType());
+		setListSelectedIndex(typeList, GUIUnifiedState.getInstance().getAvailableNodeTypes(), n.getNodeType());
 		
 		// set dependencies
-		setListSelectedIndices(dependencyList, GUIRequestState.getInstance().getAvailableDependenciesWithNone(node), node.getDependencyNames());
+		setListSelectedIndices(dependencyList, GUIUnifiedState.getInstance().getAvailableDependenciesWithNone(node), node.getDependencyNames());
 		
 		// list of open ports on management network
 		// not used for now /ib 05/10/2013
@@ -237,7 +237,7 @@ public class OrcaNodePropertyDialog extends ComponentDialog implements ActionLis
 	
 	@Override
 	public boolean accept() {
-		if (!GUIRequestState.getInstance().nodeCreator.checkUniqueNodeName(node, name.getObject())) {
+		if (!GUIUnifiedState.getInstance().nodeCreator.checkUniqueNodeName(node, name.getObject())) {
 			inputErrorDialog("Node name is not unique", "Node name " + name.getObject() + " is not unique.");
 			return false;
 		}
@@ -279,14 +279,14 @@ public class OrcaNodePropertyDialog extends ComponentDialog implements ActionLis
 		}
 
 		// node type
-		node.setNodeType(GUIRequestState.getNodeTypeProper(GUIRequestState.getInstance().getAvailableNodeTypes()[typeList.getSelectedIndex()]));
+		node.setNodeType(GUIUnifiedState.getNodeTypeProper(GUIUnifiedState.getInstance().getAvailableNodeTypes()[typeList.getSelectedIndex()]));
 		
 		// dependencies 
 		Object[] deps = dependencyList.getSelectedValues();
 		node.clearDependencies();
 		for (Object depName: deps) {
-			if (!GUIRequestState.NO_NODE_DEPS.equals(depName))
-				node.addDependency(GUIRequestState.getInstance().getNodeByName((String)depName));
+			if (!GUIUnifiedState.NO_NODE_DEPS.equals(depName))
+				node.addDependency(GUIUnifiedState.getInstance().getNodeByName((String)depName));
 		}
 		
 		// get IP addresses from GUI and set the on the node
@@ -310,7 +310,7 @@ public class OrcaNodePropertyDialog extends ComponentDialog implements ActionLis
 	private void addIpFields() {
 		// query the graph for edges incident on this node and create 
 		// labeled IP address fields; populate fields as needed
-		Collection<OrcaLink> nodeEdges = GUIRequestState.getInstance().g.getIncidentEdges(node);
+		Collection<OrcaLink> nodeEdges = GUIUnifiedState.getInstance().g.getIncidentEdges(node);
 		if (nodeEdges == null) {
 			return;
 		}
@@ -568,7 +568,7 @@ public class OrcaNodePropertyDialog extends ComponentDialog implements ActionLis
 			return;
 		JList l = (JList)e.getSource();
 		if (l == typeList) {
-			if (GUIRequestState.getInstance().getAvailableNodeTypes()[typeList.getSelectedIndex()].equals(RequestSaver.BAREMETAL)) {
+			if (GUIUnifiedState.getInstance().getAvailableNodeTypes()[typeList.getSelectedIndex()].equals(RequestSaver.BAREMETAL)) {
 				imageList.setVisible(false);
 				imageList.setSelectedIndex(0);
 			}

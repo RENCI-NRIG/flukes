@@ -102,7 +102,7 @@ public class OrcaStitchPort extends OrcaNode {
 	public static class RequestMenu extends JPopupMenu {
 		public RequestMenu() {
 			super("Stitch Port Menu");
-			this.add(new DeleteVertexMenuItem<OrcaNode, OrcaLink>(GUIRequestState.getInstance()));
+			this.add(new DeleteVertexMenuItem<OrcaNode, OrcaLink>(GUIUnifiedState.getInstance()));
 			this.addSeparator();
 			this.add(new DomainDisplay());
 			this.add(new NodeTypeDisplay());

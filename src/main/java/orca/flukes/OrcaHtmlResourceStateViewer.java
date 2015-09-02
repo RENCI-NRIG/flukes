@@ -45,9 +45,9 @@ public class OrcaHtmlResourceStateViewer extends OrcaResourceStateViewer {
 			if (!res.isResource())
 				continue;
 			color = "black";
-			if ("failed".equalsIgnoreCase(res.getState())) 
+			if (OrcaResource.ORCA_FAILED.equalsIgnoreCase(res.getState())) 
 				color = "red";
-			if ("active".equalsIgnoreCase(res.getState())) 
+			if (OrcaResource.ORCA_ACTIVE.equalsIgnoreCase(res.getState())) 
 				color = "green";
 			sb.append("<tr><td>" + res.getName() + "</td><td><font color=\"" + color + "\">" + 
 				res.getState() + "</color></td><td>" + res.getReservationNotice() + "</td></tr>");

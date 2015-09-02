@@ -22,6 +22,11 @@
 */
 package orca.flukes;
 
+import java.awt.BasicStroke;
+import java.awt.Color;
+import java.awt.Paint;
+import java.awt.Stroke;
+
 import javax.swing.JPopupMenu;
 
 import orca.flukes.MouseMenus.BandwidthDisplay;
@@ -29,12 +34,9 @@ import orca.flukes.MouseMenus.EdgeColorItem;
 import orca.flukes.MouseMenus.EdgePropItem;
 import orca.flukes.MouseMenus.EdgeViewerItem;
 import orca.flukes.MouseMenus.LabelDisplay;
-import orca.flukes.MouseMenus.MultiDomainDisplay;
-import orca.flukes.OrcaNode.ManifestMenu;
-import orca.flukes.OrcaNode.RequestMenu;
-import orca.flukes.OrcaNode.ResourceMenu;
 
 import org.apache.commons.collections15.Factory;
+import org.apache.commons.collections15.Transformer;
 
 import edu.uci.ics.jung.graph.util.Pair;
 
@@ -44,6 +46,36 @@ public class OrcaLink extends OrcaResource {
     protected String label = null;
     protected String realName = null;
 	
+	// standard  transformers for edges
+	protected static class LinkPaint implements Transformer<OrcaLink, Paint> {
+	    public Paint transform(OrcaLink l) {
+	    	if (l instanceof OrcaColorLink)
+	    		return Color.BLUE;
+	    	if ((l.getResourceType() == ResourceType.MANIFEST) && (l.isResource())) {
+	    		if (OrcaResource.ORCA_ACTIVE.equalsIgnoreCase(l.getState())) {
+	    			return Color.green;
+	    		}
+	    		if (OrcaResource.ORCA_FAILED.equalsIgnoreCase(l.getState())) {
+	    			return Color.red;
+	    		}
+	    		return Color.gray;
+	    	} else 
+	    		return Color.black;
+	    }
+	};
+	
+	protected static class LinkStroke implements Transformer<OrcaLink, Stroke> {
+		float dash[] = { 10.0f };
+		public Stroke transform(OrcaLink l) {
+			if (l instanceof OrcaColorLink) {
+				return new BasicStroke(1.0f, BasicStroke.CAP_BUTT,
+						BasicStroke.JOIN_MITER, 10.0f, dash, 0.0f);
+			}
+			return new BasicStroke(1.0f, BasicStroke.CAP_BUTT,
+					BasicStroke.JOIN_MITER, 10.0f, null, 0.0f);
+		}
+	}
+    
     public OrcaLink(String name) {
         super(name);
     }
@@ -154,7 +186,7 @@ public class OrcaLink extends OrcaResource {
     // link to broadcast?
     public boolean linkToBroadcast() {
     	// if it is a link to broadcastlink, no editable properties
-    	Pair<OrcaNode> pn = GUIRequestState.getInstance().getGraph().getEndpoints(this);
+    	Pair<OrcaNode> pn = GUIUnifiedState.getInstance().getGraph().getEndpoints(this);
     	
     	if (pn == null)
     		return false;
@@ -168,7 +200,7 @@ public class OrcaLink extends OrcaResource {
     // link to shared storage?
     public boolean linkToSharedStorage() {
     	// if it is a link to broadcastlink, no editable properties
-    	Pair<OrcaNode> pn = GUIRequestState.getInstance().getGraph().getEndpoints(this);
+    	Pair<OrcaNode> pn = GUIUnifiedState.getInstance().getGraph().getEndpoints(this);
     	
     	if (pn == null)
     		return false;
@@ -204,7 +236,7 @@ public class OrcaLink extends OrcaResource {
 		public RequestMenu() {
 			super("Edge Menu");
 			// this.frame = frame;
-			this.add(new DeleteEdgeMenuItem<OrcaNode, OrcaLink>(GUIRequestState.getInstance()));
+			this.add(new DeleteEdgeMenuItem<OrcaNode, OrcaLink>(GUIUnifiedState.getInstance()));
 			this.addSeparator();
 			//this.add(new LatencyDisplay());
 			this.add(new BandwidthDisplay());

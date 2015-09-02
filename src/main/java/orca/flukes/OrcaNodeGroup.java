@@ -52,7 +52,7 @@ public class OrcaNodeGroup extends OrcaNode {
 
 	public OrcaNodeGroup(String name) {
 		super(name, 
-				new LayeredIcon(new ImageIcon(GUIRequestState.class.getResource(OrcaNodeEnum.NODEGROUP.getIconName())).getImage()));
+				new LayeredIcon(new ImageIcon(GUIUnifiedState.class.getResource(OrcaNodeEnum.NODEGROUP.getIconName())).getImage()));
 	}
 
 	public int getNodeCount() {
@@ -107,7 +107,7 @@ public class OrcaNodeGroup extends OrcaNode {
 	public static class RequestMenu extends JPopupMenu {
 		public RequestMenu() {
 			super("Node Group Menu");
-			this.add(new DeleteVertexMenuItem<OrcaNode, OrcaLink>(GUIRequestState.getInstance()));
+			this.add(new DeleteVertexMenuItem<OrcaNode, OrcaLink>(GUIUnifiedState.getInstance()));
 			this.addSeparator();
 			this.add(new ImageDisplay());
 			this.add(new DomainDisplay());

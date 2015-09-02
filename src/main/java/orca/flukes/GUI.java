@@ -25,6 +25,7 @@ package orca.flukes;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -118,7 +119,7 @@ public class GUI implements ComponentListener {
 	private static final String PREF_FILE = ".flukes.properties";
 	private JFrame frmOrcaFlukes;
 	private JTabbedPane tabbedPane;
-	private JPanel requestPanel, resourcePanel, manifestPanel;
+	private JPanel resourcePanel, unifiedPanel;
 	private JMenuBar menuBar;
 	private JMenu fileNewMenu;
 	private JSeparator separator;
@@ -127,7 +128,7 @@ public class GUI implements ComponentListener {
 	private Logger logger;
 	private String[] controllerUrls;
 	private String selectedControllerUrl;
-	private SplitButton splitNodeButton, splitLinkButton;
+	private SplitButton splitNodeButton, splitLinkButton, splitConfigButton, splitSliceButton;
 	private String[] twitterRedWords = { "maintenance", "stop", "emergency", "interruption", "problem", "down", "disabled", "unreachable", "offline", "unavailable", "cut off" };
 	
 	private ChooserWithNewDialog<String> icd = null;
@@ -232,66 +233,66 @@ public class GUI implements ComponentListener {
 				d.setLocationRelativeTo(getFrame());
 				d.getFileChooser().setAcceptAllFileFilterUsed(true);
 				d.getFileChooser().addChoosableFileFilter(new NdlFileFilter());
-				if (GUIRequestState.getInstance().getSaveDir() != null)
-					d.setCurrentDirectory(new File(GUIRequestState.getInstance().getSaveDir()));
+				if (GUIUnifiedState.getInstance().getSaveDir() != null)
+					d.setCurrentDirectory(new File(GUIUnifiedState.getInstance().getSaveDir()));
 				d.pack();
 				d.setVisible(true);
 				if (d.getSelectedFile() != null) {
-					GUIRequestState.getInstance().clear();
+					GUIUnifiedState.getInstance().clear();
 					RequestLoader rl = new RequestLoader();
 					if (rl.loadGraph(d.getSelectedFile())) {
 						frmOrcaFlukes.setTitle(FRAME_TITLE + " : " + d.getSelectedFile().getName());
-						GUIRequestState.getInstance().setSaveFile(d.getSelectedFile());
-						GUIRequestState.getInstance().setSaveDir(d.getSelectedFile().getParent());
+						GUIUnifiedState.getInstance().setSaveFile(d.getSelectedFile());
+						GUIUnifiedState.getInstance().setSaveDir(d.getSelectedFile().getParent());
 					}	
 				}
-				kickLayout(GuiTabs.REQUEST_VIEW);
+				kickLayout(GuiTabs.UNIFIED_VIEW);
 			}
 			else if (e.getActionCommand().equals("openmanifest")) {
 				KFileChooserDialog d = new KFileChooserDialog(getFrame(), "Load NDL manifest", KFileChooser.OPEN_DIALOG);
 				d.setLocationRelativeTo(getFrame());
 				d.getFileChooser().setAcceptAllFileFilterUsed(true);
 				// see if we saved the directory
-				if (GUIManifestState.getInstance().getSaveDir() != null)
-					d.setCurrentDirectory(new File(GUIManifestState.getInstance().getSaveDir()));
+				if (GUIUnifiedState.getInstance().getSaveDir() != null)
+					d.setCurrentDirectory(new File(GUIUnifiedState.getInstance().getSaveDir()));
 				d.getFileChooser().addChoosableFileFilter(new NdlFileFilter());
 				d.pack();
 				d.setVisible(true);
 				if (d.getSelectedFile() != null) {
-					GUIManifestState.getInstance().clear();
+					GUIUnifiedState.getInstance().clear();
 					ManifestLoader ml = new ManifestLoader();
 					ml.loadGraph(d.getSelectedFile());
 					// save the directory
-					GUIManifestState.getInstance().setSaveDir(d.getSelectedFile().getParent());
+					GUIUnifiedState.getInstance().setSaveDir(d.getSelectedFile().getParent());
 				}
-				kickLayout(GuiTabs.MANIFEST_VIEW);
+				kickLayout(GuiTabs.UNIFIED_VIEW);
 			}
 			else if (e.getActionCommand().equals("new")) {
-				GUIRequestState.getInstance().clear();
+				GUIUnifiedState.getInstance().clear();
 				frmOrcaFlukes.setTitle(FRAME_TITLE);
-				GUIRequestState.getInstance().vv.repaint();
+				GUIUnifiedState.getInstance().vv.repaint();
 			}
 			else if (e.getActionCommand().equals("save")) {
-				if (GUIRequestState.getInstance().getSaveFile() != null) {
-					RequestSaver.getInstance().saveGraph(GUIRequestState.getInstance().getSaveFile(), 
-							GUIRequestState.getInstance().g,
-							GUIRequestState.getInstance().nsGuid);
+				if (GUIUnifiedState.getInstance().getSaveFile() != null) {
+					RequestSaver.getInstance().saveGraph(GUIUnifiedState.getInstance().getSaveFile(), 
+							GUIUnifiedState.getInstance().g,
+							GUIUnifiedState.getInstance().nsGuid);
 				} else {
 					KFileChooserDialog d = new KFileChooserDialog(getFrame(), "Save Request in NDL", KFileChooser.SAVE_DIALOG);
 					d.setLocationRelativeTo(getFrame());
 					d.getFileChooser().setAcceptAllFileFilterUsed(true);
 					d.getFileChooser().addChoosableFileFilter(new NdlFileFilter());
-					if (GUIRequestState.getInstance().getSaveDir() != null)
-						d.setCurrentDirectory(new File(GUIRequestState.getInstance().getSaveDir()));
+					if (GUIUnifiedState.getInstance().getSaveDir() != null)
+						d.setCurrentDirectory(new File(GUIUnifiedState.getInstance().getSaveDir()));
 					d.pack();
 					d.setVisible(true);
 					if (d.getSelectedFile() != null) {
 						if (RequestSaver.getInstance().saveGraph(d.getSelectedFile(), 
-								GUIRequestState.getInstance().g,
-								GUIRequestState.getInstance().nsGuid)) {
+								GUIUnifiedState.getInstance().g,
+								GUIUnifiedState.getInstance().nsGuid)) {
 							frmOrcaFlukes.setTitle(FRAME_TITLE + " : " + d.getSelectedFile().getName());
-							GUIRequestState.getInstance().setSaveFile(d.getSelectedFile());
-							GUIRequestState.getInstance().setSaveDir(d.getSelectedFile().getParent());
+							GUIUnifiedState.getInstance().setSaveFile(d.getSelectedFile());
+							GUIUnifiedState.getInstance().setSaveDir(d.getSelectedFile().getParent());
 						}
 					}
 				}
@@ -301,17 +302,17 @@ public class GUI implements ComponentListener {
 				d.setLocationRelativeTo(getFrame());
 				d.getFileChooser().setAcceptAllFileFilterUsed(true);
 				d.getFileChooser().addChoosableFileFilter(new NdlFileFilter());
-				if (GUIRequestState.getInstance().getSaveDir() != null)
-					d.setCurrentDirectory(new File(GUIRequestState.getInstance().getSaveDir()));
+				if (GUIUnifiedState.getInstance().getSaveDir() != null)
+					d.setCurrentDirectory(new File(GUIUnifiedState.getInstance().getSaveDir()));
 				d.pack();
 				d.setVisible(true);
 				if (d.getSelectedFile() != null) {
 					if (RequestSaver.getInstance().saveGraph(d.getSelectedFile(), 
-							GUIRequestState.getInstance().g,
-							GUIRequestState.getInstance().nsGuid)) {
+							GUIUnifiedState.getInstance().g,
+							GUIUnifiedState.getInstance().nsGuid)) {
 						frmOrcaFlukes.setTitle(FRAME_TITLE + " : " + d.getSelectedFile().getName());
-						GUIRequestState.getInstance().setSaveFile(d.getSelectedFile());
-						GUIRequestState.getInstance().setSaveDir(d.getSelectedFile().getParent());
+						GUIUnifiedState.getInstance().setSaveFile(d.getSelectedFile());
+						GUIUnifiedState.getInstance().setSaveDir(d.getSelectedFile().getParent());
 					}
 				}
 			}
@@ -359,7 +360,7 @@ public class GUI implements ComponentListener {
 				md.setLocationRelativeTo(GUI.getInstance().getFrame());
 				md.setVisible(true);
 			} else if (e.getActionCommand().equals("savemanifestirods")) {
-				GUIManifestState.getInstance().saveManifestToIRods();
+				GUIUnifiedState.getInstance().saveManifestToIRods();
 			} else if (e.getActionCommand().equals("resources")) {
 				// want to get keys sorted, use tree map
 				Map<String, Map<String, Integer>> tm = new TreeMap<String, Map<String, Integer>>(GUIDomainState.getInstance().updateResourceSlots());
@@ -418,7 +419,7 @@ public class GUI implements ComponentListener {
 				tad.setVisible(true);
 			} else if (e.getActionCommand().equals("sliceproblem")) {
 				try {
-					String sName = GUIManifestState.getInstance().getSliceName();
+					String sName = GUIUnifiedState.getInstance().getSliceName();
 					if (sName.length() == 0)
 						sName = "unknown";
 					String controller = GUI.getInstance().getSelectedController();
@@ -460,13 +461,9 @@ public class GUI implements ComponentListener {
 		switch(at) {
 		case RESOURCE_VIEW:
 			break;
-		case REQUEST_VIEW:
-			myVv = GUIRequestState.getInstance().vv;
-			myGraph = GUIRequestState.getInstance().g;
-			break;
-		case MANIFEST_VIEW:
-			myVv = GUIManifestState.getInstance().vv;
-			myGraph = GUIManifestState.getInstance().g;
+		case UNIFIED_VIEW:
+			myVv = GUIUnifiedState.getInstance().vv;
+			myGraph = GUIUnifiedState.getInstance().g;
 			break;
 		}
 		
@@ -753,6 +750,7 @@ public class GUI implements ComponentListener {
 		xoMenu.add(addMenuItem("Twitter ...", "twitter", mListener));
 		xoMenu.add(addMenuItem("Report slice problem ...", "sliceproblem", mListener));
 		
+		/*
 		// output format selection
 		outputMenu = new JMenu("Output Format");
 		menuBar.add(outputMenu);
@@ -771,9 +769,11 @@ public class GUI implements ComponentListener {
 		mi.addActionListener(mListener);
 		outputMenu.add(mi);	
 		obg.add(mi);
+		*/
 		
 		layoutMenu = new JMenu("Graph Layout");
 		menuBar.add(layoutMenu);
+
 		
 		ButtonGroup lbg = new ButtonGroup();
 		
@@ -802,9 +802,8 @@ public class GUI implements ComponentListener {
 	}
 	
 	public enum GuiTabs {
-		RESOURCE_VIEW("Resource View"), 
-		REQUEST_VIEW("Request View"), 
-		MANIFEST_VIEW("Manifest View");
+		UNIFIED_VIEW("Unified View"),
+		RESOURCE_VIEW("Resource View");
 		
 		private final String layoutName;
 		
@@ -819,9 +818,8 @@ public class GUI implements ComponentListener {
 	public GuiTabs activeTab() {
 		switch(tabbedPane.getSelectedIndex()) {
 		case 0: return GuiTabs.RESOURCE_VIEW;
-		case 1: return GuiTabs.REQUEST_VIEW;
-		case 2: return GuiTabs.MANIFEST_VIEW;
-		default: return GuiTabs.REQUEST_VIEW;
+		case 1: return GuiTabs.UNIFIED_VIEW;
+		default: return GuiTabs.UNIFIED_VIEW;
 		}
 	}
 	
@@ -862,22 +860,30 @@ public class GUI implements ComponentListener {
 		return i;
 	}
 	
-	void hideNodeMenu() {
+	void hideMenus() {
 		splitNodeButton.hideMenu();
 		splitLinkButton.hideMenu();
+		splitConfigButton.hideMenu();
+		splitSliceButton.hideMenu();
 	}
 	
 	public enum Buttons {
 		// 
 		query("Query Registry", "Query Actor Registry"),
-		// requests
+		listSlices("My Slices", "Query ORCA for list of slices with active reservations"),
 		nodes("Add Nodes", "Select node type"),
 		links("Add Links", "Select link type"),
+		config("Configure Slice", "Configure various aspects of the slice"),
+		slice("Slice Operations", "Perform provisioning operations on the slice"),
+		
+		
+		// to be obsoleted (what to do with raw manifest?)
+		
 		autoip("Auto IP", "Auto-assign IP addresses"),
 		reservation("Reservation Details", "Edit reservation details"),
 		submit("Submit", "Submit request to selected ORCA controller"),
 		//manifests
-		listSlices("My Slices", "Query ORCA for list of slices with active reservations"),
+		
 		manifest("Query for Manifest", "Query ORCA for slice manifest"),
 		raw("Raw Response", "View raw controller response"),
 		extend("Extend Reservation", "Extend the end date of the reservation"),
@@ -938,16 +944,12 @@ public class GUI implements ComponentListener {
 		resourcePanel.setLayout(new BoxLayout(resourcePanel, BoxLayout.PAGE_AXIS));
 		resourcePanel.addComponentListener(this);
 		
-		requestPanel = new JPanel();
-		tabbedPane.addTab(GuiTabs.REQUEST_VIEW.getName(), null, requestPanel, null);
-		requestPanel.setLayout(new BoxLayout(requestPanel, BoxLayout.PAGE_AXIS));
-		requestPanel.addComponentListener(this);
-
-		manifestPanel = new JPanel();
-		tabbedPane.addTab(GuiTabs.MANIFEST_VIEW.getName(), null, manifestPanel, null);
-		manifestPanel.setLayout(new BoxLayout(manifestPanel, BoxLayout.PAGE_AXIS));
-		manifestPanel.addComponentListener(this);
 		
+		unifiedPanel = new JPanel();
+		tabbedPane.addTab(GuiTabs.UNIFIED_VIEW.getName(), null, unifiedPanel, null);
+		unifiedPanel.setLayout(new BoxLayout(unifiedPanel, BoxLayout.PAGE_AXIS));
+		unifiedPanel.addComponentListener(this);
+
 		frmOrcaFlukes.setBounds(100, 100, 1200, 800);
 		frmOrcaFlukes.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		
@@ -964,7 +966,110 @@ public class GUI implements ComponentListener {
 			
 			createButton(Buttons.query, toolBar, rbl);
 		}
+		GUIResourceState.getInstance().addPane(resourcePanel);
 		
+		//
+		// add buttons to the unified pane
+		//
+		
+		{
+			JToolBar toolBar = new JToolBar();
+			toolBar.setFloatable(false);
+			toolBar.setAlignmentX(Component.LEFT_ALIGNMENT);
+			toolBar.setAlignmentY(Component.CENTER_ALIGNMENT);
+			unifiedPanel.add(toolBar);
+			
+			ActionListener rbl = GUIUnifiedState.getInstance().getActionListener();
+			
+			createButton(Buttons.listSlices, toolBar, rbl);
+			
+			Component horizontalStrut = Box.createHorizontalStrut(10);
+			toolBar.add(horizontalStrut);
+			
+			//
+			// Add nodes button/menu
+			//
+			JButton nodeButton = createButton(Buttons.nodes, toolBar, rbl);
+			
+			//first instantiate the control
+			splitNodeButton = new SplitButton(nodeButton, SwingConstants.SOUTH, 100);
+		    JPopupMenu nodeMenu = new JPopupMenu("Node menu");
+		    nodeMenu.add(addMenuItem("Node", "nodes", rbl));
+		    nodeMenu.add(addMenuItem("Node Group", "nodegroups", rbl));
+		    nodeMenu.add(addMenuItem("Broadcast Link", "bcastlinks", rbl));
+		    nodeMenu.add(addMenuItem("Storage", "storage", rbl));
+		    nodeMenu.add(addMenuItem("StitchPort", "stitchport", rbl));
+
+		    splitNodeButton.setMenu(nodeMenu);
+			toolBar.add(splitNodeButton);
+			
+			horizontalStrut = Box.createHorizontalStrut(10);
+			toolBar.add(horizontalStrut);
+			
+			//
+			// Add links button/menu
+			//
+			JButton linkButton = createButton(Buttons.links, toolBar, rbl);
+			
+			//first instantiate the control
+			splitLinkButton = new SplitButton(linkButton, SwingConstants.SOUTH, 100);
+		    JPopupMenu linkMenu = new JPopupMenu("Link menu");
+		    linkMenu.add(addMenuItem("Topo link", "topo", rbl));
+		    linkMenu.add(addMenuItem("Color Link", "color", rbl));
+		    
+		    splitLinkButton.setMenu(linkMenu);
+			toolBar.add(splitLinkButton);
+			
+			horizontalStrut = Box.createHorizontalStrut(10);
+			toolBar.add(horizontalStrut);
+			
+			//
+			// Add configure button/menu
+			//
+			JButton configButton = createButton(Buttons.config, toolBar, rbl);
+			
+			//first instantiate the control
+			splitConfigButton = new SplitButton(configButton, SwingConstants.SOUTH, 140);
+		    JPopupMenu configMenu = new JPopupMenu("Config menu");
+		    configMenu.add(addMenuItem("Reservation Details", "reservation", rbl));
+		    configMenu.add(addMenuItem("Auto IP", "autoip", rbl));
+		    
+		    splitConfigButton.setMenu(configMenu);
+			toolBar.add(splitConfigButton);
+			
+			horizontalStrut = Box.createHorizontalStrut(10);
+			toolBar.add(horizontalStrut);
+			
+			//
+			// Add slice operation button/menu
+			//
+			JButton sliceButton = createButton(Buttons.slice, toolBar, rbl);
+			
+			//first instantiate the control
+			splitSliceButton = new SplitButton(sliceButton, SwingConstants.SOUTH, 140);
+		    JPopupMenu sliceMenu = new JPopupMenu("Slice menu");
+		    sliceMenu.add(addMenuItem("Submit", "submit", rbl));
+		    sliceMenu.add(addMenuItem("Query", "manifest", rbl));
+		    sliceMenu.add(addMenuItem("Extend", "extend", rbl));
+		    sliceMenu.add(addMenuItem("Delete", "delete", rbl));
+		    sliceMenu.add(addMenuItem("Clear", "clear", rbl));
+		    
+		    splitSliceButton.setMenu(sliceMenu);
+			toolBar.add(splitSliceButton);
+			
+			horizontalStrut = Box.createHorizontalStrut(10);
+			toolBar.add(horizontalStrut);
+			
+			KTextField ktf = new KTextField(20);
+			GUIUnifiedState.getInstance().setSliceIdField(ktf);
+			ktf.setToolTipText("Enter slice id");
+			ktf.setMaximumSize(ktf.getMinimumSize());
+			toolBar.add(ktf);
+		}
+		
+		GUIUnifiedState.getInstance().addPane(unifiedPanel);
+		
+		/*
 		//
 		// add buttons to request pane
 		//
@@ -1094,10 +1199,8 @@ public class GUI implements ComponentListener {
 			horizontalStrut = Box.createHorizontalStrut(10);
 			createButton(Buttons.delete, toolBar, rbl);
 		} 
-		
-		GUIResourceState.getInstance().addPane(resourcePanel);
-		GUIRequestState.getInstance().addPane(requestPanel);
-		GUIManifestState.getInstance().addPane(manifestPanel);
+		GUIRequestState.getInstance().addPane(unifiedPanel);
+		*/
 		
 		// now the menu
 		commonMenus();
@@ -1107,8 +1210,7 @@ public class GUI implements ComponentListener {
 			savedLayout.put(t, GraphLayouts.FR);
 		}
 		
-		tabbedPane.setSelectedComponent(requestPanel);
-		
+		tabbedPane.setSelectedComponent(unifiedPanel);
 	}
 
 	public void componentHidden(ComponentEvent arg0) {
@@ -1138,10 +1240,7 @@ public class GUI implements ComponentListener {
 		case RESOURCE_VIEW:
 
 			break;
-		case REQUEST_VIEW:
-			
-			break;
-		case MANIFEST_VIEW:
+		case UNIFIED_VIEW:
 			
 			break;
 		}

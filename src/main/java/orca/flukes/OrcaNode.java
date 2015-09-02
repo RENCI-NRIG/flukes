@@ -26,7 +26,7 @@ import java.awt.Color;
 import java.awt.Shape;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
-import java.awt.geom.Ellipse2D;
+import java.awt.geom.AffineTransform;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -48,11 +48,13 @@ import orca.flukes.MouseMenus.NodePropItem;
 import orca.flukes.MouseMenus.NodePropertiesItem;
 import orca.flukes.MouseMenus.NodeTypeDisplay;
 import orca.flukes.MouseMenus.NodeViewItem;
+import orca.flukes.ui.IconOutline;
 
 import org.apache.commons.collections15.Factory;
 import org.apache.commons.collections15.Transformer;
 
 import edu.uci.ics.jung.graph.util.Pair;
+import edu.uci.ics.jung.visualization.FourPassImageShaper;
 import edu.uci.ics.jung.visualization.LayeredIcon;
 import edu.uci.ics.jung.visualization.renderers.Checkmark;
 
@@ -60,6 +62,7 @@ public class OrcaNode extends OrcaResource {
 
 	protected static final String NOT_SPECIFIED = "Not specified";
 	public static final String NODE_NETMASK="32";
+	
 	protected String url;
 	protected String image = null;
 	protected String domain = null;
@@ -71,6 +74,7 @@ public class OrcaNode extends OrcaResource {
 	protected List<String> managementAccess = null;
 	
 	protected final LayeredIcon icon;
+	protected final Shape outline;
 
 	protected Map<String, String> substrateInfo = new HashMap<String, String>();
 
@@ -104,23 +108,34 @@ public class OrcaNode extends OrcaResource {
 	public static class OrcaNodeIconTransformer implements Transformer<OrcaNode, Icon> {
 
 		public Icon transform(OrcaNode node) {
+			switch(node.getResourceType()) {
+			case REQUEST:
+				node.icon.add(new IconOutline(node.outline, Color.black));
+				break;
+			case MANIFEST:
+				if (OrcaResource.ORCA_ACTIVE.equalsIgnoreCase(node.getState()))
+					node.icon.add(new IconOutline(node.outline, Color.green));
+				else if (OrcaResource.ORCA_FAILED.equalsIgnoreCase(node.getState()))
+					node.icon.add(new IconOutline(node.outline, Color.red));
+				else
+					node.icon.add(new IconOutline(node.outline, Color.gray));
+				break;
+			case RESOURCE:
+				node.icon.add(new IconOutline(node.outline, Color.blue));
+				break;
+			default:
+			}
 			return node.icon;
 		}
 	}
-
 	
 	// Icon shape transformer for GUI (to make sure icon clickable shape roughly matches the icon)
 	public static class OrcaNodeIconShapeTransformer implements Transformer<OrcaNode, Shape> {
-		private static final int ICON_HEIGHT = 30;
-		private static final int ICON_WIDTH = 50;
-
-				//		        private final Shape[] styles = {
-//		            new Rectangle(-20, -10, 40, 20),
-//		            new Ellipse2D.Double(-25, -10, 50, 20),
-//		            new Arc2D.Double(-30, -15, 60, 30, 30, 30,
-//		                Arc2D.PIE) };
+		//private static final int ICON_HEIGHT = 30;
+		//private static final int ICON_WIDTH = 50;
 		        public Shape transform(OrcaNode i) {
-		            return new Ellipse2D.Double(-ICON_WIDTH/2, -ICON_HEIGHT/2, ICON_WIDTH, ICON_HEIGHT);
+		        	return i.outline;
+		            //return new Ellipse2D.Float(-ICON_WIDTH/2, -ICON_HEIGHT/2, ICON_WIDTH, ICON_HEIGHT);
 		        }
 		    }
 
@@ -148,11 +163,21 @@ public class OrcaNode extends OrcaResource {
         }
     }
 	
+    private Shape getIconShape(LayeredIcon i) {
+    	Shape s = FourPassImageShaper.getShape(i.getImage());
+    	AffineTransform transform = 
+                AffineTransform.getTranslateInstance(-i.getIconWidth()/2, -i.getIconHeight()/2);
+    	s = transform.createTransformedShape(s);
+    	return s;
+    }
+    
 	public OrcaNode(String name) {
 		super(name);
 		this.addresses = new HashMap<OrcaLink, Pair<String>>();
 		this.macAddresses = new HashMap<OrcaLink, String>();
-		this.icon = new LayeredIcon(new ImageIcon(GUIRequestState.class.getResource(OrcaNodeEnum.CE.getIconName())).getImage());
+		this.icon = new LayeredIcon(new ImageIcon(GUIUnifiedState.class.getResource(OrcaNodeEnum.CE.getIconName())).getImage());
+		this.outline = getIconShape(this.icon);
+		
 	}
 
 	// inherit some properties from parent
@@ -160,7 +185,8 @@ public class OrcaNode extends OrcaResource {
 		super(name);
 		this.addresses = new HashMap<OrcaLink, Pair<String>>();
 		this.macAddresses = new HashMap<OrcaLink, String>();
-		this.icon = new LayeredIcon(new ImageIcon(GUIRequestState.class.getResource(OrcaNodeEnum.CE.getIconName())).getImage());
+		this.icon = new LayeredIcon(new ImageIcon(GUIUnifiedState.class.getResource(OrcaNodeEnum.CE.getIconName())).getImage());
+		this.outline = getIconShape(this.icon);
 		this.domain = parent.getDomain();
 		this.group = parent.getGroup();
 		this.image = parent.getImage();
@@ -180,6 +206,7 @@ public class OrcaNode extends OrcaResource {
 		this.addresses = new HashMap<OrcaLink, Pair<String>>();
 		this.macAddresses = new HashMap<OrcaLink, String>();
 		this.icon = icon;
+		this.outline = getIconShape(icon);
 	}
 
 	public void setUrl(String u) {
@@ -212,7 +239,7 @@ public class OrcaNode extends OrcaResource {
 	
 	public void setDomainWithGlobalReset(String d) {
 		// reset reservation-level setting
-		GUIRequestState.getInstance().resetDomainInReservation();
+		GUIUnifiedState.getInstance().resetDomainInReservation();
 		domain = d;
 	}
 	
@@ -451,7 +478,7 @@ public class OrcaNode extends OrcaResource {
 	public static class RequestMenu extends JPopupMenu {
 		public RequestMenu() {
 			super("Node Menu");
-			this.add(new DeleteVertexMenuItem<OrcaNode, OrcaLink>(GUIRequestState.getInstance()));
+			this.add(new DeleteVertexMenuItem<OrcaNode, OrcaLink>(GUIUnifiedState.getInstance()));
 			this.addSeparator();
 			this.add(new ImageDisplay());
 			this.add(new DomainDisplay());
@@ -472,7 +499,7 @@ public class OrcaNode extends OrcaResource {
 			this.addSeparator();
 			if ((GUI.getInstance().getPreference(PrefsEnum.ENABLE_MODIFY).equalsIgnoreCase("true")) ||
 					(GUI.getInstance().getPreference(PrefsEnum.ENABLE_MODIFY).equalsIgnoreCase("yes"))) {
-				this.add(new DeleteVertexMenuItem<OrcaNode, OrcaLink>(GUIManifestState.getInstance()));
+				this.add(new DeleteVertexMenuItem<OrcaNode, OrcaLink>(GUIUnifiedState.getInstance()));
 				this.add(new IncreaseByNodeGroupItem(GUI.getInstance().getFrame()));
 				this.addSeparator();
 			}

@@ -29,7 +29,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.Set;
 
 import orca.flukes.GUI.PrefsEnum;
@@ -95,7 +94,7 @@ public class GUIRequestState extends GUICommonState implements IDeleteEdgeCallBa
 		linkCreator.setDefaultLatency(5000);
 		sState = SliceState.NEW;
 	}
-	
+	/*
 	public static GUIRequestState getInstance() {
 		if (instance == null) {
 			initialize();
@@ -103,17 +102,11 @@ public class GUIRequestState extends GUICommonState implements IDeleteEdgeCallBa
 		}
 		return instance;
 	}
-	
+	*/
 	@Override
 	public void clear() {
 		super.clear();
-		// clear the graph, reservation set else to defaults
-		if (g == null)
-			return;
-		
-		Set<OrcaNode> nodes = new HashSet<OrcaNode>(g.getVertices());
-		for (OrcaNode n: nodes)
-			g.removeVertex(n);
+
 		resDomainName = null;
 		term = new OrcaReservationTerm();
 		ofNeededVersion = null;
@@ -327,7 +320,7 @@ public class GUIRequestState extends GUICommonState implements IDeleteEdgeCallBa
 	 */
 	public class RequestButtonListener implements ActionListener {
 		public void actionPerformed(ActionEvent e) {
-			GUI.getInstance().hideNodeMenu();
+			GUI.getInstance().hideMenus();
 			if (e.getActionCommand().equals(GUI.Buttons.reservation.getCommand())) {
 				rdd = new ReservationDetailsDialog(GUI.getInstance().getFrame());
 				rdd.setFields(getDomainInReservation(),
@@ -435,7 +428,7 @@ public class GUIRequestState extends GUICommonState implements IDeleteEdgeCallBa
 		// Show vertex and edge labels
 		vv.getRenderContext().setVertexLabelTransformer(new ToStringLabeller<OrcaNode>());
 		vv.getRenderContext().setEdgeLabelTransformer(new ToStringLabeller<OrcaLink>());
-		vv.getRenderContext().setEdgeDrawPaintTransformer(new GUICommonState.LinkPaint());
+		vv.getRenderContext().setEdgeDrawPaintTransformer(new OrcaLink.LinkPaint());
 		
 		// Create a graph mouse and add it to the visualization viewer
 		OrcaNode.OrcaNodeFactory onf = new OrcaNode.OrcaNodeFactory(nodeCreator);

@@ -65,7 +65,7 @@ public class OrcaBroadcastLinkPropertyDialog extends ComponentDialog {
 	public boolean accept() {
 		if ((name.getObject().length() == 0) || (!bandwidth.validateInput()) || (!label.validateInput()))
 			return false;
-		if (!GUIRequestState.getInstance().nodeCreator.checkUniqueNodeName(edge, name.getObject())) {
+		if (!GUIUnifiedState.getInstance().nodeCreator.checkUniqueNodeName(edge, name.getObject())) {
 			KMessageDialog kmd = new KMessageDialog(parent, "Broadcast Link name not unique", true);
 			kmd.setLocationRelativeTo(parent);
 			kmd.setMessage("Broadcast link Name " + name.getObject() + " is not unique");

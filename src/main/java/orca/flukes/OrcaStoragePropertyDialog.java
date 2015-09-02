@@ -61,7 +61,7 @@ public class OrcaStoragePropertyDialog extends ComponentDialog {
 		if ((name.getObject().length() == 0) || (!capacityField.validateInput()) || 
 				(fstype.getObject().length() == 0) || (fsparam.getObject().length() == 0) || (fsmntpoint.getObject().length() == 0))
 			return false;
-		if (!GUIRequestState.getInstance().nodeCreator.checkUniqueNodeName(storageNode, name.getObject())) {
+		if (!GUIUnifiedState.getInstance().nodeCreator.checkUniqueNodeName(storageNode, name.getObject())) {
 			KMessageDialog kmd = new KMessageDialog(parent, "Storage name not unique", true);
 			kmd.setLocationRelativeTo(parent);
 			kmd.setMessage("Storage Name " + name.getObject() + " is not unique");

@@ -41,7 +41,7 @@ import java.util.regex.Pattern;
 
 import orca.flukes.GUI;
 import orca.flukes.GUIImageList;
-import orca.flukes.GUIManifestState;
+import orca.flukes.GUIUnifiedState;
 import orca.flukes.OrcaColor;
 import orca.flukes.OrcaColorLink;
 import orca.flukes.OrcaCrossconnect;
@@ -148,9 +148,9 @@ public class ManifestLoader implements INdlManifestModelListener, INdlRequestMod
 			NdlManifestParser nmp = new NdlManifestParser(sb.toString(), this);
 			nmp.processManifest();
 			nmp.freeModel();
-			GUIManifestState.getInstance().setManifestString(sb.toString());
-			GUIManifestState.getInstance().setManifestTerm(creationTime, expirationTime);
-			GUIManifestState.getInstance().launchResourceStateViewer(creationTime, expirationTime);
+			GUIUnifiedState.getInstance().setManifestString(sb.toString());
+			GUIUnifiedState.getInstance().setManifestTerm(creationTime, expirationTime);
+			GUIUnifiedState.getInstance().launchResourceStateViewer(creationTime, expirationTime);
 			
 		} catch (Exception e) {
 			ExceptionDialog ed = new ExceptionDialog(GUI.getInstance().getFrame(), "Exception");
@@ -183,13 +183,13 @@ public class ManifestLoader implements INdlManifestModelListener, INdlRequestMod
 			nmp.processManifest();	
 			nmp.freeModel();
 			
-			GUIManifestState.getInstance().setManifestString(s);
-			GUIManifestState.getInstance().setManifestTerm(creationTime, expirationTime);
+			GUIUnifiedState.getInstance().setManifestString(s);
+			GUIUnifiedState.getInstance().setManifestTerm(creationTime, expirationTime);
 
 			if (GraphicsEnvironment.isHeadless())
-				GUIManifestState.getInstance().printResourceState(creationTime, expirationTime);
+				GUIUnifiedState.getInstance().printResourceState(creationTime, expirationTime);
 			else
-				GUIManifestState.getInstance().launchResourceStateViewer(creationTime, expirationTime);
+				GUIUnifiedState.getInstance().launchResourceStateViewer(creationTime, expirationTime);
 		} catch (Exception e) {
 			ExceptionDialog ed = new ExceptionDialog(GUI.getInstance().getFrame(), "Exception");
 			ed.setLocationRelativeTo(GUI.getInstance().getFrame());
@@ -267,7 +267,7 @@ public class ManifestLoader implements INdlManifestModelListener, INdlRequestMod
 		// limit to link connections not part of a network connection
 		if (interfaces.size() == 2){
 			GUI.logger().debug("  Adding p-to-p link");
-			OrcaLink ol = GUIManifestState.getInstance().getLinkCreator().create(getPrettyName(l), NdlCommons.getResourceBandwidth(l), ResourceType.MANIFEST);
+			OrcaLink ol = GUIUnifiedState.getInstance().getLinkCreator().create(getPrettyName(l), NdlCommons.getResourceBandwidth(l), ResourceType.MANIFEST);
 			ol.setLabel(label);
 			// state
 			ol.setState(NdlCommons.getResourceStateAsString(l));
@@ -303,7 +303,7 @@ public class ManifestLoader implements INdlManifestModelListener, INdlRequestMod
 									// save one interface
 									//interfaceToNode.put(getTrueName(if1), oc);
 									addNodeToInterface(getTrueName(if1), oc);
-									GUIManifestState.getInstance().getGraph().addVertex(oc);
+									GUIUnifiedState.getInstance().getGraph().addVertex(oc);
 									return;
 								}
 								
@@ -325,7 +325,7 @@ public class ManifestLoader implements INdlManifestModelListener, INdlRequestMod
 								// have to be there
 								if ((if1Node != null) && (if2Node != null)) {
 									GUI.logger().debug("  Creating a link " + ol.getName() + " from " + if1Node + " to " + if2Node);
-									GUIManifestState.getInstance().getGraph().addEdge(ol, new Pair<OrcaNode>(if1Node, if2Node), 
+									GUIUnifiedState.getInstance().getGraph().addEdge(ol, new Pair<OrcaNode>(if1Node, if2Node), 
 											EdgeType.UNDIRECTED);
 									usedOnce = true;
 								}
@@ -418,7 +418,7 @@ public class ManifestLoader implements INdlManifestModelListener, INdlRequestMod
 			}
 			
 			// add crossconnect to the graph
-			GUIManifestState.getInstance().getGraph().addVertex(ml);
+			GUIUnifiedState.getInstance().getGraph().addVertex(ml);
 			
 			// link to this later from interface information
 			
@@ -427,7 +427,7 @@ public class ManifestLoader implements INdlManifestModelListener, INdlRequestMod
 //				if (interfaceToNode.get(getTrueName(intf)) != null) {
 //					GUI.logger().debug("  Creating a link " + lcount + " from " + ml + " to " + interfaceToNode.get(getTrueName(intf)));
 //					OrcaLink ol = new OrcaLink("Link " + lcount++);
-//					GUIManifestState.getInstance().getGraph().addEdge(ol, new Pair<OrcaNode>(ml, interfaceToNode.get(getTrueName(intf))), EdgeType.UNDIRECTED);
+//					GUIUnifiedState.getInstance().getGraph().addEdge(ol, new Pair<OrcaNode>(ml, interfaceToNode.get(getTrueName(intf))), EdgeType.UNDIRECTED);
 //				}
 //			}
 		}
@@ -516,8 +516,8 @@ public class ManifestLoader implements INdlManifestModelListener, INdlRequestMod
 				
 				if (interfaceToNode.get(getTrueName(intf)) != null) {
 					GUI.logger().debug("  Creating a link  from " + on + " to " + crs);
-					ol = GUIManifestState.getInstance().getLinkCreator().create("Unnamed", ResourceType.MANIFEST);
-					GUIManifestState.getInstance().getGraph().addEdge(ol, new Pair<OrcaNode>(on, crs), 
+					ol = GUIUnifiedState.getInstance().getLinkCreator().create("Unnamed", ResourceType.MANIFEST);
+					GUIUnifiedState.getInstance().getGraph().addEdge(ol, new Pair<OrcaNode>(on, crs), 
 							EdgeType.UNDIRECTED);
 				} else
 					GUI.logger().debug("  Skipping a link from " + on + " to " + crs + " as interface isn't remembered");
@@ -579,7 +579,7 @@ public class ManifestLoader implements INdlManifestModelListener, INdlRequestMod
 		nodes.put(getTrueName(c), oc);
 		
 		// add nodes to the graph
-		GUIManifestState.getInstance().getGraph().addVertex(oc);
+		GUIUnifiedState.getInstance().getGraph().addVertex(oc);
 	}
 	
 	@Override
@@ -653,7 +653,7 @@ public class ManifestLoader implements INdlManifestModelListener, INdlRequestMod
 		nodes.put(getTrueName(ce), newNode);
 		
 		// add nodes to the graph
-		GUIManifestState.getInstance().getGraph().addVertex(newNode);
+		GUIUnifiedState.getInstance().getGraph().addVertex(newNode);
 		
 		// are there nodes hanging off of it as elements? if so, link them in
 		processDomainVmElements(ce, om, newNode);
@@ -669,12 +669,12 @@ public class ManifestLoader implements INdlManifestModelListener, INdlRequestMod
 			Resource tmpR = vmEl.next().getResource();
 			OrcaNode on = new OrcaNode(getTrueName(tmpR), parent);
 			nodes.put(getTrueName(tmpR), on);
-			GUIManifestState.getInstance().getGraph().addVertex(on);
-			OrcaLink ol = GUIManifestState.getInstance().getLinkCreator().create("Unnamed", ResourceType.MANIFEST);
+			GUIUnifiedState.getInstance().getGraph().addVertex(on);
+			OrcaLink ol = GUIUnifiedState.getInstance().getLinkCreator().create("Unnamed", ResourceType.MANIFEST);
 			
 			// link to parent (a visual HACK)
 			links.put(ol.getName(), ol);
-			GUIManifestState.getInstance().getGraph().addEdge(ol, new Pair<OrcaNode>(parent, on), 
+			GUIUnifiedState.getInstance().getGraph().addEdge(ol, new Pair<OrcaNode>(parent, on), 
 					EdgeType.UNDIRECTED);
 			
 			// add various properties
@@ -695,7 +695,7 @@ public class ManifestLoader implements INdlManifestModelListener, INdlRequestMod
 		
 		// Hack - remove parent if nodes are linked between themselves
 		if (innerNodeConnected)
-			GUIManifestState.getInstance().getGraph().removeVertex(parent);
+			GUIUnifiedState.getInstance().getGraph().removeVertex(parent);
 	}
 	
 	// set common node properties from NDL
@@ -802,10 +802,10 @@ public class ManifestLoader implements INdlManifestModelListener, INdlRequestMod
 					}
 
 					GUI.logger().debug("  Adding p-to-p link");
-					OrcaLink ol = GUIManifestState.getInstance().getLinkCreator().create("Unnamed", ResourceType.MANIFEST);
+					OrcaLink ol = GUIUnifiedState.getInstance().getLinkCreator().create("Unnamed", ResourceType.MANIFEST);
 					
 					GUI.logger().debug("  Creating a link " + ol.getName() + " from " + first + " to " + second);
-					GUIManifestState.getInstance().getGraph().addEdge(ol, new Pair<OrcaNode>(firstNode, secondNode), 
+					GUIUnifiedState.getInstance().getGraph().addEdge(ol, new Pair<OrcaNode>(firstNode, secondNode), 
 							EdgeType.UNDIRECTED);
 					
 					first = second;
@@ -978,7 +978,7 @@ public class ManifestLoader implements INdlManifestModelListener, INdlRequestMod
 			if ((fromOr == null) || (toOr == null)) {
 				return;
 			}
-			GUIManifestState.getInstance().getGraph().addEdge(cd.ocl, new Pair<OrcaNode>(fromOr, toOr), EdgeType.UNDIRECTED);
+			GUIUnifiedState.getInstance().getGraph().addEdge(cd.ocl, new Pair<OrcaNode>(fromOr, toOr), EdgeType.UNDIRECTED);
 		}
 	}
 	
