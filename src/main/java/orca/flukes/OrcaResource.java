@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 
 import javax.swing.JPopupMenu;
 
@@ -24,6 +25,7 @@ public abstract class OrcaResource implements Comparable<OrcaResource> {
 	protected String state = null;
 	protected String resNotice = null;
 	protected String reservationGuid = null;
+	protected String requestGuid = null;
 	protected Set<OrcaColor> colors = new HashSet<OrcaColor>();
 	
 	// distinguishing new and existing resources helps in determining
@@ -46,10 +48,11 @@ public abstract class OrcaResource implements Comparable<OrcaResource> {
 	
 	protected OrcaResource(String n) {
 		name = n;
+		requestGuid = UUID.randomUUID().toString();
 	}
 	
 	protected OrcaResource(String n, boolean res) {
-		name = n;
+		this(n);
 		isResource = res;
 	}
 	
@@ -90,6 +93,14 @@ public abstract class OrcaResource implements Comparable<OrcaResource> {
 	
 	public void setReservationGuid(String g) {
 		reservationGuid = g;
+	}
+	
+	public String getRequestGuid() {
+		return requestGuid;
+	}
+	
+	public void setRequestGuid(String g) {
+		requestGuid = g;
 	}
 	
 	public List<OrcaColor> getColors() {

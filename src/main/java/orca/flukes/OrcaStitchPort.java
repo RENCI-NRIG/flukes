@@ -49,7 +49,7 @@ public class OrcaStitchPort extends OrcaNode {
 	
 	public OrcaStitchPort(String name) {
 		super(name, 
-				new LayeredIcon(new ImageIcon(GUIRequestState.class.getResource(OrcaNodeEnum.STITCHPORT.getIconName())).getImage()));
+				new LayeredIcon(new ImageIcon(GUIUnifiedState.class.getResource(OrcaNodeEnum.STITCHPORT.getIconName())).getImage()));
 		setDomain(STITCHING_DOMAIN_SHORT_NAME);
 		setNodeType(STITCHING_PORT);
 	}

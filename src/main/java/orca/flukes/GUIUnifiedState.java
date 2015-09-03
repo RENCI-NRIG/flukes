@@ -87,8 +87,6 @@ public class GUIUnifiedState extends GUICommonState implements IDeleteEdgeCallBa
 	// manifest-related things
 	protected String manifestString;
 	private Date start = null, end = null, newEnd = null;
-
-	PopupMultiVertexEdgeMenuMousePlugin myPlugin = null;
 	
 	private static void initialize() {
 		;
@@ -406,8 +404,7 @@ public class GUIUnifiedState extends GUICommonState implements IDeleteEdgeCallBa
 
 		// add the plugin
 		//PopupVertexEdgeMenuMousePlugin<OrcaNode, OrcaLink> myPlugin = new PopupVertexEdgeMenuMousePlugin<OrcaNode, OrcaLink>();
-		myPlugin = new PopupMultiVertexEdgeMenuMousePlugin();
-
+		PopupMultiVertexEdgeMenuMousePlugin myPlugin = new PopupMultiVertexEdgeMenuMousePlugin();
 
 		// Add some popup menus for the edges and vertices to our mouse plugin.
 		//myPlugin.setEdgePopup(new MouseMenus.RequestEdgeMenu());
@@ -574,7 +571,7 @@ public class GUIUnifiedState extends GUICommonState implements IDeleteEdgeCallBa
 	public class UnifiedButtonListener implements ActionListener {
 		public void actionPerformed(ActionEvent e) {
 			GUI.getInstance().hideMenus();
-			if (e.getActionCommand().equals(GUI.Buttons.manifest.getCommand())) {
+			if (e.getActionCommand().equals("manifest")) {
 				queryManifest();
 			} else if (e.getActionCommand().equals(GUI.Buttons.listSlices.getCommand())) {
 				try {
@@ -588,7 +585,7 @@ public class GUIUnifiedState extends GUICommonState implements IDeleteEdgeCallBa
 					ed.setException("Exception encountered while listing user slices: ", ex);
 					ed.setVisible(true);
 				}
-			} else if (e.getActionCommand().equals(GUI.Buttons.delete.getCommand())) {
+			} else if (e.getActionCommand().equals("delete")) {
 				if ((sliceIdField.getText() == null) || 
 						(sliceIdField.getText().length() == 0)) {
 					KMessageDialog kmd = new KMessageDialog(GUI.getInstance().getFrame());
@@ -606,7 +603,7 @@ public class GUIUnifiedState extends GUICommonState implements IDeleteEdgeCallBa
 					return;
 				deleteSlice(sliceIdField.getText());
 
-			} else if (e.getActionCommand().equals(GUI.Buttons.reservation.getCommand())) {
+			} else if (e.getActionCommand().equals("reservation")) {
 				ReservationDetailsDialog rdd = new ReservationDetailsDialog(GUI.getInstance().getFrame());
 				rdd.setFields(getDomainInReservation(),
 						getTerm(), ofNeededVersion);
@@ -628,14 +625,14 @@ public class GUIUnifiedState extends GUICommonState implements IDeleteEdgeCallBa
 				linkCreator.setLinkType(OrcaLinkCreator.OrcaLinkType.TOPO);
 			} else if (e.getActionCommand().equals("color")) {
 				linkCreator.setLinkType(OrcaLinkCreator.OrcaLinkType.COLOR);
-			} else if (e.getActionCommand().equals(GUI.Buttons.autoip.getCommand())) {
+			} else if (e.getActionCommand().equals("autoip")) {
 				if (!autoAssignIPAddresses()) {
 					KMessageDialog kmd = new KMessageDialog(GUI.getInstance().getFrame());
 					kmd.setMessage("Unable auto-assign IP addresses.");
 					kmd.setLocationRelativeTo(GUI.getInstance().getFrame());
 					kmd.setVisible(true);
 				}
-			} else if (e.getActionCommand().equals(GUI.Buttons.submit.getCommand())) {
+			} else if (e.getActionCommand().equals("submit")) {
 				if ((sliceIdField.getText() == null) || 
 						(sliceIdField.getText().length() == 0)) {
 					KMessageDialog kmd = new KMessageDialog(GUI.getInstance().getFrame());
@@ -688,7 +685,7 @@ public class GUIUnifiedState extends GUICommonState implements IDeleteEdgeCallBa
 					ed.setVisible(true);
 				}
 			} else 
-				if (e.getActionCommand().equals(GUI.Buttons.modify.getCommand())) {
+				if (e.getActionCommand().equals("modify")) {
 					try {
 						if ((sliceIdField.getText() == null) || 
 								(sliceIdField.getText().length() == 0)) {
@@ -713,9 +710,9 @@ public class GUIUnifiedState extends GUICommonState implements IDeleteEdgeCallBa
 						ed.setException("Exception encountered while modifying slice: ", ex);
 						ed.setVisible(true);
 					} 
-				} else if (e.getActionCommand().equals(GUI.Buttons.clearModify.getCommand())) {
+				} else if (e.getActionCommand().equals("clearmodify")) {
 					ModifySaver.getInstance().clear();
-				} else if (e.getActionCommand().equals(GUI.Buttons.extend.getCommand())) {
+				} else if (e.getActionCommand().equals("extend")) {
 					ReservationExtensionDialog red = new ReservationExtensionDialog(GUI.getInstance().getFrame());
 					red.setFields(new Date());
 					red.pack();
@@ -777,7 +774,9 @@ public class GUIUnifiedState extends GUICommonState implements IDeleteEdgeCallBa
 						kmd.setVisible(true);
 						return;
 					}
-				} 
+				} else if (e.getActionCommand().equals("view")) {
+					launchResourceStateViewer(start, end);
+				}
 		}
 	}
 
@@ -920,6 +919,9 @@ public class GUIUnifiedState extends GUICommonState implements IDeleteEdgeCallBa
 	}
 
 	public void launchResourceStateViewer(Date start, Date end) {
+		if (start == null)
+			return;
+		
 		// get a list of nodes and links
 		List<OrcaResource> resources = new ArrayList<OrcaResource>();
 

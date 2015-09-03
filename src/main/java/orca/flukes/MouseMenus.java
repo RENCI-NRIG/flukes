@@ -288,7 +288,7 @@ public class MouseMenus {
 				if ((v.getNodeType() != null) && (v.getNodeType().length() > 0))
 					this.setText(PREFIX_NODE_TYPE + v.getNodeType());
 				else
-					this.setText(PREFIX_NODE_TYPE + GUIRequestState.NODE_TYPE_SITE_DEFAULT);
+					this.setText(PREFIX_NODE_TYPE + GUIUnifiedState.NODE_TYPE_SITE_DEFAULT);
 			}
 		}
 	}

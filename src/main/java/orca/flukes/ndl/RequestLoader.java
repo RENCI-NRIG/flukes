@@ -208,6 +208,9 @@ public class RequestLoader implements INdlRequestModelListener, INdlColorRequest
 
 		// override state
 		newNode.setResourceType(ResourceType.REQUEST);
+		// set guid if available
+		if (NdlCommons.getGuidProperty(ce) != null)
+			newNode.setRequestGuid(NdlCommons.getGuidProperty(ce));
 		
 		Resource domain = NdlCommons.getDomain(ce);
 		if (domain != null)
@@ -280,6 +283,8 @@ public class RequestLoader implements INdlRequestModelListener, INdlColorRequest
 			ol.setLatency(latency);
 			ol.setLabel(NdlCommons.getLayerLabelLiteral(l));
 			ol.setResourceType(ResourceType.REQUEST);
+			if (NdlCommons.getGuidProperty(l) != null)
+				ol.setRequestGuid(NdlCommons.getGuidProperty(l));
 			
 			// point-to-point link
 			// the ends
@@ -444,6 +449,8 @@ public class RequestLoader implements INdlRequestModelListener, INdlColorRequest
 		oc.setBandwidth(bandwidth);
 		oc.setLabel(NdlCommons.getLayerLabelLiteral(bl));
 		oc.setResourceType(ResourceType.REQUEST);
+		if (NdlCommons.getGuidProperty(bl) != null)
+			oc.setRequestGuid(NdlCommons.getGuidProperty(bl));
 		
 		int count = 0;
 		while(it.hasNext()) {

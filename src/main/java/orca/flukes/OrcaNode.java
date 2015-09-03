@@ -48,6 +48,7 @@ import orca.flukes.MouseMenus.NodePropItem;
 import orca.flukes.MouseMenus.NodePropertiesItem;
 import orca.flukes.MouseMenus.NodeTypeDisplay;
 import orca.flukes.MouseMenus.NodeViewItem;
+import orca.flukes.ui.Colors;
 import orca.flukes.ui.IconOutline;
 
 import org.apache.commons.collections15.Factory;
@@ -110,18 +111,18 @@ public class OrcaNode extends OrcaResource {
 		public Icon transform(OrcaNode node) {
 			switch(node.getResourceType()) {
 			case REQUEST:
-				node.icon.add(new IconOutline(node.outline, Color.black));
+				node.icon.add(new IconOutline(node.outline, Colors.REQUEST.getColor()));
 				break;
 			case MANIFEST:
 				if (OrcaResource.ORCA_ACTIVE.equalsIgnoreCase(node.getState()))
-					node.icon.add(new IconOutline(node.outline, Color.green));
+					node.icon.add(new IconOutline(node.outline, Colors.ACTIVE.getColor()));
 				else if (OrcaResource.ORCA_FAILED.equalsIgnoreCase(node.getState()))
-					node.icon.add(new IconOutline(node.outline, Color.red));
+					node.icon.add(new IconOutline(node.outline, Colors.FAILED.getColor()));
 				else
-					node.icon.add(new IconOutline(node.outline, Color.gray));
+					node.icon.add(new IconOutline(node.outline, Colors.TICKETED.getColor()));
 				break;
 			case RESOURCE:
-				node.icon.add(new IconOutline(node.outline, Color.blue));
+				node.icon.add(new IconOutline(node.outline, Colors.RESOURCE.getColor()));
 				break;
 			default:
 			}

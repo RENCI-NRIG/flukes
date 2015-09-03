@@ -28,7 +28,7 @@ public class OrcaStorageNode extends OrcaNode {
 	
 	public OrcaStorageNode(String name) {
 		super(name, 
-				new LayeredIcon(new ImageIcon(GUIRequestState.class.getResource(OrcaNodeEnum.STORAGE.getIconName())).getImage()));
+				new LayeredIcon(new ImageIcon(GUIUnifiedState.class.getResource(OrcaNodeEnum.STORAGE.getIconName())).getImage()));
 		setNodeType(STORAGE);
 	}
 	

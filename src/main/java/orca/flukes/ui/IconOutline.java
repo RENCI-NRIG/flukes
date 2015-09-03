@@ -13,8 +13,6 @@ import java.util.Collections;
 
 import javax.swing.Icon;
 
-import edu.uci.ics.jung.visualization.LayeredIcon;
-
 /**
  * Takes an outline shape and makes it larger and of different colors
  * @author ibaldin

@@ -23,7 +23,6 @@
 package orca.flukes;
 
 import java.awt.BasicStroke;
-import java.awt.Color;
 import java.awt.Paint;
 import java.awt.Stroke;
 
@@ -34,6 +33,7 @@ import orca.flukes.MouseMenus.EdgeColorItem;
 import orca.flukes.MouseMenus.EdgePropItem;
 import orca.flukes.MouseMenus.EdgeViewerItem;
 import orca.flukes.MouseMenus.LabelDisplay;
+import orca.flukes.ui.Colors;
 
 import org.apache.commons.collections15.Factory;
 import org.apache.commons.collections15.Transformer;
@@ -50,17 +50,17 @@ public class OrcaLink extends OrcaResource {
 	protected static class LinkPaint implements Transformer<OrcaLink, Paint> {
 	    public Paint transform(OrcaLink l) {
 	    	if (l instanceof OrcaColorLink)
-	    		return Color.BLUE;
+	    		return Colors.COLORLINK.getColor();
 	    	if ((l.getResourceType() == ResourceType.MANIFEST) && (l.isResource())) {
 	    		if (OrcaResource.ORCA_ACTIVE.equalsIgnoreCase(l.getState())) {
-	    			return Color.green;
+	    			return Colors.ACTIVE.getColor();
 	    		}
 	    		if (OrcaResource.ORCA_FAILED.equalsIgnoreCase(l.getState())) {
-	    			return Color.red;
+	    			return Colors.FAILED.getColor();
 	    		}
-	    		return Color.gray;
+	    		return Colors.TICKETED.getColor();
 	    	} else 
-	    		return Color.black;
+	    		return Colors.REQUEST.getColor();
 	    }
 	};
 	

@@ -35,7 +35,7 @@ public class OrcaResourceSite extends OrcaNode {
 	
 	public OrcaResourceSite(String name, float lat, float lon) {
 		super(name, 
-				new LayeredIcon(new ImageIcon(GUIRequestState.class.getResource(OrcaNodeEnum.RESOURCESITE.getIconName())).getImage()));
+				new LayeredIcon(new ImageIcon(GUIUnifiedState.class.getResource(OrcaNodeEnum.RESOURCESITE.getIconName())).getImage()));
 		domain = name;
 		this.lat = lat;
 		this.lon = lon;

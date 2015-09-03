@@ -25,7 +25,6 @@ package orca.flukes;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
-import java.awt.Cursor;
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -123,7 +122,7 @@ public class GUI implements ComponentListener {
 	private JMenuBar menuBar;
 	private JMenu fileNewMenu;
 	private JSeparator separator;
-	private JMenu mnNewMenu, controllerMenu, outputMenu, layoutMenu, xoMenu;
+	private JMenu mnNewMenu, controllerMenu, layoutMenu, xoMenu;
 	private JSeparator separator_1, separator_2;
 	private Logger logger;
 	private String[] controllerUrls;
@@ -874,23 +873,8 @@ public class GUI implements ComponentListener {
 		nodes("Add Nodes", "Select node type"),
 		links("Add Links", "Select link type"),
 		config("Configure Slice", "Configure various aspects of the slice"),
-		slice("Slice Operations", "Perform provisioning operations on the slice"),
-		
-		
-		// to be obsoleted (what to do with raw manifest?)
-		
-		autoip("Auto IP", "Auto-assign IP addresses"),
-		reservation("Reservation Details", "Edit reservation details"),
-		submit("Submit", "Submit request to selected ORCA controller"),
-		//manifests
-		
-		manifest("Query for Manifest", "Query ORCA for slice manifest"),
-		raw("Raw Response", "View raw controller response"),
-		extend("Extend Reservation", "Extend the end date of the reservation"),
-		modify("Commit Modify Actions", "Commit modify slice actions"),
-		clearModify("Clear Modify Actions", "Clear modify slice actions"),
-		delete("Delete Slice", "Delete this slice");
-		
+		slice("Slice Operations", "Perform provisioning operations on the slice");
+				
 		private String name, tooltip;
 		Buttons(String name, String tooltip) {
 			this.name = name;
@@ -1048,11 +1032,12 @@ public class GUI implements ComponentListener {
 			//first instantiate the control
 			splitSliceButton = new SplitButton(sliceButton, SwingConstants.SOUTH, 140);
 		    JPopupMenu sliceMenu = new JPopupMenu("Slice menu");
-		    sliceMenu.add(addMenuItem("Submit", "submit", rbl));
+		    sliceMenu.add(addMenuItem("Submit New", "submit", rbl));
 		    sliceMenu.add(addMenuItem("Query", "manifest", rbl));
 		    sliceMenu.add(addMenuItem("Extend", "extend", rbl));
 		    sliceMenu.add(addMenuItem("Delete", "delete", rbl));
-		    sliceMenu.add(addMenuItem("Clear", "clear", rbl));
+		    sliceMenu.add(addMenuItem("Clear New", "clear", rbl));
+		    sliceMenu.add(addMenuItem("View List", "view", rbl));
 		    
 		    splitSliceButton.setMenu(sliceMenu);
 			toolBar.add(splitSliceButton);
@@ -1068,139 +1053,6 @@ public class GUI implements ComponentListener {
 		}
 		
 		GUIUnifiedState.getInstance().addPane(unifiedPanel);
-		
-		/*
-		//
-		// add buttons to request pane
-		//
-		{
-			// add button panel to request pane
-			JToolBar toolBar = new JToolBar();
-			toolBar.setFloatable(false);
-			toolBar.setAlignmentX(Component.LEFT_ALIGNMENT);
-			toolBar.setAlignmentY(Component.CENTER_ALIGNMENT);
-			requestPanel.add(toolBar);
-			
-			// add buttons to request pane toolbar
-			ActionListener rbl = GUIRequestState.getInstance().getActionListener();
-			
-			JButton nodeButton = createButton(Buttons.nodes, toolBar, rbl);
-			
-			Component horizontalStrut = Box.createHorizontalStrut(10);
-			toolBar.add(horizontalStrut);
-			
-			//first instantiate the control
-			splitNodeButton = new SplitButton(nodeButton, SwingConstants.SOUTH);
-		    JPopupMenu nodeMenu = new JPopupMenu("Node menu");
-		    nodeMenu.add(addMenuItem("Node", "nodes", rbl));
-		    nodeMenu.add(addMenuItem("Node Group", "nodegroups", rbl));
-		    nodeMenu.add(addMenuItem("Broadcast Link", "bcastlinks", rbl));
-		    nodeMenu.add(addMenuItem("Storage", "storage", rbl));
-		    nodeMenu.add(addMenuItem("StitchPort", "stitchport", rbl));
-
-		    splitNodeButton.setMenu(nodeMenu);
-			toolBar.add(splitNodeButton);
-			
-			horizontalStrut = Box.createHorizontalStrut(10);
-			toolBar.add(horizontalStrut);
-			
-			JButton linkButton = createButton(Buttons.links, toolBar, rbl);
-			
-			//first instantiate the control
-			splitLinkButton = new SplitButton(linkButton, SwingConstants.SOUTH);
-		    JPopupMenu linkMenu = new JPopupMenu("Link menu");
-		    linkMenu.add(addMenuItem("Topo link", "topo", rbl));
-		    linkMenu.add(addMenuItem("Color Link", "color", rbl));
-		    splitLinkButton.setMenu(linkMenu);
-			toolBar.add(splitLinkButton);
-			
-			horizontalStrut = Box.createHorizontalStrut(10);
-			toolBar.add(horizontalStrut);
-			
-			createButton(Buttons.autoip, toolBar, rbl);
-
-			horizontalStrut = Box.createHorizontalStrut(10);
-			toolBar.add(horizontalStrut);
-			
-			createButton(Buttons.reservation, toolBar, rbl);
-			
-			horizontalStrut = Box.createHorizontalStrut(10);
-			toolBar.add(horizontalStrut);
-			
-			createButton(Buttons.submit, toolBar, rbl);
-			
-			horizontalStrut = Box.createHorizontalStrut(10);
-			toolBar.add(horizontalStrut);
-			
-			KTextField ktf = new KTextField(20);
-			GUIRequestState.getInstance().setSliceIdField(ktf);
-			ktf.setToolTipText("Enter slice id");
-			ktf.setMaximumSize(ktf.getMinimumSize());
-			toolBar.add(ktf);
-
-		} 
-		//
-		// add button panel to manifest pane
-		//
-		
-		{ 
-			JToolBar toolBar = new JToolBar();
-			toolBar.setFloatable(false);
-			toolBar.setAlignmentX(Component.LEFT_ALIGNMENT);
-			toolBar.setAlignmentY(Component.TOP_ALIGNMENT);
-			manifestPanel.add(toolBar);
-			
-			// add buttons to resource pane toolbar
-			ActionListener rbl = GUIManifestState.getInstance().getActionListener();
-			
-			createButton(Buttons.listSlices, toolBar, rbl);
-			
-			Component horizontalStrut = Box.createHorizontalStrut(10);
-			toolBar.add(horizontalStrut);
-			
-			createButton(Buttons.manifest, toolBar, rbl);
-			
-			horizontalStrut = Box.createHorizontalStrut(10);
-			toolBar.add(horizontalStrut);
-			
-			KTextField ktf = new KTextField(20);
-			// save the field
-			GUIManifestState.getInstance().setSliceIdField(ktf);
-			ktf.setToolTipText("Enter slice id");
-			ktf.setMaximumSize(ktf.getMinimumSize());
-			toolBar.add(ktf);
-			
-			horizontalStrut = Box.createHorizontalStrut(10);
-			toolBar.add(horizontalStrut);
-			
-			createButton(Buttons.raw, toolBar, rbl);
-			
-			horizontalStrut = Box.createHorizontalStrut(10);
-			toolBar.add(horizontalStrut);
-
-			createButton(Buttons.extend, toolBar, rbl);
-
-			horizontalStrut = Box.createHorizontalStrut(10);
-			toolBar.add(horizontalStrut);
-
-			if (getPreference(PrefsEnum.ENABLE_MODIFY).equalsIgnoreCase("true") ||
-					getPreference(PrefsEnum.ENABLE_MODIFY).equalsIgnoreCase("yes")) {
-				createButton(Buttons.modify, toolBar, rbl);
-
-				horizontalStrut = Box.createHorizontalStrut(10);
-				toolBar.add(horizontalStrut);
-
-				createButton(Buttons.clearModify, toolBar, rbl);
-
-				horizontalStrut = Box.createHorizontalStrut(10);
-				toolBar.add(horizontalStrut);
-			}
-			
-			horizontalStrut = Box.createHorizontalStrut(10);
-			createButton(Buttons.delete, toolBar, rbl);
-		} 
-		GUIRequestState.getInstance().addPane(unifiedPanel);
-		*/
 		
 		// now the menu
 		commonMenus();

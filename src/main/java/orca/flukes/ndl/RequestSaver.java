@@ -513,7 +513,7 @@ public class RequestSaver {
 				// shove invidividual nodes onto the reservation/crossconnects are vertices, but not 'nodes'
 				// so require special handling
 				for (OrcaNode n: GUIUnifiedState.getInstance().getGraph().getVertices()) {
-					Individual ni;
+					Individual ni = null;
 					if (n instanceof OrcaCrossconnect) {
 						continue;
 					} else if (n instanceof OrcaStitchPort) {
@@ -599,6 +599,9 @@ public class RequestSaver {
 							ngen.addPostBootScriptToCE(n.getPostBootScript(), ni);
 						}
 					}
+					// add request guid to each generated individual
+					if (ni != null)
+						ngen.addGuid(ni, n.getRequestGuid());
 				}
 				
 				// node dependencies and color extensions (done afterwards to be sure all nodes are declared)
@@ -616,12 +619,14 @@ public class RequestSaver {
 				
 				// crossconnects are vertices in the graph, but are actually a kind of link
 				for (OrcaNode n: GUIUnifiedState.getInstance().getGraph().getVertices()) {
-					Individual bl;
+					Individual bl = null;
 					if (n instanceof OrcaCrossconnect) {
 						// sanity check
 						OrcaCrossconnect oc = (OrcaCrossconnect)n;
 						checkCrossconnectSanity(oc);
 						bl = ngen.declareBroadcastConnection(oc.getName());
+						
+						ngen.addGuid(bl, n.getRequestGuid());
 						ngen.addResourceToReservation(reservation, bl);
 						
 						if (oc.getBandwidth() > 0)
@@ -631,7 +636,7 @@ public class RequestSaver {
 							ngen.addLabelToIndividual(bl, oc.getLabel());
 						
 						ngen.addLayerToConnection(bl, "ethernet", "EthernetNetworkElement");
-						
+
 						// add incident nodes' interfaces
 						processCrossconnect(oc, bl);
 					}
@@ -656,6 +661,7 @@ public class RequestSaver {
 						checkLinkSanity(e);
 						
 						Individual ei = ngen.declareNetworkConnection(e.getName());
+						ngen.addGuid(ei, e.getRequestGuid());
 						ngen.addResourceToReservation(reservation, ei);
 
 						if (e.getBandwidth() > 0)

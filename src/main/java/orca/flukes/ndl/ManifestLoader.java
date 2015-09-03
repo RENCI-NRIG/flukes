@@ -150,7 +150,7 @@ public class ManifestLoader implements INdlManifestModelListener, INdlRequestMod
 			nmp.freeModel();
 			GUIUnifiedState.getInstance().setManifestString(sb.toString());
 			GUIUnifiedState.getInstance().setManifestTerm(creationTime, expirationTime);
-			GUIUnifiedState.getInstance().launchResourceStateViewer(creationTime, expirationTime);
+			//GUIUnifiedState.getInstance().launchResourceStateViewer(creationTime, expirationTime);
 			
 		} catch (Exception e) {
 			ExceptionDialog ed = new ExceptionDialog(GUI.getInstance().getFrame(), "Exception");
@@ -188,8 +188,9 @@ public class ManifestLoader implements INdlManifestModelListener, INdlRequestMod
 
 			if (GraphicsEnvironment.isHeadless())
 				GUIUnifiedState.getInstance().printResourceState(creationTime, expirationTime);
-			else
-				GUIUnifiedState.getInstance().launchResourceStateViewer(creationTime, expirationTime);
+			else {
+				//GUIUnifiedState.getInstance().launchResourceStateViewer(creationTime, expirationTime);
+			}
 		} catch (Exception e) {
 			ExceptionDialog ed = new ExceptionDialog(GUI.getInstance().getFrame(), "Exception");
 			ed.setLocationRelativeTo(GUI.getInstance().getFrame());
