@@ -24,14 +24,7 @@ package orca.flukes;
 
 import javax.swing.JPopupMenu;
 
-import orca.flukes.MouseMenus.BandwidthDisplay;
 import orca.flukes.MouseMenus.EdgeColorItem;
-import orca.flukes.MouseMenus.EdgePropItem;
-import orca.flukes.MouseMenus.EdgeViewerItem;
-import orca.flukes.MouseMenus.LabelDisplay;
-import orca.flukes.OrcaLink.ManifestMenu;
-import orca.flukes.OrcaLink.RequestMenu;
-import orca.flukes.OrcaNode.ResourceMenu;
 
 // there's no good way to implement this. Unlike the node hierarhcy, color links 
 // cannot be resources, yet have to share class hierarchy with orca links.

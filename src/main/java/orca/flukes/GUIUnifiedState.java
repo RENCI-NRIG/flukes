@@ -33,9 +33,9 @@ import orca.flukes.ndl.RequestSaver;
 import orca.flukes.ui.TextAreaDialog;
 import orca.flukes.util.IP4Assign;
 import orca.flukes.xmlrpc.GENICHXMLRPCProxy;
+import orca.flukes.xmlrpc.GENICHXMLRPCProxy.FedField;
 import orca.flukes.xmlrpc.NDLConverter;
 import orca.flukes.xmlrpc.OrcaSMXMLRPCProxy;
-import orca.flukes.xmlrpc.GENICHXMLRPCProxy.FedField;
 
 import org.apache.commons.collections15.Transformer;
 
@@ -88,6 +88,8 @@ public class GUIUnifiedState extends GUICommonState implements IDeleteEdgeCallBa
 	protected String manifestString;
 	private Date start = null, end = null, newEnd = null;
 
+	PopupMultiVertexEdgeMenuMousePlugin myPlugin = null;
+	
 	private static void initialize() {
 		;
 	}
@@ -404,7 +406,7 @@ public class GUIUnifiedState extends GUICommonState implements IDeleteEdgeCallBa
 
 		// add the plugin
 		//PopupVertexEdgeMenuMousePlugin<OrcaNode, OrcaLink> myPlugin = new PopupVertexEdgeMenuMousePlugin<OrcaNode, OrcaLink>();
-		PopupMultiVertexEdgeMenuMousePlugin myPlugin = new PopupMultiVertexEdgeMenuMousePlugin();
+		myPlugin = new PopupMultiVertexEdgeMenuMousePlugin();
 
 
 		// Add some popup menus for the edges and vertices to our mouse plugin.
@@ -571,7 +573,6 @@ public class GUIUnifiedState extends GUICommonState implements IDeleteEdgeCallBa
 	 */
 	public class UnifiedButtonListener implements ActionListener {
 		public void actionPerformed(ActionEvent e) {
-			// FIXME: need to add manifest buttons here too
 			GUI.getInstance().hideMenus();
 			if (e.getActionCommand().equals(GUI.Buttons.manifest.getCommand())) {
 				queryManifest();
@@ -880,7 +881,7 @@ public class GUIUnifiedState extends GUICommonState implements IDeleteEdgeCallBa
 		else
 			return null;
 	}
-
+	
 	void queryManifest() {
 		// run request manifest from controller
 		if ((sliceIdField.getText() == null) || 
@@ -891,7 +892,7 @@ public class GUIUnifiedState extends GUICommonState implements IDeleteEdgeCallBa
 			kmd.setVisible(true);
 			return;
 		}
-
+		
 		try {
 			clear();
 
@@ -915,7 +916,7 @@ public class GUIUnifiedState extends GUICommonState implements IDeleteEdgeCallBa
 			ed.setLocationRelativeTo(GUI.getInstance().getFrame());
 			ed.setException("Exception encountered while querying ORCA for slice manifest: ", ex);
 			ed.setVisible(true);
-		}
+		} 
 	}
 
 	public void launchResourceStateViewer(Date start, Date end) {

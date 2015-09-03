@@ -497,12 +497,9 @@ public class OrcaNode extends OrcaResource {
 			this.add(new DomainDisplay());
 			this.add(new NodeTypeDisplay());
 			this.addSeparator();
-			if ((GUI.getInstance().getPreference(PrefsEnum.ENABLE_MODIFY).equalsIgnoreCase("true")) ||
-					(GUI.getInstance().getPreference(PrefsEnum.ENABLE_MODIFY).equalsIgnoreCase("yes"))) {
-				this.add(new DeleteVertexMenuItem<OrcaNode, OrcaLink>(GUIUnifiedState.getInstance()));
-				this.add(new IncreaseByNodeGroupItem(GUI.getInstance().getFrame()));
-				this.addSeparator();
-			}
+			this.add(new DeleteVertexMenuItem<OrcaNode, OrcaLink>(GUIUnifiedState.getInstance()));
+			this.add(new IncreaseByNodeGroupItem(GUI.getInstance().getFrame()));
+			this.addSeparator();
 			this.add(new NodeViewItem(GUI.getInstance().getFrame()));
 			this.add(new NodePropertiesItem(GUI.getInstance().getFrame()));
 			this.add(new NodeLoginItem(GUI.getInstance().getFrame()));

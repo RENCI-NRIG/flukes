@@ -46,6 +46,7 @@ import orca.flukes.OrcaNode;
 import orca.flukes.OrcaNodeGroup;
 import orca.flukes.OrcaReservationTerm;
 import orca.flukes.OrcaResource;
+import orca.flukes.OrcaResource.ResourceType;
 import orca.flukes.OrcaStitchPort;
 import orca.flukes.OrcaStorageNode;
 import orca.ndl.INdlColorRequestListener;
@@ -205,6 +206,9 @@ public class RequestLoader implements INdlRequestModelListener, INdlColorRequest
 				newNode = new OrcaNode(ce.getLocalName());
 		}
 
+		// override state
+		newNode.setResourceType(ResourceType.REQUEST);
+		
 		Resource domain = NdlCommons.getDomain(ce);
 		if (domain != null)
 			newNode.setDomainWithGlobalReset(RequestSaver.reverseLookupDomain(domain));
@@ -275,6 +279,7 @@ public class RequestLoader implements INdlRequestModelListener, INdlColorRequest
 			ol.setBandwidth(bandwidth);
 			ol.setLatency(latency);
 			ol.setLabel(NdlCommons.getLayerLabelLiteral(l));
+			ol.setResourceType(ResourceType.REQUEST);
 			
 			// point-to-point link
 			// the ends
@@ -438,10 +443,12 @@ public class RequestLoader implements INdlRequestModelListener, INdlColorRequest
 		
 		oc.setBandwidth(bandwidth);
 		oc.setLabel(NdlCommons.getLayerLabelLiteral(bl));
+		oc.setResourceType(ResourceType.REQUEST);
 		
 		int count = 0;
 		while(it.hasNext()) {
 			OrcaLink ol = new OrcaLink(bl.getLocalName() + count++);
+			ol.setResourceType(ResourceType.REQUEST);
 			Resource iff = it.next();
 			OrcaNode ifNode = interfaceToNode.get(iff.getURI());
 			if (ifNode != null) {
@@ -469,6 +476,7 @@ public class RequestLoader implements INdlRequestModelListener, INdlColorRequest
 			
 		OrcaColor oc = new OrcaColor(label);
 		oc.addKeys(NdlCommons.getColorKeys(color));
+
 		if (NdlCommons.getColorBlob(color) != null)
 			oc.setBlob(NdlCommons.getColorBlob(color));
 		else { 
@@ -497,6 +505,7 @@ public class RequestLoader implements INdlRequestModelListener, INdlColorRequest
 			return;
 		
 		OrcaColorLink ocl = new OrcaColorLink(label);
+		ocl.setResourceType(ResourceType.REQUEST);
 		
 		ocl.getColor().addKeys(NdlCommons.getColorKeys(color));
 		if (NdlCommons.getColorBlob(color) != null)

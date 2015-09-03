@@ -25,7 +25,7 @@ package orca.flukes;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
-import java.awt.Dimension;
+import java.awt.Cursor;
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -1316,7 +1316,6 @@ public class GUI implements ComponentListener {
 			"KEY or PEM file containing your private key issued by GPO, Emulab or BEN"),
 		ORCA_XMLRPC_CONTROLLER("orca.xmlrpc.url", "https://some.hostname.org:11443/orca/xmlrpc", 
 			"Comma-separated list of URLs of the ORCA XMLRPC controllers where you can submit slice requests"),
-		ENABLE_MODIFY("enable.modify", "false", "Enable experimental support for slice modify operations (at your own risk!)"),
 		ENABLE_IRODS("enable.irods", "false", "Enable experimental support for iRods (at your own risk!)"),
 		AUTOIP_MASK("autoip.mask", "25", "Length of netmask (in bits) to use when assigning IP addresses to groups and broadcast links (simple point-to-point links always use 30 bit masks)"),
 		ENABLE_GENISA("enable.genisa", "false", "Enable support for GENI Slice Authority"),
@@ -1401,6 +1400,7 @@ public class GUI implements ComponentListener {
 		
 		return pd;
 	}
+	
 	
 	public String getSelectedController() {
 		return selectedControllerUrl;
