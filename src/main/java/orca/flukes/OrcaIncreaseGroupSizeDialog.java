@@ -5,8 +5,6 @@ import java.awt.Frame;
 import javax.swing.JRootPane;
 import javax.swing.JTextField;
 
-import orca.flukes.ndl.ModifySaver;
-
 import com.hyperrealm.kiwi.ui.KPanel;
 import com.hyperrealm.kiwi.ui.dialog.KInputDialog;
 
@@ -31,7 +29,7 @@ public class OrcaIncreaseGroupSizeDialog extends KInputDialog {
 			if (i <= 0) {
 				return false;
 			}
-			ModifySaver.getInstance().addNodesToGroup(node.getGroup(), i);
+			GUIUnifiedState.getInstance().addNodesToGroup(node.getGroup(), i);
 		} catch (NumberFormatException e) {
 			return false;
 		}

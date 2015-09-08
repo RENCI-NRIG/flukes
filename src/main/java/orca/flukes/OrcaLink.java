@@ -28,6 +28,7 @@ import java.awt.Stroke;
 
 import javax.swing.JPopupMenu;
 
+import orca.flukes.GUIUnifiedState.GUIState;
 import orca.flukes.MouseMenus.BandwidthDisplay;
 import orca.flukes.MouseMenus.EdgeColorItem;
 import orca.flukes.MouseMenus.EdgePropItem;
@@ -178,6 +179,8 @@ public class OrcaLink extends OrcaResource {
         	if (inc == null)
         		return null;
         	synchronized(inc) {
+        		if (GUIUnifiedState.getInstance().getGUIState() == GUIState.MANIFEST)
+        			GUIUnifiedState.getInstance().setGUIState(GUIState.MANIFESTWITHMODIFY);
         		return inc.create(null, ResourceType.REQUEST);
         	}
         }    

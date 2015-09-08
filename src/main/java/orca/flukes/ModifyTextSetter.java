@@ -1,6 +1,5 @@
 package orca.flukes;
 
-import orca.flukes.ndl.ModifySaver;
 import orca.flukes.ui.TextAreaDialog.ITextSetter;
 
 /**
@@ -19,7 +18,6 @@ public class ModifyTextSetter implements ITextSetter {
 	@Override
 	public void setText(String t) {
 		GUIUnifiedState.getInstance().modifySlice(sid, t);
-		ModifySaver.getInstance().clear();
 	}
 
 }

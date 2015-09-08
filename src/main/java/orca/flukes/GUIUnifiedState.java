@@ -14,6 +14,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -25,6 +26,7 @@ import javax.swing.Icon;
 import orca.flukes.GUI.GuiTabs;
 import orca.flukes.GUI.PrefsEnum;
 import orca.flukes.OrcaNode.OrcaNodeIconTransformer;
+import orca.flukes.OrcaResource.ResourceType;
 import orca.flukes.irods.IRodsException;
 import orca.flukes.irods.IRodsICommands;
 import orca.flukes.ndl.ManifestLoader;
@@ -67,6 +69,10 @@ public class GUIUnifiedState extends GUICommonState implements IDeleteEdgeCallBa
 	public static final String NO_NODE_DEPS="No dependencies";
 
 	private static GUIUnifiedState instance = null;
+	
+	public enum GUIState { REQUEST, MANIFEST, MANIFESTWITHMODIFY };
+	
+	protected GUIState guiState = GUIState.REQUEST;
 
 	// is it openflow (and what version [null means non-of])
 	private String ofNeededVersion = null;
@@ -87,7 +93,39 @@ public class GUIUnifiedState extends GUICommonState implements IDeleteEdgeCallBa
 	// manifest-related things
 	protected String manifestString;
 	private Date start = null, end = null, newEnd = null;
-	
+
+	// modify-related things (added links and nodes can be inferred
+	// directly from the graph)
+	protected List<OrcaResource> deleted = new ArrayList<>();
+	protected Map<String, GroupModifyRecord> modifiedGroups = new HashMap<>();
+
+	// collect information about modified groups in a bean
+	public static class GroupModifyRecord {
+		private Integer countChange;
+		List<String> removeNodes;
+
+		public GroupModifyRecord() {
+			countChange = 0;
+			removeNodes = new ArrayList<>();
+		}
+
+		public void setCountChange(Integer add) {
+			countChange = add;
+		}
+
+		public Integer getCountChange() {
+			return countChange;
+		}
+
+		public void addRemoveNode(String nUrl) {
+			removeNodes.add(nUrl);
+		}
+
+		public List<String> getRemoveNodes() {
+			return new ArrayList<>(removeNodes);
+		}
+	}
+
 	private static void initialize() {
 		;
 	}
@@ -121,10 +159,41 @@ public class GUIUnifiedState extends GUICommonState implements IDeleteEdgeCallBa
 		ofCtrlUrl = null;
 		nsGuid = null;
 		saveFile = null;
+		clearModify();
+
+		guiState = GUIState.REQUEST;
 
 		GUIImageList.getInstance().collectAllKnownImages();
 	}
+	
+	/**
+	 * Clear only modify-specific things
+	 */
+	public void clearModify() {
+		deleted.clear();
+		modifiedGroups.clear();
+		
+		// remove nodes, links marked REQUEST
+		for (OrcaNode n: g.getVertices()) {
+			if (n.getResourceType() == ResourceType.REQUEST) {
+				for(OrcaLink l: g.getIncidentEdges(n)) {
+					if (l.getResourceType() == ResourceType.REQUEST)
+						g.removeEdge(l);
+				}
+				g.removeVertex(n);
+			}
+		}
+		guiState = GUIState.MANIFEST;
+	}
 
+	public void setGUIState(GUIState s) {
+		guiState = s;
+	}
+	
+	public GUIState getGUIState() {
+		return guiState;
+	}
+	
 	public OrcaReservationTerm getTerm() {
 		return term;
 	}
@@ -307,7 +376,10 @@ public class GUIUnifiedState extends GUICommonState implements IDeleteEdgeCallBa
 			break;
 		case MANIFEST:
 			if (n.getGroup() != null)
-				ModifySaver.getInstance().removeNodeFromGroup(n.getGroup(), n.getUrl());
+				removeNodeFromGroup(n.getGroup(), n.getUrl());
+			else
+				deleted.add(n);
+			g.removeVertex(n);
 			break;
 		default:	
 		}
@@ -326,7 +398,8 @@ public class GUIUnifiedState extends GUICommonState implements IDeleteEdgeCallBa
 			g.removeEdge(e);
 			break;
 		case MANIFEST:
-			// nothing for manifest links for now
+			deleted.add(e);
+			g.removeEdge(e);
 			break;
 		default:
 		}
@@ -573,6 +646,22 @@ public class GUIUnifiedState extends GUICommonState implements IDeleteEdgeCallBa
 			GUI.getInstance().hideMenus();
 			if (e.getActionCommand().equals("manifest")) {
 				queryManifest();
+				setGUIState(GUIState.MANIFEST);
+			} else if (e.getActionCommand().equals("clear")) {
+				// distinguish modify clear and all clear
+				switch(guiState) {
+				case REQUEST:
+					clear();
+				case MANIFEST:
+					setGUIState(GUIState.REQUEST);
+					clear();
+					break;
+				case MANIFESTWITHMODIFY:
+					setGUIState(GUIState.MANIFEST);
+					clearModify();
+					break;
+				}
+				vv.repaint();
 			} else if (e.getActionCommand().equals(GUI.Buttons.listSlices.getCommand())) {
 				try {
 					String[] slices = OrcaSMXMLRPCProxy.getInstance().listMySlices();
@@ -602,7 +691,9 @@ public class GUIUnifiedState extends GUICommonState implements IDeleteEdgeCallBa
 				if (!kqd.getStatus()) 
 					return;
 				deleteSlice(sliceIdField.getText());
-
+				setGUIState(GUIState.REQUEST);
+				clear();
+				vv.repaint();
 			} else if (e.getActionCommand().equals("reservation")) {
 				ReservationDetailsDialog rdd = new ReservationDetailsDialog(GUI.getInstance().getFrame());
 				rdd.setFields(getDomainInReservation(),
@@ -641,142 +732,146 @@ public class GUIUnifiedState extends GUICommonState implements IDeleteEdgeCallBa
 					kmd.setVisible(true);
 					return;
 				}
-				String ndl = RequestSaver.getInstance().convertGraphToNdl(g, nsGuid);
-				if ((ndl == null) ||
-						(ndl.length() == 0)) {
-					KMessageDialog kmd = new KMessageDialog(GUI.getInstance().getFrame());
-					kmd.setMessage("Unable to convert graph to NDL.");
-					kmd.setLocationRelativeTo(GUI.getInstance().getFrame());
-					kmd.setVisible(true);
-					return;
-				}
-				try {
-					// add slice to the SA
-					String sliceUrn = sliceIdField.getText();
-					boolean saError = false;
-					if (GUI.getInstance().getPreference(GUI.PrefsEnum.ENABLE_GENISA).equalsIgnoreCase("true") ||
-							GUI.getInstance().getPreference(GUI.PrefsEnum.ENABLE_GENISA).equalsIgnoreCase("yes")) {
-						try {
-							sliceUrn = GENICHXMLRPCProxy.getInstance().saCreateSlice(sliceUrn, 
-									GUI.getInstance().getPreference(GUI.PrefsEnum.GENISA_PROJECT));	
-						} catch (Exception ee) {
-							ExceptionDialog ed = new ExceptionDialog(GUI.getInstance().getFrame(), "Exception");
-							ed.setLocationRelativeTo(GUI.getInstance().getFrame());
-							ed.setException("Exception encountered while communicating with SA: ", ee);
-							ed.setVisible(true);
-							saError = true;
-						}
-					}
-					if (!saError) {
-						String status = OrcaSMXMLRPCProxy.getInstance().createSlice(sliceUrn, ndl);
-						TextAreaDialog tad = new TextAreaDialog(GUI.getInstance().getFrame(), "ORCA Response", 
-								"ORCA Controller response", 
-								25, 50);
-						KTextArea ta = tad.getTextArea();
-
-						ta.setText(status);
-						tad.pack();
-						tad.setVisible(true);
-					}
-				} catch (Exception ex) {
-					ExceptionDialog ed = new ExceptionDialog(GUI.getInstance().getFrame(), "Exception");
-					ed.setLocationRelativeTo(GUI.getInstance().getFrame());
-					ed.setException("Exception encountered while submitting slice request to ORCA: ", ex);
-					ed.setVisible(true);
-				}
-			} else 
-				if (e.getActionCommand().equals("modify")) {
-					try {
-						if ((sliceIdField.getText() == null) || 
-								(sliceIdField.getText().length() == 0)) {
-							KMessageDialog kmd = new KMessageDialog(GUI.getInstance().getFrame());
-							kmd.setMessage("You must specify a slice id");
-							kmd.setLocationRelativeTo(GUI.getInstance().getFrame());
-							kmd.setVisible(true);
-							return;
-						}
-						ModifyTextSetter mts = new ModifyTextSetter(sliceIdField.getText());
-						TextAreaDialog tad = new TextAreaDialog(GUI.getInstance().getFrame(), mts, 
-								"Modify Request", 
-								"Cut and paste the modify request into the window", 30, 50);
-						String txt = ModifySaver.getInstance().getModifyRequest();
-						if (txt != null)
-							tad.getTextArea().setText(txt);
-						tad.pack();
-						tad.setVisible(true);
-					} catch(Exception ex) {
-						ExceptionDialog ed = new ExceptionDialog(GUI.getInstance().getFrame(), "Exception");
-						ed.setLocationRelativeTo(GUI.getInstance().getFrame());
-						ed.setException("Exception encountered while modifying slice: ", ex);
-						ed.setVisible(true);
-					} 
-				} else if (e.getActionCommand().equals("clearmodify")) {
-					ModifySaver.getInstance().clear();
-				} else if (e.getActionCommand().equals("extend")) {
-					ReservationExtensionDialog red = new ReservationExtensionDialog(GUI.getInstance().getFrame());
-					red.setFields(new Date());
-					red.pack();
-					red.setVisible(true);
-
-					String sliceUrn = sliceIdField.getText();
-
-					if (newEnd != null) {
-						boolean saException = false;
-						// check slice expiration with SA and extend if necessary
-						if (GUI.getInstance().getPreference(GUI.PrefsEnum.ENABLE_GENISA).equalsIgnoreCase("true") ||
-								GUI.getInstance().getPreference(GUI.PrefsEnum.ENABLE_GENISA).equalsIgnoreCase("yes")) {
-							try {
-								Map<String, Object> r = GENICHXMLRPCProxy.getInstance().saLookupSlice(sliceUrn, 
-										new FedField[] { GENICHXMLRPCProxy.FedField.SLICE_EXPIRATION});
-								String dateString = (String)((Map<String, Object>)r.get(sliceUrn)).get(GENICHXMLRPCProxy.FedField.SLICE_EXPIRATION.name());
-								DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'hh:mm:ss", Locale.ENGLISH);
-								df.setTimeZone(TimeZone.getTimeZone("UTC"));
-								Date result =  df.parse(dateString);
-								if (result.before(newEnd)) {
-									// update slice expiration on SA
-									df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mmZ");
-									df.setTimeZone(TimeZone.getTimeZone("UTC"));
-									String nowAsISO = df.format(newEnd);
-
-									GENICHXMLRPCProxy.getInstance().saUpdateSlice(sliceUrn, FedField.SLICE_EXPIRATION, nowAsISO);
-								}
-							} catch (Exception sae) {
-								ExceptionDialog ed = new ExceptionDialog(GUI.getInstance().getFrame(), "Exception");
-								ed.setLocationRelativeTo(GUI.getInstance().getFrame());
-								ed.setException("Unable to extend slice on the SA: ", sae);
-								ed.setVisible(true);
-								saException = true;
-							}
-						}
-
-						if (!saException) {
-							try {
-								Boolean res = OrcaSMXMLRPCProxy.getInstance().renewSlice(sliceUrn, newEnd);
-								KMessageDialog kd = new KMessageDialog(GUI.getInstance().getFrame(), "Result", true);
-								kd.setMessage("The extend operation returned: " + res);
-								kd.setLocationRelativeTo(GUI.getInstance().getFrame());
-								kd.setVisible(true);
-								if (res)
-									resetEndDate();
-								else
-									newEnd = null;
-							} catch (Exception ee) {
-								ExceptionDialog ed = new ExceptionDialog(GUI.getInstance().getFrame(), "Exception");
-								ed.setLocationRelativeTo(GUI.getInstance().getFrame());
-								ed.setException("Exception encountered while extending slice: ", ee);
-								ed.setVisible(true);
-							}
-						}
-					} else {
+				String ndl = null;
+				if (guiState == GUIState.REQUEST) {
+					ndl = RequestSaver.getInstance().convertGraphToNdl(g, nsGuid);
+					if ((ndl == null) ||
+							(ndl.length() == 0)) {
 						KMessageDialog kmd = new KMessageDialog(GUI.getInstance().getFrame());
-						kmd.setMessage("Invalid new end date.");
+						kmd.setMessage("Unable to convert graph to NDL.");
 						kmd.setLocationRelativeTo(GUI.getInstance().getFrame());
 						kmd.setVisible(true);
 						return;
 					}
-				} else if (e.getActionCommand().equals("view")) {
-					launchResourceStateViewer(start, end);
+					try {
+						// add slice to the SA
+						String sliceUrn = sliceIdField.getText();
+						boolean saError = false;
+						if (GUI.getInstance().getPreference(GUI.PrefsEnum.ENABLE_GENISA).equalsIgnoreCase("true") ||
+								GUI.getInstance().getPreference(GUI.PrefsEnum.ENABLE_GENISA).equalsIgnoreCase("yes")) {
+							try {
+								sliceUrn = GENICHXMLRPCProxy.getInstance().saCreateSlice(sliceUrn, 
+										GUI.getInstance().getPreference(GUI.PrefsEnum.GENISA_PROJECT));	
+							} catch (Exception ee) {
+								ExceptionDialog ed = new ExceptionDialog(GUI.getInstance().getFrame(), "Exception");
+								ed.setLocationRelativeTo(GUI.getInstance().getFrame());
+								ed.setException("Exception encountered while communicating with SA: ", ee);
+								ed.setVisible(true);
+								saError = true;
+							}
+						}
+						if (!saError) {
+							String status = OrcaSMXMLRPCProxy.getInstance().createSlice(sliceUrn, ndl);
+							TextAreaDialog tad = new TextAreaDialog(GUI.getInstance().getFrame(), "ORCA Response", 
+									"ORCA Controller response", 
+									25, 50);
+							KTextArea ta = tad.getTextArea();
+
+							ta.setText(status);
+							tad.pack();
+							tad.setVisible(true);
+						}
+					} catch (Exception ex) {
+						ExceptionDialog ed = new ExceptionDialog(GUI.getInstance().getFrame(), "Exception");
+						ed.setLocationRelativeTo(GUI.getInstance().getFrame());
+						ed.setException("Exception encountered while submitting slice request to ORCA: ", ex);
+						ed.setVisible(true);
+					}
+				} else if (guiState == GUIState.MANIFESTWITHMODIFY) {
+					// FIXME: submit modify request here
+					System.out.println("Submitting modify");
+					System.out.println("Deleted: ");
+					for(OrcaResource or: deleted) {
+						System.out.print(or + " ");
+					}
+					System.out.println();
+					System.out.println("Modified groups:");
+					for(Map.Entry<String, GroupModifyRecord> gmre: modifiedGroups.entrySet()) {
+						System.out.print(gmre.getKey() + ": " + gmre.getValue() + " ");
+					}
+					System.out.println();
+					System.out.println("New: ");
+					for (OrcaNode n: g.getVertices()) {
+						if (n.getResourceType() == ResourceType.REQUEST) {
+							for(OrcaLink l: g.getIncidentEdges(n)) {
+								if (l.getResourceType() == ResourceType.REQUEST)
+									System.out.print(l + " ");
+							}
+							System.out.print(n + " ");
+						}
+					}
+					System.out.println();
+				} else {
+					KMessageDialog kmd = new KMessageDialog(GUI.getInstance().getFrame());
+					kmd.setMessage("No modifications to submit.");
+					kmd.setLocationRelativeTo(GUI.getInstance().getFrame());
+					kmd.setVisible(true);
 				}
+			} else if (e.getActionCommand().equals("extend")) {
+				ReservationExtensionDialog red = new ReservationExtensionDialog(GUI.getInstance().getFrame());
+				red.setFields(new Date());
+				red.pack();
+				red.setVisible(true);
+
+				String sliceUrn = sliceIdField.getText();
+
+				if (newEnd != null) {
+					boolean saException = false;
+					// check slice expiration with SA and extend if necessary
+					if (GUI.getInstance().getPreference(GUI.PrefsEnum.ENABLE_GENISA).equalsIgnoreCase("true") ||
+							GUI.getInstance().getPreference(GUI.PrefsEnum.ENABLE_GENISA).equalsIgnoreCase("yes")) {
+						try {
+							Map<String, Object> r = GENICHXMLRPCProxy.getInstance().saLookupSlice(sliceUrn, 
+									new FedField[] { GENICHXMLRPCProxy.FedField.SLICE_EXPIRATION});
+							String dateString = (String)((Map<String, Object>)r.get(sliceUrn)).get(GENICHXMLRPCProxy.FedField.SLICE_EXPIRATION.name());
+							DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'hh:mm:ss", Locale.ENGLISH);
+							df.setTimeZone(TimeZone.getTimeZone("UTC"));
+							Date result =  df.parse(dateString);
+							if (result.before(newEnd)) {
+								// update slice expiration on SA
+								df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mmZ");
+								df.setTimeZone(TimeZone.getTimeZone("UTC"));
+								String nowAsISO = df.format(newEnd);
+
+								GENICHXMLRPCProxy.getInstance().saUpdateSlice(sliceUrn, FedField.SLICE_EXPIRATION, nowAsISO);
+							}
+						} catch (Exception sae) {
+							ExceptionDialog ed = new ExceptionDialog(GUI.getInstance().getFrame(), "Exception");
+							ed.setLocationRelativeTo(GUI.getInstance().getFrame());
+							ed.setException("Unable to extend slice on the SA: ", sae);
+							ed.setVisible(true);
+							saException = true;
+						}
+					}
+
+					if (!saException) {
+						try {
+							Boolean res = OrcaSMXMLRPCProxy.getInstance().renewSlice(sliceUrn, newEnd);
+							KMessageDialog kd = new KMessageDialog(GUI.getInstance().getFrame(), "Result", true);
+							kd.setMessage("The extend operation returned: " + res);
+							kd.setLocationRelativeTo(GUI.getInstance().getFrame());
+							kd.setVisible(true);
+							if (res)
+								resetEndDate();
+							else
+								newEnd = null;
+						} catch (Exception ee) {
+							ExceptionDialog ed = new ExceptionDialog(GUI.getInstance().getFrame(), "Exception");
+							ed.setLocationRelativeTo(GUI.getInstance().getFrame());
+							ed.setException("Exception encountered while extending slice: ", ee);
+							ed.setVisible(true);
+						}
+					}
+				} else {
+					KMessageDialog kmd = new KMessageDialog(GUI.getInstance().getFrame());
+					kmd.setMessage("Invalid new end date.");
+					kmd.setLocationRelativeTo(GUI.getInstance().getFrame());
+					kmd.setVisible(true);
+					return;
+				}
+			} else if (e.getActionCommand().equals("view")) {
+				launchResourceStateViewer(start, end);
+			}
 		}
 	}
 
@@ -880,7 +975,7 @@ public class GUIUnifiedState extends GUICommonState implements IDeleteEdgeCallBa
 		else
 			return null;
 	}
-	
+
 	void queryManifest() {
 		// run request manifest from controller
 		if ((sliceIdField.getText() == null) || 
@@ -891,7 +986,7 @@ public class GUIUnifiedState extends GUICommonState implements IDeleteEdgeCallBa
 			kmd.setVisible(true);
 			return;
 		}
-		
+
 		try {
 			clear();
 
@@ -921,7 +1016,7 @@ public class GUIUnifiedState extends GUICommonState implements IDeleteEdgeCallBa
 	public void launchResourceStateViewer(Date start, Date end) {
 		if (start == null)
 			return;
-		
+
 		// get a list of nodes and links
 		List<OrcaResource> resources = new ArrayList<OrcaResource>();
 
@@ -1010,6 +1105,46 @@ public class GUIUnifiedState extends GUICommonState implements IDeleteEdgeCallBa
 			ed.setException("Exception encountered while saving manifest to iRods: ", e);
 			ed.setVisible(true);
 		}
+	}
+
+	//
+	// modify operations
+	//
+
+	public void addNodesToGroup(String url, Integer c) {
+		GroupModifyRecord gmr = null;
+
+		if ((c <= 0) || (url == null))
+			return;
+
+		if (guiState == GUIState.MANIFEST)
+			setGUIState(GUIState.MANIFESTWITHMODIFY);
+
+		if (modifiedGroups.containsKey(url)) {
+			gmr = modifiedGroups.get(url);
+		} else {
+			gmr = new GroupModifyRecord();
+			modifiedGroups.put(url, gmr);
+		}
+		gmr.setCountChange(c);
+	}
+
+	public void removeNodeFromGroup(String url, String nUrl) {
+		GroupModifyRecord gmr = null;
+
+		if ((nUrl == null) || (url == null))
+			return;
+
+		if (guiState == GUIState.MANIFEST)
+			setGUIState(GUIState.MANIFESTWITHMODIFY);
+		
+		if (modifiedGroups.containsKey(url)) {
+			gmr = modifiedGroups.get(url);
+		} else {
+			gmr = new GroupModifyRecord();
+			modifiedGroups.put(url, gmr);
+		}
+		gmr.addRemoveNode(nUrl);
 	}
 
 }

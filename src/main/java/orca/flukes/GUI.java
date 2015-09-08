@@ -245,6 +245,7 @@ public class GUI implements ComponentListener {
 						GUIUnifiedState.getInstance().setSaveDir(d.getSelectedFile().getParent());
 					}	
 				}
+				GUIUnifiedState.getInstance().setGUIState(GUIUnifiedState.GUIState.REQUEST);
 				kickLayout(GuiTabs.UNIFIED_VIEW);
 			}
 			else if (e.getActionCommand().equals("openmanifest")) {
@@ -264,11 +265,13 @@ public class GUI implements ComponentListener {
 					// save the directory
 					GUIUnifiedState.getInstance().setSaveDir(d.getSelectedFile().getParent());
 				}
+				GUIUnifiedState.getInstance().setGUIState(GUIUnifiedState.GUIState.MANIFEST);
 				kickLayout(GuiTabs.UNIFIED_VIEW);
 			}
 			else if (e.getActionCommand().equals("new")) {
 				GUIUnifiedState.getInstance().clear();
 				frmOrcaFlukes.setTitle(FRAME_TITLE);
+				GUIUnifiedState.getInstance().setGUIState(GUIUnifiedState.GUIState.REQUEST);
 				GUIUnifiedState.getInstance().vv.repaint();
 			}
 			else if (e.getActionCommand().equals("save")) {
@@ -1032,12 +1035,12 @@ public class GUI implements ComponentListener {
 			//first instantiate the control
 			splitSliceButton = new SplitButton(sliceButton, SwingConstants.SOUTH, 140);
 		    JPopupMenu sliceMenu = new JPopupMenu("Slice menu");
-		    sliceMenu.add(addMenuItem("Submit New", "submit", rbl));
-		    sliceMenu.add(addMenuItem("Query", "manifest", rbl));
+		    sliceMenu.add(addMenuItem("Submit Changes", "submit", rbl));
+		    sliceMenu.add(addMenuItem("Query Manfiest", "manifest", rbl));
 		    sliceMenu.add(addMenuItem("Extend", "extend", rbl));
 		    sliceMenu.add(addMenuItem("Delete", "delete", rbl));
-		    sliceMenu.add(addMenuItem("Clear New", "clear", rbl));
-		    sliceMenu.add(addMenuItem("View List", "view", rbl));
+		    sliceMenu.add(addMenuItem("Clear Changes", "clear", rbl));
+		    sliceMenu.add(addMenuItem("View as List", "view", rbl));
 		    
 		    splitSliceButton.setMenu(sliceMenu);
 			toolBar.add(splitSliceButton);

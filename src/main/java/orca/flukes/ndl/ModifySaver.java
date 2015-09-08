@@ -1,11 +1,18 @@
 package orca.flukes.ndl;
 
+import java.util.List;
+
 import orca.flukes.GUI;
+import orca.flukes.GUIUnifiedState;
+import orca.flukes.OrcaLink;
+import orca.flukes.OrcaNode;
+import orca.flukes.OrcaResource;
 import orca.ndl.NdlException;
 import orca.ndl.NdlGenerator;
 
 import com.hp.hpl.jena.ontology.Individual;
-import com.hyperrealm.kiwi.ui.dialog.ExceptionDialog;
+
+import edu.uci.ics.jung.graph.SparseMultigraph;
 
 /**
  * Generate a modify request
@@ -17,15 +24,12 @@ public class ModifySaver {
 	private Individual modRes = null;
 	private String outputFormat = null;
 	
-	private ModifySaver() {
-	}
-	
-	private static ModifySaver instance = null;
-	
-	public static ModifySaver getInstance() {
-		if (instance == null)
-			instance = new ModifySaver();
-		return instance;
+	public  ModifySaver(String nsGuid) throws NdlException {
+		ngen = new NdlGenerator(nsGuid, GUI.logger(), true);
+
+		String nm = (nsGuid == null ? "my-modify" : nsGuid + "/my-modify");
+
+		modRes = ngen.declareModifyReservation(nm);
 	}
 	
 	public void setOutputFormat(String of) {
@@ -47,50 +51,14 @@ public class ModifySaver {
 		else
 			return getFormattedOutput(RequestSaver.defaultFormat);
 	}
-
-	/**
-	 * Create a modify request in a specific namespace (null is allowed - GUID will be used)
-	 * This call is optional. Calling addNodesToGroup and removeNodeFromGroup will automatically
-	 * make this call if it has not been made.
-	 * @param nsGuid
-	 */
-	public void createModifyRequest(String nsGuid) {
-		// this should never run in parallel anyway
-		synchronized(instance) {
-			try {
-				ngen = new NdlGenerator(nsGuid, GUI.logger(), true);
-				
-				String nm = (nsGuid == null ? "my-modify" : nsGuid + "/my-modify");
-				
-				modRes = ngen.declareModifyReservation(nm);
-				
-			} catch (Exception e) {
-				ExceptionDialog ed = new ExceptionDialog(GUI.getInstance().getFrame(), "Exception");
-				ed.setLocationRelativeTo(GUI.getInstance().getFrame());
-				ed.setException("Exception encountered while converting graph to NDL-OWL: ", e);
-				ed.setVisible(true);
-				return;
-			} 
-		}
-	}
 	
 	/**
 	 * Add a count of nodes to a group
 	 * @param groupUrl
 	 * @param count
 	 */
-	public void addNodesToGroup(String groupUrl, Integer count) {
-		if (ngen == null)
-			createModifyRequest(null);
-		try {
-			ngen.declareModifyElementNGIncreaseBy(modRes, groupUrl, count);
-		} catch (NdlException e) {
-			ExceptionDialog ed = new ExceptionDialog(GUI.getInstance().getFrame(), "Exception");
-			ed.setLocationRelativeTo(GUI.getInstance().getFrame());
-			ed.setException("Exception encountered while converting graph to NDL-OWL: ", e);
-			ed.setVisible(true);
-			return;
-		}
+	public void addNodesToGroup(String groupUrl, Integer count) throws NdlException {
+		ngen.declareModifyElementNGIncreaseBy(modRes, groupUrl, count);
 	}
 	
 	/**
@@ -98,25 +66,15 @@ public class ModifySaver {
 	 * @param groupUrl
 	 * @param nodeUrl
 	 */
-	public void removeNodeFromGroup(String groupUrl, String nodeUrl) {
-		if (ngen == null)
-			createModifyRequest(null);
-		try {
-			ngen.declareModifyElementNGDeleteNode(modRes, groupUrl, nodeUrl);
-		} catch (NdlException e) {
-			ExceptionDialog ed = new ExceptionDialog(GUI.getInstance().getFrame(), "Exception");
-			ed.setLocationRelativeTo(GUI.getInstance().getFrame());
-			ed.setException("Exception encountered while converting graph to NDL-OWL: ", e);
-			ed.setVisible(true);
-			return;
-		}
+	public void removeNodeFromGroup(String groupUrl, String nodeUrl) throws NdlException {
+		ngen.declareModifyElementNGDeleteNode(modRes, groupUrl, nodeUrl);
 	}
-	
+
 	/**
 	 * Return modify request in specified format
 	 * @return
 	 */
-	public String getModifyRequest() {
+	public String createModifyRequest(SparseMultigraph<OrcaNode, OrcaLink> g, String nsGuid, List<OrcaResource> deleted, List<GUIUnifiedState.GroupModifyRecord> modifiedGroups) {
 		return getFormattedOutput(outputFormat);
 	}
 	

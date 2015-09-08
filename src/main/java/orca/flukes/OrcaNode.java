@@ -38,6 +38,7 @@ import javax.swing.ImageIcon;
 import javax.swing.JPopupMenu;
 
 import orca.flukes.GUI.PrefsEnum;
+import orca.flukes.GUIUnifiedState.GUIState;
 import orca.flukes.MouseMenus.DomainDisplay;
 import orca.flukes.MouseMenus.ImageDisplay;
 import orca.flukes.MouseMenus.IncreaseByNodeGroupItem;
@@ -456,6 +457,8 @@ public class OrcaNode extends OrcaResource {
         	if (inc == null)
         		return null;
         	synchronized(inc) {
+        		if (GUIUnifiedState.getInstance().getGUIState() == GUIState.MANIFEST)
+        			GUIUnifiedState.getInstance().setGUIState(GUIState.MANIFESTWITHMODIFY);
         		return inc.create(ResourceType.REQUEST);
         	}
         }       

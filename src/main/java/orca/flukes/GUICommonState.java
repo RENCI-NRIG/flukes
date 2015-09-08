@@ -23,12 +23,9 @@
 package orca.flukes;
 
 import java.awt.Container;
-import java.awt.Paint;
 import java.awt.event.ActionListener;
 import java.util.HashSet;
 import java.util.Set;
-
-import org.apache.commons.collections15.Transformer;
 
 import com.hyperrealm.kiwi.ui.KTextField;
 
