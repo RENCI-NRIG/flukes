@@ -150,7 +150,7 @@ public class GUIResourceState extends GUICommonState {
 	 */
 	private double tolerance = 0.01;
 	public synchronized OrcaResourceSite createSite(String dom, float lat, float lon) {
-		for (OrcaNode node: g.getVertices()) {
+		for (OrcaResource node: g.getVertices()) {
 			OrcaResourceSite ors = (OrcaResourceSite)node;
 			if ((Math.abs(lat - ors.getLat()) < tolerance) &&
 					(Math.abs(lon - ors.getLon()) < tolerance)) {

@@ -48,10 +48,10 @@ public class OrcaNodeCreator implements INodeCreator {
 	 * @param nm
 	 * @return
 	 */
-	public boolean checkUniqueNodeName(OrcaNode node, String nm) {
+	public boolean checkUniqueNodeName(OrcaResource node, String nm) {
 		// check all edges in graph
 		Collection<OrcaNode> nodes = g.getVertices();
-		for (OrcaNode n: nodes) {
+		for (OrcaResource n: nodes) {
 			// check that some other edge doesn't have this name
 			if (node != null) {
 				if ((n != node) &&(n.getName().equals(nm)))

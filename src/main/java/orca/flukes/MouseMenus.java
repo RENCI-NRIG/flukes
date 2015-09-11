@@ -517,7 +517,7 @@ public class MouseMenus {
 	}
 	
 	public static class NodePropertiesItem extends JMenuItem implements NodeMenuListener<OrcaNode, OrcaLink>, MenuPointListener {
-		OrcaNode node;
+		OrcaResource node;
 		VisualizationViewer<OrcaNode, OrcaLink> visComp;
 		Point2D point;
 
@@ -606,7 +606,7 @@ public class MouseMenus {
 	}
 
 	public static class NodeColorItem extends JMenuItem implements NodeMenuListener<OrcaNode, OrcaLink>, MenuPointListener {
-		OrcaNode node;
+		OrcaResource node;
 		VisualizationViewer<OrcaNode, OrcaLink> visComp;
 		Point2D point;
 

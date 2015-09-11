@@ -30,7 +30,7 @@ import com.hyperrealm.kiwi.ui.dialog.ComponentDialog;
 
 public class ManifestNodePropertyDialog extends ComponentDialog {
 
-	public ManifestNodePropertyDialog(JFrame parent, OrcaNode n) {
+	public ManifestNodePropertyDialog(JFrame parent, OrcaResource n) {
 		super(parent, "Node Properties", true);
 		super.setLocationRelativeTo(parent);
 

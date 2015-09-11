@@ -37,7 +37,6 @@ import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JPopupMenu;
 
-import orca.flukes.GUI.PrefsEnum;
 import orca.flukes.GUIUnifiedState.GUIState;
 import orca.flukes.MouseMenus.DomainDisplay;
 import orca.flukes.MouseMenus.ImageDisplay;
@@ -65,7 +64,6 @@ public class OrcaNode extends OrcaResource {
 	protected static final String NOT_SPECIFIED = "Not specified";
 	public static final String NODE_NETMASK="32";
 	
-	protected String url;
 	protected String image = null;
 	protected String domain = null;
 	protected String group = null;
@@ -211,14 +209,6 @@ public class OrcaNode extends OrcaResource {
 		this.outline = getIconShape(icon);
 	}
 
-	public void setUrl(String u) {
-		url = u;
-	}
-	
-	public String getUrl() {
-		return url;
-	}
-	
 	public String getImage() {
 		return image;
 	}
@@ -309,7 +299,7 @@ public class OrcaNode extends OrcaResource {
 			dependencies.add(n);
 	}
 	
-	public void removeDependency(OrcaNode n) {
+	public void removeDependency(OrcaResource n) {
 		if (n != null)
 			dependencies.remove(n);
 	}
@@ -318,7 +308,7 @@ public class OrcaNode extends OrcaResource {
 		dependencies = new HashSet<OrcaNode>();
 	}
 	
-	public boolean isDependency(OrcaNode n) {
+	public boolean isDependency(OrcaResource n) {
 		if (n == null)
 			return false;
 		return dependencies.contains(n);
@@ -330,7 +320,7 @@ public class OrcaNode extends OrcaResource {
 	 */
 	public Set<String> getDependencyNames() { 
 		Set<String> ret = new HashSet<String>();
-		for(OrcaNode n: dependencies) 
+		for(OrcaResource n: dependencies) 
 			ret.add(n.getName());
 		return ret;
 	}

@@ -124,7 +124,7 @@ public class OrcaCrossconnect extends OrcaNode {
     	Collection<OrcaLink> iLinks = GUIUnifiedState.getInstance().getGraph().getIncidentEdges(this);
 		for(OrcaLink l: iLinks) {
 			Pair<OrcaNode> pn = GUIUnifiedState.getInstance().getGraph().getEndpoints(l);
-			OrcaNode n = null;
+			OrcaResource n = null;
 			// find the non-crossconnect side
 			if (!(pn.getFirst() instanceof OrcaCrossconnect))
 				n = pn.getFirst();

@@ -243,7 +243,10 @@ public class RequestLoader implements INdlRequestModelListener, INdlColorRequest
 			try {
 				String imageURL = NdlCommons.getIndividualsImageURL(ce);
 				String imageHash = NdlCommons.getIndividualsImageHash(ce);
-				String imName = GUIImageList.getInstance().addImage(new OrcaImage(di.getLocalName(), 
+				String shortName = NdlCommons.getNameProperty(di);
+				if ((shortName == null) || (shortName.length() == 0)) 
+					shortName = di.getLocalName();
+				String imName = GUIImageList.getInstance().addImage(new OrcaImage(shortName, 
 						new URL(imageURL), imageHash), null);
 				newNode.setImage(imName);
 			} catch (Exception e) {

@@ -270,6 +270,7 @@ public class ManifestLoader implements INdlManifestModelListener, INdlRequestMod
 			GUI.logger().debug("  Adding p-to-p link");
 			OrcaLink ol = GUIUnifiedState.getInstance().getLinkCreator().create(getPrettyName(l), NdlCommons.getResourceBandwidth(l), ResourceType.MANIFEST);
 			ol.setLabel(label);
+			ol.setUrl(l.getURI());
 			// state
 			ol.setState(NdlCommons.getResourceStateAsString(l));
 			
@@ -299,6 +300,7 @@ public class ManifestLoader implements INdlManifestModelListener, INdlRequestMod
 									// degenerate case of a node on a shared vlan
 									OrcaCrossconnect oc = new OrcaCrossconnect(getPrettyName(l));
 									oc.setLabel(label);
+									oc.setUrl(l.getURI());
 									oc.setDomain(RequestSaver.reverseLookupDomain(NdlCommons.getDomain(l)));
 									nodes.put(getTrueName(l), oc);
 									// save one interface
@@ -343,6 +345,7 @@ public class ManifestLoader implements INdlManifestModelListener, INdlRequestMod
 			OrcaCrossconnect ml = new OrcaCrossconnect(getPrettyName(l));
 
 			ml.setLabel(label);
+			ml.setUrl(l.getURI());
 			ml.setReservationNotice(NdlCommons.getResourceReservationNotice(l));
 			ml.setReservationGuid(getGuidFromNotice(ml.getReservationNotice()));
 			ml.setState(NdlCommons.getResourceStateAsString(l));
@@ -436,6 +439,9 @@ public class ManifestLoader implements INdlManifestModelListener, INdlRequestMod
 
 	@Override
 	public void ndlManifest(Resource i, OntModel m) {
+		
+		// set the slice guid based on URL
+		
 		// nothing to do in this case
 		
 		// ignore request items
@@ -563,6 +569,7 @@ public class ManifestLoader implements INdlManifestModelListener, INdlRequestMod
 		
 		OrcaCrossconnect oc = new OrcaCrossconnect(getPrettyName(c));
 		oc.setLabel(label);
+		oc.setUrl(c.getURI());
 		
 		setCommonNodeProperties(oc, c);
 		
@@ -669,6 +676,7 @@ public class ManifestLoader implements INdlManifestModelListener, INdlRequestMod
 		for (StmtIterator vmEl = vm.listProperties(NdlCommons.collectionElementProperty); vmEl.hasNext();) {
 			Resource tmpR = vmEl.next().getResource();
 			OrcaNode on = new OrcaNode(getTrueName(tmpR), parent);
+			on.setUrl(tmpR.getURI());
 			nodes.put(getTrueName(tmpR), on);
 			GUIUnifiedState.getInstance().getGraph().addVertex(on);
 			OrcaLink ol = GUIUnifiedState.getInstance().getLinkCreator().create("Unnamed", ResourceType.MANIFEST);

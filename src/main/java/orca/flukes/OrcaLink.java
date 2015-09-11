@@ -83,6 +83,7 @@ public class OrcaLink extends OrcaResource {
 
     public OrcaLink(OrcaLink ol) {
     	super(ol.name, ol.isResource());
+    	url = ol.url;
     	bandwidth = ol.bandwidth;
     	latency = ol.latency;
     	label = ol.label;

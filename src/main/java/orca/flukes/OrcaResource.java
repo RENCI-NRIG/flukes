@@ -33,6 +33,7 @@ public abstract class OrcaResource implements Comparable<OrcaResource> {
 	public enum ResourceType { INVALID, RESOURCE, REQUEST, MANIFEST};
 	// by default assume resource already exists (has been provisioned)
 	private ResourceType myType = ResourceType.MANIFEST;
+	protected String url;
 	
 	/**
 	 * Allow to override resource type
@@ -174,5 +175,13 @@ public abstract class OrcaResource implements Comparable<OrcaResource> {
     public int compareTo(OrcaResource o) {
     	return this.getName().compareTo(o.getName());
     }
+
+	public void setUrl(String u) {
+		url = u;
+	}
+
+	public String getUrl() {
+		return url;
+	}
     
 }

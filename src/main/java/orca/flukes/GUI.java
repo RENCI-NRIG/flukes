@@ -77,6 +77,8 @@ import orca.flukes.ui.TextAreaDialog;
 import orca.flukes.ui.TextHTMLPaneDialog;
 import orca.flukes.xmlrpc.OrcaSMXMLRPCProxy;
 import orca.ndl.NdlCommons;
+import orca.util.Base64;
+import orca.util.CompressEncode;
 
 import org.apache.log4j.ConsoleAppender;
 import org.apache.log4j.Level;
@@ -425,11 +427,17 @@ public class GUI implements ComponentListener {
 					if (sName.length() == 0)
 						sName = "unknown";
 					String controller = GUI.getInstance().getSelectedController();
+					String compressedManifest = null;
+					if (!GUIUnifiedState.getInstance().emptyManifestString()) {
+						compressedManifest = CompressEncode.compressEncode(GUIUnifiedState.getInstance().getManifestString());
+					}
 					java.awt.Desktop.getDesktop().mail(
 							new URI("mailto:geni-orca-users@googlegroups.com?subject=Problem%20with%20slice%20" + 
 									sName + 
 									"&body=Slice:%20" + sName + "%0D" + "Controller:%20" + controller + "%0D%0D" +   
-									"Describe%20the%20problem%20here.%20Attach%20the%20request%20file%20if%20needed."));
+									"Describe%20the%20problem%20here.%20Attach%20the%20request%20file%20if%20needed.%0D%0DCompressed%20Manifest:%0D" + 
+									(compressedManifest == null ? "Not available" : compressedManifest)));
+
 				} catch (Exception ioe) {
 					KMessageDialog md = new KMessageDialog(GUI.getInstance().getFrame(), "Error opening email client.", true);
 					md.setMessage("Unable to open the email client: " + ioe);
@@ -804,7 +812,7 @@ public class GUI implements ComponentListener {
 	}
 	
 	public enum GuiTabs {
-		UNIFIED_VIEW("Unified View"),
+		UNIFIED_VIEW("Slice View"),
 		RESOURCE_VIEW("Resource View");
 		
 		private final String layoutName;

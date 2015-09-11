@@ -26,7 +26,6 @@ import javax.swing.Icon;
 import orca.flukes.GUI.GuiTabs;
 import orca.flukes.GUI.PrefsEnum;
 import orca.flukes.OrcaNode.OrcaNodeIconTransformer;
-import orca.flukes.OrcaResource.ResourceType;
 import orca.flukes.irods.IRodsException;
 import orca.flukes.irods.IRodsICommands;
 import orca.flukes.ndl.ManifestLoader;
@@ -48,6 +47,7 @@ import com.hyperrealm.kiwi.ui.dialog.KQuestionDialog;
 
 import edu.uci.ics.jung.algorithms.layout.FRLayout;
 import edu.uci.ics.jung.algorithms.layout.Layout;
+import edu.uci.ics.jung.graph.SparseMultigraph;
 import edu.uci.ics.jung.graph.util.Pair;
 import edu.uci.ics.jung.visualization.Layer;
 import edu.uci.ics.jung.visualization.RenderContext;
@@ -74,6 +74,9 @@ public class GUIUnifiedState extends GUICommonState implements IDeleteEdgeCallBa
 	
 	protected GUIState guiState = GUIState.REQUEST;
 
+	// copy of manifest graph to support a crude form of undo
+	SparseMultigraph<OrcaNode, OrcaLink> gCopy = null;
+	
 	// is it openflow (and what version [null means non-of])
 	private String ofNeededVersion = null;
 	private String ofUserEmail = null;
@@ -160,7 +163,9 @@ public class GUIUnifiedState extends GUICommonState implements IDeleteEdgeCallBa
 		nsGuid = null;
 		saveFile = null;
 		clearModify();
-
+		clearGraph(g);
+		gCopy = null;
+		
 		guiState = GUIState.REQUEST;
 
 		GUIImageList.getInstance().collectAllKnownImages();
@@ -173,16 +178,8 @@ public class GUIUnifiedState extends GUICommonState implements IDeleteEdgeCallBa
 		deleted.clear();
 		modifiedGroups.clear();
 		
-		// remove nodes, links marked REQUEST
-		for (OrcaNode n: g.getVertices()) {
-			if (n.getResourceType() == ResourceType.REQUEST) {
-				for(OrcaLink l: g.getIncidentEdges(n)) {
-					if (l.getResourceType() == ResourceType.REQUEST)
-						g.removeEdge(l);
-				}
-				g.removeVertex(n);
-			}
-		}
+		copyGraph(gCopy, g);
+		
 		guiState = GUIState.MANIFEST;
 	}
 
@@ -256,11 +253,11 @@ public class GUIUnifiedState extends GUICommonState implements IDeleteEdgeCallBa
 		return itemList;
 	}
 
-	public String[] getAvailableDependencies(OrcaNode subject) {
+	public String[] getAvailableDependencies(OrcaResource subject) {
 		Collection<OrcaNode> knownNodes = g.getVertices();
 		String[] ret = new String[knownNodes.size() - 1];
 		int i = 0;
-		for (OrcaNode n: knownNodes) {
+		for (OrcaResource n: knownNodes) {
 			if ((!n.equals(subject)) && !(n instanceof OrcaCrossconnect)) {
 				ret[i] = n.getName();
 				i++;
@@ -269,12 +266,12 @@ public class GUIUnifiedState extends GUICommonState implements IDeleteEdgeCallBa
 		return ret;
 	}
 
-	public String[] getAvailableDependenciesWithNone(OrcaNode subject) {
+	public String[] getAvailableDependenciesWithNone(OrcaResource subject) {
 		Collection<OrcaNode> knownNodes = g.getVertices();
 		String[] ret = new String[knownNodes.size()];
 		ret[0] = NO_NODE_DEPS;
 		int i = 1;
-		for (OrcaNode n: knownNodes) {
+		for (OrcaResource n: knownNodes) {
 			if ((!n.equals(subject)) && !(n instanceof OrcaCrossconnect)) {
 				ret[i] = n.getName();
 				i++;
@@ -605,7 +602,7 @@ public class GUIUnifiedState extends GUICommonState implements IDeleteEdgeCallBa
 			int i = 0;
 			Collection<OrcaNode> neighbors = g.getNeighbors(csx);
 			int sum = 0;
-			for(OrcaNode nb: neighbors) {
+			for(OrcaResource nb: neighbors) {
 				if (nb instanceof OrcaCrossconnect) 
 					continue;
 				if (nb instanceof OrcaNodeGroup) 
@@ -646,15 +643,14 @@ public class GUIUnifiedState extends GUICommonState implements IDeleteEdgeCallBa
 			GUI.getInstance().hideMenus();
 			if (e.getActionCommand().equals("manifest")) {
 				queryManifest();
-				setGUIState(GUIState.MANIFEST);
 			} else if (e.getActionCommand().equals("clear")) {
 				// distinguish modify clear and all clear
+				System.out.println("In state " + guiState);
 				switch(guiState) {
 				case REQUEST:
 					clear();
 				case MANIFEST:
-					setGUIState(GUIState.REQUEST);
-					clear();
+					// do nothing
 					break;
 				case MANIFESTWITHMODIFY:
 					setGUIState(GUIState.MANIFEST);
@@ -733,6 +729,7 @@ public class GUIUnifiedState extends GUICommonState implements IDeleteEdgeCallBa
 					return;
 				}
 				String ndl = null;
+				String sliceUrn = sliceIdField.getText();
 				if (guiState == GUIState.REQUEST) {
 					ndl = RequestSaver.getInstance().convertGraphToNdl(g, nsGuid);
 					if ((ndl == null) ||
@@ -745,7 +742,6 @@ public class GUIUnifiedState extends GUICommonState implements IDeleteEdgeCallBa
 					}
 					try {
 						// add slice to the SA
-						String sliceUrn = sliceIdField.getText();
 						boolean saError = false;
 						if (GUI.getInstance().getPreference(GUI.PrefsEnum.ENABLE_GENISA).equalsIgnoreCase("true") ||
 								GUI.getInstance().getPreference(GUI.PrefsEnum.ENABLE_GENISA).equalsIgnoreCase("yes")) {
@@ -778,29 +774,24 @@ public class GUIUnifiedState extends GUICommonState implements IDeleteEdgeCallBa
 						ed.setVisible(true);
 					}
 				} else if (guiState == GUIState.MANIFESTWITHMODIFY) {
-					// FIXME: submit modify request here
-					System.out.println("Submitting modify");
-					System.out.println("Deleted: ");
-					for(OrcaResource or: deleted) {
-						System.out.print(or + " ");
+					ndl = ModifySaver.getInstance().convertModifyGraphToNdl(g, deleted, modifiedGroups);
+					System.out.println("Modify Request: \n" + ndl);
+					try {
+						String status = "NOOP"; //OrcaSMXMLRPCProxy.getInstance().modifySlice(sliceUrn, ndl);
+						TextAreaDialog tad = new TextAreaDialog(GUI.getInstance().getFrame(), "ORCA Response", 
+								"ORCA Controller response", 
+								25, 50);
+						KTextArea ta = tad.getTextArea();
+
+						ta.setText(status);
+						tad.pack();
+						tad.setVisible(true);
+					} catch (Exception ex) {
+						ExceptionDialog ed = new ExceptionDialog(GUI.getInstance().getFrame(), "Exception");
+						ed.setLocationRelativeTo(GUI.getInstance().getFrame());
+						ed.setException("Exception encountered while submitting slice modify request to ORCA: ", ex);
+						ed.setVisible(true);
 					}
-					System.out.println();
-					System.out.println("Modified groups:");
-					for(Map.Entry<String, GroupModifyRecord> gmre: modifiedGroups.entrySet()) {
-						System.out.print(gmre.getKey() + ": " + gmre.getValue() + " ");
-					}
-					System.out.println();
-					System.out.println("New: ");
-					for (OrcaNode n: g.getVertices()) {
-						if (n.getResourceType() == ResourceType.REQUEST) {
-							for(OrcaLink l: g.getIncidentEdges(n)) {
-								if (l.getResourceType() == ResourceType.REQUEST)
-									System.out.print(l + " ");
-							}
-							System.out.print(n + " ");
-						}
-					}
-					System.out.println();
 				} else {
 					KMessageDialog kmd = new KMessageDialog(GUI.getInstance().getFrame());
 					kmd.setMessage("No modifications to submit.");
@@ -892,6 +883,12 @@ public class GUIUnifiedState extends GUICommonState implements IDeleteEdgeCallBa
 		return manifestString;
 	}
 
+	public boolean emptyManifestString() {
+		if ((manifestString == null) || (manifestString.length() == 0))
+			return true;
+		return false;
+	}
+	
 	public void setManifestTerm(Date s, Date e) {
 		start = s;
 		end = e;
@@ -988,6 +985,7 @@ public class GUIUnifiedState extends GUICommonState implements IDeleteEdgeCallBa
 		}
 
 		try {
+			
 			clear();
 
 			manifestString = OrcaSMXMLRPCProxy.getInstance().sliceStatus(sliceIdField.getText());
@@ -996,8 +994,12 @@ public class GUIUnifiedState extends GUICommonState implements IDeleteEdgeCallBa
 
 			String realM = stripManifest(manifestString);
 			if (realM != null) {
-				if (ml.loadString(realM))
+				if (ml.loadString(realM)) {
 					GUI.getInstance().kickLayout(GuiTabs.UNIFIED_VIEW);
+					gCopy = new SparseMultigraph<OrcaNode, OrcaLink>();
+					copyGraph(g, gCopy);
+					setGUIState(GUIState.MANIFEST);
+				}
 			} else {
 				KMessageDialog kmd = new KMessageDialog(GUI.getInstance().getFrame());
 				kmd.setMessage("Error has occurred, check raw controller response for details.");

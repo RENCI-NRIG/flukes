@@ -24,7 +24,9 @@ package orca.flukes;
 
 import java.awt.Container;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import com.hyperrealm.kiwi.ui.KTextField;
@@ -39,7 +41,7 @@ import edu.uci.ics.jung.visualization.control.EditingModalGraphMouse;
  *
  */
 public abstract class GUICommonState {
-	SparseMultigraph<OrcaNode, OrcaLink> g = new SparseMultigraph<OrcaNode, OrcaLink>();
+	SparseMultigraph<OrcaNode, OrcaLink> g = new SparseMultigraph<>();
 	OrcaNodeCreator nodeCreator = new OrcaNodeCreator(g);
 	OrcaLinkCreator linkCreator = new OrcaLinkCreator(g);
 	KTextField sliceIdField = null;
@@ -106,4 +108,32 @@ public abstract class GUICommonState {
 	abstract public ActionListener getActionListener();
 	
 	abstract public void addPane(Container c);
+	
+	public static void clearGraph(SparseMultigraph<OrcaNode, OrcaLink> t) {
+		List<OrcaNode> dNodes = new ArrayList<>(t.getVertices());
+		List<OrcaLink> dEdges = new ArrayList<>(t.getEdges());
+		for(OrcaLink e: dEdges)
+			t.removeEdge(e);
+		for(OrcaNode n: dNodes)
+			t.removeVertex(n);
+	}
+	
+	/**
+	 * Shallow-copy graph (only structure, not nodes and edges) if both src and destional are non-null
+	 * @param src
+	 * @param dst
+	 */
+	public static void copyGraph(SparseMultigraph<OrcaNode, OrcaLink> src, SparseMultigraph<OrcaNode, OrcaLink> dst) {
+		if ((src == null) || (dst == null))
+			return;
+		
+		// empty dst graph
+		clearGraph(dst);
+		
+	    for (OrcaNode v : src.getVertices())
+	        dst.addVertex(v);
+
+	    for (OrcaLink e : src.getEdges())
+	        dst.addEdge(e, src.getIncidentVertices(e));
+	}
 }
