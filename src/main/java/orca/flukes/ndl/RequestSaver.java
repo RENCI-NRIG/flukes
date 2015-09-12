@@ -33,9 +33,11 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import orca.flukes.GUI;
 import orca.flukes.GUIDomainState;
@@ -145,7 +147,6 @@ public class RequestSaver {
 		ndm.put("PSC XO Rack Net",  "pscNet.rdf#pscNet");
 		ndm.put("GWU XO Rack Net",  "gwuNet.rdf#gwuNet");
 		ndm.put("CIENA XO Rack Net",  "cienaNet.rdf#cienaNet");
-		
 		
 		ndm.put("I2 ION/AL2S", "ion.rdf#ion");
 		ndm.put("NLR Net", "nlr.rdf#nlr");
@@ -659,6 +660,7 @@ public class RequestSaver {
 		synchronized(instance) {
 			try {
 				ngen = new NdlGenerator(nsGuid, GUI.logger());
+				alreadyModified = new HashSet<>();
 			
 				reservation = ngen.declareReservation();
 				Individual term = ngen.declareTerm();
@@ -949,6 +951,8 @@ public class RequestSaver {
 		}
 	}
 	
+	Set<OrcaResource> alreadyModified = null;
+	
 	/**
 	 * Either find an existing individual (for REQUEST nodes) or generate a modified one (for MODIFIED nodes)
 	 * Otherwise return null
@@ -963,8 +967,13 @@ public class RequestSaver {
 		case REQUEST:
 			return ngen.getRequestIndividual(n.getName());
 		case MANIFEST:
-			Individual modCE = ngen.declareModifiedComputeElement(n.getName(), n.getRequestGuid());
-			ngen.declareModifyElementModifyNode(reservation, modCE);
+			Individual modCE = ngen.declareModifiedComputeElement(n.getUrl(), n.getRequestGuid());
+			// above returns same result if called multiple times, however below
+			// will create a new UUID each time, so do it only once
+			if (!alreadyModified.contains(n)) {
+				ngen.declareModifyElementModifyNode(reservation, modCE);
+				alreadyModified.add(n);
+			}
 			return modCE;
 		default:
 			return null;

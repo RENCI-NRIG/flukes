@@ -75,7 +75,7 @@ public class GUIUnifiedState extends GUICommonState implements IDeleteEdgeCallBa
 	protected GUIState guiState = GUIState.REQUEST;
 
 	// copy of manifest graph to support a crude form of undo
-	SparseMultigraph<OrcaNode, OrcaLink> gCopy = null;
+	SparseMultigraph<OrcaNode, OrcaLink> gManifest = null;
 	
 	// is it openflow (and what version [null means non-of])
 	private String ofNeededVersion = null;
@@ -95,13 +95,16 @@ public class GUIUnifiedState extends GUICommonState implements IDeleteEdgeCallBa
 
 	// manifest-related things
 	protected String manifestString;
-	private Date start = null, end = null, newEnd = null;
+	protected Date start = null, end = null, newEnd = null;
 
 	// modify-related things (added links and nodes can be inferred
 	// directly from the graph)
 	protected List<OrcaResource> deleted = new ArrayList<>();
 	protected Map<String, GroupModifyRecord> modifiedGroups = new HashMap<>();
 
+	// copy of original request graph
+	protected SparseMultigraph<OrcaNode, OrcaLink> gRequest = null;
+	
 	// collect information about modified groups in a bean
 	public static class GroupModifyRecord {
 		private Integer countChange;
@@ -164,7 +167,7 @@ public class GUIUnifiedState extends GUICommonState implements IDeleteEdgeCallBa
 		saveFile = null;
 		clearModify();
 		clearGraph(g);
-		gCopy = null;
+		gManifest = null;
 		
 		guiState = GUIState.REQUEST;
 
@@ -177,12 +180,34 @@ public class GUIUnifiedState extends GUICommonState implements IDeleteEdgeCallBa
 	public void clearModify() {
 		deleted.clear();
 		modifiedGroups.clear();
-		
-		copyGraph(gCopy, g);
-		
-		guiState = GUIState.MANIFEST;
+		resetManifest();
+
 	}
 
+	//
+	// graph-copy related functions
+	//
+	public void saveRequest() {
+		gRequest = new SparseMultigraph<>();
+		copyGraph(g, gRequest);
+	}
+	
+	public void resetRequest() {
+		guiState = GUIState.REQUEST;
+		copyGraph(gRequest, g);
+		gRequest = null;
+	}
+	
+	public void saveUnmodifiedManifest() {
+		gManifest = new SparseMultigraph<>();
+		copyGraph(g, gManifest);
+	}
+	
+	public void resetManifest() {
+		copyGraph(gManifest, g);
+		guiState = GUIState.MANIFEST;
+	}
+	
 	public void setGUIState(GUIState s) {
 		guiState = s;
 	}
@@ -862,6 +887,9 @@ public class GUIUnifiedState extends GUICommonState implements IDeleteEdgeCallBa
 				}
 			} else if (e.getActionCommand().equals("view")) {
 				launchResourceStateViewer(start, end);
+			} else if (e.getActionCommand().equals("resetrequset")) {
+				GUIUnifiedState.getInstance().resetRequest();
+				vv.repaint();
 			}
 		}
 	}
@@ -870,7 +898,7 @@ public class GUIUnifiedState extends GUICommonState implements IDeleteEdgeCallBa
 	public ActionListener getActionListener() {
 		return al;
 	}
-
+	
 	//
 	// Manifest-related functions
 	//
@@ -985,7 +1013,9 @@ public class GUIUnifiedState extends GUICommonState implements IDeleteEdgeCallBa
 		}
 
 		try {
-			
+			if (getGUIState() == GUIState.REQUEST)
+				saveRequest();
+
 			clear();
 
 			manifestString = OrcaSMXMLRPCProxy.getInstance().sliceStatus(sliceIdField.getText());
@@ -996,8 +1026,8 @@ public class GUIUnifiedState extends GUICommonState implements IDeleteEdgeCallBa
 			if (realM != null) {
 				if (ml.loadString(realM)) {
 					GUI.getInstance().kickLayout(GuiTabs.UNIFIED_VIEW);
-					gCopy = new SparseMultigraph<OrcaNode, OrcaLink>();
-					copyGraph(g, gCopy);
+					// save unmodified manifest
+					saveUnmodifiedManifest();
 					setGUIState(GUIState.MANIFEST);
 				}
 			} else {

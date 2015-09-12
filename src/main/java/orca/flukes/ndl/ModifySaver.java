@@ -1,5 +1,6 @@
 package orca.flukes.ndl;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -51,6 +52,7 @@ public class ModifySaver extends RequestSaver {
 				String nsGuid = UUID.randomUUID().toString();
 				
 				ngen = new NdlGenerator(nsGuid, GUI.logger(), true);
+				alreadyModified = new HashSet<OrcaResource>();
 				
 				String nm = nsGuid + "/modify";
 

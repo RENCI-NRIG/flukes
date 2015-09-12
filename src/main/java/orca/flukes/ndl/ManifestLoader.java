@@ -282,6 +282,9 @@ public class ManifestLoader implements INdlManifestModelListener, INdlRequestMod
 			ol.setReservationGuid(getGuidFromNotice(ol.getReservationNotice()));
 			links.put(getTrueName(l), ol); 
 
+			// guid
+			setRequestGuid(l, ol);
+			
 			// maybe point-to-point link
 			// the ends
 			Resource if1 = it.next(), if2 = it.next();
@@ -353,6 +356,8 @@ public class ManifestLoader implements INdlManifestModelListener, INdlRequestMod
 
 			if (ml.getState() != null)
 				ml.setIsResource();
+			
+			setRequestGuid(l, ml);
 			
 			nodes.put(getTrueName(l), ml);
 			
@@ -451,6 +456,13 @@ public class ManifestLoader implements INdlManifestModelListener, INdlRequestMod
 		GUI.logger().debug("Manifest: " + i);
 	}
 
+	private void setRequestGuid(Resource nr, OrcaResource or) {
+		if (NdlCommons.getGuidProperty(nr) != null)
+			or.setRequestGuid(NdlCommons.getGuidProperty(nr));
+		else
+			or.setRequestGuid("not available");
+	}
+	
 	@Override
 	public void ndlInterface(Resource intf, OntModel om, Resource conn,
 			Resource node, String ip, String mask) {
@@ -725,6 +737,9 @@ public class ManifestLoader implements INdlManifestModelListener, INdlRequestMod
 		// reservation notice
 		on.setReservationNotice(NdlCommons.getResourceReservationNotice(nr));
 		on.setReservationGuid(getGuidFromNotice(on.getReservationNotice()));
+		
+		// guid
+		setRequestGuid(nr, on);
 		
 		// domain
 		Resource domain = NdlCommons.getDomain(nr);

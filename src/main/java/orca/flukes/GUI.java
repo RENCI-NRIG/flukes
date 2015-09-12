@@ -33,9 +33,12 @@ import java.awt.event.ComponentListener;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Constructor;
@@ -317,6 +320,34 @@ public class GUI implements ComponentListener {
 						frmOrcaFlukes.setTitle(FRAME_TITLE + " : " + d.getSelectedFile().getName());
 						GUIUnifiedState.getInstance().setSaveFile(d.getSelectedFile());
 						GUIUnifiedState.getInstance().setSaveDir(d.getSelectedFile().getParent());
+					}
+				}
+			}
+			else if (e.getActionCommand().equals("savemanifestas")) {
+				if (GUIUnifiedState.getInstance().getManifestString() == null) {
+					;
+				} else {
+					KFileChooserDialog d = new KFileChooserDialog(getFrame(), "Save Manifest in NDL", KFileChooser.SAVE_DIALOG);
+					d.setLocationRelativeTo(getFrame());
+					d.getFileChooser().setAcceptAllFileFilterUsed(true);
+					d.getFileChooser().addChoosableFileFilter(new NdlFileFilter());
+					if (GUIUnifiedState.getInstance().getSaveDir() != null)
+						d.setCurrentDirectory(new File(GUIUnifiedState.getInstance().getSaveDir()));
+					d.pack();
+					d.setVisible(true);
+					if (d.getSelectedFile() != null) {
+						try{
+							FileOutputStream fsw = new FileOutputStream(d.getSelectedFile());
+							OutputStreamWriter out = new OutputStreamWriter(fsw, "UTF-8");
+							out.write(GUIUnifiedState.getInstance().getManifestString());
+							out.close();
+						} catch(FileNotFoundException ee) {
+							;
+						} catch(UnsupportedEncodingException ex) {
+							;
+						} catch(IOException ey) {
+							;
+						} 
 					}
 				}
 			}
@@ -718,6 +749,7 @@ public class GUI implements ComponentListener {
 		fileNewMenu.add(sep);
 		
 		fileNewMenu.add(addMenuItem("Open Manifest...", "openmanifest", mListener));
+		fileNewMenu.add(addMenuItem("Save Manifest...", "savemanifestas", mListener));
 		
 		if (withIRods) {
 			fileNewMenu.add(addMenuItem("Open Manifest from iRods ...", "openmanifestirods", mListener));
@@ -1049,6 +1081,7 @@ public class GUI implements ComponentListener {
 		    sliceMenu.add(addMenuItem("Delete", "delete", rbl));
 		    sliceMenu.add(addMenuItem("Clear Changes", "clear", rbl));
 		    sliceMenu.add(addMenuItem("View as List", "view", rbl));
+		    sliceMenu.add(addMenuItem("Return to request", "resetrequset", rbl));
 		    
 		    splitSliceButton.setMenu(sliceMenu);
 			toolBar.add(splitSliceButton);
