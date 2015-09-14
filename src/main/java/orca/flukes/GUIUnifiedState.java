@@ -26,6 +26,7 @@ import javax.swing.Icon;
 import orca.flukes.GUI.GuiTabs;
 import orca.flukes.GUI.PrefsEnum;
 import orca.flukes.OrcaNode.OrcaNodeIconTransformer;
+import orca.flukes.OrcaResource.ResourceType;
 import orca.flukes.irods.IRodsException;
 import orca.flukes.irods.IRodsICommands;
 import orca.flukes.ndl.ManifestLoader;
@@ -566,6 +567,10 @@ public class GUIUnifiedState extends GUICommonState implements IDeleteEdgeCallBa
 		IP4Assign ipa = new IP4Assign(mpMask);
 
 		for(OrcaLink ol: g.getEdges()) {
+			
+			if (ol.getResourceType() != ResourceType.REQUEST)
+				continue;
+			
 			if (ol.linkToSharedStorage())
 				continue;
 			// if one end is a switch, ignore it for now
@@ -802,7 +807,7 @@ public class GUIUnifiedState extends GUICommonState implements IDeleteEdgeCallBa
 					ndl = ModifySaver.getInstance().convertModifyGraphToNdl(g, deleted, modifiedGroups);
 					System.out.println("Modify Request: \n" + ndl);
 					try {
-						String status = "NOOP"; //OrcaSMXMLRPCProxy.getInstance().modifySlice(sliceUrn, ndl);
+						String status = OrcaSMXMLRPCProxy.getInstance().modifySlice(sliceUrn, ndl);
 						TextAreaDialog tad = new TextAreaDialog(GUI.getInstance().getFrame(), "ORCA Response", 
 								"ORCA Controller response", 
 								25, 50);
