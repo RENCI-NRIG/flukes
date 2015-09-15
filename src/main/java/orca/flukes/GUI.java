@@ -69,6 +69,7 @@ import javax.swing.JToolBar;
 import javax.swing.SwingConstants;
 import javax.swing.filechooser.FileFilter;
 
+import orca.flukes.GUIUnifiedState.GUIState;
 import orca.flukes.ndl.ManifestLoader;
 import orca.flukes.ndl.RequestLoader;
 import orca.flukes.ndl.RequestSaver;
@@ -80,7 +81,6 @@ import orca.flukes.ui.TextAreaDialog;
 import orca.flukes.ui.TextHTMLPaneDialog;
 import orca.flukes.xmlrpc.OrcaSMXMLRPCProxy;
 import orca.ndl.NdlCommons;
-import orca.util.Base64;
 import orca.util.CompressEncode;
 
 import org.apache.log4j.ConsoleAppender;
@@ -350,6 +350,44 @@ public class GUI implements ComponentListener {
 						} 
 					}
 				}
+			} else if (e.getActionCommand().equals("savemodifyas")) {
+				if (GUIUnifiedState.getInstance().getGUIState() != GUIState.MANIFESTWITHMODIFY) {
+					KMessageDialog md = new KMessageDialog(GUI.getInstance().getFrame(), "No modifications.", true);
+					md.setMessage("There are no modifications to save!");
+					md.setLocationRelativeTo(GUI.getInstance().getFrame());
+					md.setVisible(true);
+				} else {
+					String modifyNdl = GUIUnifiedState.getInstance().generateModifyNdl();
+					if (modifyNdl == null) {
+						KMessageDialog md = new KMessageDialog(GUI.getInstance().getFrame(), "No modifications.", true);
+						md.setMessage("There are no modifications to save!");
+						md.setLocationRelativeTo(GUI.getInstance().getFrame());
+						md.setVisible(true);
+					} else {
+						KFileChooserDialog d = new KFileChooserDialog(getFrame(), "Save Modify Request in NDL", KFileChooser.SAVE_DIALOG);
+						d.setLocationRelativeTo(getFrame());
+						d.getFileChooser().setAcceptAllFileFilterUsed(true);
+						d.getFileChooser().addChoosableFileFilter(new NdlFileFilter());
+						if (GUIUnifiedState.getInstance().getSaveDir() != null)
+							d.setCurrentDirectory(new File(GUIUnifiedState.getInstance().getSaveDir()));
+						d.pack();
+						d.setVisible(true);
+						if (d.getSelectedFile() != null) {
+							try{
+								FileOutputStream fsw = new FileOutputStream(d.getSelectedFile());
+								OutputStreamWriter out = new OutputStreamWriter(fsw, "UTF-8");
+								out.write(modifyNdl);
+								out.close();
+							} catch(FileNotFoundException ee) {
+								;
+							} catch(UnsupportedEncodingException ex) {
+								;
+							} catch(IOException ey) {
+								;
+							} 
+						}
+					}
+				}
 			}
 			else if (e.getActionCommand().equals("help"))
 				helpDialog();
@@ -466,8 +504,8 @@ public class GUI implements ComponentListener {
 							new URI("mailto:geni-orca-users@googlegroups.com?subject=Problem%20with%20slice%20" + 
 									sName + 
 									"&body=Slice:%20" + sName + "%0D" + "Controller:%20" + controller + "%0D%0D" +   
-									"Describe%20the%20problem%20here.%20Attach%20the%20request%20file%20if%20needed.%0D%0DCompressed%20Manifest:%0D" + 
-									(compressedManifest == null ? "Not available" : compressedManifest)));
+									"Describe%20the%20problem%20here.%20Attach%20the%20request%20file%20if%20needed.%0D%0DCompressed%20Manifest%20(Decompres%20here%20http%3A%2F%2Fgeni.renci.org%3A15080%2Fndl-conversion%2Fcm-convert.jsp):%0D" + 
+									(compressedManifest == null ? "Not%20available" : compressedManifest)));
 
 				} catch (Exception ioe) {
 					KMessageDialog md = new KMessageDialog(GUI.getInstance().getFrame(), "Error opening email client.", true);
@@ -742,10 +780,18 @@ public class GUI implements ComponentListener {
 		fileNewMenu.add(addMenuItem("Save Request", "save", mListener));
 		fileNewMenu.add(addMenuItem("Save Request As...", "saveas", mListener));
 		
-		if (withIRods) 
-			fileNewMenu.add(addMenuItem("Save Request into iRods ...", "saveirods", mListener));
-		
 		JSeparator sep = new JSeparator();
+		fileNewMenu.add(sep);
+		
+		fileNewMenu.add(addMenuItem("Save Modify Request as...", "savemodifyas", mListener));
+		
+		if (withIRods) {
+			sep = new JSeparator();
+			fileNewMenu.add(sep);
+			fileNewMenu.add(addMenuItem("Save Request into iRods ...", "saveirods", mListener));
+		}
+		
+		sep = new JSeparator();
 		fileNewMenu.add(sep);
 		
 		fileNewMenu.add(addMenuItem("Open Manifest...", "openmanifest", mListener));

@@ -119,7 +119,7 @@ public class OrcaSMXMLRPCProxy extends OrcaXMLRPCBase {
 		}
 
 		if (rr == null)
-                        throw new Exception("Unable to contact SM " + GUI.getInstance().getSelectedController());
+			throw new Exception("Unable to contact SM " + GUI.getInstance().getSelectedController());
 
 		if ((Boolean)rr.get(ERR_RET_FIELD))
 			throw new Exception("Unable to create slice: " + (String)rr.get(MSG_RET_FIELD));

@@ -805,7 +805,6 @@ public class GUIUnifiedState extends GUICommonState implements IDeleteEdgeCallBa
 					}
 				} else if (guiState == GUIState.MANIFESTWITHMODIFY) {
 					ndl = ModifySaver.getInstance().convertModifyGraphToNdl(g, deleted, modifiedGroups);
-					System.out.println("Modify Request: \n" + ndl);
 					try {
 						String status = OrcaSMXMLRPCProxy.getInstance().modifySlice(sliceUrn, ndl);
 						TextAreaDialog tad = new TextAreaDialog(GUI.getInstance().getFrame(), "ORCA Response", 
@@ -1182,6 +1181,13 @@ public class GUIUnifiedState extends GUICommonState implements IDeleteEdgeCallBa
 			modifiedGroups.put(url, gmr);
 		}
 		gmr.addRemoveNode(nUrl);
+	}
+	
+	public String generateModifyNdl() {
+		if (guiState == GUIState.MANIFESTWITHMODIFY) {
+			return ModifySaver.getInstance().convertModifyGraphToNdl(g, deleted, modifiedGroups);
+		}
+		return null;
 	}
 
 }
