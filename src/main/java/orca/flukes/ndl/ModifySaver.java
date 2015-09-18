@@ -13,6 +13,7 @@ import orca.flukes.OrcaLink;
 import orca.flukes.OrcaNode;
 import orca.flukes.OrcaResource;
 import orca.flukes.OrcaResource.ResourceType;
+import orca.ndl.NdlCommons;
 import orca.ndl.NdlGenerator;
 
 import com.hp.hpl.jena.ontology.Individual;
@@ -84,10 +85,10 @@ public class ModifySaver extends RequestSaver {
 				for(OrcaResource orr: deleted) {
 					if (orr.getUrl() != null) {
 						if ((orr instanceof OrcaLink) || (orr instanceof OrcaCrossconnect)) {
-							ngen.declareModifyElementRemoveLink(reservation, orr.getUrl());
+							ngen.declareModifyElementRemoveLink(reservation, orr.getUrl(), orr.getRequestGuid());
 							// NOTE: no need to determine if node modifies (to remove interfaces) need to be triggered 
 						} else
-							ngen.declareModifyElementRemoveNode(reservation, orr.getUrl());
+							ngen.declareModifyElementRemoveNode(reservation, orr.getUrl(), orr.getRequestGuid());
 					} else
 						throw new Exception("Deleted resource " + orr + " is missing a model URL");
 				}

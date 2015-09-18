@@ -400,9 +400,16 @@ public class GUIUnifiedState extends GUICommonState implements IDeleteEdgeCallBa
 		case MANIFEST:
 			if (n.getGroup() != null)
 				removeNodeFromGroup(n.getGroup(), n.getUrl());
-			else
+			else {
 				deleted.add(n);
+				// also remove incident point-to-point links
+				for(OrcaLink rl: g.getIncidentEdges(n)) {
+					if (rl.isResource())
+						deleted.add(rl);
+				}
+			}
 			g.removeVertex(n);
+			setGUIState(GUIState.MANIFESTWITHMODIFY);
 			break;
 		default:	
 		}
@@ -423,6 +430,7 @@ public class GUIUnifiedState extends GUICommonState implements IDeleteEdgeCallBa
 		case MANIFEST:
 			deleted.add(e);
 			g.removeEdge(e);
+			setGUIState(GUIState.MANIFESTWITHMODIFY);
 			break;
 		default:
 		}
@@ -1033,6 +1041,21 @@ public class GUIUnifiedState extends GUICommonState implements IDeleteEdgeCallBa
 					// save unmodified manifest
 					saveUnmodifiedManifest();
 					setGUIState(GUIState.MANIFEST);
+					
+					// find all resources and query their state directly
+					List<String> resList = new ArrayList<>();
+					for(OrcaNode onn: g.getVertices()) {
+						if (onn.isResource()) {
+							resList.add(onn.getReservationGuid());
+						}
+					}
+					for(OrcaLink oll: g.getEdges()) {
+						if (oll.isResource()) {
+							resList.add(oll.getReservationGuid());
+						}
+					}
+					Map<String, String> states = OrcaSMXMLRPCProxy.getInstance().getReservationStates(getSliceName(), resList);
+					System.out.println("THERE ARE THE STATES" + states);
 				}
 			} else {
 				KMessageDialog kmd = new KMessageDialog(GUI.getInstance().getFrame());
