@@ -51,6 +51,7 @@ public class OrcaXMLRPCBase {
 	private static MultiKeyManager mkm = null;
 	private static ContextualSSLProtocolSocketFactory regSslFact = null;
 	boolean sslIdentitySet = false;
+	String keyAlias = null;
 	// alternative names set on the cert that is in use. Only valid when identity is set
 	Collection<List<?>> altNames = null;
 
@@ -108,7 +109,6 @@ public class OrcaXMLRPCBase {
 			File certFilePath = loadUserFile(GUI.getInstance().getPreference(GUI.PrefsEnum.USER_CERTFILE));
 			File certKeyFilePath = loadUserFile(GUI.getInstance().getPreference(GUI.PrefsEnum.USER_CERTKEYFILE));
 
-			String keyAlias = null;
 			String keyPassword = keyPass;
 			if (keyStorePath.exists()) {
 				// load keystore and get the right cert from it
@@ -194,6 +194,17 @@ public class OrcaXMLRPCBase {
 		}
 	}
 
+	public String getCurrentAlias() {
+		return keyAlias;
+	}
+	
+	/**
+	 * In the current thread make sure to set the key alias for multi-key manager
+	 */
+	public void setThreadCurrentAlias() {
+		mkm.setCurrentGuid(keyAlias);
+	}
+	
 	private File loadUserFile(String pathStr) {
 		File f;
 

@@ -1123,6 +1123,7 @@ public class GUI implements ComponentListener {
 		    JPopupMenu sliceMenu = new JPopupMenu("Slice menu");
 		    sliceMenu.add(addMenuItem("Submit Changes", "submit", rbl));
 		    sliceMenu.add(addMenuItem("Query Manfiest", "manifest", rbl));
+		    sliceMenu.add(addMenuItem("Poll Manifest", "manifestpoll", rbl));
 		    sliceMenu.add(addMenuItem("Extend", "extend", rbl));
 		    sliceMenu.add(addMenuItem("Delete", "delete", rbl));
 		    sliceMenu.add(addMenuItem("Clear Changes", "clear", rbl));
@@ -1258,6 +1259,7 @@ public class GUI implements ComponentListener {
 			"KEY or PEM file containing your private key issued by GPO, Emulab or BEN"),
 		ORCA_XMLRPC_CONTROLLER("orca.xmlrpc.url", "https://some.hostname.org:11443/orca/xmlrpc", 
 			"Comma-separated list of URLs of the ORCA XMLRPC controllers where you can submit slice requests"),
+		QUERY_POLL_INTERVAL("orca.poll.interval", "3", "Manifest poll interval in seconds"),
 		ENABLE_IRODS("enable.irods", "false", "Enable experimental support for iRods (at your own risk!)"),
 		AUTOIP_MASK("autoip.mask", "25", "Length of netmask (in bits) to use when assigning IP addresses to groups and broadcast links (simple point-to-point links always use 30 bit masks)"),
 		ENABLE_GENISA("enable.genisa", "false", "Enable support for GENI Slice Authority"),
@@ -1342,7 +1344,6 @@ public class GUI implements ComponentListener {
 		
 		return pd;
 	}
-	
 	
 	public String getSelectedController() {
 		return selectedControllerUrl;

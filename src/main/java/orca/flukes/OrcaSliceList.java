@@ -47,6 +47,7 @@ public class OrcaSliceList extends ComponentDialog {
 				if (e.getActionCommand().equals("delete")) {
 					GUIUnifiedState.getInstance().deleteSlice((String)sliceList.getSelectedValue());
 					me.setVisible(false);
+					//sliceList.remove(sliceList.getSelectedIndex());
 				}
 			}
 		});

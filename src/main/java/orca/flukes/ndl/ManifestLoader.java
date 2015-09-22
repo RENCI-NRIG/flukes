@@ -79,7 +79,7 @@ import edu.uci.ics.jung.graph.util.Pair;
  */
 public class ManifestLoader implements INdlManifestModelListener, INdlRequestModelListener , INdlColorRequestListener {
 
-	private static final String NOTICE_GUID_PATTERN = "^Reservation\\s+([a-zA-Z0-9-]+)\\s+.+$";
+	private static final String NOTICE_GUID_PATTERN = "^Reservation\\s+([a-zA-Z0-9-]+)\\s+.*(\\s+.*)*$";
 	private Map<String, List<OrcaNode>> interfaceToNode = new HashMap<String, List<OrcaNode>>();
 	private Map<String, OrcaNode> nodes = new HashMap<String, OrcaNode>();
 	private Map<String, OrcaLink> links = new HashMap<String, OrcaLink>();
@@ -132,6 +132,7 @@ public class ManifestLoader implements INdlManifestModelListener, INdlRequestMod
 			
 			bin.close();
 
+			GUIUnifiedState.getInstance().clearGuidMap();
 			// parse as request
 			NdlRequestParser nrp = new NdlRequestParser(sb.toString(), this);
 			// something wrong with request model that is part of manifest
@@ -166,6 +167,7 @@ public class ManifestLoader implements INdlManifestModelListener, INdlRequestMod
 	public boolean loadString(String s) {
 		
 		try {
+			GUIUnifiedState.getInstance().clearGuidMap();
 			// parse as request
 			NdlRequestParser nrp = new NdlRequestParser(s, this);
 			// something wrong with request model that is part of manifest
@@ -280,6 +282,7 @@ public class ManifestLoader implements INdlManifestModelListener, INdlRequestMod
 			// reservation notice
 			ol.setReservationNotice(NdlCommons.getResourceReservationNotice(l));
 			ol.setReservationGuid(getGuidFromNotice(ol.getReservationNotice()));
+			GUIUnifiedState.getInstance().mapGuidToResource(ol.getReservationGuid(), ol);
 			links.put(getTrueName(l), ol); 
 
 			// guid
@@ -351,6 +354,7 @@ public class ManifestLoader implements INdlManifestModelListener, INdlRequestMod
 			ml.setUrl(l.getURI());
 			ml.setReservationNotice(NdlCommons.getResourceReservationNotice(l));
 			ml.setReservationGuid(getGuidFromNotice(ml.getReservationNotice()));
+			GUIUnifiedState.getInstance().mapGuidToResource(ml.getReservationGuid(), ml);
 			ml.setState(NdlCommons.getResourceStateAsString(l));
 			ml.setDomain(RequestSaver.reverseLookupDomain(NdlCommons.getDomain(l)));
 
@@ -737,6 +741,7 @@ public class ManifestLoader implements INdlManifestModelListener, INdlRequestMod
 		// reservation notice
 		on.setReservationNotice(NdlCommons.getResourceReservationNotice(nr));
 		on.setReservationGuid(getGuidFromNotice(on.getReservationNotice()));
+		GUIUnifiedState.getInstance().mapGuidToResource(on.getReservationGuid(), on);
 		
 		// guid
 		setRequestGuid(nr, on);
@@ -1022,6 +1027,9 @@ public class ManifestLoader implements INdlManifestModelListener, INdlRequestMod
 	
 	public static void main(String[] argv) {
 		String msg = "Reservation e9a9602d-096c-45dc-a5ad-3794d1b334da (Slice test-slice) is in state [Active,None]\n";
+		System.out.println(getGuidFromNotice(msg));
+		msg = "Reservation 9d194ec5-a849-49a5-88c6-789bca669e9a (Slice test-4) is in state [Failed,None]\n\n" +
+				"Last ticket update:\n java.lang.RuntimeException: Insufficient <memoryCapacity,0> to meet request:6000";
 		System.out.println(getGuidFromNotice(msg));
 	}
 }

@@ -45,6 +45,8 @@ import com.hyperrealm.kiwi.ui.KTextArea;
 import com.hyperrealm.kiwi.ui.dialog.ExceptionDialog;
 import com.hyperrealm.kiwi.ui.dialog.KMessageDialog;
 import com.hyperrealm.kiwi.ui.dialog.KQuestionDialog;
+import com.hyperrealm.kiwi.ui.dialog.ProgressDialog;
+import com.hyperrealm.kiwi.util.Task;
 
 import edu.uci.ics.jung.algorithms.layout.FRLayout;
 import edu.uci.ics.jung.algorithms.layout.Layout;
@@ -66,6 +68,10 @@ import edu.uci.ics.jung.visualization.transform.shape.GraphicsDecorator;
  *
  */
 public class GUIUnifiedState extends GUICommonState implements IDeleteEdgeCallBack<OrcaLink>, IDeleteNodeCallBack<OrcaNode> {
+	private static final String STATE_FAILED = "failed";
+	private static final String STATE_ACTIVE = "active";
+	private static final String STATE_TICKETED = "ticketed";
+	private static final String RESERVATION_STATE = "reservation.state";
 	public static final String NODE_TYPE_SITE_DEFAULT = "Site default";
 	public static final String NO_NODE_DEPS="No dependencies";
 
@@ -105,6 +111,9 @@ public class GUIUnifiedState extends GUICommonState implements IDeleteEdgeCallBa
 
 	// copy of original request graph
 	protected SparseMultigraph<OrcaNode, OrcaLink> gRequest = null;
+
+	// map from reservations to nodes
+	protected Map<String, OrcaResource> guidsToResources = new HashMap<>();
 	
 	// collect information about modified groups in a bean
 	public static class GroupModifyRecord {
@@ -183,6 +192,15 @@ public class GUIUnifiedState extends GUICommonState implements IDeleteEdgeCallBa
 		modifiedGroups.clear();
 		resetManifest();
 
+	}
+	
+	public void clearGuidMap() {
+		guidsToResources.clear();
+	}
+	
+	// add a mapping
+	public void mapGuidToResource(String guid, OrcaResource or) {
+		guidsToResources.put(guid, or);
 	}
 
 	//
@@ -672,6 +690,45 @@ public class GUIUnifiedState extends GUICommonState implements IDeleteEdgeCallBa
 	}
 
 	/**
+	 * Poll the controller for manifest reservation states until all become non-ticketed
+	 * @param o
+	 * @throws Exception
+	 */
+	public static void processManifestPoll(ProgressDialog o) throws Exception {
+
+		o.setProgress(0);
+		boolean flag = false;
+		// set thread SSL identity
+		OrcaSMXMLRPCProxy.getInstance().setThreadCurrentAlias();
+		while(!flag) {
+			Map<String, Map<String, String>> states = GUIUnifiedState.getInstance().queryManifestStates();
+			flag = true;
+			int ticketed = 0, failed = 0, active = 0; 
+			for(Map.Entry<String, Map<String, String>> me: states.entrySet()) {
+				String state = me.getValue().get(RESERVATION_STATE);
+				if (state.equalsIgnoreCase(STATE_TICKETED)) {
+					flag = false;
+					ticketed++;
+				}
+				if (state.equalsIgnoreCase(STATE_ACTIVE)) {
+					active++;
+				}
+				if (state.equalsIgnoreCase(STATE_FAILED)) {
+					failed++;
+				}
+			}
+			float total = (float)states.entrySet().size();
+			o.setMessage("Ticketed: " + ticketed + "/ Active: " + active + "/ Failed: " + failed);
+			o.setProgress((int)((total-ticketed)/total*100.0));
+			o.pack();
+			Thread.sleep(Integer.parseInt(GUI.getInstance().getPreference(PrefsEnum.QUERY_POLL_INTERVAL))*1000);
+		}
+		o.setProgress(100);
+		GUI.getInstance().kickLayout(GuiTabs.UNIFIED_VIEW);
+		//GUIUnifiedState.getInstance().queryManifest();
+	}
+	
+	/**
 	 * Button listener for the unified pane
 	 * @author ibaldin
 	 *
@@ -681,9 +738,38 @@ public class GUIUnifiedState extends GUICommonState implements IDeleteEdgeCallBa
 			GUI.getInstance().hideMenus();
 			if (e.getActionCommand().equals("manifest")) {
 				queryManifest();
-			} else if (e.getActionCommand().equals("clear")) {
+			} else if (e.getActionCommand().equals("manifestpoll")) {
+				boolean querySuccess = true;
+				if (guiState != GUIState.MANIFEST)
+					querySuccess = queryManifest();
+				if (querySuccess) {
+					final ProgressDialog pd = GUI.getProgressDialog("Polling for reservation states");
+					try {
+						pd.track(new Task (){
+							@Override
+							public void run() {
+								try {
+									processManifestPoll(pd);
+								} catch (Exception e) {
+									pd.destroy();
+									ExceptionDialog ed = new ExceptionDialog(GUI.getInstance().getFrame(), "Exception");
+									ed.setLocationRelativeTo(GUI.getInstance().getFrame());
+									ed.setException("Exception encountered while polling reservation states: ", e);
+									ed.setVisible(true);
+								}
+							}
+						});
+
+					} catch (Exception ex) {
+						pd.destroy();	
+						ExceptionDialog ed = new ExceptionDialog(GUI.getInstance().getFrame(), "Exception");
+						ed.setLocationRelativeTo(GUI.getInstance().getFrame());
+						ed.setException("Exception encountered while polling reservation states: ", ex);
+						ed.setVisible(true);
+					}
+				}
+			}  else if (e.getActionCommand().equals("clear")) {
 				// distinguish modify clear and all clear
-				System.out.println("In state " + guiState);
 				switch(guiState) {
 				case REQUEST:
 					clear();
@@ -1013,7 +1099,48 @@ public class GUIUnifiedState extends GUICommonState implements IDeleteEdgeCallBa
 			return null;
 	}
 
-	void queryManifest() {
+	/**
+	 * Find out the states of reservations in previously retrieved manifest
+	 * @return
+	 * @throws Exception
+	 */
+	synchronized Map<String, Map<String, String>> queryManifestStates() throws Exception {
+		
+		// find all resources and query their state directly
+		List<String> resList = new ArrayList<>();
+		
+		if (g == null)
+			return null;
+		
+		for(OrcaNode onn: g.getVertices()) {
+			if (onn.isResource() && (onn.getReservationGuid() != null)) {
+				resList.add(onn.getReservationGuid());
+			}
+		}
+		for(OrcaLink oll: g.getEdges()) {
+			if (oll.isResource() && (oll.getReservationGuid() != null)) {
+				resList.add(oll.getReservationGuid());
+			}
+		}
+		
+		Map<String, Map<String, String>> ret = OrcaSMXMLRPCProxy.getInstance().getReservationStates(getSliceName(), resList);
+		
+		for(Map.Entry<String, Map<String, String>> me: ret.entrySet()) {
+			OrcaResource or = guidsToResources.get(me.getKey());
+			
+			if (or == null)
+				continue;
+			
+			or.setState(me.getValue().get(RESERVATION_STATE));
+		}
+		
+		return ret;
+	}
+	
+	/**
+	 * Fill in manifest graph
+	 */
+	synchronized boolean queryManifest() {
 		// run request manifest from controller
 		if ((sliceIdField.getText() == null) || 
 				(sliceIdField.getText().length() == 0)) {
@@ -1021,7 +1148,7 @@ public class GUIUnifiedState extends GUICommonState implements IDeleteEdgeCallBa
 			kmd.setMessage("You must specify a slice id");
 			kmd.setLocationRelativeTo(GUI.getInstance().getFrame());
 			kmd.setVisible(true);
-			return;
+			return false;
 		}
 
 		try {
@@ -1041,35 +1168,22 @@ public class GUIUnifiedState extends GUICommonState implements IDeleteEdgeCallBa
 					// save unmodified manifest
 					saveUnmodifiedManifest();
 					setGUIState(GUIState.MANIFEST);
-					
-					// find all resources and query their state directly
-					List<String> resList = new ArrayList<>();
-					for(OrcaNode onn: g.getVertices()) {
-						if (onn.isResource()) {
-							resList.add(onn.getReservationGuid());
-						}
-					}
-					for(OrcaLink oll: g.getEdges()) {
-						if (oll.isResource()) {
-							resList.add(oll.getReservationGuid());
-						}
-					}
-					Map<String, String> states = OrcaSMXMLRPCProxy.getInstance().getReservationStates(getSliceName(), resList);
-					System.out.println("THERE ARE THE STATES" + states);
 				}
 			} else {
 				KMessageDialog kmd = new KMessageDialog(GUI.getInstance().getFrame());
 				kmd.setMessage("Error has occurred, check raw controller response for details.");
 				kmd.setLocationRelativeTo(GUI.getInstance().getFrame());
 				kmd.setVisible(true);
-				return;
+				return false;
 			}
 		} catch (Exception ex) {
 			ExceptionDialog ed = new ExceptionDialog(GUI.getInstance().getFrame(), "Exception");
 			ed.setLocationRelativeTo(GUI.getInstance().getFrame());
 			ed.setException("Exception encountered while querying ORCA for slice manifest: ", ex);
 			ed.setVisible(true);
+			return false;
 		} 
+		return true;
 	}
 
 	public void launchResourceStateViewer(Date start, Date end) {

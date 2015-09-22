@@ -9,7 +9,6 @@ import java.io.PrintWriter;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
@@ -364,7 +363,7 @@ public class OrcaSMXMLRPCProxy extends OrcaXMLRPCBase {
 	}
 
 	@SuppressWarnings("unchecked")
-	public Map<String, String> getReservationStates(String sliceId, List<String> reservationIds)  throws Exception {
+	public Map<String, Map<String, String>> getReservationStates(String sliceId, List<String> reservationIds)  throws Exception {
 		assert((sliceId != null) && (reservationIds != null));
 
 		setSSLIdentity(null, GUI.getInstance().getSelectedController());
@@ -375,7 +374,6 @@ public class OrcaSMXMLRPCProxy extends OrcaXMLRPCBase {
 			config.setServerURL(new URL(GUI.getInstance().getSelectedController()));
 			XmlRpcClient client = new XmlRpcClient();
 			client.setConfig(config);
-
 			// set this transport factory for host-specific SSLContexts to work
 			XmlRpcCommonsTransportFactory f = new XmlRpcCommonsTransportFactory(client);
 			client.setTransportFactory(f);
@@ -397,7 +395,7 @@ public class OrcaSMXMLRPCProxy extends OrcaXMLRPCBase {
 		if ((Boolean)rr.get(ERR_RET_FIELD))
 			throw new Exception("Unable to get reservation states: " + rr.get(MSG_RET_FIELD));
 
-		return (Map<String, String>) rr.get(RET_RET_FIELD);
+		return (Map<String, Map<String, String>>) rr.get(RET_RET_FIELD);
 	}
 	
 	@SuppressWarnings("unchecked")
