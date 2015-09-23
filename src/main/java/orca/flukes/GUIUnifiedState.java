@@ -115,6 +115,9 @@ public class GUIUnifiedState extends GUICommonState implements IDeleteEdgeCallBa
 	// map from reservations to nodes
 	protected Map<String, OrcaResource> guidsToResources = new HashMap<>();
 	
+	// help stop progress threads
+	private static boolean stopProgress = true;
+	
 	// collect information about modified groups in a bean
 	public static class GroupModifyRecord {
 		private Integer countChange;
@@ -700,7 +703,7 @@ public class GUIUnifiedState extends GUICommonState implements IDeleteEdgeCallBa
 		boolean flag = false;
 		// set thread SSL identity
 		OrcaSMXMLRPCProxy.getInstance().setThreadCurrentAlias();
-		while(!flag) {
+		while(!flag && !stopProgress) {
 			Map<String, Map<String, String>> states = GUIUnifiedState.getInstance().queryManifestStates();
 			flag = true;
 			int ticketed = 0, failed = 0, active = 0; 
@@ -723,8 +726,11 @@ public class GUIUnifiedState extends GUICommonState implements IDeleteEdgeCallBa
 			o.pack();
 			Thread.sleep(Integer.parseInt(GUI.getInstance().getPreference(PrefsEnum.QUERY_POLL_INTERVAL))*1000);
 		}
-		o.setProgress(100);
-		GUI.getInstance().kickLayout(GuiTabs.UNIFIED_VIEW);
+		if (!stopProgress) {
+			o.setProgress(100);
+			GUI.getInstance().kickLayout(GuiTabs.UNIFIED_VIEW);
+		}
+		stopProgress = true;
 		//GUIUnifiedState.getInstance().queryManifest();
 	}
 	
@@ -736,6 +742,7 @@ public class GUIUnifiedState extends GUICommonState implements IDeleteEdgeCallBa
 	public class UnifiedButtonListener implements ActionListener {
 		public void actionPerformed(ActionEvent e) {
 			GUI.getInstance().hideMenus();
+			stopProgress = true;
 			if (e.getActionCommand().equals("manifest")) {
 				queryManifest();
 			} else if (e.getActionCommand().equals("manifestpoll")) {
@@ -744,6 +751,7 @@ public class GUIUnifiedState extends GUICommonState implements IDeleteEdgeCallBa
 					querySuccess = queryManifest();
 				if (querySuccess) {
 					final ProgressDialog pd = GUI.getProgressDialog("Polling for reservation states");
+					stopProgress = false;
 					try {
 						pd.track(new Task (){
 							@Override
