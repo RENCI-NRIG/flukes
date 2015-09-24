@@ -43,6 +43,8 @@ import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Constructor;
 import java.net.URI;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -80,6 +82,7 @@ import orca.flukes.ui.SplitButton;
 import orca.flukes.ui.TextAreaDialog;
 import orca.flukes.ui.TextHTMLPaneDialog;
 import orca.flukes.xmlrpc.OrcaSMXMLRPCProxy;
+import orca.flukes.xmlrpc.RegistryXMLRPCProxy;
 import orca.ndl.NdlCommons;
 import orca.util.CompressEncode;
 
@@ -130,10 +133,28 @@ public class GUI implements ComponentListener {
 	private JMenu mnNewMenu, controllerMenu, layoutMenu, xoMenu;
 	private JSeparator separator_1, separator_2;
 	private Logger logger;
-	private String[] controllerUrls;
 	private String selectedControllerUrl;
 	private SplitButton splitNodeButton, splitLinkButton, splitConfigButton, splitSliceButton;
 	private String[] twitterRedWords = { "maintenance", "stop", "emergency", "interruption", "problem", "down", "disabled", "unreachable", "offline", "unavailable", "cut off" };
+	
+	public static class OrcaController implements Comparable<OrcaController> {
+		String name, url, description;
+		boolean enabled;
+		
+		public OrcaController(String name, String url, String description, boolean enabled) {
+			this.name = name;
+			this.url = url;
+			this.description = description;
+			this.enabled = enabled;
+		}
+
+		@Override
+		public int compareTo(OrcaController o) {
+			return name.compareTo(o.name);
+		}
+	}
+	
+	private List<OrcaController> definedControllers = new ArrayList<OrcaController>();
 	
 	private ChooserWithNewDialog<String> icd = null;
 	
@@ -412,7 +433,7 @@ public class GUI implements ComponentListener {
 			} else if (e.getActionCommand().startsWith("url")) {
 				// controller url selection
 				int urlIndex = Integer.parseInt(e.getActionCommand().substring(3, e.getActionCommand().length()));
-				selectedControllerUrl = controllerUrls[urlIndex];
+				selectedControllerUrl = definedControllers.get(urlIndex).url;
 				OrcaSMXMLRPCProxy.getInstance().resetSSLIdentity();
 				keyAlias = null;
 				keyPassword = null;
@@ -612,6 +633,7 @@ public class GUI implements ComponentListener {
 					GUIImageList.getInstance().collectAllKnownImages();
 
 					gui.getControllersFromPreferences();
+					gui.addControllersFromRegistry();
 					gui.getIRodsPreferences();
 					gui.getCustomInstancePreferences();
 					
@@ -817,13 +839,13 @@ public class GUI implements ComponentListener {
 		
 		// loop through controllers
 		int i = 0;
-		for (String url: controllerUrls) {
-			mi = new JRadioButtonMenuItem(url);
+		for (OrcaController ctrl: definedControllers) {
+			mi = new JRadioButtonMenuItem(ctrl.name);
 			mi.setActionCommand("url" + i++);
 			mi.addActionListener(mListener);
 			if (i == 1) {
 				mi.setSelected(true);
-				selectedControllerUrl = url;
+				selectedControllerUrl = ctrl.url;
 			}
 			controllerMenu.add(mi);
 			cbg.add(mi);
@@ -1325,10 +1347,47 @@ public class GUI implements ComponentListener {
 	
 	void getControllersFromPreferences() {
 		
-		controllerUrls = getPreference(PrefsEnum.ORCA_XMLRPC_CONTROLLER).split(",");
-		for (int index = 0; index < controllerUrls.length; index++) {
-			controllerUrls[index] = controllerUrls[index].trim();
+		String[] prefControllers = getPreference(PrefsEnum.ORCA_XMLRPC_CONTROLLER).split(",");
+		for (int index = 0; index < prefControllers.length; index++) {
+			definedControllers.add(new OrcaController(prefControllers[index].trim(), prefControllers[index].trim(), "", true));
 		}
+	}
+	
+	void addControllersFromRegistry() {
+		// compare URLs, fill in details on existing ones and merge the list
+		
+		List<Map<String, String>> registryControllers = null;
+		try {
+			registryControllers = RegistryXMLRPCProxy.getInstance().getControllers();
+		} catch (Exception e) {
+			KMessageDialog md = new KMessageDialog(GUI.getInstance().getFrame(), "Unable to fetch controllers from registry.", true);
+			md.setMessage("Unable to fetch controllers from registry  " + PrefsEnum.ORCA_REGISTRY + ". This is not a fatal error, will use controllers defined in properties file.");
+			md.setLocationRelativeTo(GUI.getInstance().getFrame());
+			md.setVisible(true);
+			return;
+		}
+		
+		OrcaController exo = null;
+		for(Map<String, String> rce: registryControllers) {
+			boolean repeat = false;
+			for(OrcaController oc: definedControllers) {
+				if (oc.url.equalsIgnoreCase(rce.get("CtrlURL"))) {
+					repeat = true;
+					oc.name = rce.get("CtrlName");
+					oc.enabled = Boolean.parseBoolean(rce.get("CtrlEnabled"));
+				}
+				if (oc.url.startsWith("https://geni.renci.org")) 
+					exo = oc;
+			}
+			if (!repeat && Boolean.parseBoolean(rce.get("CtrlEnabled"))) {
+				definedControllers.add(new OrcaController(rce.get("CtrlName"), rce.get("CtrlURL"), rce.get("CtrlDescription"), Boolean.parseBoolean(rce.get("CtrlEnabled"))));
+			}
+		}
+		
+		// sort the list without Exo
+		definedControllers.remove(exo);
+		Collections.sort(definedControllers);
+		definedControllers.add(0, exo);
 	}
 	
 	/**

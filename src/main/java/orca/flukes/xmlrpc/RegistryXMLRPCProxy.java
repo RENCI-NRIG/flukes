@@ -39,6 +39,7 @@ import com.hyperrealm.kiwi.ui.dialog.ExceptionDialog;
 public class RegistryXMLRPCProxy {
 	private static final String GET_AMS = "registryService.getAMs";
 	private static final String GET_IMAGES = "registryService.getAllImages";
+	private static final String GET_CONTROLLERS = "registryService.getAllControllers";
 	private static final String GET_DEFAULT_IMAGE = "registryService.getDefaultImage";
 	
 	// fields returned by the registry for actors
@@ -215,6 +216,32 @@ public class RegistryXMLRPCProxy {
 		
 			// get verbose list of the AMs
 			Object[] rret = (Object[])client.execute(GET_IMAGES, new Object[]{});
+			ret = new ArrayList<Map<String, String>>();
+			for (Object n: rret) {
+				if (n instanceof HashMap<?, ?>) {
+					ret.add((HashMap<String, String>)n);
+				}
+			}
+		} catch (MalformedURLException e) {
+			throw new Exception("Please check the registry URL " + GUI.getInstance().getPreference(GUI.PrefsEnum.ORCA_REGISTRY));
+		} catch (XmlRpcException e) {
+			throw new Exception("Unable to contact registry " + GUI.getInstance().getPreference(GUI.PrefsEnum.ORCA_REGISTRY) + " due to " + e);
+		}
+		return ret;
+	}
+	
+	@SuppressWarnings("unchecked")
+	public List<Map<String, String>> getControllers() throws Exception {
+		List<Map<String, String>> ret = null;
+		
+		try {
+			XmlRpcClientConfigImpl config = new XmlRpcClientConfigImpl();
+			config.setServerURL(new URL(GUI.getInstance().getPreference(GUI.PrefsEnum.ORCA_REGISTRY)));
+			XmlRpcClient client = new XmlRpcClient();
+			client.setConfig(config);
+		
+			// get verbose list of the AMs
+			Object[] rret = (Object[])client.execute(GET_CONTROLLERS, new Object[]{});
 			ret = new ArrayList<Map<String, String>>();
 			for (Object n: rret) {
 				if (n instanceof HashMap<?, ?>) {
