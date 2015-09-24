@@ -258,6 +258,8 @@ public class OrcaLink extends OrcaResource {
 		public ManifestMenu() {
 			super("Edge Menu");
 			//this.add(new LatencyDisplay());
+			this.add(new DeleteEdgeMenuItem<OrcaNode, OrcaLink>(GUIUnifiedState.getInstance()));
+			this.addSeparator();
 			this.add(new BandwidthDisplay());
 			this.add(new LabelDisplay());
 			this.addSeparator();

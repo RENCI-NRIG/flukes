@@ -71,6 +71,7 @@ public class GUIUnifiedState extends GUICommonState implements IDeleteEdgeCallBa
 	private static final String STATE_FAILED = "failed";
 	private static final String STATE_ACTIVE = "active";
 	private static final String STATE_TICKETED = "ticketed";
+	private static final String STATE_NASCENT = "nascent";
 	private static final String RESERVATION_STATE = "reservation.state";
 	public static final String NODE_TYPE_SITE_DEFAULT = "Site default";
 	public static final String NO_NODE_DEPS="No dependencies";
@@ -709,7 +710,8 @@ public class GUIUnifiedState extends GUICommonState implements IDeleteEdgeCallBa
 			int ticketed = 0, failed = 0, active = 0; 
 			for(Map.Entry<String, Map<String, String>> me: states.entrySet()) {
 				String state = me.getValue().get(RESERVATION_STATE);
-				if (state.equalsIgnoreCase(STATE_TICKETED)) {
+				// we count nascent as ticketed here for simplicity
+				if (state.equalsIgnoreCase(STATE_TICKETED) || state.equalsIgnoreCase(STATE_NASCENT)) {
 					flag = false;
 					ticketed++;
 				}

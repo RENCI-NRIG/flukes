@@ -163,6 +163,8 @@ public class OrcaCrossconnect extends OrcaNode {
 	public static class ManifestMenu extends JPopupMenu {
 		public ManifestMenu() {
 			super("Broadcast Link Menu");
+			this.add(new DeleteVertexMenuItem<OrcaNode, OrcaLink>(GUIUnifiedState.getInstance()));
+			this.addSeparator();
 			this.add(new DomainDisplay());
 			this.add(new NodeTypeDisplay());
 			this.addSeparator();
