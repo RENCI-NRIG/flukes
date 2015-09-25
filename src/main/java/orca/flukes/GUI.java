@@ -981,8 +981,8 @@ public class GUI implements ComponentListener {
 		// 
 		query("Query Registry", "Query Actor Registry"),
 		listSlices("My Slices", "Query ORCA for list of slices with active reservations"),
-		nodes("Add Nodes", "Select node type"),
-		links("Add Links", "Select link type"),
+		nodes("Node Types", "Select node type"),
+		links("Link Types", "Select link type"),
 		config("Configure Slice", "Configure various aspects of the slice"),
 		slice("Slice Operations", "Perform provisioning operations on the slice");
 				
@@ -1087,7 +1087,7 @@ public class GUI implements ComponentListener {
 			JButton nodeButton = createButton(Buttons.nodes, toolBar, rbl);
 			
 			//first instantiate the control
-			splitNodeButton = new SplitButton(nodeButton, SwingConstants.SOUTH, 100);
+			splitNodeButton = new SplitButton(nodeButton, SwingConstants.SOUTH, 140);
 		    JPopupMenu nodeMenu = new JPopupMenu("Node menu");
 		    nodeMenu.add(addMenuItem("Node", "nodes", rbl));
 		    nodeMenu.add(addMenuItem("Node Group", "nodegroups", rbl));
@@ -1107,7 +1107,7 @@ public class GUI implements ComponentListener {
 			JButton linkButton = createButton(Buttons.links, toolBar, rbl);
 			
 			//first instantiate the control
-			splitLinkButton = new SplitButton(linkButton, SwingConstants.SOUTH, 100);
+			splitLinkButton = new SplitButton(linkButton, SwingConstants.SOUTH, 140);
 		    JPopupMenu linkMenu = new JPopupMenu("Link menu");
 		    linkMenu.add(addMenuItem("Topo link", "topo", rbl));
 		    linkMenu.add(addMenuItem("Color Link", "color", rbl));
@@ -1124,7 +1124,7 @@ public class GUI implements ComponentListener {
 			JButton configButton = createButton(Buttons.config, toolBar, rbl);
 			
 			//first instantiate the control
-			splitConfigButton = new SplitButton(configButton, SwingConstants.SOUTH, 140);
+			splitConfigButton = new SplitButton(configButton, SwingConstants.SOUTH, 180);
 		    JPopupMenu configMenu = new JPopupMenu("Config menu");
 		    configMenu.add(addMenuItem("Reservation Details", "reservation", rbl));
 		    configMenu.add(addMenuItem("Auto IP", "autoip", rbl));
@@ -1141,7 +1141,7 @@ public class GUI implements ComponentListener {
 			JButton sliceButton = createButton(Buttons.slice, toolBar, rbl);
 			
 			//first instantiate the control
-			splitSliceButton = new SplitButton(sliceButton, SwingConstants.SOUTH, 140);
+			splitSliceButton = new SplitButton(sliceButton, SwingConstants.SOUTH, 180);
 		    JPopupMenu sliceMenu = new JPopupMenu("Slice menu");
 		    sliceMenu.add(addMenuItem("Submit Changes", "submit", rbl));
 		    sliceMenu.add(addMenuItem("Query Manfiest", "manifest", rbl));

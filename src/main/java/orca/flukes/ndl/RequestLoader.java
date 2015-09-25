@@ -246,6 +246,8 @@ public class RequestLoader implements INdlRequestModelListener, INdlColorRequest
 				String shortName = NdlCommons.getNameProperty(di);
 				if ((shortName == null) || (shortName.length() == 0)) 
 					shortName = di.getLocalName();
+				if ((shortName == null) || (shortName.length() == 0))
+					shortName = "Unknown"; 
 				String imName = GUIImageList.getInstance().addImage(new OrcaImage(shortName, 
 						new URL(imageURL), imageHash), null);
 				newNode.setImage(imName);
