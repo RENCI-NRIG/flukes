@@ -1,5 +1,8 @@
 Flukes Release Notes:
 ---------------------
+09/25/15:
+- Added support for slice modify
+
 09/22/15:
 - Added support for polling for manifest
 
