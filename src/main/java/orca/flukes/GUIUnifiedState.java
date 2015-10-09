@@ -777,6 +777,8 @@ public class GUIUnifiedState extends GUICommonState implements IDeleteEdgeCallBa
 						ed.setException("Exception encountered while polling reservation states: ", ex);
 						ed.setVisible(true);
 					}
+					// query one last time to get e.g. IP addresses and other labels with late binding
+					queryManifest();
 				}
 			}  else if (e.getActionCommand().equals("clear")) {
 				// distinguish modify clear and all clear

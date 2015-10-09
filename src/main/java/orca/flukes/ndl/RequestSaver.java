@@ -409,8 +409,10 @@ public class RequestSaver {
 		Collection<OrcaLink> iLinks = GUIUnifiedState.getInstance().getGraph().getIncidentEdges(oc);
 		
 		for(OrcaLink l: iLinks) {
+			// skip non-request items 
 			if (l.getResourceType() != ResourceType.REQUEST)
 				continue;
+			
 			Pair<OrcaNode> pn = GUIUnifiedState.getInstance().getGraph().getEndpoints(l);
 			OrcaNode n = null;
 			// find the non-crossconnect side
@@ -475,7 +477,7 @@ public class RequestSaver {
 	 * @param ngen
 	 * @throws NdlException
 	 */
-	Individual processPossibleCrossconnect(OrcaResource n, Individual reservation) throws NdlException {
+	Individual processPossibleCrossconnect(OrcaResource n) throws NdlException {
 		Individual bl = null;
 		if (n instanceof OrcaCrossconnect) {
 			// sanity check
@@ -484,14 +486,15 @@ public class RequestSaver {
 			bl = ngen.declareBroadcastConnection(oc.getName());
 			
 			ngen.addGuid(bl, n.getRequestGuid());
-			if (reservation != null)
-				ngen.addResourceToReservation(reservation, bl);
 			
-			if (oc.getBandwidth() > 0)
-				ngen.addBandwidthToConnection(bl, oc.getBandwidth());
-			
-			if (oc.getLabel() != null) 
-				ngen.addLabelToIndividual(bl, oc.getLabel());
+			// only for requests, don't put label/bw for modify actions that add a node to bcast link
+			if (oc.getResourceType() == ResourceType.REQUEST) {
+				if (oc.getBandwidth() > 0)
+					ngen.addBandwidthToConnection(bl, oc.getBandwidth());
+
+				if (oc.getLabel() != null)
+					ngen.addLabelToIndividual(bl, oc.getLabel());
+			}
 			
 			ngen.addLayerToConnection(bl, "ethernet", "EthernetNetworkElement");
 
@@ -549,20 +552,18 @@ public class RequestSaver {
 	/**
 	 * Process a new graph node (not a crossconnect, which will be ignored)
 	 * @param n
-	 * @param reservation
+	 * @param res
 	 * @param globalDomain
 	 * @param ngen
 	 * @throws NdlException
 	 */
-	Individual processNode(OrcaNode n, Individual reservation, boolean globalDomain) throws NdlException {
+	Individual processNode(OrcaNode n, boolean globalDomain) throws NdlException {
 		Individual ni = null;
 		if (n instanceof OrcaCrossconnect) {
 			return null;
 		} else if (n instanceof OrcaStitchPort) {
 			OrcaStitchPort sp = (OrcaStitchPort)n;
 			ni = ngen.declareStitchingNode(sp.getName());
-			if (reservation != null)
-				ngen.addResourceToReservation(reservation, ni);
 		} else if (n instanceof OrcaStorageNode) {
 			OrcaStorageNode snode = (OrcaStorageNode)n;
 			ni = ngen.declareISCSIStorageNode(snode.getName(), 
@@ -575,8 +576,6 @@ public class RequestSaver {
 				Individual domI = ngen.declareDomain(domainMap.get(n.getDomain()));
 				ngen.addNodeToDomain(domI, ni);
 			}
-			if (reservation != null)
-				ngen.addResourceToReservation(reservation, ni);
 		} else {
 			// nodes and nodegroups
 			if (n instanceof OrcaNodeGroup) {
@@ -590,8 +589,6 @@ public class RequestSaver {
 				ni = ngen.declareComputeElement(n.getName());
 				//ngen.addVMDomainProperty(ni);
 			}
-			if (reservation != null)
-				ngen.addResourceToReservation(reservation, ni);
 			
 			// for clusters, add number of nodes, declare as cluster (VM domain)
 			if (n instanceof OrcaNodeGroup) {
@@ -708,7 +705,9 @@ public class RequestSaver {
 				// shove invidividual nodes onto the reservation/crossconnects are vertices, but not 'nodes'
 				// so require special handling
 				for (OrcaNode n: GUIUnifiedState.getInstance().getGraph().getVertices()) {
-					processNode(n, reservation, globalDomain);
+					Individual t = processNode(n, globalDomain);
+					if (t != null)
+						ngen.addResourceToReservation(reservation, t);
 				}
 				
 				// node dependencies and color extensions (done afterwards to be sure all nodes are declared)
@@ -726,7 +725,9 @@ public class RequestSaver {
 				
 				// crossconnects are vertices in the graph, but are actually a kind of link
 				for (OrcaResource n: GUIUnifiedState.getInstance().getGraph().getVertices()) {
-					processPossibleCrossconnect(n, reservation);
+					Individual bl = processPossibleCrossconnect(n);
+					if (bl != null)
+						ngen.addResourceToReservation(reservation, bl);
 				}
 				
 

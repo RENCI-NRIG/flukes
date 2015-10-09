@@ -117,6 +117,10 @@ import edu.uci.ics.jung.visualization.util.Animator;
 
 public class GUI implements ComponentListener {
 
+	private static final String CTRLREGISTRY_CTRL_NAME = "CtrlName";
+	private static final String CTRLREGISTRY_CTRL_DESCRIPTION = "CtrlDescription";
+	private static final String CTRLREGISTRY_CTRL_ENABLED = "CtrlEnabled";
+	private static final String CTRLREGISTRY_CTRL_URL = "CtrlURL";
 	private static final String FLUKES_HELP_WIKI = "https://geni-orca.renci.org/trac/wiki/flukes";
 	public static final String buildVersion = GUI.class.getPackage().getImplementationVersion();
 	public static final String aboutText = "ORCA FLUKES " + (buildVersion == null? "Eclipse build" : buildVersion) + "\nNDL-OWL network editor for ORCA (Open Resource Control Architecture)" +
@@ -1359,7 +1363,8 @@ public class GUI implements ComponentListener {
 			registryControllers = RegistryXMLRPCProxy.getInstance().getControllers();
 		} catch (Exception e) {
 			KMessageDialog md = new KMessageDialog(GUI.getInstance().getFrame(), "Unable to fetch controllers from registry.", true);
-			md.setMessage("Unable to fetch controllers from registry  " + PrefsEnum.ORCA_REGISTRY + ". This is not a fatal error, will use controllers defined in properties file.");
+			md.setMessage("Unable to fetch controllers from registry  " + getPreference(PrefsEnum.ORCA_REGISTRY) + 
+					". This is not a fatal error, will use controllers defined in properties file.");
 			md.setLocationRelativeTo(GUI.getInstance().getFrame());
 			md.setVisible(true);
 			return;
@@ -1369,16 +1374,16 @@ public class GUI implements ComponentListener {
 		for(Map<String, String> rce: registryControllers) {
 			boolean repeat = false;
 			for(OrcaController oc: definedControllers) {
-				if (oc.url.equalsIgnoreCase(rce.get("CtrlURL"))) {
+				if (oc.url.equalsIgnoreCase(rce.get(CTRLREGISTRY_CTRL_URL))) {
 					repeat = true;
-					oc.name = rce.get("CtrlName");
-					oc.enabled = Boolean.parseBoolean(rce.get("CtrlEnabled"));
+					oc.name = rce.get(CTRLREGISTRY_CTRL_NAME);
+					oc.enabled = Boolean.parseBoolean(rce.get(CTRLREGISTRY_CTRL_ENABLED));
 				}
 				if (oc.url.startsWith("https://geni.renci.org")) 
 					exo = oc;
 			}
-			if (!repeat && Boolean.parseBoolean(rce.get("CtrlEnabled"))) {
-				definedControllers.add(new OrcaController(rce.get("CtrlName"), rce.get("CtrlURL"), rce.get("CtrlDescription"), Boolean.parseBoolean(rce.get("CtrlEnabled"))));
+			if (!repeat && Boolean.parseBoolean(rce.get(CTRLREGISTRY_CTRL_ENABLED))) {
+				definedControllers.add(new OrcaController(rce.get(CTRLREGISTRY_CTRL_NAME), rce.get(CTRLREGISTRY_CTRL_URL), rce.get(CTRLREGISTRY_CTRL_DESCRIPTION), Boolean.parseBoolean(rce.get(CTRLREGISTRY_CTRL_ENABLED))));
 			}
 		}
 		

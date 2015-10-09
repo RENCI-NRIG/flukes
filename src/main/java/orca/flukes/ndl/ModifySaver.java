@@ -13,7 +13,6 @@ import orca.flukes.OrcaLink;
 import orca.flukes.OrcaNode;
 import orca.flukes.OrcaResource;
 import orca.flukes.OrcaResource.ResourceType;
-import orca.ndl.NdlCommons;
 import orca.ndl.NdlGenerator;
 
 import com.hp.hpl.jena.ontology.Individual;
@@ -97,7 +96,7 @@ public class ModifySaver extends RequestSaver {
 				// add nodes
 				for(OrcaNode n: g.getVertices()) {
 					if (n.getResourceType() == ResourceType.REQUEST) {
-						Individual ni = processNode(n, null, false);
+						Individual ni = processNode(n, false);
 						if (ni != null)
 							ngen.declareModifyElementAddElement(reservation, ni);
 					}
@@ -106,7 +105,7 @@ public class ModifySaver extends RequestSaver {
 				// add crossconnects
 				for(OrcaResource n: g.getVertices()) {
 					if (n.getResourceType() == ResourceType.REQUEST) {
-						Individual ci = processPossibleCrossconnect(n, null);
+						Individual ci = processPossibleCrossconnect(n);
 						if (ci != null) {
 							ngen.declareModifyElementAddElement(reservation, ci);
 						}
@@ -122,12 +121,15 @@ public class ModifySaver extends RequestSaver {
 						if (li != null) {
 							ngen.declareModifyElementAddElement(reservation, li);
 						} else {
-							// maybe we're adding a node to existing multipoint link
+							// maybe we're adding a node to existing bcast link
 							Pair<OrcaNode> pn = GUIUnifiedState.getInstance().getGraph().getEndpoints(l);
-							if (pn.getFirst() instanceof OrcaCrossconnect)
-								processPossibleCrossconnect(pn.getFirst(), null);
-							else if (pn.getSecond() instanceof OrcaCrossconnect) 
-								processPossibleCrossconnect(pn.getSecond(), null);
+							Individual bl = null;
+							if ((pn.getFirst() instanceof OrcaCrossconnect) && (pn.getFirst().getResourceType() == ResourceType.MANIFEST))
+								bl = processPossibleCrossconnect(pn.getFirst());
+							else if ((pn.getSecond() instanceof OrcaCrossconnect) && (pn.getSecond().getResourceType() == ResourceType.MANIFEST)) 
+								bl = processPossibleCrossconnect(pn.getSecond());
+							if (bl != null)
+								ngen.declareModifyElementModifyNode(reservation, bl);
 						}
 					}
 				}

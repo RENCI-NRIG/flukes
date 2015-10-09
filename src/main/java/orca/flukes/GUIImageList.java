@@ -170,7 +170,9 @@ public class GUIImageList {
 			regImages = RegistryXMLRPCProxy.getInstance().getImages();
 		} catch (Exception e) {
 			KMessageDialog md = new KMessageDialog(GUI.getInstance().getFrame(), "Unable to fetch images from image registry.", true);
-			md.setMessage("Unable to fetch images from image registry  " + PrefsEnum.ORCA_REGISTRY + ". This is not a fatal error.");
+			md.setMessage("Unable to fetch images from image registry  " + 
+			GUI.getInstance().getPreference(PrefsEnum.ORCA_REGISTRY) + 
+			". This is not a fatal error.");
 			md.setLocationRelativeTo(GUI.getInstance().getFrame());
 			md.setVisible(true);
 			return;
