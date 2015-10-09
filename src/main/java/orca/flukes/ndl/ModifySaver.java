@@ -20,6 +20,7 @@ import com.hp.hpl.jena.ontology.Individual;
 import com.hyperrealm.kiwi.ui.dialog.ExceptionDialog;
 
 import edu.uci.ics.jung.graph.SparseMultigraph;
+import edu.uci.ics.jung.graph.util.Pair;
 
 /**
  * Generate a modify request
@@ -120,6 +121,13 @@ public class ModifySaver extends RequestSaver {
 						Individual li = processLink(l, null);
 						if (li != null) {
 							ngen.declareModifyElementAddElement(reservation, li);
+						} else {
+							// maybe we're adding a node to existing multipoint link
+							Pair<OrcaNode> pn = GUIUnifiedState.getInstance().getGraph().getEndpoints(l);
+							if (pn.getFirst() instanceof OrcaCrossconnect)
+								processPossibleCrossconnect(pn.getFirst(), null);
+							else if (pn.getSecond() instanceof OrcaCrossconnect) 
+								processPossibleCrossconnect(pn.getSecond(), null);
 						}
 					}
 				}

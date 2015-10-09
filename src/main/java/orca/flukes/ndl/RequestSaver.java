@@ -51,6 +51,7 @@ import orca.flukes.OrcaLink;
 import orca.flukes.OrcaNode;
 import orca.flukes.OrcaNodeGroup;
 import orca.flukes.OrcaResource;
+import orca.flukes.OrcaResource.ResourceType;
 import orca.flukes.OrcaStitchPort;
 import orca.flukes.OrcaStorageNode;
 import orca.ndl.NdlCommons;
@@ -408,6 +409,8 @@ public class RequestSaver {
 		Collection<OrcaLink> iLinks = GUIUnifiedState.getInstance().getGraph().getIncidentEdges(oc);
 		
 		for(OrcaLink l: iLinks) {
+			if (l.getResourceType() != ResourceType.REQUEST)
+				continue;
 			Pair<OrcaNode> pn = GUIUnifiedState.getInstance().getGraph().getEndpoints(l);
 			OrcaNode n = null;
 			// find the non-crossconnect side
