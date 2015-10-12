@@ -471,7 +471,7 @@ public class RequestSaver {
 	}
 	
 	/**
-	 * Process a node that may be a crossconnect
+	 * Process a node that may be a crossconnect (declare as new or modified, depending on the context)
 	 * @param n
 	 * @param reservation
 	 * @param ngen
@@ -483,7 +483,17 @@ public class RequestSaver {
 			// sanity check
 			OrcaCrossconnect oc = (OrcaCrossconnect)n;
 			checkCrossconnectSanity(oc);
-			bl = ngen.declareBroadcastConnection(oc.getName());
+			
+			switch(n.getResourceType()) {
+			case REQUEST:
+				bl = ngen.declareBroadcastConnection(oc.getName());
+				break;
+			case MANIFEST:
+				bl = ngen.declareModifiedBroadcastConnection(oc.getUrl());
+				break;
+			default:
+				throw new NdlException("Unable to process broadcast connection of type " + n.getResourceType());
+			}
 			
 			ngen.addGuid(bl, n.getRequestGuid());
 			
