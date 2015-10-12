@@ -66,6 +66,7 @@ public class RequestSaver {
 	private static final String EUCALYPTUS_NS = "eucalyptus";
 	private static final String EXOGENI_NS = "exogeni";
 	public static final String BAREMETAL = "ExoGENI Bare-metal";
+	public static final String FORTYGBAREMETAL = "ExoGENI 40G Bare-metal";
 	public static final String DOT_FORMAT = "DOT";
 	public static final String N3_FORMAT = "N3";
 	public static final String RDF_XML_FORMAT = "RDF-XML";
@@ -157,6 +158,7 @@ public class RequestSaver {
 	static {
 		Map<String, Pair<String>> nt = new HashMap<String, Pair<String>>();
 		nt.put(BAREMETAL, new Pair<String>(EXOGENI_NS, "ExoGENI-M4"));
+		nt.put(FORTYGBAREMETAL, new Pair<String>(EXOGENI_NS, "ExoGENI-M4"));
 		//nt.put("Euca m1.small", new Pair<String>(EUCALYPTUS_NS, "EucaM1Small"));
 		//nt.put("Euca c1.medium", new Pair<String>(EUCALYPTUS_NS, "EucaC1Medium"));
 		//nt.put("Euca m1.large", new Pair<String>(EUCALYPTUS_NS, "EucaM1Large"));
@@ -446,6 +448,8 @@ public class RequestSaver {
 	private void setNodeTypeOnInstance(String type, Individual ni) throws NdlException {
 		if (BAREMETAL.equals(type))
 			ngen.addBareMetalDomainProperty(ni);
+		else if (FORTYGBAREMETAL.equals(type))
+			ngen.addFourtyGBareMetalDomainProperty(ni);
 		else
 			ngen.addVMDomainProperty(ni);
 		if (nodeTypes.get(type) != null) {
