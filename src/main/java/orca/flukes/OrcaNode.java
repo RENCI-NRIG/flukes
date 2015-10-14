@@ -294,6 +294,10 @@ public class OrcaNode extends OrcaResource {
 		addresses.remove(e);
 	}
 	
+	public void removeAllIps() {
+		addresses.clear();
+	}
+	
 	public void addDependency(OrcaNode n) {
 		if (n != null) 
 			dependencies.add(n);

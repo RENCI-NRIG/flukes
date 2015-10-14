@@ -1132,6 +1132,7 @@ public class GUI implements ComponentListener {
 		    JPopupMenu configMenu = new JPopupMenu("Config menu");
 		    configMenu.add(addMenuItem("Reservation Details", "reservation", rbl));
 		    configMenu.add(addMenuItem("Auto IP", "autoip", rbl));
+		    configMenu.add(addMenuItem("Clear request IPs", "unip", rbl));
 		    
 		    splitConfigButton.setMenu(configMenu);
 			toolBar.add(splitConfigButton);
@@ -1285,7 +1286,7 @@ public class GUI implements ComponentListener {
 			"Comma-separated list of URLs of the ORCA XMLRPC controllers where you can submit slice requests (list is automatically populated with trusted controllers)"),
 		QUERY_POLL_INTERVAL("orca.poll.interval", "3", "Manifest poll interval in seconds"),
 		ENABLE_IRODS("enable.irods", "false", "Enable experimental support for iRods (at your own risk!)"),
-		AUTOIP_MASK("autoip.mask", "25", "Length of netmask (in bits) to use when assigning IP addresses to groups and broadcast links (simple point-to-point links always use 30 bit masks)"),
+		AUTOIP_MASK("autoip.mask", "24", "Length of netmask (in bits) to use when assigning IP addresses to groups and broadcast links (simple point-to-point links always use 30 bit masks)"),
 		ENABLE_GENISA("enable.genisa", "false", "Enable support for GENI Slice Authority"),
 		ENABLE_GENIMA("enable.genima", "false", "Enable support for GENI Member Authority"),
 		GENISA_URL("genisa.url", "https://ch.geni.net/SA", "URL of the GENI Slice Authority (defaults to GENI Portal SA)"),
