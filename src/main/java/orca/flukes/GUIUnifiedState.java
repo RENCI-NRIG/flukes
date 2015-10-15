@@ -589,7 +589,25 @@ public class GUIUnifiedState extends GUICommonState implements IDeleteEdgeCallBa
 			ed.setVisible(true);
 		}
 	}
-
+	
+	private void removeAssignedRequestIPs() {
+		// remove IPs associated with requested links
+		for(OrcaLink ol: g.getEdges()) {
+			if (requestResource(ol)) {
+				Collection<OrcaNode> incs = g.getIncidentVertices(ol);
+				for(OrcaNode inc: incs) {
+					inc.removeIp(ol);
+				}
+			}
+		}
+		
+		// remove all IPs from request nodes
+		for(OrcaNode on: g.getVertices()) {
+			if (requestResource(on))
+				on.removeAllIps();
+		}
+	}
+	
 	private boolean assignableNode(OrcaNode on) {
 		if (on instanceof OrcaCrossconnect) 
 			return false;
@@ -611,12 +629,17 @@ public class GUIUnifiedState extends GUICommonState implements IDeleteEdgeCallBa
 		return assignableNode(on);
 	}
 	
+	private boolean requestResource(OrcaResource on) {
+		return on.getResourceType() == ResourceType.REQUEST;
+	}
+	
 	public boolean autoAssignIPAddresses() {
 		// for each link and switch assign IP addresses
 		// treat node groups as switches
 		
 		// collect all already used addresses
 		List<IP4Assign.AssignedRange> allAddresses = new ArrayList<>();
+		
 		for(OrcaNode on: g.getVertices()) {
 			int qty = 1;
 			if (on instanceof OrcaNodeGroup) 
@@ -633,13 +656,13 @@ public class GUIUnifiedState extends GUICommonState implements IDeleteEdgeCallBa
 		IP4Assign ipa = new IP4Assign(mpMask);
 
 		for(OrcaLink ol: g.getEdges()) {
-			
-			if (ol.getResourceType() != ResourceType.REQUEST)
+
+			if (!requestResource(ol))
 				continue;
-			
+
 			if (ol.linkToSharedStorage())
 				continue;
-			
+
 			// if one end is a switch, ignore it for now
 			Pair<OrcaNode> pn = g.getEndpoints(ol);
 			
@@ -665,7 +688,7 @@ public class GUIUnifiedState extends GUICommonState implements IDeleteEdgeCallBa
 				nodeCt2 = 1;
 
 			if (nodeCt1 + nodeCt2 == 2) {
-				String[] addrs = ipa.getPPAddresses();
+				String[] addrs = ipa.getPPAddresses(allAddresses);
 				if (addrs != null) {
 					pn.getFirst().setIp(ol, addrs[0], "" + ipa.getPPIntMask());
 					pn.getSecond().setIp(ol, addrs[1], "" + ipa.getPPIntMask());
@@ -673,7 +696,6 @@ public class GUIUnifiedState extends GUICommonState implements IDeleteEdgeCallBa
 					return false;
 				}
 			} else {
-				// System.out.println("Calling MP for p-to-p link between nodegroups");
 				String[] addrs = ipa.getMPAddresses(nodeCt1 + nodeCt2, null, allAddresses);
 				if (addrs != null) {
 					pn.getFirst().setIp(ol, addrs[0], "" + ipa.getMPIntMask());
@@ -689,8 +711,6 @@ public class GUIUnifiedState extends GUICommonState implements IDeleteEdgeCallBa
 			if (!(csx instanceof OrcaCrossconnect))
 				continue;
 
-			// System.out.println("Numbering " + csx);
-			
 			OrcaCrossconnect csxI = (OrcaCrossconnect)csx;
 			
 			if (csxI.linkToSharedStorage())
@@ -711,9 +731,8 @@ public class GUIUnifiedState extends GUICommonState implements IDeleteEdgeCallBa
 					if (g.getOpposite(nbCandidate, incLink).equals(csx))
 						nb = nbCandidate;
 				}
-				// System.out.println("CSX neighbor candidate " + nb);
 				
-				if (!assignableRequestNode(nb))
+				if (!assignableNode(nb))
 					continue;
 				
 				if (nb instanceof OrcaNodeGroup) {
@@ -738,7 +757,6 @@ public class GUIUnifiedState extends GUICommonState implements IDeleteEdgeCallBa
 			if (sum == 0)
 				continue;
 			
-			// System.out.println("Calling MP for mp link");
 			String[] addrs = ipa.getMPAddresses(sum, alreadyAssigned, allAddresses);
 			
 			Collection<OrcaNode> neighbors = g.getNeighbors(csx);
@@ -760,6 +778,7 @@ public class GUIUnifiedState extends GUICommonState implements IDeleteEdgeCallBa
 								else
 									ct++;
 							}
+
 							break;
 						}
 					}
@@ -866,6 +885,7 @@ public class GUIUnifiedState extends GUICommonState implements IDeleteEdgeCallBa
 					// do nothing
 					break;
 				case MANIFESTWITHMODIFY:
+					removeAssignedRequestIPs();
 					setGUIState(GUIState.MANIFEST);
 					clearModify();
 					break;
@@ -933,10 +953,7 @@ public class GUIUnifiedState extends GUICommonState implements IDeleteEdgeCallBa
 					kmd.setVisible(true);
 				}
 			} else if (e.getActionCommand().equals("unip")) { 
-				for(OrcaNode on: g.getVertices()) {
-					if (on.getResourceType() == ResourceType.REQUEST)
-						on.removeAllIps();
-				}
+				removeAssignedRequestIPs();
 			} else if (e.getActionCommand().equals("submit")) {
 				if ((sliceIdField.getText() == null) || 
 						(sliceIdField.getText().length() == 0)) {
@@ -1303,7 +1320,7 @@ public class GUIUnifiedState extends GUICommonState implements IDeleteEdgeCallBa
 		resources.addAll(g.getVertices());
 		resources.addAll(g.getEdges());
 
-		// System.out.println("Printing resource state:");
+		System.out.println("Printing resource state:");
 		for (OrcaResource r : resources) {
 			String resourceInfo =
 					"Name: " + r.getName() + ", " +

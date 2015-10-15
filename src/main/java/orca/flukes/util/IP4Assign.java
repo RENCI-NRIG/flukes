@@ -4,6 +4,7 @@ import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import orca.flukes.ndl.RequestSaver;
@@ -21,6 +22,22 @@ public class IP4Assign {
 	private static final int MP_MASK_SIZE = 24;
 	private static final String PP_START_ADDRESS="172.16.0.1";
 	private static final String MP_START_ADDRESS="172.16.100.1";
+	// min/max allowed values
+	private static int[] ppBrackets = new int[2], mpBrackets = new int[2];
+	
+	// for debugging set to true
+	private boolean debugOutput = false;
+	
+	static {
+		try {
+			ppBrackets[0] = InetAddresses.coerceToInteger(InetAddress.getByName(PP_START_ADDRESS));
+			ppBrackets[1] = InetAddresses.coerceToInteger(InetAddress.getByName(MP_START_ADDRESS)) - 2;
+			mpBrackets[0] = InetAddresses.coerceToInteger(InetAddress.getByName(MP_START_ADDRESS));
+			mpBrackets[1] = mpBrackets[0] + 0x9AFF;
+		} catch (UnknownHostException uhe) {
+			;
+		}
+	}
 	
 	private Inet4Address ppCurrent, mpCurrent;
 	private final int ppMaskSize, mpMaskSize;
@@ -104,21 +121,76 @@ public class IP4Assign {
 	 * Use getPPmask() to get the netmask for p-to-p links
 	 * @return - array of 2 elements with addresses or null if no addresses are available
 	 */
-	public String[] getPPAddresses() {
-		// System.out.println("Requesting PP address");
+	public String[] getPPAddresses(List<AssignedRange> assignedToGraph) {
+		List<String> usedInGraph = new ArrayList<>();
+		
+		debugPrint("Requesting PP address ");
+		
+		if (assignedToGraph != null) {
+			// create explicit list of all assigned addresses
+			try {
+				for(AssignedRange ar: assignedToGraph) {
+					if (ar.getQty() == 1)
+						usedInGraph.add(ar.getStart());
+					else {
+						String start = ar.getStart();
+						usedInGraph.add(start);
+						InetAddress startAddr = (Inet4Address)InetAddress.getByName(start);
+						for(int i = 1; i < ar.getQty(); i++) {
+							startAddr = InetAddresses.increment(startAddr);
+							usedInGraph.add(startAddr.getHostAddress());
+						}
+					}
+				}
+			} catch(UnknownHostException uhe) {
+				;
+			}
+		}
+		
+		debugPrint("Finding highest used");
+		int ppCurrentInt = InetAddresses.coerceToInteger(ppCurrent);
+		int highest = ppCurrentInt;
+		InetAddress tmp = null;
+		try {
+			debugPrint("Looking for highest address among " + usedInGraph);
+			for(String u: usedInGraph) {
+				Inet4Address cur = (Inet4Address)InetAddress.getByName(u);
+				int curInt = InetAddresses.coerceToInteger(cur);
+				if (curInt > ppBrackets[1])
+					continue;
+				if (curInt > highest) {
+					highest = curInt;
+					// debugPrint("   " + u);
+					tmp = cur;
+				}
+			}
+		} catch(UnknownHostException uhe) {
+			;
+		}
+		
+		debugPrint("Highest " + highest + " current " + ppCurrentInt);
+		
+		long subnets = Math.round(Math.ceil((double)(highest - ppCurrentInt)/4L));
+		debugPrint("Incrementing by " + subnets + " subnets");
+		ppCurrentInt += (subnets<<2);
+		ppCurrent = InetAddresses.fromInteger(ppCurrentInt);
+		tmp = ppCurrent;
+
 		String[] ret = new String[2];
 		
 		if (InetAddresses.coerceToInteger(ppCurrent) == mpStartInt)
 			return null;
 		
 		ret[0] = ppCurrent.getHostAddress();
-		InetAddress tmp = InetAddresses.increment(ppCurrent);
+		tmp = InetAddresses.increment(ppCurrent);
 		ret[1] = tmp.getHostAddress();
 		
-		int ppCurrentInt = InetAddresses.coerceToInteger(ppCurrent);
+		ppCurrentInt = InetAddresses.coerceToInteger(ppCurrent);
 		ppCurrentInt += 1L << (32 - ppMaskSize);
 		
 		ppCurrent = InetAddresses.fromInteger(ppCurrentInt);
+		
+		debugPrint("Issuing " + Arrays.asList(ret));
 		
 		return ret;
 	}
@@ -127,14 +199,15 @@ public class IP4Assign {
 	 * Uses the setting of MP mask to issue. 
 	 * Use getMPMask() to get the netmask for mp links 
 	 * @param ct - number of addresses needed 
-	 * @param user - list of assigned reanges representing already occupied addresses in this subnet
+	 * @param assignedToLink - list of assigned ranges representing already occupied addresses in this subnet
+	 * @param assignedToGraph - list of assigned ranges already assigned to the entire graph.
 	 * @return - array of addresses or null if no addresses are available
 	 */
 	public String[] getMPAddresses(int ct, List<AssignedRange> assignedToLink, List<AssignedRange> assignedToGraph) {
 		assert(ct > 0);
 		assert(assignedToGraph != null);
 
-		// System.out.println("Requesting " + ct + " MP addresses for netmask " + mpMaskSize);
+		debugPrint("Requesting " + ct + " MP addresses for netmask " + mpMaskSize);
 
 		List<String> usedOnLink = new ArrayList<>();
 		List<String> usedInGraph = new ArrayList<>();
@@ -181,8 +254,8 @@ public class IP4Assign {
 			}
 		}
 			
-		// System.out.println("Assigned addresses: " + usedOnLink);
-		// System.out.println("All used addresses: " + usedInGraph);
+		debugPrint("Assigned addresses: " + usedOnLink);
+		debugPrint("All used addresses: " + usedInGraph);
 		
 		int usedCnt = ct + usedOnLink.size();
 		
@@ -195,56 +268,60 @@ public class IP4Assign {
 		InetAddress tmp = null;
 		
 		if (usedOnLink.size() == 0) {
-			// System.out.println("Finding highest used");
+			debugPrint("Finding highest used");
 			int mpCurrentInt = InetAddresses.coerceToInteger(mpCurrent);
 			int highest = mpCurrentInt;
 			try {
-				// System.out.println("Looking for highest address among " + usedInGraph);
+				debugPrint("Looking for highest address among " + usedInGraph);
 				for(String u: usedInGraph) {
 					Inet4Address cur = (Inet4Address)InetAddress.getByName(u);
 					int curInt = InetAddresses.coerceToInteger(cur);
+					if (curInt > mpBrackets[1])
+						continue;
 					if (curInt > highest) {
 						highest = curInt;
-						// System.out.println("   " + u);
+						// debugPrint("   " + u);
 						tmp = cur;
 					}
 				}
 			} catch(UnknownHostException uhe) {
 				;
 			}
-			// System.out.println("Highest " + highest + " current " + mpCurrentInt);
+			debugPrint("Highest " + highest + " current " + mpCurrentInt);
 			long subnets = Math.round(Math.ceil((double)(highest - mpCurrentInt)/(1L << (32 - mpMaskSize))));
-			// System.out.println("Incrementing by " + subnets + " subnets");
+			debugPrint("Incrementing by " + subnets + " subnets");
 			mpCurrentInt += subnets*(1L << (32 - mpMaskSize));
 			mpCurrent = InetAddresses.fromInteger(mpCurrentInt);
 			tmp = mpCurrent;
 		} else {
 			// find the smallest assigned address
-			int smallest = Integer.MAX_VALUE;
+			int smallest = mpBrackets[1];
 			try {
-				// System.out.println("Looking for smallest address among " + usedOnLink);
+				debugPrint("Looking for smallest address among " + usedOnLink);
 				for(String u: usedOnLink) {
 					Inet4Address cur = (Inet4Address)InetAddress.getByName(u);
 					int curInt = InetAddresses.coerceToInteger(cur);
+					if (curInt < mpBrackets[0])
+						continue;
 					if (curInt < smallest) {
 						smallest = curInt;
-						// System.out.println("   " + u);
+						// debugPrint("   " + u);
 						tmp = cur;
 					}
 				}
-				
+				debugPrint("Lowest " + smallest);
 			} catch(UnknownHostException uhe) {
 				;
 			}
 		}
-		// System.out.println("Starting from " + tmp);
+		debugPrint("Starting from " + tmp);
 		
 		for(int i = 0; ct > 0; ct--, i++) {
 			String candidate = null;
 			while(true) {
 				candidate = tmp.getHostAddress();
 				// skip already assigned addresses
-				// System.out.println("Checking candidate " + candidate + " against " + usedOnLink);
+				debugPrint("Checking candidate " + candidate + " against " + usedOnLink);
 				boolean found = false;
 				for(String u: usedOnLink) {
 					if (u.equals(candidate)) {
@@ -256,7 +333,7 @@ public class IP4Assign {
 				if (!found)
 					break;
 			}
-			// System.out.println("Assigning candidate " + candidate);
+			debugPrint("Assigning candidate " + candidate);
 			ret[i] = candidate;
 			tmp = InetAddresses.increment(tmp);
 		}
@@ -264,8 +341,13 @@ public class IP4Assign {
 		int mpCurrentInt = InetAddresses.coerceToInteger(mpCurrent);
 		mpCurrentInt += 1L << (32 - mpMaskSize);
 		mpCurrent = InetAddresses.fromInteger(mpCurrentInt);
-		
+		debugPrint("Issuing " + Arrays.asList(ret));
 		return ret;
+	}
+	
+	private void debugPrint(String s) {
+		if (debugOutput)
+			System.out.println(s);
 	}
 	
 	public static void main(String[] argv) {
@@ -275,7 +357,7 @@ public class IP4Assign {
 		System.out.println(ipa.getPPMask());
 		
 		for (int i = 0; i < 200; i++ ) {
-			String[] ret = ipa.getPPAddresses();
+			String[] ret = ipa.getPPAddresses(null);
 			if (ret != null)
 				System.out.println(ret[0] + " " + ret[1]);
 			else
