@@ -210,7 +210,7 @@ public class RequestLoader implements INdlRequestModelListener, INdlColorRequest
 		
 		Resource ceType = NdlCommons.getSpecificCE(ce);
 		if (ceType != null)
-			newNode.setNodeType(RequestSaver.reverseNodeTypeLookup(ceType));
+			newNode.setNodeType(RequestSaver.reverseNodeTypeLookup(ceType, NdlCommons.getDomainResourceType(ce)));
 
 		// get proxied ports
 		List<NdlCommons.ProxyFields> portList = NdlCommons.getNodeProxiedPorts(ce);

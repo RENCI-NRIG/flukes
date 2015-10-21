@@ -49,6 +49,7 @@ import orca.flukes.OrcaNodeGroup;
 import orca.flukes.OrcaResource;
 import orca.flukes.OrcaStitchPort;
 import orca.flukes.OrcaStorageNode;
+import orca.ndl.DomainResourceType;
 import orca.ndl.NdlCommons;
 import orca.ndl.NdlException;
 import orca.ndl.NdlGenerator;
@@ -144,8 +145,7 @@ public class RequestSaver {
 		ndm.put("PSC XO Rack Net",  "pscNet.rdf#pscNet");
 		ndm.put("GWU XO Rack Net",  "gwuNet.rdf#gwuNet");
 		ndm.put("CIENA XO Rack Net",  "cienaNet.rdf#cienaNet");
-		
-		
+
 		ndm.put("I2 ION/AL2S", "ion.rdf#ion");
 		ndm.put("NLR Net", "nlr.rdf#nlr");
 		ndm.put("BEN Net", "ben.rdf#ben");
@@ -834,15 +834,30 @@ public class RequestSaver {
 	/**
 	 * Do a reverse lookup on node type (NDL -> shortname )
 	 */
-	public static String reverseNodeTypeLookup(Resource nt) {
+	public static String reverseNodeTypeLookup(Resource nt, DomainResourceType drt) {
 		if (nt == null)
 			return null;
+		List<Map.Entry<String, Pair<String>>> mel = new ArrayList<>();
+		// first match by ce type, then by domain resource type
 		for (Iterator<Map.Entry<String, Pair<String>>> it = nodeTypes.entrySet().iterator(); it.hasNext();) {
 			Map.Entry<String, Pair<String>> e = it.next();
 			// convert to namespace and type in a pair
 			// WARNING: this checks only the type, not the namespace.
 			if (nt.getLocalName().equals(e.getValue().getSecond()))
-				return e.getKey();
+				mel.add(e);
+		}
+		if (mel.size() == 0)
+			return null;
+		else {
+			if ((mel.size() == 1) || (drt == null))
+				return mel.get(0).getKey();
+			else {
+				// try to match based on domain resource type
+				if (drt.getResourceType().equals(DomainResourceType.BM_RESOURCE_TYPE))
+					return BAREMETAL;
+				else if (drt.getResourceType().equals(DomainResourceType.FourtyGBM_RESOURCE_TYPE))
+					return FORTYGBAREMETAL;
+			}
 		}
 		return null;
 	}
