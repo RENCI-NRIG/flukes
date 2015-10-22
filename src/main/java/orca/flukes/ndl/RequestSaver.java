@@ -191,18 +191,18 @@ public class RequestSaver {
 		return instance;
 	}
 	
-	private String getFormattedOutput(NdlGenerator ng, String oFormat) {
+	protected String getFormattedOutput(String oFormat) {
 		if (oFormat == null)
-			return getFormattedOutput(ng, defaultFormat);
+			return getFormattedOutput(defaultFormat);
 		if (oFormat.equals(RDF_XML_FORMAT)) 
-			return ng.toXMLString();
+			return ngen.toXMLString();
 		else if (oFormat.equals(N3_FORMAT))
-			return ng.toN3String();
+			return ngen.toN3String();
 		else if (oFormat.equals(DOT_FORMAT)) {
-			return ng.getGVOutput();
+			return ngen.getGVOutput();
 		}
 		else
-			return getFormattedOutput(ng, defaultFormat);
+			return getFormattedOutput(defaultFormat);
 	}
 	
 	public void setOutputFormat(String of) {
