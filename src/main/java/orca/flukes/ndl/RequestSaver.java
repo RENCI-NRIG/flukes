@@ -54,6 +54,7 @@ import orca.flukes.OrcaResource;
 import orca.flukes.OrcaResource.ResourceType;
 import orca.flukes.OrcaStitchPort;
 import orca.flukes.OrcaStorageNode;
+import orca.ndl.DomainResourceType;
 import orca.ndl.NdlCommons;
 import orca.ndl.NdlException;
 import orca.ndl.NdlGenerator;
@@ -71,6 +72,7 @@ public class RequestSaver {
 	private static final String EUCALYPTUS_NS = "eucalyptus";
 	private static final String EXOGENI_NS = "exogeni";
 	public static final String BAREMETAL = "ExoGENI Bare-metal";
+	public static final String FORTYGBAREMETAL = "ExoGENI 40G Bare-metal";
 	public static final String DOT_FORMAT = "DOT";
 	public static final String N3_FORMAT = "N3";
 	public static final String RDF_XML_FORMAT = "RDF-XML";
@@ -148,7 +150,7 @@ public class RequestSaver {
 		ndm.put("PSC XO Rack Net",  "pscNet.rdf#pscNet");
 		ndm.put("GWU XO Rack Net",  "gwuNet.rdf#gwuNet");
 		ndm.put("CIENA XO Rack Net",  "cienaNet.rdf#cienaNet");
-		
+
 		ndm.put("I2 ION/AL2S", "ion.rdf#ion");
 		ndm.put("NLR Net", "nlr.rdf#nlr");
 		ndm.put("BEN Net", "ben.rdf#ben");
@@ -161,6 +163,7 @@ public class RequestSaver {
 	static {
 		Map<String, Pair<String>> nt = new HashMap<String, Pair<String>>();
 		nt.put(BAREMETAL, new Pair<String>(EXOGENI_NS, "ExoGENI-M4"));
+		nt.put(FORTYGBAREMETAL, new Pair<String>(EXOGENI_NS, "ExoGENI-M4"));
 		//nt.put("Euca m1.small", new Pair<String>(EUCALYPTUS_NS, "EucaM1Small"));
 		//nt.put("Euca c1.medium", new Pair<String>(EUCALYPTUS_NS, "EucaC1Medium"));
 		//nt.put("Euca m1.large", new Pair<String>(EUCALYPTUS_NS, "EucaM1Large"));
@@ -188,18 +191,18 @@ public class RequestSaver {
 		return instance;
 	}
 	
-	protected String getFormattedOutput(String oFormat) {
+	private String getFormattedOutput(NdlGenerator ng, String oFormat) {
 		if (oFormat == null)
-			return getFormattedOutput(defaultFormat);
+			return getFormattedOutput(ng, defaultFormat);
 		if (oFormat.equals(RDF_XML_FORMAT)) 
-			return ngen.toXMLString();
+			return ng.toXMLString();
 		else if (oFormat.equals(N3_FORMAT))
-			return ngen.toN3String();
+			return ng.toN3String();
 		else if (oFormat.equals(DOT_FORMAT)) {
-			return ngen.getGVOutput();
+			return ng.getGVOutput();
 		}
 		else
-			return getFormattedOutput(defaultFormat);
+			return getFormattedOutput(ng, defaultFormat);
 	}
 	
 	public void setOutputFormat(String of) {
@@ -462,6 +465,8 @@ public class RequestSaver {
 	void setNodeTypeOnInstance(String type, Individual ni) throws NdlException {
 		if (BAREMETAL.equals(type))
 			ngen.addBareMetalDomainProperty(ni);
+		else if (FORTYGBAREMETAL.equals(type))
+			ngen.addFourtyGBareMetalDomainProperty(ni);
 		else
 			ngen.addVMDomainProperty(ni);
 		if (nodeTypes.get(type) != null) {
@@ -905,15 +910,30 @@ public class RequestSaver {
 	/**
 	 * Do a reverse lookup on node type (NDL -> shortname )
 	 */
-	public static String reverseNodeTypeLookup(Resource nt) {
+	public static String reverseNodeTypeLookup(Resource nt, DomainResourceType drt) {
 		if (nt == null)
 			return null;
+		List<Map.Entry<String, Pair<String>>> mel = new ArrayList<>();
+		// first match by ce type, then by domain resource type
 		for (Iterator<Map.Entry<String, Pair<String>>> it = nodeTypes.entrySet().iterator(); it.hasNext();) {
 			Map.Entry<String, Pair<String>> e = it.next();
 			// convert to namespace and type in a pair
 			// WARNING: this checks only the type, not the namespace.
 			if (nt.getLocalName().equals(e.getValue().getSecond()))
-				return e.getKey();
+				mel.add(e);
+		}
+		if (mel.size() == 0)
+			return null;
+		else {
+			if ((mel.size() == 1) || (drt == null))
+				return mel.get(0).getKey();
+			else {
+				// try to match based on domain resource type
+				if (drt.getResourceType().equals(DomainResourceType.BM_RESOURCE_TYPE))
+					return BAREMETAL;
+				else if (drt.getResourceType().equals(DomainResourceType.FourtyGBM_RESOURCE_TYPE))
+					return FORTYGBAREMETAL;
+			}
 		}
 		return null;
 	}

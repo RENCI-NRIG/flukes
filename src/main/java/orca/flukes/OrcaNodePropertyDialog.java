@@ -568,10 +568,11 @@ public class OrcaNodePropertyDialog extends ComponentDialog implements ActionLis
 			return;
 		JList l = (JList)e.getSource();
 		if (l == typeList) {
-			if (GUIUnifiedState.getInstance().getAvailableNodeTypes()[typeList.getSelectedIndex()].equals(RequestSaver.BAREMETAL)) {
+			if ((GUIUnifiedState.getInstance().getAvailableNodeTypes()[typeList.getSelectedIndex()].equals(RequestSaver.BAREMETAL)) || 
+				(GUIUnifiedState.getInstance().getAvailableNodeTypes()[typeList.getSelectedIndex()].equals(RequestSaver.FORTYGBAREMETAL))){
 				imageList.setVisible(false);
 				imageList.setSelectedIndex(0);
-			}
+			} 
 			else
 				imageList.setVisible(true);
 		}
