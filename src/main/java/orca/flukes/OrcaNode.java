@@ -267,7 +267,7 @@ public class OrcaNode extends OrcaResource {
 	public void setIp(OrcaLink e, String addr, String nm) {
 		if (e == null)
 			return;
-		if ((addr == null) || (nm == null)) {
+		if (addr == null) {
 			addresses.remove(e);
 			return;
 		}

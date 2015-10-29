@@ -126,6 +126,8 @@ public class IP4Assign {
 		
 		debugPrint("Requesting PP address ");
 		
+		debugPrint("Assigned addresses: " + assignedToGraph);
+		 
 		if (assignedToGraph != null) {
 			// create explicit list of all assigned addresses
 			try {
