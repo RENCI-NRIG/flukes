@@ -44,13 +44,17 @@ public class OrcaHtmlResourceStateViewer extends OrcaResourceStateViewer {
 		for(OrcaResource res: resources) {
 			if (!res.isResource())
 				continue;
+			String mgt = null;
+			if (res instanceof OrcaNode) {
+				mgt = ((OrcaNode)res).getSSHManagementAccess();
+			}
 			color = "black";
 			if (OrcaResource.ORCA_FAILED.equalsIgnoreCase(res.getState())) 
 				color = "red";
 			if (OrcaResource.ORCA_ACTIVE.equalsIgnoreCase(res.getState())) 
 				color = "green";
 			sb.append("<tr><td>" + res.getName() + "</td><td><font color=\"" + color + "\">" + 
-				res.getState() + "</color></td><td>" + res.getReservationNotice() + "</td></tr>");
+				res.getState() + "</color></td><td>" + res.getReservationNotice() + "</td><td>" + (mgt != null ? mgt : "No management access") + "</td></tr>");
 		}
 		sb.append("</table>");
 		sb.append("</html>");

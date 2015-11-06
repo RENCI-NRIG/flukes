@@ -734,7 +734,7 @@ public class GUIUnifiedState extends GUICommonState implements IDeleteEdgeCallBa
 				
 				if (!assignableNode(nb))
 					continue;
-				
+
 				if (nb instanceof OrcaNodeGroup) {
 					// populate used addresses, if already numbered
 					if (nb.getIp(incLink) != null) {
@@ -764,7 +764,7 @@ public class GUIUnifiedState extends GUICommonState implements IDeleteEdgeCallBa
 				int ct = 0;
 				i = 0;
 				for(OrcaNode nb: neighbors) {
-					if (!assignableRequestNode(nb))
+					if (!assignableNode(nb))
 						continue;
 					
 					// find the link that goes back to the crossconnect
