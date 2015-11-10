@@ -365,6 +365,8 @@ public class OrcaNode extends OrcaResource {
 	
 	// if ssh is available
 	public String getSSHManagementAccess() {
+		if (managementAccess == null)
+			return null;
 		for (String service: managementAccess) {
 			if (service.startsWith("ssh://root")) {
 				return service;
