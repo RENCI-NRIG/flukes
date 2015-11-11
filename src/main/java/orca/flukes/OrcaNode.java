@@ -453,6 +453,10 @@ public class OrcaNode extends OrcaResource {
         	if (inc == null)
         		return null;
         	synchronized(inc) {
+        		if (GUIUnifiedState.getInstance().getGUIState() == GUIState.SUBMITTED) {
+        			GUIUnifiedState.showAlreadySubmittedMessage();
+        			throw new RuntimeException("Unable to create node");
+        		}
         		if (GUIUnifiedState.getInstance().getGUIState() == GUIState.MANIFEST)
         			GUIUnifiedState.getInstance().setGUIState(GUIState.MANIFESTWITHMODIFY);
         		return inc.create(ResourceType.REQUEST);

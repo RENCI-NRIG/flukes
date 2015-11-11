@@ -78,7 +78,7 @@ public class GUIUnifiedState extends GUICommonState implements IDeleteEdgeCallBa
 
 	private static GUIUnifiedState instance = null;
 	
-	public enum GUIState { REQUEST, MANIFEST, MANIFESTWITHMODIFY };
+	public enum GUIState { REQUEST, MANIFEST, MANIFESTWITHMODIFY, SUBMITTED };
 	
 	protected GUIState guiState = GUIState.REQUEST;
 
@@ -884,6 +884,7 @@ public class GUIUnifiedState extends GUICommonState implements IDeleteEdgeCallBa
 				case MANIFEST:
 					// do nothing
 					break;
+				case SUBMITTED:
 				case MANIFESTWITHMODIFY:
 					removeAssignedRequestIPs();
 					setGUIState(GUIState.MANIFEST);
@@ -1001,6 +1002,8 @@ public class GUIUnifiedState extends GUICommonState implements IDeleteEdgeCallBa
 							ta.setText(status);
 							tad.pack();
 							tad.setVisible(true);
+							saveRequest();
+							setGUIState(GUIState.SUBMITTED);
 						}
 					} catch (Exception ex) {
 						ExceptionDialog ed = new ExceptionDialog(GUI.getInstance().getFrame(), "Exception");
@@ -1020,12 +1023,18 @@ public class GUIUnifiedState extends GUICommonState implements IDeleteEdgeCallBa
 						ta.setText(status);
 						tad.pack();
 						tad.setVisible(true);
+						setGUIState(GUIState.SUBMITTED);
 					} catch (Exception ex) {
 						ExceptionDialog ed = new ExceptionDialog(GUI.getInstance().getFrame(), "Exception");
 						ed.setLocationRelativeTo(GUI.getInstance().getFrame());
 						ed.setException("Exception encountered while submitting slice modify request to ORCA: ", ex);
 						ed.setVisible(true);
 					}
+				} else if (guiState == GUIState.SUBMITTED){
+					KMessageDialog kmd = new KMessageDialog(GUI.getInstance().getFrame());
+					kmd.setMessage("These modifications have already been submitted, please query for manifest");
+					kmd.setLocationRelativeTo(GUI.getInstance().getFrame());
+					kmd.setVisible(true);
 				} else {
 					KMessageDialog kmd = new KMessageDialog(GUI.getInstance().getFrame());
 					kmd.setMessage("No modifications to submit.");
@@ -1263,9 +1272,6 @@ public class GUIUnifiedState extends GUICommonState implements IDeleteEdgeCallBa
 		}
 
 		try {
-			if (getGUIState() == GUIState.REQUEST)
-				saveRequest();
-
 			clear();
 
 			manifestString = OrcaSMXMLRPCProxy.getInstance().sliceStatus(sliceIdField.getText());
@@ -1391,6 +1397,13 @@ public class GUIUnifiedState extends GUICommonState implements IDeleteEdgeCallBa
 		}
 	}
 
+	public static void showAlreadySubmittedMessage() {
+		KMessageDialog md = new KMessageDialog(GUI.getInstance().getFrame(), "Already submitted", true);
+		md.setMessage("Modifications have been submitted, please query for manifest");
+		md.setLocationRelativeTo(GUI.getInstance().getFrame());
+		md.setVisible(true);
+	}
+	
 	//
 	// modify operations
 	//
@@ -1401,6 +1414,11 @@ public class GUIUnifiedState extends GUICommonState implements IDeleteEdgeCallBa
 		if ((c <= 0) || (url == null))
 			return;
 
+		if (guiState == GUIState.SUBMITTED) {
+			showAlreadySubmittedMessage();
+			return;
+		}
+		
 		if (guiState == GUIState.MANIFEST)
 			setGUIState(GUIState.MANIFESTWITHMODIFY);
 
@@ -1419,6 +1437,11 @@ public class GUIUnifiedState extends GUICommonState implements IDeleteEdgeCallBa
 		if ((nUrl == null) || (url == null))
 			return;
 
+		if (guiState == GUIState.SUBMITTED) {
+			showAlreadySubmittedMessage();
+			return;
+		}
+		
 		if (guiState == GUIState.MANIFEST)
 			setGUIState(GUIState.MANIFESTWITHMODIFY);
 		
