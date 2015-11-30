@@ -766,6 +766,12 @@ public class ManifestLoader implements INdlManifestModelListener, INdlRequestMod
 		Resource ceType = NdlCommons.getSpecificCE(nr);
 		if (ceType != null)
 			on.setNodeType(RequestSaver.reverseNodeTypeLookup(ceType, NdlCommons.getDomainResourceType(nr)));
+		else if (groupUrl != null) {
+			// try to lookup ce type on the group
+			Resource gropuRes = nr.getModel().getResource(groupUrl);
+			ceType = NdlCommons.getSpecificCE(gropuRes);
+			on.setNodeType(RequestSaver.reverseNodeTypeLookup(ceType, NdlCommons.getDomainResourceType(nr)));
+		}
 		
 		// substrate info if present
 		if (NdlCommons.getEC2WorkerNodeId(nr) != null)
