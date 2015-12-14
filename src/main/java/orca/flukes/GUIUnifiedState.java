@@ -802,6 +802,7 @@ public class GUIUnifiedState extends GUICommonState implements IDeleteEdgeCallBa
 		OrcaSMXMLRPCProxy.getInstance().setThreadCurrentAlias();
 		while(!flag && !stopProgress) {
 			Map<String, Map<String, String>> states = GUIUnifiedState.getInstance().queryManifestStates();
+			GUI.getInstance().kickLayout(GuiTabs.UNIFIED_VIEW);
 			flag = true;
 			int ticketed = 0, failed = 0, active = 0; 
 			for(Map.Entry<String, Map<String, String>> me: states.entrySet()) {
