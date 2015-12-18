@@ -1,5 +1,11 @@
 Flukes Release Notes:
 ---------------------
+12/18/15:
+- Made reading requests from file less strict 
+
+11/15/15:
+- Added coloring of node status
+
 09/25/15:
 - Added support for slice modify
 

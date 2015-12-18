@@ -97,6 +97,8 @@ public class RequestLoader implements INdlRequestModelListener, INdlColorRequest
 			
 			NdlRequestParser nrp = new NdlRequestParser(sb.toString(), this);
 			nrp.addColorListener(this);
+			// be permissive in loading saved requests
+			nrp.doLessStrictChecking();
 			GUI.logger().debug("Parsing request");
 			nrp.processRequest();
 			
