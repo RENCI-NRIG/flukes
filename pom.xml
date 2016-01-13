@@ -34,8 +34,6 @@
 
 	<properties>
 		<!-- location of signing keystore for jnlp -->
-		<keystorefile>/Users/ibaldin/.ssl/iliabaldine-allcerts.jks</keystorefile>
-		<keystorealias>iliabaldine-ben</keystorealias>
 		<maven.build.timestamp.format>MM/dd/yyyy HH:mm</maven.build.timestamp.format>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
@@ -198,6 +196,7 @@
 								<include>org.bouncycastle:bcprov-ext-jdk15on</include>
 								<include>org.bouncycastle:bcpkix-jdk15on</include>
 							</includes>
+							<inputTemplate>extension-template.vm</inputTemplate>
 							<outputFile>bcprov.jnlp</outputFile>
 						</jnlpExtension>
 					</jnlpExtensions>

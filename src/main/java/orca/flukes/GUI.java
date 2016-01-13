@@ -1284,7 +1284,7 @@ public class GUI implements ComponentListener {
 			"KEY or PEM file containing your private key issued by GPO, Emulab or BEN"),
 		ORCA_XMLRPC_CONTROLLER("orca.xmlrpc.url", "https://some.hostname.org:11443/orca/xmlrpc", 
 			"Comma-separated list of URLs of the ORCA XMLRPC controllers where you can submit slice requests (list is automatically populated with trusted controllers)"),
-		QUERY_POLL_INTERVAL("orca.poll.interval", "3", "Manifest poll interval in seconds"),
+		QUERY_POLL_INTERVAL("orca.poll.interval", "10", "Manifest poll interval in seconds"),
 		ENABLE_IRODS("enable.irods", "false", "Enable experimental support for iRods (at your own risk!)"),
 		AUTOIP_MASK("autoip.mask", "24", "Length of netmask (in bits) to use when assigning IP addresses to groups and broadcast links (simple point-to-point links always use 30 bit masks)"),
 		ENABLE_GENISA("enable.genisa", "false", "Enable support for GENI Slice Authority"),
