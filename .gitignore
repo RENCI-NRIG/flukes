@@ -48,3 +48,5 @@ local.properties
 
 # TeXlipse plugin
 .texlipse
+
+src/main/resources/twitter4j.properties
