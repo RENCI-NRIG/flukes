@@ -528,8 +528,8 @@ public class GUI implements ComponentListener {
 					java.awt.Desktop.getDesktop().mail(
 							new URI("mailto:geni-orca-users@googlegroups.com?subject=Problem%20with%20slice%20" + 
 									sName + 
-									"&body=Slice:%20" + sName + "%0D" + "Controller:%20" + controller + "%0D%0D" +   
-									"Describe%20the%20problem%20here.%20Attach%20the%20request%20file%20if%20needed.%0D%0DCompressed%20Manifest%20(Decompres%20here%20http%3A%2F%2Fgeni.renci.org%3A15080%2Fndl-conversion%2Fcm-convert.jsp):%0D" + 
+									"&body=Slice:%20" + sName + "%0D%0A" + "Controller:%20" + controller + "%0D%0A%0D%0A" +   
+									"Describe%20the%20problem%20here.%20Attach%20the%20request%20file%20if%20needed.%0D%0A%0D%0ACompressed%20Manifest%20(Decompres%20here%20http%3A%2F%2Fgeni.renci.org%3A15080%2Fndl-conversion%2Fcm-convert.jsp):%0D%0A" + 
 									(compressedManifest == null ? "Not%20available" : compressedManifest)));
 
 				} catch (Exception ioe) {
