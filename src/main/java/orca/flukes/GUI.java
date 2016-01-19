@@ -1272,7 +1272,7 @@ public class GUI implements ComponentListener {
 		SSH_OTHER_SUDO("ssh.other.sudo", "yes", "Should the secondary account have sudo privileges"),
 		SSH_OPTIONS("ssh.options", "-o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no", 
 			"Options for invoking SSH (the default set turns off checking .ssh/known_hosts)"),
-		ORCA_REGISTRY("orca.registry.url", "https://geni.renci.org:15443/registry/",
+		ORCA_REGISTRY("orca.registry.url", "http://geni.renci.org:15080/registry/",
 			"URL of the ORCA actor registry to query"),
 		ORCA_REGISTRY_CERT_FINGERPRINT("orca.registry.certfingerprint", "78:B6:1A:F0:6C:F8:C7:0F:C0:05:10:13:06:79:E0:AC",
 			"MD5 fingerprint of the certificate used by the registry"),

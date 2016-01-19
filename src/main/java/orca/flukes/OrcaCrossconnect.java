@@ -66,6 +66,7 @@ import edu.uci.ics.jung.visualization.LayeredIcon;
 * IN THE WORK.
 */
 public class OrcaCrossconnect extends OrcaNode {
+	private static final int DEFAULT_CROSSCONNECT_BANDWIDTH = 10000000;
 	private static final String BROADCAST_LINK = "Broadcast link";
 	// vlan or other path label
 	protected String label = null;
@@ -75,6 +76,7 @@ public class OrcaCrossconnect extends OrcaNode {
 	public OrcaCrossconnect(String name) {
 		super(name, 
 				new LayeredIcon(new ImageIcon(GUIUnifiedState.class.getResource(OrcaNodeEnum.CROSSCONNECT.getIconName())).getImage()));
+		bandwidth = DEFAULT_CROSSCONNECT_BANDWIDTH;
 	}
 
 	public void setLabel(String l) {
