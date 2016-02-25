@@ -1149,10 +1149,10 @@ public class GUI implements ComponentListener {
 			splitSliceButton = new SplitButton(sliceButton, SwingConstants.SOUTH, 180);
 		    JPopupMenu sliceMenu = new JPopupMenu("Slice menu");
 		    sliceMenu.add(addMenuItem("Submit Changes", "submit", rbl));
-		    sliceMenu.add(addMenuItem("Query Manfiest", "manifest", rbl));
+		    sliceMenu.add(addMenuItem("Query Manifest", "manifest", rbl));
 		    sliceMenu.add(addMenuItem("Poll Manifest", "manifestpoll", rbl));
-		    sliceMenu.add(addMenuItem("Extend", "extend", rbl));
-		    sliceMenu.add(addMenuItem("Delete", "delete", rbl));
+		    sliceMenu.add(addMenuItem("Extend Slice", "extend", rbl));
+		    sliceMenu.add(addMenuItem("Delete Slice", "delete", rbl));
 		    sliceMenu.add(addMenuItem("Clear Changes", "clear", rbl));
 		    sliceMenu.add(addMenuItem("View as List", "view", rbl));
 		    sliceMenu.add(addMenuItem("Return to request", "resetrequset", rbl));
