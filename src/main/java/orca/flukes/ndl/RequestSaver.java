@@ -118,6 +118,8 @@ public class RequestSaver {
 		dm.put("PSC (Pittsburgh, PA, USA) XO Rack", "pscvmsite.rdf#pscvmsite");
 		dm.put("GWU (Washington DC,  USA) XO Rack", "gwuvmsite.rdf#gwuvmsite");
 		dm.put("CIENA (Ottawa,  CA) XO Rack", "cienavmsite.rdf#cienavmsite");
+		dm.put("UNF (Jacksonville, FL) XO Rack", "unfvmsite.rdf#unfvmsite");
+		dm.put("PUCP (Lima,  Peru) XO Rack", "pucpvmsite.rdf#pucpvmsite");
 		dm.put(OrcaStitchPort.STITCHING_DOMAIN_SHORT_NAME, "orca.rdf#Stitching");
 
 		domainMap = Collections.unmodifiableMap(dm);
@@ -150,6 +152,8 @@ public class RequestSaver {
 		ndm.put("PSC XO Rack Net",  "pscNet.rdf#pscNet");
 		ndm.put("GWU XO Rack Net",  "gwuNet.rdf#gwuNet");
 		ndm.put("CIENA XO Rack Net",  "cienaNet.rdf#cienaNet");
+		ndm.put("UNF XO Rack Net", "unfNet.rdf#unfNet");
+		ndm.put("PUCP XO Rack Net", "pucpNet.rdf#pucpNet");
 
 		ndm.put("I2 ION/AL2S", "ion.rdf#ion");
 		ndm.put("NLR Net", "nlr.rdf#nlr");
@@ -853,6 +857,8 @@ public class RequestSaver {
 			mapping = reverseLookupDomain_(dom, domainMap, "/Domain/lun");
 		if (mapping == null)
 			mapping = reverseLookupDomain_(dom, domainMap, "/Domain/baremetalce");
+		if (mapping == null)
+			mapping = reverseLookupDomain_(dom, domainMap, "/Domain/fourtygbaremetalce");
 		
 		return mapping;
 	}
@@ -875,6 +881,8 @@ public class RequestSaver {
 			mapping = reverseLookupDomain_(dom, domainMap, "/Domain/vlan");
 		if (mapping == null)
 			mapping = reverseLookupDomain_(dom, domainMap, "/Domain/baremetalce");
+		if (mapping == null)
+			mapping = reverseLookupDomain_(dom, domainMap, "/Domain/fourtygbaremetalce");
 		if (mapping == null) 
 			mapping = reverseLookupDomain_(dom, netDomainMap, "/Domain/vlan");
 		

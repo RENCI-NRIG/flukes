@@ -26,6 +26,7 @@ public class AdLoader implements INdlAbstractDelegationModelListener {
 	public static final String ORCA_TRANSIT_NET = "Transit VLANs";
 	public static final String ORCA_STATIC_NET = "Static VLANs";
 	public static final String ORCA_XCAT_CLOUD = "Baremetal Nodes";
+	public static final String ORCA_40GXCAT_CLOUD = "40G Baremetal Nodes";
 	public static final String ORCA_ISCSI_STORAGE = "iSCSI LUNs";
 	
 	@Override
@@ -44,6 +45,9 @@ public class AdLoader implements INdlAbstractDelegationModelListener {
 				hardwareTypeSlots.put(htName, ls.getSetSize());
 			} else if (DomainResourceType.BM_RESOURCE_TYPE.equals(ls.LabelType)) {
 				htName = ORCA_XCAT_CLOUD;
+				hardwareTypeSlots.put(htName, ls.getSetSize());
+			} else if (DomainResourceType.FourtyGBM_RESOURCE_TYPE.equals(ls.LabelType)) {
+				htName = ORCA_40GXCAT_CLOUD;
 				hardwareTypeSlots.put(htName, ls.getSetSize());
 			} else if (DomainResourceType.VLAN_RESOURCE_TYPE.equals(ls.LabelType)) {
 				if (interfaces.size() == 1) {

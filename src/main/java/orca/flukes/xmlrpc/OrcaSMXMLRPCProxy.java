@@ -209,7 +209,7 @@ public class OrcaSMXMLRPCProxy extends OrcaXMLRPCBase {
 			if (userKey == null) 
 				throw new Exception("Unable to load user public ssh key " + keyPath);
 		} else if ((GUI.getInstance().getPreference(GUI.PrefsEnum.ENABLE_GENIMA).equalsIgnoreCase("true") ||
-				GUI.getInstance().getPreference(GUI.PrefsEnum.ENABLE_GENISA).equalsIgnoreCase("yes")) &&
+				GUI.getInstance().getPreference(GUI.PrefsEnum.ENABLE_GENIMA).equalsIgnoreCase("yes")) &&
 				("portal".equals(GUI.getInstance().getPreference(GUI.PrefsEnum.SSH_KEY_SOURCE)))) {
 			// get our urn based on the established cert
 			String urn = getAltNameUrn();
