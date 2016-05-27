@@ -1,5 +1,8 @@
 Flukes Release Notes:
 ---------------------
+05/27/16:
+- Added support for multiple resource types 
+
 12/18/15:
 - Made reading requests from file less strict 
 
