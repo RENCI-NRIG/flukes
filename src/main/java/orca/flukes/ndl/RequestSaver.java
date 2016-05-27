@@ -911,10 +911,11 @@ public class RequestSaver {
 				return mel.get(0).getKey();
 			else {
 				// try to match based on domain resource type
-				if (drt.getResourceType().equals(DomainResourceType.BM_RESOURCE_TYPE))
-					return BAREMETAL;
-				else if (drt.getResourceType().equals(DomainResourceType.FourtyGBM_RESOURCE_TYPE))
+				if (drt.getResourceType().equals(DomainResourceType.FourtyGBM_RESOURCE_TYPE))
 					return FORTYGBAREMETAL;
+				else 
+					if (drt.getResourceType().equals(DomainResourceType.BM_RESOURCE_TYPE))
+						return BAREMETAL;
 			}
 		}
 		return null;

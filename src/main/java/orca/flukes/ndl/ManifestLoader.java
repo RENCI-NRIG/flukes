@@ -53,6 +53,7 @@ import orca.flukes.OrcaResource;
 import orca.flukes.OrcaResource.ResourceType;
 import orca.flukes.OrcaStitchPort;
 import orca.flukes.OrcaStorageNode;
+import orca.ndl.DomainResourceType;
 import orca.ndl.INdlColorRequestListener;
 import orca.ndl.INdlManifestModelListener;
 import orca.ndl.INdlRequestModelListener;
@@ -769,8 +770,17 @@ public class ManifestLoader implements INdlManifestModelListener, INdlRequestMod
 			Resource gropuRes = nr.getModel().getResource(groupUrl);
 			ceType = NdlCommons.getSpecificCE(gropuRes);
 		}
-		if (ceType != null)
-			on.setNodeType(RequestSaver.reverseNodeTypeLookup(ceType, NdlCommons.getDomainResourceType(nr)));
+		if (ceType != null) {
+			// in some cases it can have multiple types (e.g. baremetal and 40G)
+			List<DomainResourceType> drtl = NdlCommons.getDomainResourceTypes(nr);
+			StringBuilder sb = new StringBuilder();
+			for(DomainResourceType drti: drtl) {
+				sb.append(RequestSaver.reverseNodeTypeLookup(ceType, drti));
+				sb.append(", ");
+			}
+			if (sb.length() > 2)
+				on.setNodeType(sb.toString().substring(0, sb.length() - 2));
+		}
 		
 		// substrate info if present
 		if (NdlCommons.getEC2WorkerNodeId(nr) != null)
