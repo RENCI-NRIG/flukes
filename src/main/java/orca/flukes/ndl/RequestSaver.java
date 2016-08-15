@@ -118,6 +118,7 @@ public class RequestSaver {
 		dm.put("PSC (Pittsburgh, PA, USA) XO Rack", "pscvmsite.rdf#pscvmsite");
 		dm.put("GWU (Washington DC,  USA) XO Rack", "gwuvmsite.rdf#gwuvmsite");
 		dm.put("CIENA (Ottawa,  CA) XO Rack", "cienavmsite.rdf#cienavmsite");
+		dm.put("CIENA2 (Hanover, MD) XO Rack", "ciena2vmsite.rdf#ciena2vmsite");
 		dm.put("UNF (Jacksonville, FL) XO Rack", "unfvmsite.rdf#unfvmsite");
 		dm.put("PUCP (Lima,  Peru) XO Rack", "pucpvmsite.rdf#pucpvmsite");
 		dm.put(OrcaStitchPort.STITCHING_DOMAIN_SHORT_NAME, "orca.rdf#Stitching");
