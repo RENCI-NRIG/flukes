@@ -84,6 +84,7 @@ import orca.flukes.ui.TextHTMLPaneDialog;
 import orca.flukes.xmlrpc.OrcaSMXMLRPCProxy;
 import orca.flukes.xmlrpc.RegistryXMLRPCProxy;
 import orca.ndl.NdlCommons;
+import orca.ndl.NdlModel;
 import orca.util.CompressEncode;
 
 import org.apache.log4j.ConsoleAppender;
@@ -627,7 +628,7 @@ public class GUI implements ComponentListener {
 	 */
 	public static void main(String[] args) {
 		// Jena stuff needs to be set up early
-		NdlCommons.setGlobalJenaRedirections();
+		NdlModel.setGlobalJenaRedirections();
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
