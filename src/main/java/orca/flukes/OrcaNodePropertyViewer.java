@@ -29,16 +29,23 @@ import com.hyperrealm.kiwi.ui.KTextArea;
 import orca.flukes.ui.TextAreaDialog;
 
 public class OrcaNodePropertyViewer extends TextAreaDialog {
-	private OrcaResource node;
 	
-	public OrcaNodePropertyViewer(JFrame parent, OrcaNode node) {
+	public OrcaNodePropertyViewer(JFrame parent, OrcaResource node) {
 		super(parent, "View node properties for " + node.getName(), 
-					"Node Properties:", 20, 50);
-		this.node = node;
-		
-		KTextArea ta = this.getTextArea();
-		
-		ta.setText(node.getViewerText());
+				"Node Properties:", 20, 50);
+	
+	KTextArea ta = this.getTextArea();
+	
+	if (node instanceof OrcaNode)
+		ta.setText(((OrcaNode)node).getViewerText());
 	}
 
+	public OrcaNodePropertyViewer(JFrame parent, OrcaResource node, String text) {
+		super(parent, "View properties for " + node.getName(), 
+				"Properties:", 20, 50);
+
+		KTextArea ta = this.getTextArea();
+
+		ta.setText(text);
+	}
 }

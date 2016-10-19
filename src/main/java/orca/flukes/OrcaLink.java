@@ -34,6 +34,11 @@ import orca.flukes.MouseMenus.EdgeColorItem;
 import orca.flukes.MouseMenus.EdgePropItem;
 import orca.flukes.MouseMenus.EdgeViewerItem;
 import orca.flukes.MouseMenus.LabelDisplay;
+import orca.flukes.MouseMenus.PerformStitchingItem;
+import orca.flukes.MouseMenus.PermitStitchingItem;
+import orca.flukes.MouseMenus.RevokeStitchingItem;
+import orca.flukes.MouseMenus.StitchPropertiesItem;
+import orca.flukes.MouseMenus.UndoStitchingItem;
 import orca.flukes.ui.Colors;
 
 import org.apache.commons.collections15.Factory;
@@ -270,6 +275,14 @@ public class OrcaLink extends OrcaResource {
 			this.add(new EdgeViewerItem(GUI.getInstance().getFrame()));     
 			this.addSeparator();
 			this.add(new EdgeColorItem(GUI.getInstance().getFrame(), false));
+			if (GUI.getInstance().withSliceStitching()) {
+				this.addSeparator();
+				this.add(new PermitStitchingItem(GUI.getInstance().getFrame()));
+				this.add(new RevokeStitchingItem(GUI.getInstance().getFrame()));
+				this.add(new PerformStitchingItem(GUI.getInstance().getFrame()));
+				this.add(new UndoStitchingItem(GUI.getInstance().getFrame()));
+				this.add(new StitchPropertiesItem(GUI.getInstance().getFrame()));
+			}
 		}
 	}
 	

@@ -48,6 +48,11 @@ import orca.flukes.MouseMenus.NodePropItem;
 import orca.flukes.MouseMenus.NodePropertiesItem;
 import orca.flukes.MouseMenus.NodeTypeDisplay;
 import orca.flukes.MouseMenus.NodeViewItem;
+import orca.flukes.MouseMenus.PerformStitchingItem;
+import orca.flukes.MouseMenus.PermitStitchingItem;
+import orca.flukes.MouseMenus.RevokeStitchingItem;
+import orca.flukes.MouseMenus.StitchPropertiesItem;
+import orca.flukes.MouseMenus.UndoStitchingItem;
 import orca.flukes.ui.Colors;
 import orca.flukes.ui.IconOutline;
 
@@ -509,6 +514,14 @@ public class OrcaNode extends OrcaResource {
 			this.add(new NodeLoginItem(GUI.getInstance().getFrame()));
 			this.addSeparator();
 			this.add(new NodeColorItem(GUI.getInstance().getFrame(), false));
+			if (GUI.getInstance().withSliceStitching()) {
+				this.addSeparator();
+				this.add(new PermitStitchingItem(GUI.getInstance().getFrame()));
+				this.add(new RevokeStitchingItem(GUI.getInstance().getFrame()));
+				this.add(new PerformStitchingItem(GUI.getInstance().getFrame()));
+				this.add(new UndoStitchingItem(GUI.getInstance().getFrame()));
+				this.add(new StitchPropertiesItem(GUI.getInstance().getFrame()));
+			}
 		}
 	}
 	

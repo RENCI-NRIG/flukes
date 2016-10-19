@@ -43,6 +43,11 @@ public class OrcaSMXMLRPCProxy extends OrcaXMLRPCBase {
 	private static final String LIST_RESOURCES = "orca.listResources";
 	private static final String GET_SLIVER_PROPERTIES = "orca.getSliverProperties";
 	private static final String GET_RESERVATION_STATES = "orca.getReservationStates";
+	private static final String GET_RESERVATION_SLICE_STITCH_INFO = "orca.getReservationSliceStitchInfo";
+	private static final String PERMIT_SLICE_STITCH = "orca.permitSliceStitch";
+	private static final String REVOKE_SLICE_STITCH = "orca.revokeSliceStitch";
+	private static final String PERFORM_SLICE_STITCH = "orca.performSliceStitch";
+	private static final String UNDO_SLICE_STITCH = "orca.undoSliceStitch";
 	private static final String SSH_DSA_PUBKEY_FILE = "id_dsa.pub";
 	private static final String SSH_RSA_PUBKEY_FILE = "id_rsa.pub";
 
@@ -399,6 +404,42 @@ public class OrcaSMXMLRPCProxy extends OrcaXMLRPCBase {
 	}
 	
 	@SuppressWarnings("unchecked")
+	public Map<String, Object> getReservationSliceStitchInfo(String sliceId, List<String> reservationIds)  throws Exception {
+		assert((sliceId != null) && (reservationIds != null));
+
+		setSSLIdentity(null, GUI.getInstance().getSelectedController());
+
+		Map<String, Object> rr = null;
+		try {
+			XmlRpcClientConfigImpl config = new XmlRpcClientConfigImpl();
+			config.setServerURL(new URL(GUI.getInstance().getSelectedController()));
+			XmlRpcClient client = new XmlRpcClient();
+			client.setConfig(config);
+			// set this transport factory for host-specific SSLContexts to work
+			XmlRpcCommonsTransportFactory f = new XmlRpcCommonsTransportFactory(client);
+			client.setTransportFactory(f);
+
+			// sliver status
+			rr = (Map<String, Object>)client.execute(GET_RESERVATION_SLICE_STITCH_INFO, new Object[]{ sliceId, reservationIds, new Object[]{}});
+
+		} catch (MalformedURLException e) {
+			throw new Exception("Please check the SM URL " + GUI.getInstance().getSelectedController());
+		} catch (XmlRpcException e) {
+			throw new Exception("Unable to contact SM " + GUI.getInstance().getSelectedController() + " due to " + e);
+		} catch (Exception e) {
+			throw new Exception("Unable to contact SM " + GUI.getInstance().getSelectedController());
+		}
+
+		if (rr == null)
+			throw new Exception("Unable to contact SM " + GUI.getInstance().getSelectedController());
+
+		if ((Boolean)rr.get(ERR_RET_FIELD))
+			throw new Exception("Unable to get reservation slice stitching info: " + rr.get(MSG_RET_FIELD));
+
+		return (Map<String, Object>) rr.get(RET_RET_FIELD);
+	}
+	
+	@SuppressWarnings("unchecked")
 	public List<Map<String, String>> getSliverProperties(String sliceId, String reservationId)  throws Exception {
 		assert((sliceId != null) && (reservationId != null));
 
@@ -561,6 +602,166 @@ public class OrcaSMXMLRPCProxy extends OrcaXMLRPCBase {
 		return result;
 	}
 
+	@SuppressWarnings("unchecked")
+	public boolean permitSliceStitch(String sliceId, String reservationId, String secret) throws Exception {
+		assert(sliceId != null);
+		assert(reservationId != null);
+		
+		Boolean result = null;
+		setSSLIdentity(null, GUI.getInstance().getSelectedController());
+
+		Map<String, Object> rr = null;
+		try {
+			XmlRpcClientConfigImpl config = new XmlRpcClientConfigImpl();
+			config.setServerURL(new URL(GUI.getInstance().getSelectedController()));
+			XmlRpcClient client = new XmlRpcClient();
+			client.setConfig(config);
+
+			// set this transport factory for host-specific SSLContexts to work
+			XmlRpcCommonsTransportFactory f = new XmlRpcCommonsTransportFactory(client);
+			client.setTransportFactory(f);
+
+			// modify slice
+			rr = (Map<String, Object>)client.execute(PERMIT_SLICE_STITCH, new Object[]{ sliceId, reservationId, secret, new Object[]{}});
+		} catch (MalformedURLException e) {
+			throw new Exception("Please check the SM URL " + GUI.getInstance().getSelectedController());
+		} catch (XmlRpcException e) {
+			throw new Exception("Unable to contact SM " + GUI.getInstance().getSelectedController() + " due to " + e);
+		} catch (Exception e) {
+			throw new Exception("Unable to contact SM " + GUI.getInstance().getSelectedController());
+		}
+
+		if (rr == null)
+			throw new Exception("Unable to contact SM " + GUI.getInstance().getSelectedController());
+
+		if ((Boolean)rr.get(ERR_RET_FIELD))
+			throw new Exception("Unable to permit slice stitching: " + (String)rr.get(MSG_RET_FIELD));
+
+		result = (Boolean)rr.get(RET_RET_FIELD);
+		return result;
+	}
+	
+	@SuppressWarnings("unchecked")
+	public boolean revokeSliceStitch(String sliceId, String reservationId) throws Exception {
+		assert(sliceId != null);
+		assert(reservationId != null);
+		
+		Boolean result = null;
+		setSSLIdentity(null, GUI.getInstance().getSelectedController());
+
+		Map<String, Object> rr = null;
+		try {
+			XmlRpcClientConfigImpl config = new XmlRpcClientConfigImpl();
+			config.setServerURL(new URL(GUI.getInstance().getSelectedController()));
+			XmlRpcClient client = new XmlRpcClient();
+			client.setConfig(config);
+
+			// set this transport factory for host-specific SSLContexts to work
+			XmlRpcCommonsTransportFactory f = new XmlRpcCommonsTransportFactory(client);
+			client.setTransportFactory(f);
+
+			// modify slice
+			rr = (Map<String, Object>)client.execute(REVOKE_SLICE_STITCH, new Object[]{ sliceId, reservationId, new Object[]{}});
+		} catch (MalformedURLException e) {
+			throw new Exception("Please check the SM URL " + GUI.getInstance().getSelectedController());
+		} catch (XmlRpcException e) {
+			throw new Exception("Unable to contact SM " + GUI.getInstance().getSelectedController() + " due to " + e);
+		} catch (Exception e) {
+			throw new Exception("Unable to contact SM " + GUI.getInstance().getSelectedController());
+		}
+
+		if (rr == null)
+			throw new Exception("Unable to contact SM " + GUI.getInstance().getSelectedController());
+
+		if ((Boolean)rr.get(ERR_RET_FIELD))
+			throw new Exception("Unable to revoke slice stitch permission: " + (String)rr.get(MSG_RET_FIELD));
+
+		result = (Boolean)rr.get(RET_RET_FIELD);
+		return result;
+	}
+	
+	@SuppressWarnings("unchecked")
+	public boolean performSliceStitch(String fromSliceId, String fromReservationId, 
+			String toSliceId, String toReservationId, String secret, Properties p) throws Exception {
+		assert(fromSliceId != null);
+		assert(fromReservationId != null);
+		assert(toSliceId != null);
+		assert(toReservationId != null);
+		
+		Boolean result = null;
+		setSSLIdentity(null, GUI.getInstance().getSelectedController());
+
+		Map<String, Object> rr = null;
+		try {
+			XmlRpcClientConfigImpl config = new XmlRpcClientConfigImpl();
+			config.setServerURL(new URL(GUI.getInstance().getSelectedController()));
+			XmlRpcClient client = new XmlRpcClient();
+			client.setConfig(config);
+
+			// set this transport factory for host-specific SSLContexts to work
+			XmlRpcCommonsTransportFactory f = new XmlRpcCommonsTransportFactory(client);
+			client.setTransportFactory(f);
+
+			// modify slice
+			rr = (Map<String, Object>)client.execute(PERFORM_SLICE_STITCH, new Object[]{ fromSliceId, fromReservationId, toSliceId, toReservationId, secret, p,  new Object[]{}});
+		} catch (MalformedURLException e) {
+			throw new Exception("Please check the SM URL " + GUI.getInstance().getSelectedController());
+		} catch (XmlRpcException e) {
+			throw new Exception("Unable to contact SM " + GUI.getInstance().getSelectedController() + " due to " + e);
+		} catch (Exception e) {
+			throw new Exception("Unable to contact SM " + GUI.getInstance().getSelectedController());
+		}
+
+		if (rr == null)
+			throw new Exception("Unable to contact SM " + GUI.getInstance().getSelectedController());
+
+		if ((Boolean)rr.get(ERR_RET_FIELD))
+			throw new Exception("Unable to perform slice stitch: " + (String)rr.get(MSG_RET_FIELD));
+
+		result = (Boolean)rr.get(RET_RET_FIELD);
+		return result;
+	}
+	
+	@SuppressWarnings("unchecked")
+	public boolean undoSliceStitch(String fromSliceId, String fromReservationId, String toSliceId, String toReservationId) throws Exception {
+		assert(fromSliceId != null);
+		assert(fromReservationId != null);
+		assert(toSliceId != null);
+		assert(toReservationId != null);
+		
+		Boolean result = null;
+		setSSLIdentity(null, GUI.getInstance().getSelectedController());
+
+		Map<String, Object> rr = null;
+		try {
+			XmlRpcClientConfigImpl config = new XmlRpcClientConfigImpl();
+			config.setServerURL(new URL(GUI.getInstance().getSelectedController()));
+			XmlRpcClient client = new XmlRpcClient();
+			client.setConfig(config);
+
+			// set this transport factory for host-specific SSLContexts to work
+			XmlRpcCommonsTransportFactory f = new XmlRpcCommonsTransportFactory(client);
+			client.setTransportFactory(f);
+
+			// modify slice
+			rr = (Map<String, Object>)client.execute(UNDO_SLICE_STITCH, new Object[]{ fromSliceId, fromReservationId, toSliceId, toReservationId, new Object[]{}});
+		} catch (MalformedURLException e) {
+			throw new Exception("Please check the SM URL " + GUI.getInstance().getSelectedController());
+		} catch (XmlRpcException e) {
+			throw new Exception("Unable to contact SM " + GUI.getInstance().getSelectedController() + " due to " + e);
+		} catch (Exception e) {
+			throw new Exception("Unable to contact SM " + GUI.getInstance().getSelectedController());
+		}
+
+		if (rr == null)
+			throw new Exception("Unable to contact SM " + GUI.getInstance().getSelectedController());
+
+		if ((Boolean)rr.get(ERR_RET_FIELD))
+			throw new Exception("Unable to undo slice stitch: " + (String)rr.get(MSG_RET_FIELD));
+
+		result = (Boolean)rr.get(RET_RET_FIELD);
+		return result;
+	}
 	/**
 	 * Try to get a public key file, first DSA, then RSA
 	 * @return

@@ -33,6 +33,11 @@ import orca.flukes.MouseMenus.NodeColorItem;
 import orca.flukes.MouseMenus.NodePropItem;
 import orca.flukes.MouseMenus.NodeTypeDisplay;
 import orca.flukes.MouseMenus.NodeViewItem;
+import orca.flukes.MouseMenus.PerformStitchingItem;
+import orca.flukes.MouseMenus.PermitStitchingItem;
+import orca.flukes.MouseMenus.RevokeStitchingItem;
+import orca.flukes.MouseMenus.StitchPropertiesItem;
+import orca.flukes.MouseMenus.UndoStitchingItem;
 import edu.uci.ics.jung.graph.util.Pair;
 import edu.uci.ics.jung.visualization.LayeredIcon;
 
@@ -166,6 +171,14 @@ public class OrcaCrossconnect extends OrcaNode {
 			this.add(new NodeViewItem(GUI.getInstance().getFrame()));
 			this.addSeparator();
 			this.add(new NodeColorItem(GUI.getInstance().getFrame(), false));
+			if (GUI.getInstance().withSliceStitching()) {
+				this.addSeparator();
+				this.add(new PermitStitchingItem(GUI.getInstance().getFrame()));
+				this.add(new RevokeStitchingItem(GUI.getInstance().getFrame()));
+				this.add(new PerformStitchingItem(GUI.getInstance().getFrame()));
+				this.add(new UndoStitchingItem(GUI.getInstance().getFrame()));
+				this.add(new StitchPropertiesItem(GUI.getInstance().getFrame()));
+			}
 		}
 	}
 	

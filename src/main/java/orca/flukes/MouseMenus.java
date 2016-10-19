@@ -16,6 +16,9 @@ import java.awt.event.ActionListener;
 import java.awt.geom.Point2D;
 import java.io.File;
 import java.io.IOException;
+import java.util.Collections;
+import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 
 import javax.swing.ButtonGroup;
@@ -24,6 +27,7 @@ import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.JRadioButtonMenuItem;
 
+import orca.flukes.ui.PasswordDialog;
 import orca.flukes.xmlrpc.OrcaSMXMLRPCProxy;
 import orca.ndl.ScaledFormatPrinter;
 
@@ -630,5 +634,221 @@ public class MouseMenus {
 		public void setPoint(Point2D point) {
 			this.point = point;
 		}	
+	}
+	
+	public static class StitchPropertiesItem extends JMenuItem implements NodeMenuListener<OrcaNode, OrcaLink>, MenuPointListener {
+		OrcaResource node;
+		VisualizationViewer<OrcaNode, OrcaLink> visComp;
+		Point2D point;
+
+		public  StitchPropertiesItem(final JFrame frame) {
+			super("Get stitching properties ...");
+			this.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					try {
+						if ((node != null) && (node.getReservationGuid() != null)) {
+
+							Map<String, Object> stitchMaps = OrcaSMXMLRPCProxy.getInstance().
+									getReservationSliceStitchInfo(GUIUnifiedState.getInstance().
+											getSliceName(), 
+											Collections.singletonList(node.getReservationGuid()));
+							
+							OrcaNodePropertyViewer viewer = new OrcaNodePropertyViewer(GUI.getInstance().getFrame(), 
+									node, node.getStitchingProperties(stitchMaps));
+									
+							viewer.pack();
+							viewer.setVisible(true);
+						
+						} else {
+							throw new Exception("No reservation ID is associated with the resource.");
+						}
+					} catch (Exception ex) {
+						ExceptionDialog ked = new ExceptionDialog(GUI.getInstance().getFrame(),
+								"Unable to get stitching properties due to exception!");
+						ked.setException("Exception encountered: ", ex);
+						ked.setLocationRelativeTo(GUI.getInstance().getFrame());
+						ked.setVisible(true);
+						return;
+					}
+				}
+			});
+		}
+
+		@Override
+		public void setNodeAndView(OrcaNode v,
+				VisualizationViewer<OrcaNode, OrcaLink> visView) {
+			visComp = visView;
+			node = v;
+		}
+
+		@Override
+		public void setPoint(Point2D point) {
+			this.point = point;			
+		}
+	}
+	
+	public static class PermitStitchingItem extends JMenuItem implements NodeMenuListener<OrcaNode, OrcaLink>, MenuPointListener {
+		OrcaResource node;
+		VisualizationViewer<OrcaNode, OrcaLink> visComp;
+		Point2D point;
+
+		public  PermitStitchingItem(final JFrame frame) {
+			super("Permit Stitching...");
+			this.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					PasswordDialog dialog = new PasswordDialog(frame, "Set Stitching Password");
+					dialog.pack();
+					dialog.setVisible(true);
+					
+					String pass = dialog.getPassword();
+					
+					try {
+						OrcaSMXMLRPCProxy.getInstance().permitSliceStitch(GUIUnifiedState.getInstance().
+								getSliceName(), node.getReservationGuid(), pass);
+					} catch(Exception ex) {
+						ExceptionDialog ked = new ExceptionDialog(GUI.getInstance().getFrame(),
+								"Unable to set stitching permission due to exception!");
+						ked.setException("Exception encountered: ", ex);
+						ked.setLocationRelativeTo(GUI.getInstance().getFrame());
+						ked.setVisible(true);
+						return;
+					}
+				}
+			});
+		}
+
+		@Override
+		public void setNodeAndView(OrcaNode v,
+				VisualizationViewer<OrcaNode, OrcaLink> visView) {
+			visComp = visView;
+			node = v;
+		}
+
+		@Override
+		public void setPoint(Point2D point) {
+			this.point = point;
+		}
+	}
+	public static class RevokeStitchingItem extends JMenuItem implements NodeMenuListener<OrcaNode, OrcaLink>, MenuPointListener {
+		OrcaResource node;
+		VisualizationViewer<OrcaNode, OrcaLink> visComp;
+		Point2D point;
+
+		public  RevokeStitchingItem(final JFrame frame) {
+			super("Revoke Stitching Permissions...");
+			this.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					try {
+						OrcaSMXMLRPCProxy.getInstance().revokeSliceStitch(GUIUnifiedState.getInstance().
+								getSliceName(), node.getReservationGuid());
+					} catch(Exception ex) {
+						ExceptionDialog ked = new ExceptionDialog(GUI.getInstance().getFrame(),
+								"Unable to revoke stitching permission due to exception!");
+						ked.setException("Exception encountered: ", ex);
+						ked.setLocationRelativeTo(GUI.getInstance().getFrame());
+						ked.setVisible(true);
+						return;
+					}
+				}
+			});
+		}
+
+		@Override
+		public void setNodeAndView(OrcaNode v,
+				VisualizationViewer<OrcaNode, OrcaLink> visView) {
+			visComp = visView;
+			node = v;
+		}
+
+		@Override
+		public void setPoint(Point2D point) {
+			this.point = point;
+		}
+	}
+	
+	public static class PerformStitchingItem extends JMenuItem implements NodeMenuListener<OrcaNode, OrcaLink>, MenuPointListener {
+		OrcaResource node;
+		VisualizationViewer<OrcaNode, OrcaLink> visComp;
+		Point2D point;
+
+		public  PerformStitchingItem(final JFrame frame) {
+			super("Perform Stitching...");
+			this.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					PerformUndoStitchDialog psd = new PerformUndoStitchDialog(GUI.getInstance().getFrame(), true);
+					
+					psd.pack();
+					psd.setVisible(true);
+					
+					Properties p = new Properties();
+					p.setProperty("ip", psd.getIpAddr());
+					try {
+						OrcaSMXMLRPCProxy.getInstance().performSliceStitch(GUIUnifiedState.getInstance().getSliceName(), node.getReservationGuid(), 
+								psd.getToSlice(), psd.getToReservation(), psd.getStitchPassword(), p);
+					} catch(Exception ex) {
+						ExceptionDialog ked = new ExceptionDialog(GUI.getInstance().getFrame(),
+								"Unable to perform stitching due to exception!");
+						ked.setException("Exception encountered: ", ex);
+						ked.setLocationRelativeTo(GUI.getInstance().getFrame());
+						ked.setVisible(true);
+						return;
+					}
+				}
+			});
+		}
+
+		@Override
+		public void setNodeAndView(OrcaNode v,
+				VisualizationViewer<OrcaNode, OrcaLink> visView) {
+			visComp = visView;
+			node = v;
+		}
+
+		@Override
+		public void setPoint(Point2D point) {
+			this.point = point;
+		}
+	}
+	
+	public static class UndoStitchingItem extends JMenuItem implements NodeMenuListener<OrcaNode, OrcaLink>, MenuPointListener {
+		OrcaResource node;
+		VisualizationViewer<OrcaNode, OrcaLink> visComp;
+		Point2D point;
+
+		public  UndoStitchingItem(final JFrame frame) {
+			super("Undo Stitching...");
+			this.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					PerformUndoStitchDialog psd = new PerformUndoStitchDialog(GUI.getInstance().getFrame(), false);
+					
+					psd.pack();
+					psd.setVisible(true);
+					
+					try {
+						OrcaSMXMLRPCProxy.getInstance().undoSliceStitch(GUIUnifiedState.getInstance().getSliceName(), node.getReservationGuid(), 
+								psd.getToSlice(), psd.getToReservation());
+					} catch(Exception ex) {
+						ExceptionDialog ked = new ExceptionDialog(GUI.getInstance().getFrame(),
+								"Unable to undo stitching due to exception!");
+						ked.setException("Exception encountered: ", ex);
+						ked.setLocationRelativeTo(GUI.getInstance().getFrame());
+						ked.setVisible(true);
+						return;
+					}
+				}
+			});
+		}
+
+		@Override
+		public void setNodeAndView(OrcaNode v,
+				VisualizationViewer<OrcaNode, OrcaLink> visView) {
+			visComp = visView;
+			node = v;
+		}
+
+		@Override
+		public void setPoint(Point2D point) {
+			this.point = point;
+		}
 	}
 }

@@ -164,6 +164,7 @@ public class GUI implements ComponentListener {
 	private ChooserWithNewDialog<String> icd = null;
 	
 	private boolean withIRods = false;
+	private boolean withSliceStitching = false;
 	
 	// alias and password within a keystore to be used for XMLRPC calls
 	private String keyAlias = null, keyPassword = null;
@@ -640,6 +641,7 @@ public class GUI implements ComponentListener {
 					gui.getControllersFromPreferences();
 					gui.addControllersFromRegistry();
 					gui.getIRodsPreferences();
+					gui.getSliceStitchingPreferences();
 					gui.getCustomInstancePreferences();
 					
 					gui.initialize();
@@ -1307,7 +1309,8 @@ public class GUI implements ComponentListener {
 		IMAGE_URL("image.url", "http://geni-images.renci.org/images/standard/debian/deb6-neuca-v1.0.7.xml", 
 			"URL of a known image description file, you can add more images by adding image1.url, image2.url etc."),
 		IMAGE_HASH("image.hash", "ba15fa6f56cc00d354e505259b9cb3804e1bcb73", 
-			"SHA-1 hash of the image description file, you can add more images by adding image1.hash, image2.hash etc.");
+			"SHA-1 hash of the image description file, you can add more images by adding image1.hash, image2.hash etc."),
+		ENABLE_SLICE_STITCHING("enable.slice.stitching", "false", "Enable support for slice stitching");
 		
 		private final String propName;
 		private final String defaultValue;
@@ -1421,6 +1424,16 @@ public class GUI implements ComponentListener {
 		if (getPreference(PrefsEnum.ENABLE_IRODS).equalsIgnoreCase("true") ||
 				getPreference(PrefsEnum.ENABLE_IRODS).equalsIgnoreCase("yes")) 
 			withIRods = true;		
+	}
+	
+	private void getSliceStitchingPreferences() {
+		if (getPreference(PrefsEnum.ENABLE_SLICE_STITCHING).equalsIgnoreCase("true") ||
+				getPreference(PrefsEnum.ENABLE_SLICE_STITCHING).equalsIgnoreCase("yes"))
+			withSliceStitching = true;
+	}
+	
+	public boolean withSliceStitching() {
+		return withSliceStitching;
 	}
 	
 	private void getCustomInstancePreferences() {

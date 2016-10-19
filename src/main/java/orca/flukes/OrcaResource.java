@@ -3,6 +3,7 @@ package orca.flukes;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
@@ -184,4 +185,42 @@ public abstract class OrcaResource implements Comparable<OrcaResource> {
 		return url;
 	}
     
+	/**
+	 * [<reservation id>:
+	 * 		"allowed": "yes"|"no"
+	 * 		[<stitch guid>:
+	 * 			"performed": <RFC3399 date/time>
+	 * 			"undone":    <RFC3399 date/time> - optional
+	 * 			"toreservation": <guid>
+	 * 			"toslice": <string>
+	 * 			"stitch.dn": <string>]]
+	 */
+    public static final String SliceStitchAllowed = "allowed";
+    public static final String SliceStitchToReservation = "toreservation";
+    public static final String SliceStitchToSlice = "toslice";
+    public static final String SliceStitchPerformed = "performed";
+    public static final String SliceStitchUndone = "undone";
+    public static final String SliceStitchDN = "stitch.dn";
+	// get and stitching properties
+	public String getStitchingProperties(Map<String, Object> stitch) {
+		StringBuilder ret = new StringBuilder();
+		
+		for(Map.Entry<String, Object> e: stitch.entrySet()) {
+			ret.append("Reservation: " + e.getKey() + "\n");
+			Map<String, Object> resMap = (Map<String, Object>)e.getValue();
+			ret.append("\tStitching Allowed: " + 
+					(resMap.get(SliceStitchAllowed) == null ? "no" : resMap.get(SliceStitchAllowed)) + "\n\tStitching Properties:\n");
+			for (Map.Entry<String, Object> ee: resMap.entrySet()) {
+				if (SliceStitchAllowed.equals(ee.getKey()))
+					continue;
+				Map<String, String> stitchProps = (Map<String, String>)ee.getValue();
+				for(Map.Entry<String, String> eee: stitchProps.entrySet()) {
+					ret.append("\t\t" + eee.getKey() + ": " + eee.getValue() + "\n");
+				}
+			}
+			ret.append("\n");
+		}
+		
+		return ret.toString();
+	}
 }
