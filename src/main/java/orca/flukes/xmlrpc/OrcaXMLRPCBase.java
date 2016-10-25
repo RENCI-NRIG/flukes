@@ -90,6 +90,10 @@ public class OrcaXMLRPCBase {
 	public void resetSSLIdentity() {
 		sslIdentitySet = false;
 	}
+	
+	public boolean isSSLIdentitySet() {
+		return sslIdentitySet;
+	}
 
 	/**
 	 * Set the identity for the communications to the XMLRPC controller. Eventually
@@ -115,18 +119,26 @@ public class OrcaXMLRPCBase {
 				keyAlias = GUI.getInstance().getKeystoreAlias();
 				if (keyPassword == null) 
 					keyPassword = GUI.getInstance().getKeystorePassword();
+				if (keyPassword == null)
+					return;
+				
 				FileInputStream jksIS = new FileInputStream(keyStorePath);
 				ks = loadJKSData(jksIS, keyAlias, keyPassword);
 				
 				jksIS.close();
 			}
 			else if (certFilePath.exists() && certKeyFilePath.exists()) {
-				FileInputStream certIS = new FileInputStream(certFilePath);
-				FileInputStream keyIS = new FileInputStream(certKeyFilePath);
-				keyAlias = "x509convert";
 				if (keyPassword == null) {
 					keyPassword = GUI.getInstance().getKeystorePasswordOnly();
 				}
+				if (keyPassword == null) {
+					return;
+				}
+				
+				FileInputStream certIS = new FileInputStream(certFilePath);
+				FileInputStream keyIS = new FileInputStream(certKeyFilePath);
+				keyAlias = "x509convert";
+
 				ks = loadX509Data(certIS, keyIS, keyAlias, keyPassword);
 				certIS.close();
 				keyIS.close();

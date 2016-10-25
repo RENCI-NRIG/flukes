@@ -44,24 +44,23 @@ public class PerformUndoStitchDialog extends ComponentDialog {
 	private JPasswordField stitchPass;
 	private IpAddrField ip;
 	private KLabel toSliceLabel, toReservationLabel, stitchPassLabel, ipAddrLabel;
-	boolean performDo = true;
+	static boolean performDo = true;
 	
-	// we're doing a closure AbstractAction for checkbox and it needs access to 'this'
-	// without calling it 'this'
-	private ComponentDialog dialog;
+	public static void setPerformConstructor() {
+		performDo = true;
+	}
 	
-	private JFrame parent;
+	public static void setUndoConstructor() {
+		performDo = false;
+	}
 	
 	/**
 	 * Create the dialog.
 	 */
-	public PerformUndoStitchDialog(JFrame parent, boolean doPerform) {
+	public PerformUndoStitchDialog(JFrame parent) {
 		super(parent, "Perform Slice Stitch", true);
 		super.setLocationRelativeTo(parent);
 		setComment("Set slice name, reservation id and password:");
-		this.parent = parent;
-		this.dialog = this;
-		performDo = doPerform;
 	}
 	
 	

@@ -65,6 +65,9 @@ public class OrcaSMXMLRPCProxy extends OrcaXMLRPCBase {
 	public Map<String, Object> getVersion() throws Exception {
 		Map<String, Object> versionMap = null;
 		setSSLIdentity(null, GUI.getInstance().getSelectedController());
+		
+		if (!isSSLIdentitySet())
+			throw new Exception("SSL Identity not set, unable to proceed");
 		try {
 			XmlRpcClientConfigImpl config = new XmlRpcClientConfigImpl();
 			config.setServerURL(new URL(GUI.getInstance().getSelectedController()));
@@ -101,7 +104,10 @@ public class OrcaSMXMLRPCProxy extends OrcaXMLRPCBase {
 
 		String result = null;
 		setSSLIdentity(null, GUI.getInstance().getSelectedController());
-
+		
+		if (!isSSLIdentitySet())
+			throw new Exception("SSL Identity not set, unable to proceed");
+		
 		Map<String, Object> rr = null;
 		try {
 			XmlRpcClientConfigImpl config = new XmlRpcClientConfigImpl();
@@ -146,7 +152,10 @@ public class OrcaSMXMLRPCProxy extends OrcaXMLRPCBase {
 
 		Boolean result = false;
 		setSSLIdentity(null, GUI.getInstance().getSelectedController());
-
+		
+		if (!isSSLIdentitySet())
+			throw new Exception("SSL Identity not set, unable to proceed");
+		
 		Map<String, Object> rr = null;
 		try {
 			XmlRpcClientConfigImpl config = new XmlRpcClientConfigImpl();
@@ -190,6 +199,9 @@ public class OrcaSMXMLRPCProxy extends OrcaXMLRPCBase {
 	 */
 	public String createSlice(String sliceId, String resReq) throws Exception {
 		setSSLIdentity(null, GUI.getInstance().getSelectedController());
+		
+		if (!isSSLIdentitySet())
+			throw new Exception("SSL Identity not set, unable to proceed");
 
 		// collect user credentials from $HOME/.ssh or load from portal
 
@@ -236,7 +248,7 @@ public class OrcaSMXMLRPCProxy extends OrcaXMLRPCBase {
 			if ((keys == null) || 
 					(keys.get(GENICHXMLRPCProxy.SSH_KEY_PUBLIC) == null)) {
 				throw new Exception("Unable to obtain public SSH key from the portal for user " + urn + ", please change the '" +
-						GUI.PrefsEnum.SSH_KEY_SOURCE.name() + "' property to  'file'");
+						GUI.PrefsEnum.SSH_KEY_SOURCE.name() + "' property to  'file' or set proper SSL identity");
 			}
 			GUI.logger().info("Using public SSH key obtained from the portal");
 			userKey = (String)keys.get(GENICHXMLRPCProxy.SSH_KEY_PUBLIC);
@@ -294,6 +306,9 @@ public class OrcaSMXMLRPCProxy extends OrcaXMLRPCBase {
 	public boolean deleteSlice(String sliceId)  throws Exception {
 		boolean res = false;
 		setSSLIdentity(null, GUI.getInstance().getSelectedController());
+		
+		if (!isSSLIdentitySet())
+			throw new Exception("SSL Identity not set, unable to proceed");
 
 		Map<String, Object> rr = null;
 		try {
@@ -333,7 +348,10 @@ public class OrcaSMXMLRPCProxy extends OrcaXMLRPCBase {
 
 		String result = null;
 		setSSLIdentity(null, GUI.getInstance().getSelectedController());
-
+		
+		if (!isSSLIdentitySet())
+			throw new Exception("SSL Identity not set, unable to proceed");
+		
 		Map<String, Object> rr = null;
 		try {
 			XmlRpcClientConfigImpl config = new XmlRpcClientConfigImpl();
@@ -372,6 +390,9 @@ public class OrcaSMXMLRPCProxy extends OrcaXMLRPCBase {
 		assert((sliceId != null) && (reservationIds != null));
 
 		setSSLIdentity(null, GUI.getInstance().getSelectedController());
+		
+		if (!isSSLIdentitySet())
+			throw new Exception("SSL Identity not set, unable to proceed");
 
 		Map<String, Object> rr = null;
 		try {
@@ -408,6 +429,9 @@ public class OrcaSMXMLRPCProxy extends OrcaXMLRPCBase {
 		assert((sliceId != null) && (reservationIds != null));
 
 		setSSLIdentity(null, GUI.getInstance().getSelectedController());
+		
+		if (!isSSLIdentitySet())
+			throw new Exception("SSL Identity not set, unable to proceed");
 
 		Map<String, Object> rr = null;
 		try {
@@ -444,6 +468,9 @@ public class OrcaSMXMLRPCProxy extends OrcaXMLRPCBase {
 		assert((sliceId != null) && (reservationId != null));
 
 		setSSLIdentity(null, GUI.getInstance().getSelectedController());
+		
+		if (!isSSLIdentitySet())
+			throw new Exception("SSL Identity not set, unable to proceed");
 
 		Map<String, Object> rr = null;
 		try {
@@ -486,6 +513,9 @@ public class OrcaSMXMLRPCProxy extends OrcaXMLRPCBase {
 	public String[] listMySlices() throws Exception {
 		String[] result = null;
 		setSSLIdentity(null, GUI.getInstance().getSelectedController());
+		
+		if (!isSSLIdentitySet())
+			throw new Exception("SSL Identity not set, unable to proceed");
 
 		Map<String, Object> rr = null;
 		try {
@@ -533,7 +563,10 @@ public class OrcaSMXMLRPCProxy extends OrcaXMLRPCBase {
 
 		String result = null;
 		setSSLIdentity(null, GUI.getInstance().getSelectedController());
-
+		
+		if (!isSSLIdentitySet())
+			throw new Exception("SSL Identity not set, unable to proceed");
+		
 		Map<String, Object> rr = null;
 		try {
 			XmlRpcClientConfigImpl config = new XmlRpcClientConfigImpl();
@@ -570,7 +603,10 @@ public class OrcaSMXMLRPCProxy extends OrcaXMLRPCBase {
 
 		String result = null;
 		setSSLIdentity(null, GUI.getInstance().getSelectedController());
-
+		
+		if (!isSSLIdentitySet())
+			throw new Exception("SSL Identity not set, unable to proceed");
+		
 		Map<String, Object> rr = null;
 		try {
 			XmlRpcClientConfigImpl config = new XmlRpcClientConfigImpl();
@@ -609,7 +645,10 @@ public class OrcaSMXMLRPCProxy extends OrcaXMLRPCBase {
 		
 		Boolean result = null;
 		setSSLIdentity(null, GUI.getInstance().getSelectedController());
-
+		
+		if (!isSSLIdentitySet())
+			throw new Exception("SSL Identity not set, unable to proceed");
+		
 		Map<String, Object> rr = null;
 		try {
 			XmlRpcClientConfigImpl config = new XmlRpcClientConfigImpl();
@@ -648,7 +687,10 @@ public class OrcaSMXMLRPCProxy extends OrcaXMLRPCBase {
 		
 		Boolean result = null;
 		setSSLIdentity(null, GUI.getInstance().getSelectedController());
-
+		
+		if (!isSSLIdentitySet())
+			throw new Exception("SSL Identity not set, unable to proceed");
+		
 		Map<String, Object> rr = null;
 		try {
 			XmlRpcClientConfigImpl config = new XmlRpcClientConfigImpl();
@@ -690,7 +732,10 @@ public class OrcaSMXMLRPCProxy extends OrcaXMLRPCBase {
 		
 		Boolean result = null;
 		setSSLIdentity(null, GUI.getInstance().getSelectedController());
-
+		
+		if (!isSSLIdentitySet())
+			throw new Exception("SSL Identity not set, unable to proceed");
+		
 		Map<String, Object> rr = null;
 		try {
 			XmlRpcClientConfigImpl config = new XmlRpcClientConfigImpl();
@@ -731,7 +776,10 @@ public class OrcaSMXMLRPCProxy extends OrcaXMLRPCBase {
 		
 		Boolean result = null;
 		setSSLIdentity(null, GUI.getInstance().getSelectedController());
-
+		
+		if (!isSSLIdentitySet())
+			throw new Exception("SSL Identity not set, unable to proceed");
+		
 		Map<String, Object> rr = null;
 		try {
 			XmlRpcClientConfigImpl config = new XmlRpcClientConfigImpl();

@@ -30,7 +30,7 @@ public class PasswordDialog extends ComponentDialog {
 		GridBagLayout gbl_contentPanel = new GridBagLayout();
 		kp.setLayout(gbl_contentPanel);
 		{
-			KLabel kl = new KLabel("Key Password");
+			KLabel kl = new KLabel("Password");
 			GridBagConstraints gbc_lblNewLabel = new GridBagConstraints();
 			gbc_lblNewLabel.anchor = GridBagConstraints.WEST;
 			gbc_lblNewLabel.insets = new Insets(0, 0, 5, 5);

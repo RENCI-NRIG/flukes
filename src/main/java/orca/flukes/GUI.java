@@ -773,6 +773,11 @@ public class GUI implements ComponentListener {
 		pd.pack();
 		pd.setVisible(true);
 		
+		if (pd.isCancelled()) {
+			keyPassword = null;
+			return;
+		}
+		
 		keyPassword = pd.getPassword();
 	}
 	
@@ -782,6 +787,12 @@ public class GUI implements ComponentListener {
 		
 		ld.pack();
 		ld.setVisible(true);
+		
+		if (ld.isCancelled()) {
+			keyAlias = null;
+			keyPassword = null;
+			return;
+		}
 		
 		keyAlias = ld.getAlias();
 		keyPassword = ld.getPassword();

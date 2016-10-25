@@ -700,6 +700,9 @@ public class MouseMenus {
 					dialog.pack();
 					dialog.setVisible(true);
 					
+					if (dialog.isCancelled())
+						return;
+					
 					String pass = dialog.getPassword();
 					
 					try {
@@ -775,10 +778,14 @@ public class MouseMenus {
 			super("Perform Stitching...");
 			this.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
-					PerformUndoStitchDialog psd = new PerformUndoStitchDialog(GUI.getInstance().getFrame(), true);
+					PerformUndoStitchDialog.setPerformConstructor();
+					PerformUndoStitchDialog psd = new PerformUndoStitchDialog(GUI.getInstance().getFrame());
 					
 					psd.pack();
 					psd.setVisible(true);
+					
+					if (psd.isCancelled())
+						return;
 					
 					Properties p = new Properties();
 					p.setProperty("ip", psd.getIpAddr());
@@ -819,10 +826,14 @@ public class MouseMenus {
 			super("Undo Stitching...");
 			this.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
-					PerformUndoStitchDialog psd = new PerformUndoStitchDialog(GUI.getInstance().getFrame(), false);
+					PerformUndoStitchDialog.setUndoConstructor();
+					PerformUndoStitchDialog psd = new PerformUndoStitchDialog(GUI.getInstance().getFrame());
 					
 					psd.pack();
 					psd.setVisible(true);
+					
+					if (psd.isCancelled())
+						return;
 					
 					try {
 						OrcaSMXMLRPCProxy.getInstance().undoSliceStitch(GUIUnifiedState.getInstance().getSliceName(), node.getReservationGuid(), 

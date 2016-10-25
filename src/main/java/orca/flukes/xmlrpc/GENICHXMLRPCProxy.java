@@ -139,7 +139,10 @@ public class GENICHXMLRPCProxy extends OrcaXMLRPCBase {
 			agentUrl = GUI.getInstance().getPreference(PrefsEnum.GENIMA_URL);
 			break;
 		}
-		setSSLIdentity(null, agentUrl);
+		setSSLIdentity(null, agentUrl);	
+		
+		if (!isSSLIdentitySet())
+			throw new Exception("SSL Identity not set, unable to proceed");
 
 		Map<String, Object> rr = null;
 		try {
@@ -170,7 +173,7 @@ public class GENICHXMLRPCProxy extends OrcaXMLRPCBase {
 			Map<String, Object> fields = fedGetVersion(a);
 
 			if (fields == null)
-				throw new Exception(a + " returned invalid values");
+				throw new Exception(a + " returned invalid values or SSL identity not set");
 			if ((fields.get(FedField.VERSION.name()) != null) && ((String)fields.get(FedField.VERSION.name())).startsWith(FED_VERSION))
 				return;
 			else
@@ -194,6 +197,9 @@ public class GENICHXMLRPCProxy extends OrcaXMLRPCBase {
 
 		setSSLIdentity(null, GUI.getInstance().getPreference(PrefsEnum.GENISA_URL));
 
+		if (!isSSLIdentitySet())
+			throw new Exception("SSL Identity not set, unable to proceed");
+		
 		saCompatible();
 
 		Map<String, Object> rr = null;
@@ -232,7 +238,10 @@ public class GENICHXMLRPCProxy extends OrcaXMLRPCBase {
 			throw new Exception("Invalid slice Urn: " + sliceUrn);
 
 		setSSLIdentity(null, GUI.getInstance().getPreference(PrefsEnum.GENISA_URL));
-
+		
+		if (!isSSLIdentitySet())
+			throw new Exception("SSL Identity not set, unable to proceed");
+		
 		saCompatible();
 
 		Map<String, Object> rr = null;
@@ -266,6 +275,9 @@ public class GENICHXMLRPCProxy extends OrcaXMLRPCBase {
 
 		setSSLIdentity(null, GUI.getInstance().getPreference(PrefsEnum.GENISA_URL));
 
+		if (!isSSLIdentitySet())
+			throw new Exception("SSL Identity not set, unable to proceed");
+		
 		saCompatible();
 
 		Map<String, Object> rr = null;
@@ -324,7 +336,10 @@ public class GENICHXMLRPCProxy extends OrcaXMLRPCBase {
 			throw new Exception("Invalid user Urn: " + userUrn);
 
 		setSSLIdentity(null, GUI.getInstance().getPreference(PrefsEnum.GENIMA_URL));
-
+		
+		if (!isSSLIdentitySet())
+			throw new Exception("SSL Identity not set, unable to proceed");
+		
 		maCompatible();
 
 		Map<String, Object> rr = null;
