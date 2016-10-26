@@ -636,8 +636,9 @@ public class MouseMenus {
 		}	
 	}
 	
-	public static class StitchPropertiesItem extends JMenuItem implements NodeMenuListener<OrcaNode, OrcaLink>, MenuPointListener {
-		OrcaResource node;
+	public static class StitchPropertiesItem extends JMenuItem implements NodeMenuListener<OrcaNode, OrcaLink>, 
+		EdgeMenuListener<OrcaNode, OrcaLink>, MenuPointListener {
+		OrcaResource node = null;
 		VisualizationViewer<OrcaNode, OrcaLink> visComp;
 		Point2D point;
 
@@ -685,10 +686,17 @@ public class MouseMenus {
 		public void setPoint(Point2D point) {
 			this.point = point;			
 		}
+		
+		@Override
+		public void setEdgeAndView(OrcaLink edge, VisualizationViewer<OrcaNode, OrcaLink> visComp) {
+			this.node = edge;
+			this.visComp = visComp;
+		}
 	}
 	
-	public static class PermitStitchingItem extends JMenuItem implements NodeMenuListener<OrcaNode, OrcaLink>, MenuPointListener {
-		OrcaResource node;
+	public static class PermitStitchingItem extends JMenuItem implements NodeMenuListener<OrcaNode, OrcaLink>, 
+		EdgeMenuListener<OrcaNode, OrcaLink>, MenuPointListener {
+		OrcaResource node = null;
 		VisualizationViewer<OrcaNode, OrcaLink> visComp;
 		Point2D point;
 
@@ -731,9 +739,16 @@ public class MouseMenus {
 		public void setPoint(Point2D point) {
 			this.point = point;
 		}
+		
+		@Override
+		public void setEdgeAndView(OrcaLink edge, VisualizationViewer<OrcaNode, OrcaLink> visComp) {
+			this.node = edge;
+			this.visComp = visComp;
+		}
 	}
-	public static class RevokeStitchingItem extends JMenuItem implements NodeMenuListener<OrcaNode, OrcaLink>, MenuPointListener {
-		OrcaResource node;
+	public static class RevokeStitchingItem extends JMenuItem implements NodeMenuListener<OrcaNode, OrcaLink>, 
+		EdgeMenuListener<OrcaNode, OrcaLink>, MenuPointListener {
+		OrcaResource node = null;
 		VisualizationViewer<OrcaNode, OrcaLink> visComp;
 		Point2D point;
 
@@ -767,10 +782,17 @@ public class MouseMenus {
 		public void setPoint(Point2D point) {
 			this.point = point;
 		}
+		
+		@Override
+		public void setEdgeAndView(OrcaLink edge, VisualizationViewer<OrcaNode, OrcaLink> visComp) {
+			this.node = edge;
+			this.visComp = visComp;
+		}
 	}
 	
-	public static class PerformStitchingItem extends JMenuItem implements NodeMenuListener<OrcaNode, OrcaLink>, MenuPointListener {
-		OrcaResource node;
+	public static class PerformStitchingItem extends JMenuItem implements NodeMenuListener<OrcaNode, OrcaLink>, 
+		EdgeMenuListener<OrcaNode, OrcaLink>, MenuPointListener {
+		OrcaResource node = null;
 		VisualizationViewer<OrcaNode, OrcaLink> visComp;
 		Point2D point;
 
@@ -815,10 +837,17 @@ public class MouseMenus {
 		public void setPoint(Point2D point) {
 			this.point = point;
 		}
+		
+		@Override
+		public void setEdgeAndView(OrcaLink edge, VisualizationViewer<OrcaNode, OrcaLink> visComp) {
+			this.node = edge;
+			this.visComp = visComp;
+		}
 	}
 	
-	public static class UndoStitchingItem extends JMenuItem implements NodeMenuListener<OrcaNode, OrcaLink>, MenuPointListener {
-		OrcaResource node;
+	public static class UndoStitchingItem extends JMenuItem implements NodeMenuListener<OrcaNode, OrcaLink>, 
+		EdgeMenuListener<OrcaNode, OrcaLink>, MenuPointListener {
+		OrcaResource node = null;
 		VisualizationViewer<OrcaNode, OrcaLink> visComp;
 		Point2D point;
 
@@ -860,6 +889,12 @@ public class MouseMenus {
 		@Override
 		public void setPoint(Point2D point) {
 			this.point = point;
+		}
+		
+		@Override
+		public void setEdgeAndView(OrcaLink edge, VisualizationViewer<OrcaNode, OrcaLink> visComp) {
+			this.node = edge;
+			this.visComp = visComp;
 		}
 	}
 }

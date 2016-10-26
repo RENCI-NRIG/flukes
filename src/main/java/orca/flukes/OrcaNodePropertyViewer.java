@@ -31,8 +31,8 @@ import orca.flukes.ui.TextAreaDialog;
 public class OrcaNodePropertyViewer extends TextAreaDialog {
 	
 	public OrcaNodePropertyViewer(JFrame parent, OrcaResource node) {
-		super(parent, "View node properties for " + node.getName(), 
-				"Node Properties:", 20, 50);
+		super(parent, "View properties for " + node.getName(), 
+				"Properties:", 20, 50);
 	
 	KTextArea ta = this.getTextArea();
 	
