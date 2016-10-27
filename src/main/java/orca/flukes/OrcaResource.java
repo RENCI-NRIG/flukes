@@ -217,6 +217,7 @@ public abstract class OrcaResource implements Comparable<OrcaResource> {
 				for(Map.Entry<String, String> eee: stitchProps.entrySet()) {
 					ret.append("\t\t" + eee.getKey() + ": " + eee.getValue() + "\n");
 				}
+				ret.append("\n");
 			}
 			ret.append("\n");
 		}
