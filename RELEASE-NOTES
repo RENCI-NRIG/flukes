@@ -1,5 +1,8 @@
 Flukes Release Notes:
 ---------------------
+10/27/16:
+- Added support for slice stitching, see ExoBlog
+
 05/27/16:
 - Added support for multiple resource types 
 
