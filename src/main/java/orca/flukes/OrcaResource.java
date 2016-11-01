@@ -202,6 +202,7 @@ public abstract class OrcaResource implements Comparable<OrcaResource> {
     public static final String SliceStitchUndone = "undone";
     public static final String SliceStitchDN = "stitch.dn";
 	// get and stitching properties
+    @SuppressWarnings("unchecked")
 	public String getStitchingProperties(Map<String, Object> stitch) {
 		StringBuilder ret = new StringBuilder();
 		
@@ -209,10 +210,12 @@ public abstract class OrcaResource implements Comparable<OrcaResource> {
 			ret.append("Reservation: " + e.getKey() + "\n");
 			Map<String, Object> resMap = (Map<String, Object>)e.getValue();
 			ret.append("\tStitching Allowed: " + 
-					(resMap.get(SliceStitchAllowed) == null ? "no" : resMap.get(SliceStitchAllowed)) + "\n\tStitching Properties:\n");
+					(resMap.get(SliceStitchAllowed) == null ? "no" : resMap.get(SliceStitchAllowed)) + "\n\n");
 			for (Map.Entry<String, Object> ee: resMap.entrySet()) {
 				if (SliceStitchAllowed.equals(ee.getKey()))
 					continue;
+				String stitchGuid = ee.getKey();
+				ret.append("\tStitch ID: " + stitchGuid + "\n");
 				Map<String, String> stitchProps = (Map<String, String>)ee.getValue();
 				for(Map.Entry<String, String> eee: stitchProps.entrySet()) {
 					ret.append("\t\t" + eee.getKey() + ": " + eee.getValue() + "\n");

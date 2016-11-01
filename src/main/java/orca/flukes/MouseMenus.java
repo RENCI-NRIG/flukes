@@ -371,7 +371,7 @@ public class MouseMenus {
 		Point2D point;
 
 		public  IncreaseByNodeGroupItem(final JFrame frame) {
-			super("Increase node group size...");
+			super("Increase Node Group Size...");
 			this.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					OrcaIncreaseGroupSizeDialog dialog = new OrcaIncreaseGroupSizeDialog(frame, node);
@@ -526,7 +526,7 @@ public class MouseMenus {
 		Point2D point;
 
 		public  NodePropertiesItem(final JFrame frame) {
-			super("Get Node properties ...");
+			super("Get Node Unit Properties ...");
 			this.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					try {
@@ -643,7 +643,7 @@ public class MouseMenus {
 		Point2D point;
 
 		public  StitchPropertiesItem(final JFrame frame) {
-			super("Get stitching properties ...");
+			super("Get Stitching Properties ...");
 			this.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					try {
