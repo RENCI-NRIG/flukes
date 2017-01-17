@@ -105,7 +105,7 @@ public class RequestSaver {
 		dm.put("UH (Houston, TX USA) XO Rack", "uhvmsite.rdf#uhvmsite");
 		dm.put("UvA (Amsterdam, The Netherlands) XO Rack", "uvanlvmsite.rdf#uvanlvmsite");
 		dm.put("UFL (Gainesville, FL USA) XO Rack", "uflvmsite.rdf#uflvmsite");
-		dm.put("UCD (Davis, CA USA) XO Rack", "ucdvmsite.rdf#ucdvmsite");
+		//dm.put("UCD (Davis, CA USA) XO Rack", "ucdvmsite.rdf#ucdvmsite");
 		dm.put("OSF (Oakland, CA USA) XO Rack", "osfvmsite.rdf#osfvmsite");
 		dm.put("SL (Chicago, IL USA) XO Rack", "slvmsite.rdf#slvmsite");
 		dm.put("WVN (UCS-B series rack in Morgantown, WV, USA)", "wvnvmsite.rdf#wvnvmsite");
@@ -121,6 +121,8 @@ public class RequestSaver {
 		dm.put("CIENA2 (Hanover, MD) XO Rack", "ciena2vmsite.rdf#ciena2vmsite");
 		dm.put("UNF (Jacksonville, FL) XO Rack", "unfvmsite.rdf#unfvmsite");
 		dm.put("PUCP (Lima,  Peru) XO Rack", "pucpvmsite.rdf#pucpvmsite");
+		dm.put("RENCI RADICS (Chapel Hill, NC USA) RADICS Rack", "rciradicsvmsite.rdf#rciradicsvmsite");
+		dm.put("BBN RADICS (Boston, MA USA) RADICS Rack", "bbnradicsvmsite.rdf#bbnradicsvmsite");
 		dm.put(OrcaStitchPort.STITCHING_DOMAIN_SHORT_NAME, "orca.rdf#Stitching");
 
 		domainMap = Collections.unmodifiableMap(dm);
@@ -140,7 +142,7 @@ public class RequestSaver {
 		ndm.put("NCSU XO Rack Net", "ncsuNet.rdf#ncsuNet");
 		ndm.put("UvA XO Rack Net", "uvanlNet.rdf#uvanlNet");
 		ndm.put("UFL XO Rack Net", "uflNet.rdf#uflNet");
-		ndm.put("UCD XO Rack Net", "ucdNet.rdf#ucdNet");
+		//ndm.put("UCD XO Rack Net", "ucdNet.rdf#ucdNet");
 		ndm.put("OSF XO Rack Net", "osfNet.rdf#osfNet");
 		ndm.put("SL XO Rack Net", "slNet.rdf#slNet");
 		ndm.put("WVN XO Rack Net", "wvnNet.rdf#wvnNet");
@@ -155,6 +157,8 @@ public class RequestSaver {
 		ndm.put("CIENA XO Rack Net",  "cienaNet.rdf#cienaNet");
 		ndm.put("UNF XO Rack Net", "unfNet.rdf#unfNet");
 		ndm.put("PUCP XO Rack Net", "pucpNet.rdf#pucpNet");
+		ndm.put("RENCI RADICS Rack Net", "rciradicsNet#rciradicsNet");
+		ndm.put("BBN RADICS Net", "bbnradicsNet#bbnradicsNet");
 
 		ndm.put("I2 ION/AL2S", "ion.rdf#ion");
 		ndm.put("NLR Net", "nlr.rdf#nlr");

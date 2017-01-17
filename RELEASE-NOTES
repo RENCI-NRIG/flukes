@@ -1,5 +1,8 @@
 Flukes Release Notes:
 ---------------------
+1/17/17:
+- Added support for RADICS sites
+
 10/27/16:
 - Added support for slice stitching, see ExoBlog
 
