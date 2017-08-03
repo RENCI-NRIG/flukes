@@ -118,9 +118,9 @@ public class OrcaNode extends OrcaResource {
 				node.icon.add(new IconOutline(node.outline, Colors.REQUEST.getColor()));
 				break;
 			case MANIFEST:
-				if (OrcaResource.ORCA_ACTIVE.equalsIgnoreCase(node.getState()))
+				if (node.isActive())
 					node.icon.add(new IconOutline(node.outline, Colors.ACTIVE.getColor()));
-				else if (OrcaResource.ORCA_FAILED.equalsIgnoreCase(node.getState()))
+				else if (node.isFailed())
 					node.icon.add(new IconOutline(node.outline, Colors.FAILED.getColor()));
 				else
 					node.icon.add(new IconOutline(node.outline, Colors.TICKETED.getColor()));

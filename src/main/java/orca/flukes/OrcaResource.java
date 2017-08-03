@@ -17,9 +17,11 @@ import javax.swing.JPopupMenu;
  *
  */
 public abstract class OrcaResource implements Comparable<OrcaResource> {
+	private static final String ERROR_INDICATOR = "err=";
 	public static final String ORCA_ACTIVE = "active";
 	public static final String ORCA_TICKETED = "ticketed";
 	public static final String ORCA_FAILED = "failed";
+	public static final String ORCA_CLOSED = "closed";
 	
 	private boolean isResource = false;
 	protected String name;
@@ -227,4 +229,31 @@ public abstract class OrcaResource implements Comparable<OrcaResource> {
 		
 		return ret.toString();
 	}
+    
+    /**
+     * Is this resource in Active state?
+     * @return
+     */
+    public boolean isActive() {
+    	return ORCA_ACTIVE.equalsIgnoreCase(getState());
+    }
+    
+    static final String[] errorIndicatorStrings = { "err=", "Error", "FAILED" };
+    /**
+     * Resource considered failed if state is Failed or it was closed by ORCA due to related failures
+     * @return
+     */
+    public boolean isFailed() {
+    	if (ORCA_FAILED.equalsIgnoreCase(getState()))
+    		return true;
+    	
+		String notice = getReservationNotice();
+    	if (ORCA_CLOSED.equalsIgnoreCase(getState()) && (notice != null)) {
+    		for (String errorIndicator: errorIndicatorStrings) {
+    			if (notice.contains(errorIndicator))
+    				return true;
+    		}
+    	}
+    	return false;
+    }
 }

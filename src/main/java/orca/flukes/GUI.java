@@ -71,32 +71,10 @@ import javax.swing.JToolBar;
 import javax.swing.SwingConstants;
 import javax.swing.filechooser.FileFilter;
 
-import orca.flukes.GUIUnifiedState.GUIState;
-import orca.flukes.ndl.ManifestLoader;
-import orca.flukes.ndl.RequestLoader;
-import orca.flukes.ndl.RequestSaver;
-import orca.flukes.ui.ChooserWithNewDialog;
-import orca.flukes.ui.KeystoreDialog;
-import orca.flukes.ui.PasswordDialog;
-import orca.flukes.ui.SplitButton;
-import orca.flukes.ui.TextAreaDialog;
-import orca.flukes.ui.TextHTMLPaneDialog;
-import orca.flukes.xmlrpc.OrcaSMXMLRPCProxy;
-import orca.flukes.xmlrpc.RegistryXMLRPCProxy;
-import orca.ndl.NdlCommons;
-import orca.ndl.NdlModel;
-import orca.util.CompressEncode;
-
 import org.apache.log4j.ConsoleAppender;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.log4j.SimpleLayout;
-
-import twitter4j.Paging;
-import twitter4j.Status;
-import twitter4j.Twitter;
-import twitter4j.TwitterException;
-import twitter4j.TwitterFactory;
 
 import com.hyperrealm.kiwi.ui.KFileChooser;
 import com.hyperrealm.kiwi.ui.KTextArea;
@@ -115,6 +93,25 @@ import edu.uci.ics.jung.graph.SparseMultigraph;
 import edu.uci.ics.jung.visualization.VisualizationViewer;
 import edu.uci.ics.jung.visualization.layout.LayoutTransition;
 import edu.uci.ics.jung.visualization.util.Animator;
+import orca.flukes.GUIUnifiedState.GUIState;
+import orca.flukes.ndl.ManifestLoader;
+import orca.flukes.ndl.RequestLoader;
+import orca.flukes.ndl.RequestSaver;
+import orca.flukes.ui.ChooserWithNewDialog;
+import orca.flukes.ui.KeystoreDialog;
+import orca.flukes.ui.PasswordDialog;
+import orca.flukes.ui.SplitButton;
+import orca.flukes.ui.TextAreaDialog;
+import orca.flukes.ui.TextHTMLPaneDialog;
+import orca.flukes.xmlrpc.OrcaSMXMLRPCProxy;
+import orca.flukes.xmlrpc.RegistryXMLRPCProxy;
+import orca.ndl.NdlModel;
+import orca.util.CompressEncode;
+import twitter4j.Paging;
+import twitter4j.Status;
+import twitter4j.Twitter;
+import twitter4j.TwitterException;
+import twitter4j.TwitterFactory;
 
 public class GUI implements ComponentListener {
 
@@ -658,7 +655,7 @@ public class GUI implements ComponentListener {
 	 */
 	private GUI() {
 		logger = Logger.getRootLogger();//getLogger(GUI.class.getCanonicalName());
-		logger.setLevel(Level.INFO);
+		logger.setLevel(Level.DEBUG);
 		ConsoleAppender capp = new ConsoleAppender();
 		capp.setImmediateFlush(true);
 		capp.setName("Flukes Console Appender");

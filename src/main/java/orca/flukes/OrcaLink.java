@@ -58,10 +58,10 @@ public class OrcaLink extends OrcaResource {
 	    	if (l instanceof OrcaColorLink)
 	    		return Colors.COLORLINK.getColor();
 	    	if ((l.getResourceType() == ResourceType.MANIFEST) && (l.isResource())) {
-	    		if (OrcaResource.ORCA_ACTIVE.equalsIgnoreCase(l.getState())) {
+	    		if (l.isActive()) {
 	    			return Colors.ACTIVE.getColor();
 	    		}
-	    		if (OrcaResource.ORCA_FAILED.equalsIgnoreCase(l.getState())) {
+	    		if (l.isFailed()) {
 	    			return Colors.FAILED.getColor();
 	    		}
 	    		return Colors.TICKETED.getColor();

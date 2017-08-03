@@ -81,11 +81,11 @@ public class OrcaSMXMLRPCProxy extends OrcaXMLRPCBase {
 			// get verbose list of the AMs
 			versionMap = (Map<String, Object>)client.execute(GET_VERSION, new Object[]{});
 		} catch (MalformedURLException e) {
-			throw new Exception("Please check the SM URL " + GUI.getInstance().getSelectedController());
+			throw new Exception("Please check the controller URL " + GUI.getInstance().getSelectedController());
 		} catch (XmlRpcException e) {
-			throw new Exception("Unable to contact SM " + GUI.getInstance().getSelectedController() + " due to " + e);
+			throw new Exception("Unable to contact controller " + GUI.getInstance().getSelectedController() + " due to " + e);
 		} catch (Exception e) {
-			throw new Exception("Unable to contact SM " + GUI.getInstance().getSelectedController());
+			throw new Exception("Unable to contact controller " + GUI.getInstance().getSelectedController());
 		}
 		return versionMap;
 	}
@@ -122,15 +122,15 @@ public class OrcaSMXMLRPCProxy extends OrcaXMLRPCBase {
 			// create sliver
 			rr = (Map<String, Object>)client.execute(CREATE_SLICE, new Object[]{ sliceId, new Object[]{}, resReq, users});
 		} catch (MalformedURLException e) {
-			throw new Exception("Please check the SM URL " + GUI.getInstance().getSelectedController());
+			throw new Exception("Please check the controller URL " + GUI.getInstance().getSelectedController());
 		} catch (XmlRpcException e) {
-			throw new Exception("Unable to contact SM " + GUI.getInstance().getSelectedController() + " due to " + e);
+			throw new Exception("Unable to contact controller " + GUI.getInstance().getSelectedController() + " due to " + e);
 		} catch (Exception e) {
-			return "Unable to submit slice to SM:  " + GUI.getInstance().getSelectedController() + " due to " + e;
+			return "Unable to submit slice to controller:  " + GUI.getInstance().getSelectedController() + " due to " + e;
 		}
 
 		if (rr == null)
-			throw new Exception("Unable to contact SM " + GUI.getInstance().getSelectedController());
+			throw new Exception("Unable to contact controller " + GUI.getInstance().getSelectedController());
 
 		if ((Boolean)rr.get(ERR_RET_FIELD))
 			throw new Exception("Unable to create slice: " + (String)rr.get(MSG_RET_FIELD));
@@ -173,15 +173,15 @@ public class OrcaSMXMLRPCProxy extends OrcaXMLRPCBase {
 			String endDateString = DatatypeConverter.printDateTime(ecal); // RFC3339/ISO8601
 			rr = (Map<String, Object>)client.execute(RENEW_SLICE, new Object[]{ sliceId, new Object[]{}, endDateString});
 		} catch (MalformedURLException e) {
-			throw new Exception("Please check the SM URL " + GUI.getInstance().getSelectedController());
+			throw new Exception("Please check the controller URL " + GUI.getInstance().getSelectedController());
 		} catch (XmlRpcException e) {
-			throw new Exception("Unable to contact SM " + GUI.getInstance().getSelectedController() + " due to " + e);
+			throw new Exception("Unable to contact controller " + GUI.getInstance().getSelectedController() + " due to " + e);
 		} catch (Exception e) {
-			throw new Exception("Unable to contact SM " + GUI.getInstance().getSelectedController());
+			throw new Exception("Unable to contact controller " + GUI.getInstance().getSelectedController());
 		}
 
 		if (rr == null)
-                        throw new Exception("Unable to contact SM " + GUI.getInstance().getSelectedController());
+                        throw new Exception("Unable to contact controller " + GUI.getInstance().getSelectedController());
 
 		if ((Boolean)rr.get(ERR_RET_FIELD))
 			throw new Exception("Unable to renew slice: " + (String)rr.get(MSG_RET_FIELD));
@@ -324,15 +324,15 @@ public class OrcaSMXMLRPCProxy extends OrcaXMLRPCBase {
 			// delete sliver
 			rr = (Map<String, Object>)client.execute(DELETE_SLICE, new Object[]{ sliceId, new Object[]{}});
 		} catch (MalformedURLException e) {
-			throw new Exception("Please check the SM URL " + GUI.getInstance().getSelectedController());
+			throw new Exception("Please check the controller URL " + GUI.getInstance().getSelectedController());
 		} catch (XmlRpcException e) {
-			throw new Exception("Unable to contact SM " + GUI.getInstance().getSelectedController() + " due to " + e);
+			throw new Exception("Unable to contact controller " + GUI.getInstance().getSelectedController() + " due to " + e);
 		} catch (Exception e) {
-			throw new Exception("Unable to contact SM " + GUI.getInstance().getSelectedController());
+			throw new Exception("Unable to contact controller " + GUI.getInstance().getSelectedController());
 		}
 
 		if (rr == null)
-                        throw new Exception("Unable to contact SM " + GUI.getInstance().getSelectedController());
+                        throw new Exception("Unable to contact controller " + GUI.getInstance().getSelectedController());
 
 		if ((Boolean)rr.get(ERR_RET_FIELD))
 			throw new Exception("Unable to delete slice: " + (String)rr.get(MSG_RET_FIELD));
@@ -367,15 +367,15 @@ public class OrcaSMXMLRPCProxy extends OrcaXMLRPCBase {
 			rr = (Map<String, Object>)client.execute(SLICE_STATUS, new Object[]{ sliceId, new Object[]{}});
 
 		} catch (MalformedURLException e) {
-			throw new Exception("Please check the SM URL " + GUI.getInstance().getSelectedController());
+			throw new Exception("Please check the controller URL " + GUI.getInstance().getSelectedController());
 		} catch (XmlRpcException e) {
-			throw new Exception("Unable to contact SM " + GUI.getInstance().getSelectedController() + " due to " + e);
+			throw new Exception("Unable to contact controller " + GUI.getInstance().getSelectedController() + " due to " + e);
 		} catch (Exception e) {
-			throw new Exception("Unable to contact SM " + GUI.getInstance().getSelectedController());
+			throw new Exception("Unable to contact controller " + GUI.getInstance().getSelectedController());
 		}
 
 		if (rr == null)
-			throw new Exception("Unable to contact SM " + GUI.getInstance().getSelectedController());
+			throw new Exception("Unable to contact controller " + GUI.getInstance().getSelectedController());
 
 		if ((Boolean)rr.get(ERR_RET_FIELD))
 			throw new Exception("Unable to get slice status: " + rr.get(MSG_RET_FIELD));
@@ -408,15 +408,15 @@ public class OrcaSMXMLRPCProxy extends OrcaXMLRPCBase {
 			rr = (Map<String, Object>)client.execute(GET_RESERVATION_STATES, new Object[]{ sliceId, reservationIds, new Object[]{}});
 
 		} catch (MalformedURLException e) {
-			throw new Exception("Please check the SM URL " + GUI.getInstance().getSelectedController());
+			throw new Exception("Please check the controller URL " + GUI.getInstance().getSelectedController());
 		} catch (XmlRpcException e) {
-			throw new Exception("Unable to contact SM " + GUI.getInstance().getSelectedController() + " due to " + e);
+			throw new Exception("Unable to contact controller " + GUI.getInstance().getSelectedController() + " due to " + e);
 		} catch (Exception e) {
-			throw new Exception("Unable to contact SM " + GUI.getInstance().getSelectedController());
+			throw new Exception("Unable to contact controller " + GUI.getInstance().getSelectedController());
 		}
 
 		if (rr == null)
-			throw new Exception("Unable to contact SM " + GUI.getInstance().getSelectedController());
+			throw new Exception("Unable to contact controller " + GUI.getInstance().getSelectedController());
 
 		if ((Boolean)rr.get(ERR_RET_FIELD))
 			throw new Exception("Unable to get reservation states: " + rr.get(MSG_RET_FIELD));
@@ -447,15 +447,15 @@ public class OrcaSMXMLRPCProxy extends OrcaXMLRPCBase {
 			rr = (Map<String, Object>)client.execute(GET_RESERVATION_SLICE_STITCH_INFO, new Object[]{ sliceId, reservationIds, new Object[]{}});
 
 		} catch (MalformedURLException e) {
-			throw new Exception("Please check the SM URL " + GUI.getInstance().getSelectedController());
+			throw new Exception("Please check the controller URL " + GUI.getInstance().getSelectedController());
 		} catch (XmlRpcException e) {
-			throw new Exception("Unable to contact SM " + GUI.getInstance().getSelectedController() + " due to " + e);
+			throw new Exception("Unable to contact controller " + GUI.getInstance().getSelectedController() + " due to " + e);
 		} catch (Exception e) {
-			throw new Exception("Unable to contact SM " + GUI.getInstance().getSelectedController());
+			throw new Exception("Unable to contact controller " + GUI.getInstance().getSelectedController());
 		}
 
 		if (rr == null)
-			throw new Exception("Unable to contact SM " + GUI.getInstance().getSelectedController());
+			throw new Exception("Unable to contact controller " + GUI.getInstance().getSelectedController());
 
 		if ((Boolean)rr.get(ERR_RET_FIELD))
 			throw new Exception("Unable to get reservation slice stitching info: " + rr.get(MSG_RET_FIELD));
@@ -487,15 +487,15 @@ public class OrcaSMXMLRPCProxy extends OrcaXMLRPCBase {
 			rr = (Map<String, Object>)client.execute(GET_SLIVER_PROPERTIES, new Object[]{ sliceId, reservationId, new Object[]{}});
 
 		} catch (MalformedURLException e) {
-			throw new Exception("Please check the SM URL " + GUI.getInstance().getSelectedController());
+			throw new Exception("Please check the controller URL " + GUI.getInstance().getSelectedController());
 		} catch (XmlRpcException e) {
-			throw new Exception("Unable to contact SM " + GUI.getInstance().getSelectedController() + " due to " + e);
+			throw new Exception("Unable to contact controller " + GUI.getInstance().getSelectedController() + " due to " + e);
 		} catch (Exception e) {
-			throw new Exception("Unable to contact SM " + GUI.getInstance().getSelectedController());
+			throw new Exception("Unable to contact controller " + GUI.getInstance().getSelectedController());
 		}
 
 		if (rr == null)
-			throw new Exception("Unable to contact SM " + GUI.getInstance().getSelectedController());
+			throw new Exception("Unable to contact controller " + GUI.getInstance().getSelectedController());
 
 		if ((Boolean)rr.get(ERR_RET_FIELD))
 			throw new Exception("Unable to get sliver properties: " + rr.get(MSG_RET_FIELD));
@@ -531,15 +531,15 @@ public class OrcaSMXMLRPCProxy extends OrcaXMLRPCBase {
 			// sliver status
 			rr = (Map<String, Object>)client.execute(LIST_SLICES, new Object[]{ new Object[]{}});
 		} catch (MalformedURLException e) {
-			throw new Exception("Please check the SM URL " + GUI.getInstance().getSelectedController());
+			throw new Exception("Please check the controller URL " + GUI.getInstance().getSelectedController());
 		} catch (XmlRpcException e) {
-			throw new Exception("Unable to contact SM " + GUI.getInstance().getSelectedController() + " due to " + e);
+			throw new Exception("Unable to contact controller " + GUI.getInstance().getSelectedController() + " due to " + e);
 		} catch (Exception e) {
-			throw new Exception("Unable to contact SM " + GUI.getInstance().getSelectedController());
+			throw new Exception("Unable to contact controller " + GUI.getInstance().getSelectedController());
 		}
 
 		if (rr == null)
-			throw new Exception("Unable to contact SM " + GUI.getInstance().getSelectedController());
+			throw new Exception("Unable to contact controller " + GUI.getInstance().getSelectedController());
 
 		if ((Boolean)rr.get(ERR_RET_FIELD))
 			throw new Exception ("Unable to list active slices: " + rr.get(MSG_RET_FIELD));
@@ -581,15 +581,15 @@ public class OrcaSMXMLRPCProxy extends OrcaXMLRPCBase {
 			// modify slice
 			rr = (Map<String, Object>)client.execute(MODIFY_SLICE, new Object[]{ sliceId, new Object[]{}, modReq});
 		} catch (MalformedURLException e) {
-			throw new Exception("Please check the SM URL " + GUI.getInstance().getSelectedController());
+			throw new Exception("Please check the controller URL " + GUI.getInstance().getSelectedController());
 		} catch (XmlRpcException e) {
-			throw new Exception("Unable to contact SM " + GUI.getInstance().getSelectedController() + " due to " + e);
+			throw new Exception("Unable to contact controller " + GUI.getInstance().getSelectedController() + " due to " + e);
 		} catch (Exception e) {
-			throw new Exception("Unable to contact SM " + GUI.getInstance().getSelectedController());
+			throw new Exception("Unable to contact controller " + GUI.getInstance().getSelectedController());
 		}
 
 		if (rr == null)
-			throw new Exception("Unable to contact SM " + GUI.getInstance().getSelectedController());
+			throw new Exception("Unable to contact controller " + GUI.getInstance().getSelectedController());
 
 		if ((Boolean)rr.get(ERR_RET_FIELD))
 			throw new Exception("Unable to modify slice: " + (String)rr.get(MSG_RET_FIELD));
@@ -621,15 +621,15 @@ public class OrcaSMXMLRPCProxy extends OrcaXMLRPCBase {
 			// modify slice
 			rr = (Map<String, Object>)client.execute(LIST_RESOURCES, new Object[]{ new Object[]{}, new HashMap<String, String>()});
 		} catch (MalformedURLException e) {
-			throw new Exception("Please check the SM URL " + GUI.getInstance().getSelectedController());
+			throw new Exception("Please check the controller URL " + GUI.getInstance().getSelectedController());
 		} catch (XmlRpcException e) {
-			throw new Exception("Unable to contact SM " + GUI.getInstance().getSelectedController() + " due to " + e);
+			throw new Exception("Unable to contact controller " + GUI.getInstance().getSelectedController() + " due to " + e);
 		} catch (Exception e) {
-			throw new Exception("Unable to contact SM " + GUI.getInstance().getSelectedController());
+			throw new Exception("Unable to contact controller " + GUI.getInstance().getSelectedController());
 		}
 
 		if (rr == null)
-			throw new Exception("Unable to contact SM " + GUI.getInstance().getSelectedController());
+			throw new Exception("Unable to contact controller " + GUI.getInstance().getSelectedController());
 
 		if ((Boolean)rr.get(ERR_RET_FIELD))
 			throw new Exception("Unable to list resources: " + (String)rr.get(MSG_RET_FIELD));
@@ -663,15 +663,15 @@ public class OrcaSMXMLRPCProxy extends OrcaXMLRPCBase {
 			// modify slice
 			rr = (Map<String, Object>)client.execute(PERMIT_SLICE_STITCH, new Object[]{ sliceId, reservationId, secret, new Object[]{}});
 		} catch (MalformedURLException e) {
-			throw new Exception("Please check the SM URL " + GUI.getInstance().getSelectedController());
+			throw new Exception("Please check the controller URL " + GUI.getInstance().getSelectedController());
 		} catch (XmlRpcException e) {
-			throw new Exception("Unable to contact SM " + GUI.getInstance().getSelectedController() + " due to " + e);
+			throw new Exception("Unable to contact controller " + GUI.getInstance().getSelectedController() + " due to " + e);
 		} catch (Exception e) {
-			throw new Exception("Unable to contact SM " + GUI.getInstance().getSelectedController());
+			throw new Exception("Unable to contact controller " + GUI.getInstance().getSelectedController());
 		}
 
 		if (rr == null)
-			throw new Exception("Unable to contact SM " + GUI.getInstance().getSelectedController());
+			throw new Exception("Unable to contact controller " + GUI.getInstance().getSelectedController());
 
 		if ((Boolean)rr.get(ERR_RET_FIELD))
 			throw new Exception("Unable to permit slice stitching: " + (String)rr.get(MSG_RET_FIELD));
@@ -705,15 +705,15 @@ public class OrcaSMXMLRPCProxy extends OrcaXMLRPCBase {
 			// modify slice
 			rr = (Map<String, Object>)client.execute(REVOKE_SLICE_STITCH, new Object[]{ sliceId, reservationId, new Object[]{}});
 		} catch (MalformedURLException e) {
-			throw new Exception("Please check the SM URL " + GUI.getInstance().getSelectedController());
+			throw new Exception("Please check the controller URL " + GUI.getInstance().getSelectedController());
 		} catch (XmlRpcException e) {
-			throw new Exception("Unable to contact SM " + GUI.getInstance().getSelectedController() + " due to " + e);
+			throw new Exception("Unable to contact controller " + GUI.getInstance().getSelectedController() + " due to " + e);
 		} catch (Exception e) {
-			throw new Exception("Unable to contact SM " + GUI.getInstance().getSelectedController());
+			throw new Exception("Unable to contact controller " + GUI.getInstance().getSelectedController());
 		}
 
 		if (rr == null)
-			throw new Exception("Unable to contact SM " + GUI.getInstance().getSelectedController());
+			throw new Exception("Unable to contact controller " + GUI.getInstance().getSelectedController());
 
 		if ((Boolean)rr.get(ERR_RET_FIELD))
 			throw new Exception("Unable to revoke slice stitch permission: " + (String)rr.get(MSG_RET_FIELD));
@@ -750,15 +750,15 @@ public class OrcaSMXMLRPCProxy extends OrcaXMLRPCBase {
 			// modify slice
 			rr = (Map<String, Object>)client.execute(PERFORM_SLICE_STITCH, new Object[]{ fromSliceId, fromReservationId, toSliceId, toReservationId, secret, p,  new Object[]{}});
 		} catch (MalformedURLException e) {
-			throw new Exception("Please check the SM URL " + GUI.getInstance().getSelectedController());
+			throw new Exception("Please check the controller URL " + GUI.getInstance().getSelectedController());
 		} catch (XmlRpcException e) {
-			throw new Exception("Unable to contact SM " + GUI.getInstance().getSelectedController() + " due to " + e);
+			throw new Exception("Unable to contact controller " + GUI.getInstance().getSelectedController() + " due to " + e);
 		} catch (Exception e) {
-			throw new Exception("Unable to contact SM " + GUI.getInstance().getSelectedController());
+			throw new Exception("Unable to contact controller " + GUI.getInstance().getSelectedController());
 		}
 
 		if (rr == null)
-			throw new Exception("Unable to contact SM " + GUI.getInstance().getSelectedController());
+			throw new Exception("Unable to contact controller " + GUI.getInstance().getSelectedController());
 
 		if ((Boolean)rr.get(ERR_RET_FIELD))
 			throw new Exception("Unable to perform slice stitch: " + (String)rr.get(MSG_RET_FIELD));
@@ -794,15 +794,15 @@ public class OrcaSMXMLRPCProxy extends OrcaXMLRPCBase {
 			// modify slice
 			rr = (Map<String, Object>)client.execute(UNDO_SLICE_STITCH, new Object[]{ fromSliceId, fromReservationId, toSliceId, toReservationId, new Object[]{}});
 		} catch (MalformedURLException e) {
-			throw new Exception("Please check the SM URL " + GUI.getInstance().getSelectedController());
+			throw new Exception("Please check the controller URL " + GUI.getInstance().getSelectedController());
 		} catch (XmlRpcException e) {
-			throw new Exception("Unable to contact SM " + GUI.getInstance().getSelectedController() + " due to " + e);
+			throw new Exception("Unable to contact controller " + GUI.getInstance().getSelectedController() + " due to " + e);
 		} catch (Exception e) {
-			throw new Exception("Unable to contact SM " + GUI.getInstance().getSelectedController());
+			throw new Exception("Unable to contact controller " + GUI.getInstance().getSelectedController());
 		}
 
 		if (rr == null)
-			throw new Exception("Unable to contact SM " + GUI.getInstance().getSelectedController());
+			throw new Exception("Unable to contact controller " + GUI.getInstance().getSelectedController());
 
 		if ((Boolean)rr.get(ERR_RET_FIELD))
 			throw new Exception("Unable to undo slice stitch: " + (String)rr.get(MSG_RET_FIELD));
