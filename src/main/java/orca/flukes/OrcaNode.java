@@ -419,6 +419,12 @@ public class OrcaNode extends OrcaResource {
 		viewText += "\n\nPost Boot Script: \n" + (postBootScript == null ? NOT_SPECIFIED : postBootScript);
 		viewText += "\n\nManagement access: \n";
 		for (String service: getManagementAccess()) {
+			if (service.startsWith("ssh")) {
+				service = service.replaceAll("://", " " + " -i " +
+						GUI.getInstance().getPreference(GUI.PrefsEnum.SSH_KEY) + " " +
+						GUI.getInstance().getPreference(GUI.PrefsEnum.SSH_OPTIONS) + " ");
+				service = service.replaceAll(":", " -p ");
+			} 
 			viewText += service + "\n";
 		}
 		if (getManagementAccess().size() == 0) {

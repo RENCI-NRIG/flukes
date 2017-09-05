@@ -1,5 +1,8 @@
 Flukes Release Notes:
 ---------------------
+9/5/17:
+- Better SSH connection string in node properties
+
 1/17/17:
 - Added support for RADICS sites
 

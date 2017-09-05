@@ -655,7 +655,7 @@ public class GUI implements ComponentListener {
 	 */
 	private GUI() {
 		logger = Logger.getRootLogger();//getLogger(GUI.class.getCanonicalName());
-		logger.setLevel(Level.DEBUG);
+		logger.setLevel(Level.INFO);
 		ConsoleAppender capp = new ConsoleAppender();
 		capp.setImmediateFlush(true);
 		capp.setName("Flukes Console Appender");
