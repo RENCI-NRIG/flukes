@@ -219,6 +219,11 @@ public class ManifestLoader implements INdlManifestModelListener, INdlRequestMod
 		if (ind > 0) {
 			rname = rname.substring(ind + 1);
 		}
+		// also cut off everything after first '/' if present
+		ind = rname.indexOf('/');
+		if (ind > 0) {
+			rname = rname.substring(0, ind);
+		}
 		return rname;
 	}
 	
