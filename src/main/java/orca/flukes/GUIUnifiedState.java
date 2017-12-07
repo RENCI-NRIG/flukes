@@ -1297,7 +1297,7 @@ public class GUIUnifiedState extends GUICommonState implements IDeleteEdgeCallBa
 		} catch (Exception ex) {
 			ExceptionDialog ed = new ExceptionDialog(GUI.getInstance().getFrame(), "Exception");
 			ed.setLocationRelativeTo(GUI.getInstance().getFrame());
-			ed.setException("Exception encountered while querying ORCA for slice manifest: ", ex);
+			ed.setException("Exception encountered while querying the controller for slice manifest: ", ex);
 			ed.setVisible(true);
 			return false;
 		} 
