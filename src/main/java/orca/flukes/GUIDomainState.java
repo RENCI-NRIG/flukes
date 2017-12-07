@@ -171,7 +171,7 @@ public class GUIDomainState {
 		} catch (Exception ex) {
 			ExceptionDialog ed = new ExceptionDialog(GUI.getInstance().getFrame(), "Exception");
 			ed.setLocationRelativeTo(GUI.getInstance().getFrame());
-			ed.setException("Exception encountered while querying the SM for available resources: ", ex);
+			ed.setException("Exception encountered while querying the controller for available resources: ", ex);
 			ed.setVisible(true);
 		}
 	}
