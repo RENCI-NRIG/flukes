@@ -1142,8 +1142,8 @@ public class GUI implements ComponentListener {
 			splitConfigButton = new SplitButton(configButton, SwingConstants.SOUTH, 180);
 		    JPopupMenu configMenu = new JPopupMenu("Config menu");
 		    configMenu.add(addMenuItem("Reservation Details", "reservation", rbl));
-		    configMenu.add(addMenuItem("Auto IP", "autoip", rbl));
-		    configMenu.add(addMenuItem("Clear request IPs", "unip", rbl));
+		    configMenu.add(addMenuItem("Auto-Assign Request IPs", "autoip", rbl));
+		    configMenu.add(addMenuItem("Clear Request IPs", "unip", rbl));
 		    
 		    splitConfigButton.setMenu(configMenu);
 			toolBar.add(splitConfigButton);
@@ -1160,12 +1160,12 @@ public class GUI implements ComponentListener {
 			splitSliceButton = new SplitButton(sliceButton, SwingConstants.SOUTH, 180);
 		    JPopupMenu sliceMenu = new JPopupMenu("Slice menu");
 		    sliceMenu.add(addMenuItem("Submit Changes", "submit", rbl));
-		    sliceMenu.add(addMenuItem("Query Manifest", "manifest", rbl));
-		    sliceMenu.add(addMenuItem("Poll Manifest", "manifestpoll", rbl));
+		    sliceMenu.add(addMenuItem("View Manifest Topology", "manifest", rbl));
+		    sliceMenu.add(addMenuItem("Poll Manifest for Changes", "manifestpoll", rbl));
 		    sliceMenu.add(addMenuItem("Extend Slice", "extend", rbl));
 		    sliceMenu.add(addMenuItem("Delete Slice", "delete", rbl));
 		    sliceMenu.add(addMenuItem("Clear Changes", "clear", rbl));
-		    sliceMenu.add(addMenuItem("View as List", "view", rbl));
+		    sliceMenu.add(addMenuItem("View Manifest as List", "view", rbl));
 		    sliceMenu.add(addMenuItem("Return to request", "resetrequset", rbl));
 		    
 		    splitSliceButton.setMenu(sliceMenu);

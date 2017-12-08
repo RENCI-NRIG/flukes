@@ -1105,7 +1105,8 @@ public class GUIUnifiedState extends GUICommonState implements IDeleteEdgeCallBa
 					return;
 				}
 			} else if (e.getActionCommand().equals("view")) {
-				launchResourceStateViewer(start, end);
+				if (queryManifest())
+					launchResourceStateViewer(start, end);
 			} else if (e.getActionCommand().equals("resetrequset")) {
 				GUIUnifiedState.getInstance().resetRequest();
 				vv.repaint();
