@@ -827,25 +827,34 @@ public class ManifestLoader implements INdlManifestModelListener, INdlRequestMod
 			GUI.logger().debug("Printing paths");
 			for (List<Resource> p: paths) {
 				StringBuilder sb =  new StringBuilder();
-				sb.append("   Path: ");
+				sb.append("   Path (len: " + p.size() + ") ");
 				for (Resource r: p) {
 					sb.append(r + " ");
 				}
+				
 				GUI.logger().debug(sb.toString());
 				
 				Iterator<Resource> pIter = p.iterator();
 				
 				Resource first = pIter.next();
+				if (NdlCommons.isStitchingNodeInManifest(first)) {
+					// skip one more because stitch node paths have node-node-link-node-link-node structure
+					// rather than node-link-node-link-node structure /ib 12/7/17
+					first = pIter.next();
+				}
 				if (first == null)
 					continue;
+				
 				while(pIter.hasNext()) {
 					// only take nodes, skip links on the path
 					pIter.next();
-					if (!pIter.hasNext())
+					if (!pIter.hasNext()) {
 						break;
+					}
 					Resource second = pIter.next();
 					OrcaNode firstNode = nodes.get(getTrueName(first));
 					OrcaNode secondNode = nodes.get(getTrueName(second));
+					//System.out.println("first " + getTrueName(first) + " and second " + getTrueName(second) + " " + firstNode + "/" + secondNode);
 					if ((firstNode == null) || (secondNode == null)) {
 						break;
 					}
