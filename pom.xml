@@ -36,21 +36,32 @@
 		<!-- location of signing keystore for jnlp -->
 		<maven.build.timestamp.format>MM/dd/yyyy HH:mm</maven.build.timestamp.format>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<orca.snap.repository.id>geni-orca-snapshot</orca.snap.repository.id>
+        <orca.rel.repository.id>geni-orca-release</orca.rel.repository.id>
+        <orca.lib.repository.id>geni-orca-libs</orca.lib.repository.id>
+        <orca.snap.repository.url>http://ci-dev.renci.org/nexus/content/repositories/geni-orca-snapshot/</orca.snap.repository.url>
+        <orca.rel.repository.url>http://ci-dev.renci.org/nexus/content/repositories/geni-orca-release/</orca.rel.repository.url>
+        <orca.lib.repository.url>http://ci-dev.renci.org/nexus/content/repositories/geni-orca-libs</orca.lib.repository.url>
 	</properties>
-	<repositories>
-		<repository>
-			<id>geni-orca-snapshot</id>
-			<name>ORCA Snapshots repo</name>
-			<url>http://ci-dev.renci.org/nexus/content/repositories/geni-orca-snapshot</url>
+    <repositories>
+     	<repository>
+        	<id>${orca.snap.repository.id}</id>
+			<name>Orca Project Maven Snapshot Repository</name>
+ 			<url>${orca.snap.repository.url}</url>
 			<snapshots>
 				<enabled>true</enabled>
 				<updatePolicy>always</updatePolicy>
 			</snapshots>
 		</repository>
 		<repository>
-			<id>geni-orca-libs</id>
+			<id>${orca.rel.repository.id}</id>
+			<name>Orca Project Maven Release Repository</name>
+			<url>${orca.rel.repository.url}</url>
+		</repository>
+		<repository>
+			<id>${orca.lib.repository.id}</id>
 			<name>Orca Project Maven Repository</name>
-			<url>http://ci-dev.renci.org/nexus/content/repositories/geni-orca-libs</url>
+			<url>${orca.lib.repository.url}</url>
 		</repository>
 	</repositories>
 	<build>
@@ -302,7 +313,7 @@
 		<dependency>
 			<groupId>orca</groupId>
 			<artifactId>ndl</artifactId>
-			<version>5.2.2-SNAPSHOT</version>
+			<version>5.2.1</version>
 			<exclusions>
 				<exclusion>
 					<artifactId>xml-apis</artifactId>

@@ -854,7 +854,7 @@ public class ManifestLoader implements INdlManifestModelListener, INdlRequestMod
 					Resource second = pIter.next();
 					OrcaNode firstNode = nodes.get(getTrueName(first));
 					OrcaNode secondNode = nodes.get(getTrueName(second));
-					System.out.println("first " + getTrueName(first) + " and second " + getTrueName(second) + " " + firstNode + "/" + secondNode);
+					//System.out.println("first " + getTrueName(first) + " and second " + getTrueName(second) + " " + firstNode + "/" + secondNode);
 					if ((firstNode == null) || (secondNode == null)) {
 						break;
 					}
