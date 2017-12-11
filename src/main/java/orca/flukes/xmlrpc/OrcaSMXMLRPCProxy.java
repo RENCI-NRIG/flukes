@@ -33,6 +33,7 @@ public class OrcaSMXMLRPCProxy extends OrcaXMLRPCBase {
 	private static final String RET_RET_FIELD = "ret";
 	private static final String MSG_RET_FIELD = "msg";
 	private static final String ERR_RET_FIELD = "err";
+	private static final String TERM_END_FIELD = "termEnd";
 	private static final String GET_VERSION = "orca.getVersion";
 	private static final String SLICE_STATUS = "orca.sliceStatus";
 	private static final String CREATE_SLICE = "orca.createSlice";
@@ -144,13 +145,14 @@ public class OrcaSMXMLRPCProxy extends OrcaXMLRPCBase {
 	 * @param sliceId
 	 * @param resReq
 	 * @param users
-	 * @return
+	 * @return - string representing the date to which the slice was renewed or empty string
+	 * if renew successful, but date not provided
 	 */
 	@SuppressWarnings("unchecked")
-	public Boolean renewSlice(String sliceId, Date newDate) throws Exception {
+	public String renewSlice(String sliceId, Date newDate) throws Exception {
 		assert(sliceId != null);
 
-		Boolean result = false;
+		String result = "";
 		setSSLIdentity(null, GUI.getInstance().getSelectedController());
 		
 		if (!isSSLIdentitySet())
@@ -181,12 +183,13 @@ public class OrcaSMXMLRPCProxy extends OrcaXMLRPCBase {
 		}
 
 		if (rr == null)
-                        throw new Exception("Unable to contact controller " + GUI.getInstance().getSelectedController());
+			throw new Exception("Unable to contact controller " + GUI.getInstance().getSelectedController());
 
 		if ((Boolean)rr.get(ERR_RET_FIELD))
 			throw new Exception("Unable to renew slice: " + (String)rr.get(MSG_RET_FIELD));
 
-		result = (Boolean)rr.get(RET_RET_FIELD);
+		if (rr.containsKey(TERM_END_FIELD))
+			result = (String)rr.get(TERM_END_FIELD);
 		return result;
 	}
 

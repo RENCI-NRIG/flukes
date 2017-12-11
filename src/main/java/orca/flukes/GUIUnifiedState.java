@@ -1082,12 +1082,18 @@ public class GUIUnifiedState extends GUICommonState implements IDeleteEdgeCallBa
 
 					if (!saException) {
 						try {
-							Boolean res = OrcaSMXMLRPCProxy.getInstance().renewSlice(sliceUrn, newEnd);
+							String res = OrcaSMXMLRPCProxy.getInstance().renewSlice(sliceUrn, newEnd);
 							KMessageDialog kd = new KMessageDialog(GUI.getInstance().getFrame(), "Result", true);
-							kd.setMessage("The extend operation returned: " + res);
-							kd.setLocationRelativeTo(GUI.getInstance().getFrame());
-							kd.setVisible(true);
-							if (res)
+							if (res != null) {
+								if (res.length() > 0)
+									kd.setMessage("The extend operation returned new date: " + res);
+								else
+									kd.setMessage("Extend operation succeeded, please check actual date by requesting manifest as list.");
+								
+								kd.setLocationRelativeTo(GUI.getInstance().getFrame());
+								kd.setVisible(true);
+							}
+							if (res != null)
 								resetEndDate();
 							else
 								newEnd = null;
