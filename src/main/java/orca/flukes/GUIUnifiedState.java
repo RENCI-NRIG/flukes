@@ -948,6 +948,7 @@ public class GUIUnifiedState extends GUICommonState implements IDeleteEdgeCallBa
 			} else if (e.getActionCommand().equals("color")) {
 				linkCreator.setLinkType(OrcaLinkCreator.OrcaLinkType.COLOR);
 			} else if (e.getActionCommand().equals("autoip")) {
+				removeAssignedRequestIPs();
 				if (!autoAssignIPAddresses()) {
 					KMessageDialog kmd = new KMessageDialog(GUI.getInstance().getFrame());
 					kmd.setMessage("Unable auto-assign IP addresses.");
