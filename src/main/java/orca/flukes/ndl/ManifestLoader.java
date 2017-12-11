@@ -33,12 +33,23 @@ import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
 
+import org.apache.commons.lang.StringUtils;
+
+import com.hp.hpl.jena.ontology.OntModel;
+import com.hp.hpl.jena.rdf.model.Literal;
+import com.hp.hpl.jena.rdf.model.Resource;
+import com.hp.hpl.jena.rdf.model.StmtIterator;
+import com.hyperrealm.kiwi.ui.dialog.ExceptionDialog;
+
+import edu.uci.ics.jung.graph.util.EdgeType;
+import edu.uci.ics.jung.graph.util.Pair;
 import orca.flukes.GUI;
 import orca.flukes.GUIImageList;
 import orca.flukes.GUIUnifiedState;
@@ -61,17 +72,6 @@ import orca.ndl.NdlCommons;
 import orca.ndl.NdlManifestParser;
 import orca.ndl.NdlRequestParser;
 import orca.ndl.NdlToRSpecHelper;
-
-import org.apache.commons.lang.StringUtils;
-
-import com.hp.hpl.jena.ontology.OntModel;
-import com.hp.hpl.jena.rdf.model.Literal;
-import com.hp.hpl.jena.rdf.model.Resource;
-import com.hp.hpl.jena.rdf.model.StmtIterator;
-import com.hyperrealm.kiwi.ui.dialog.ExceptionDialog;
-
-import edu.uci.ics.jung.graph.util.EdgeType;
-import edu.uci.ics.jung.graph.util.Pair;
 
 /**
  * Class for loading manifests
@@ -227,12 +227,30 @@ public class ManifestLoader implements INdlManifestModelListener, INdlRequestMod
 		return rname;
 	}
 	
-	private void addNodeToInterface(String iface, OrcaNode n) {
-		List<OrcaNode> others = interfaceToNode.get(iface);
+	Set<Resource> sameAs = new HashSet<>();
+	
+	private void addNodeToInterface(Resource iface, OrcaNode n) {
+
+		String ifaceName = getTrueName(iface);
+		GUI.logger().debug("Considering adding interface " + ifaceName + " to the list");
+		
+		Resource sameInt = NdlCommons.getSameAsResource(iface);
+		if (sameInt != null) {
+			GUI.logger().debug("Interface " + iface + " same as " + sameInt);
+			// add to the set of duplicates and remove any previous copies
+			sameAs.add(sameInt);
+			interfaceToNode.remove(getTrueName(sameInt));
+		} 
+		// we don't need interfaces to which 'sameAs' points
+		if (sameAs.contains(iface))
+			return;
+		
+		GUI.logger().debug("Adding interface " + ifaceName + " of node " + n + " to the list");
+		List<OrcaNode> others = interfaceToNode.get(ifaceName);
 		if (others != null) 
 			others.add(n);
 		else
-			interfaceToNode.put(iface, new ArrayList<OrcaNode>(Arrays.asList(n)));
+			interfaceToNode.put(ifaceName, new ArrayList<OrcaNode>(Arrays.asList(n)));
 	}
 	
 	// get domain name from inter-domain resource name
@@ -317,7 +335,7 @@ public class ManifestLoader implements INdlManifestModelListener, INdlRequestMod
 									nodes.put(getTrueName(l), oc);
 									// save one interface
 									//interfaceToNode.put(getTrueName(if1), oc);
-									addNodeToInterface(getTrueName(if1), oc);
+									addNodeToInterface(if1, oc);
 									GUIUnifiedState.getInstance().getGraph().addVertex(oc);
 									return;
 								}
@@ -428,11 +446,11 @@ public class ManifestLoader implements INdlManifestModelListener, INdlRequestMod
 					} else {
 						// if it doesn't have IP, we need it for proper topology visualization
 						GUI.logger().debug("  Remembering interface " + intR + " of " + ml);
-						addNodeToInterface(getTrueName(intR), ml);
+						addNodeToInterface(intR, ml);
 					}
 				} else {
 					GUI.logger().debug("  Remembering interface " + intR + " of " + ml);					
-					addNodeToInterface(getTrueName(intR), ml);
+					addNodeToInterface(intR, ml);
 				}
 			}
 			
@@ -544,8 +562,8 @@ public class ManifestLoader implements INdlManifestModelListener, INdlRequestMod
 				// check if the nodes are listed in the map
 				
 				if (interfaceToNode.get(getTrueName(intf)) != null) {
-					GUI.logger().debug("  Creating a link  from " + on + " to " + crs);
 					ol = GUIUnifiedState.getInstance().getLinkCreator().create("Unnamed", ResourceType.MANIFEST);
+					GUI.logger().debug("  Creating a link " + ol.getName() + " from " + on + " to " + crs);
 					GUIUnifiedState.getInstance().getGraph().addEdge(ol, new Pair<OrcaNode>(on, crs), 
 							EdgeType.UNDIRECTED);
 				} else
@@ -603,7 +621,7 @@ public class ManifestLoader implements INdlManifestModelListener, INdlRequestMod
 		for (Iterator<Resource> it = interfaces.iterator(); it.hasNext();) {
 			Resource intR = it.next();
 			//interfaceToNode.put(getTrueName(intR), oc);
-			addNodeToInterface(getTrueName(intR), oc);
+			addNodeToInterface(intR, oc);
 		}
 		
 		nodes.put(getTrueName(c), oc);
@@ -661,7 +679,7 @@ public class ManifestLoader implements INdlManifestModelListener, INdlRequestMod
 			Resource intR = it.next();
 			//interfaceToNode.put(getTrueName(intR), newNode);
 			GUI.logger().debug("Remembering interface " + intR + " of node " + ce);
-			addNodeToInterface(getTrueName(intR), newNode);
+			addNodeToInterface(intR, newNode);
 		}
 		
 		// disk image
@@ -702,7 +720,8 @@ public class ManifestLoader implements INdlManifestModelListener, INdlRequestMod
 			nodes.put(getTrueName(tmpR), on);
 			GUIUnifiedState.getInstance().getGraph().addVertex(on);
 			OrcaLink ol = GUIUnifiedState.getInstance().getLinkCreator().create("Unnamed", ResourceType.MANIFEST);
-			
+			GUI.logger().debug("  Creating a link  from " + parent + " to " + on);
+
 			// link to parent (a visual HACK)
 			links.put(ol.getName(), ol);
 			GUIUnifiedState.getInstance().getGraph().addEdge(ol, new Pair<OrcaNode>(parent, on), 
@@ -715,7 +734,7 @@ public class ManifestLoader implements INdlManifestModelListener, INdlRequestMod
 			// a link, this is an intra-domain case, so we can delete the parent later
 			for (Resource intR: NdlCommons.getResourceInterfaces(tmpR)) {
 				//interfaceToNode.put(getTrueName(intR), on);
-				addNodeToInterface(getTrueName(intR), on);
+				addNodeToInterface(intR, on);
 				// HACK: for now check that this interface connects to something
 				// and is not just hanging there with IP address
 				List<Resource> hasI = NdlCommons.getWhoHasInterface(intR, om);
@@ -859,7 +878,6 @@ public class ManifestLoader implements INdlManifestModelListener, INdlRequestMod
 						break;
 					}
 
-					GUI.logger().debug("  Adding p-to-p link");
 					OrcaLink ol = GUIUnifiedState.getInstance().getLinkCreator().create("Unnamed", ResourceType.MANIFEST);
 					
 					GUI.logger().debug("  Creating a link " + ol.getName() + " from " + first + " to " + second);
