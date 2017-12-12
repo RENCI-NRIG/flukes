@@ -297,8 +297,10 @@ public class IP4Assign {
 			tmp = mpCurrent;
 		} else {
 			// find the smallest assigned address
-			int smallest = mpBrackets[1];
+			//int smallest = mpBrackets[1];
 			try {
+				Inet4Address first = (Inet4Address)InetAddress.getByName(usedOnLink.get(0));
+				int smallest = InetAddresses.coerceToInteger(first);
 				debugPrint("Looking for smallest address among " + usedOnLink);
 				for(String u: usedOnLink) {
 					Inet4Address cur = (Inet4Address)InetAddress.getByName(u);
@@ -307,11 +309,10 @@ public class IP4Assign {
 						continue;
 					if (curInt < smallest) {
 						smallest = curInt;
-						// debugPrint("   " + u);
-						tmp = cur;
 					}
 				}
 				debugPrint("Lowest " + smallest);
+				tmp = InetAddresses.fromInteger(smallest);
 			} catch(UnknownHostException uhe) {
 				;
 			}
