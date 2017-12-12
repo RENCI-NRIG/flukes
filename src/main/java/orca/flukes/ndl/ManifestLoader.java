@@ -233,12 +233,12 @@ public class ManifestLoader implements INdlManifestModelListener, INdlRequestMod
 		String ifaceName = getTrueName(iface);
 		GUI.logger().debug("Considering adding interface " + ifaceName + " to the list");
 		
-		Resource sameInt = NdlCommons.getSameAsResource(iface);
-		if (sameInt != null) {
-			GUI.logger().debug("Interface " + iface + " same as " + sameInt);
+		Resource sameIface = NdlCommons.getSameAsResource(iface);
+		if (sameIface != null) {
+			GUI.logger().debug("Interface " + iface + " same as " + sameIface);
 			// add to the set of duplicates and remove any previous copies
-			sameAs.add(sameInt);
-			interfaceToNode.remove(getTrueName(sameInt));
+			sameAs.add(sameIface);
+			interfaceToNode.remove(getTrueName(sameIface));
 		} 
 		// we don't need interfaces to which 'sameAs' points
 		if (sameAs.contains(iface))
