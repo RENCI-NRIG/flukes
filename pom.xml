@@ -1,9 +1,8 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>orca</groupId>
 	<artifactId>flukes</artifactId>
-	<version>0.7-SNAPSHOT</version>
+	<version>0.7</version>
 	<name>FLUKES</name>
 	<description>FLUKES - ORCA NDL graph editor</description>
 	<url>http://geni-images.renci.org/webstart</url>
@@ -19,7 +18,8 @@
 		<developerConnection>scm:git:https://github.com/RENCI-NRIG/flukes.git</developerConnection>
 		<connection>scm:git:https://github.com/RENCI-NRIG/flukes.git</connection>
 		<url>https://github.com/RENCI-NRIG/flukes</url>
-	</scm>
+	  <tag>flukes-0.7</tag>
+  </scm>
 	<organization>
 		<name>RENCI, The University of North Carolina at Chapel Hill</name>
 		<url>http://www.renci.org</url>
