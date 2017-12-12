@@ -82,6 +82,7 @@ public class ManifestLoader implements INdlManifestModelListener, INdlRequestMod
 
 	private static final String NOTICE_GUID_PATTERN = "^Reservation\\s+([a-zA-Z0-9-]+)\\s+.*(\\s+.*)*$";
 	private Map<String, List<OrcaNode>> interfaceToNode = new HashMap<String, List<OrcaNode>>();
+	private Set<Resource> sameAs = new HashSet<>();
 	private Map<String, OrcaNode> nodes = new HashMap<String, OrcaNode>();
 	private Map<String, OrcaLink> links = new HashMap<String, OrcaLink>();
 	boolean requestPhase = true;
@@ -226,8 +227,6 @@ public class ManifestLoader implements INdlManifestModelListener, INdlRequestMod
 		}
 		return rname;
 	}
-	
-	Set<Resource> sameAs = new HashSet<>();
 	
 	private void addNodeToInterface(Resource iface, OrcaNode n) {
 
