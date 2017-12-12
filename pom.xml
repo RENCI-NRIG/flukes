@@ -2,7 +2,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>orca</groupId>
 	<artifactId>flukes</artifactId>
-	<version>0.7</version>
+	<version>0.8-SNAPSHOT</version>
 	<name>FLUKES</name>
 	<description>FLUKES - ORCA NDL graph editor</description>
 	<url>http://geni-images.renci.org/webstart</url>
@@ -18,8 +18,7 @@
 		<developerConnection>scm:git:https://github.com/RENCI-NRIG/flukes.git</developerConnection>
 		<connection>scm:git:https://github.com/RENCI-NRIG/flukes.git</connection>
 		<url>https://github.com/RENCI-NRIG/flukes</url>
-	  <tag>flukes-0.7</tag>
-  </scm>
+  	</scm>
 	<organization>
 		<name>RENCI, The University of North Carolina at Chapel Hill</name>
 		<url>http://www.renci.org</url>
