@@ -12,6 +12,7 @@ import java.io.File;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
@@ -877,6 +878,39 @@ public class GUIUnifiedState extends GUICommonState implements IDeleteEdgeCallBa
 					// query one last time to get e.g. IP addresses and other labels with late binding
 					queryManifest();
 				}
+			} else if (e.getActionCommand().equals("addsshkey")) {
+			    try {
+                    // display key dialog
+                    NewUserDialog sshKeyDialog = new NewUserDialog(GUI.getInstance().getFrame(), "Account and SSH keys", 
+                            "Paste your public SSH key here:", 20, 50);
+                    sshKeyDialog.pack();
+                    sshKeyDialog.setVisible(true);
+                    String keys = sshKeyDialog.getSSHKeys();
+                    boolean sudo = sshKeyDialog.getSudo();
+                    String username = sshKeyDialog.getUsername();
+
+                    for(OrcaNode on: g.getVertices()) {
+                        if (on instanceof OrcaNode) {
+                            // call XMLRPC proxy to insert the key into node
+                            Boolean tmpRes = OrcaSMXMLRPCProxy.getInstance().modifySliverSSH(
+                                    GUIUnifiedState.getInstance().getSliceName(), 
+                                    on.getReservationGuid(), username, sudo, Arrays.asList(keys));
+                            if (!tmpRes) 
+                                throw new Exception("Unable to insert ssh key into node " + on.getName());
+                        }
+                    }
+
+                    KMessageDialog kd = new KMessageDialog(GUI.getInstance().getFrame(), "Result", true);
+                    kd.setMessage("SSH Keys inserted successfully");                            
+                    kd.setLocationRelativeTo(GUI.getInstance().getFrame());
+                    kd.setVisible(true);
+                } catch (Exception ex) {
+                    ExceptionDialog ked = new ExceptionDialog(GUI.getInstance().getFrame(),
+                            "Unable to insert SSH key due to exception!");
+                    ked.setException("Exception encountered: ", ex);
+                    ked.setLocationRelativeTo(GUI.getInstance().getFrame());
+                    ked.setVisible(true);
+                }
 			}  else if (e.getActionCommand().equals("clear")) {
 				// distinguish modify clear and all clear
 				switch(guiState) {

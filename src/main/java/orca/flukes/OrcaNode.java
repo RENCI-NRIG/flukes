@@ -37,12 +37,20 @@ import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JPopupMenu;
 
+import org.apache.commons.collections15.Factory;
+import org.apache.commons.collections15.Transformer;
+
+import edu.uci.ics.jung.graph.util.Pair;
+import edu.uci.ics.jung.visualization.FourPassImageShaper;
+import edu.uci.ics.jung.visualization.LayeredIcon;
+import edu.uci.ics.jung.visualization.renderers.Checkmark;
 import orca.flukes.GUIUnifiedState.GUIState;
 import orca.flukes.MouseMenus.DomainDisplay;
 import orca.flukes.MouseMenus.ImageDisplay;
 import orca.flukes.MouseMenus.IncreaseByNodeGroupItem;
 import orca.flukes.MouseMenus.MultiDomainDisplay;
 import orca.flukes.MouseMenus.NodeColorItem;
+import orca.flukes.MouseMenus.NodeInsertSSHKeyItem;
 import orca.flukes.MouseMenus.NodeLoginItem;
 import orca.flukes.MouseMenus.NodePropItem;
 import orca.flukes.MouseMenus.NodePropertiesItem;
@@ -55,14 +63,6 @@ import orca.flukes.MouseMenus.StitchPropertiesItem;
 import orca.flukes.MouseMenus.UndoStitchingItem;
 import orca.flukes.ui.Colors;
 import orca.flukes.ui.IconOutline;
-
-import org.apache.commons.collections15.Factory;
-import org.apache.commons.collections15.Transformer;
-
-import edu.uci.ics.jung.graph.util.Pair;
-import edu.uci.ics.jung.visualization.FourPassImageShaper;
-import edu.uci.ics.jung.visualization.LayeredIcon;
-import edu.uci.ics.jung.visualization.renderers.Checkmark;
 
 public class OrcaNode extends OrcaResource {
 
@@ -517,6 +517,7 @@ public class OrcaNode extends OrcaResource {
 			this.addSeparator();
 			this.add(new NodeViewItem(GUI.getInstance().getFrame()));
 			this.add(new NodePropertiesItem(GUI.getInstance().getFrame()));
+	        this.add(new NodeInsertSSHKeyItem(GUI.getInstance().getFrame()));
 			this.add(new NodeLoginItem(GUI.getInstance().getFrame()));
 			this.addSeparator();
 			this.add(new NodeColorItem(GUI.getInstance().getFrame(), false));

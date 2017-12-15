@@ -39,6 +39,7 @@ public class OrcaSMXMLRPCProxy extends OrcaXMLRPCBase {
 	private static final String CREATE_SLICE = "orca.createSlice";
 	private static final String DELETE_SLICE = "orca.deleteSlice";
 	private static final String MODIFY_SLICE = "orca.modifySlice";
+	private static final String MODIFY_SLIVER = "orca.modifySliver";
 	private static final String RENEW_SLICE = "orca.renewSlice";
 	private static final String LIST_SLICES = "orca.listSlices";
 	private static final String LIST_RESOURCES = "orca.listResources";
@@ -559,6 +560,58 @@ public class OrcaSMXMLRPCProxy extends OrcaXMLRPCBase {
 		return result;
 	}
 
+	@SuppressWarnings("unchecked")
+	public Boolean modifySliverSSH(String sliceId, String resId, String user, boolean sudo, List<String> keys) throws Exception {
+	    assert(sliceId != null);
+	    assert(resId != null);
+
+	    Boolean result = null;
+	    setSSLIdentity(null, GUI.getInstance().getSelectedController());
+
+	    if (!isSSLIdentitySet())
+	        throw new Exception("SSL Identity not set, unable to proceed");
+
+	    Map<String, Object> rr = null;
+	    try {
+	        XmlRpcClientConfigImpl config = new XmlRpcClientConfigImpl();
+	        config.setServerURL(new URL(GUI.getInstance().getSelectedController()));
+	        XmlRpcClient client = new XmlRpcClient();
+	        client.setConfig(config);
+
+	        // set this transport factory for host-specific SSLContexts to work
+	        XmlRpcCommonsTransportFactory f = new XmlRpcCommonsTransportFactory(client);
+	        client.setTransportFactory(f);
+
+	        List<Map<String, ?>> keyList = new ArrayList<>();
+	        Map<String, Object> userEntry = new HashMap<>();
+	        userEntry.put("login", user);
+	        userEntry.put("keys", keys);
+	        if (sudo)
+	            userEntry.put("sudo", "yes");
+	        else
+	            userEntry.put("sudo", "no");
+	        keyList.add(userEntry);
+	        // modify sliver String slice_urn, String sliver_guid, Object[] credentials, 
+            // String modifySubcommand, List<Map<String, ?>> modifyProperties
+	        rr = (Map<String, Object>)client.execute(MODIFY_SLIVER, new Object[]{ sliceId, resId, new Object[]{}, "ssh", keyList});
+	    } catch (MalformedURLException e) {
+	        throw new Exception("Please check the controller URL " + GUI.getInstance().getSelectedController());
+	    } catch (XmlRpcException e) {
+	        throw new Exception("Unable to contact controller " + GUI.getInstance().getSelectedController() + " due to " + e);
+	    } catch (Exception e) {
+	        throw new Exception("Unable to contact controller " + GUI.getInstance().getSelectedController());
+	    }
+
+	    if (rr == null)
+	        throw new Exception("Unable to contact controller " + GUI.getInstance().getSelectedController());
+
+	    if ((Boolean)rr.get(ERR_RET_FIELD))
+	        throw new Exception("Unable to insert SSH key into sliver: " + (String)rr.get(MSG_RET_FIELD));
+
+	    result = (Boolean)rr.get(RET_RET_FIELD);
+	    return result;
+	}
+	
 	@SuppressWarnings("unchecked")
 	public String modifySlice(String sliceId, String modReq) throws Exception {
 		assert(sliceId != null);

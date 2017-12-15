@@ -1162,6 +1162,7 @@ public class GUI implements ComponentListener {
 		    sliceMenu.add(addMenuItem("Submit Changes", "submit", rbl));
 		    sliceMenu.add(addMenuItem("View Manifest Topology", "manifest", rbl));
 		    sliceMenu.add(addMenuItem("Poll Manifest for Changes", "manifestpoll", rbl));
+		    sliceMenu.add(addMenuItem("Insert guest SSH key", "addsshkey", rbl));
 		    sliceMenu.add(addMenuItem("Extend Slice", "extend", rbl));
 		    sliceMenu.add(addMenuItem("Delete Slice", "delete", rbl));
 		    sliceMenu.add(addMenuItem("Clear Changes", "clear", rbl));
