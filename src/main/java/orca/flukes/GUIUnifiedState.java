@@ -12,8 +12,8 @@ import java.io.File;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -23,22 +23,6 @@ import java.util.Set;
 import java.util.TimeZone;
 
 import javax.swing.Icon;
-
-import orca.flukes.GUI.GuiTabs;
-import orca.flukes.GUI.PrefsEnum;
-import orca.flukes.OrcaNode.OrcaNodeIconTransformer;
-import orca.flukes.OrcaResource.ResourceType;
-import orca.flukes.irods.IRodsException;
-import orca.flukes.irods.IRodsICommands;
-import orca.flukes.ndl.ManifestLoader;
-import orca.flukes.ndl.ModifySaver;
-import orca.flukes.ndl.RequestSaver;
-import orca.flukes.ui.TextAreaDialog;
-import orca.flukes.util.IP4Assign;
-import orca.flukes.xmlrpc.GENICHXMLRPCProxy;
-import orca.flukes.xmlrpc.GENICHXMLRPCProxy.FedField;
-import orca.flukes.xmlrpc.NDLConverter;
-import orca.flukes.xmlrpc.OrcaSMXMLRPCProxy;
 
 import org.apache.commons.collections15.Transformer;
 
@@ -62,6 +46,21 @@ import edu.uci.ics.jung.visualization.decorators.ToStringLabeller;
 import edu.uci.ics.jung.visualization.picking.PickedState;
 import edu.uci.ics.jung.visualization.renderers.BasicVertexRenderer;
 import edu.uci.ics.jung.visualization.transform.shape.GraphicsDecorator;
+import orca.flukes.GUI.GuiTabs;
+import orca.flukes.GUI.PrefsEnum;
+import orca.flukes.OrcaNode.OrcaNodeIconTransformer;
+import orca.flukes.OrcaResource.ResourceType;
+import orca.flukes.irods.IRodsException;
+import orca.flukes.irods.IRodsICommands;
+import orca.flukes.ndl.ManifestLoader;
+import orca.flukes.ndl.ModifySaver;
+import orca.flukes.ndl.RequestSaver;
+import orca.flukes.ui.TextAreaDialog;
+import orca.flukes.util.IP4Assign;
+import orca.flukes.xmlrpc.GENICHXMLRPCProxy;
+import orca.flukes.xmlrpc.GENICHXMLRPCProxy.FedField;
+import orca.flukes.xmlrpc.NDLConverter;
+import orca.flukes.xmlrpc.OrcaSMXMLRPCProxy;
 
 /**
  * For managing new and existing slices - unification of Request and Manifest states.
@@ -889,12 +888,12 @@ public class GUIUnifiedState extends GUICommonState implements IDeleteEdgeCallBa
                     boolean sudo = sshKeyDialog.getSudo();
                     String username = sshKeyDialog.getUsername();
 
-                    for(OrcaNode on: g.getVertices()) {
+                    for(OrcaResource on: g.getVertices()) {
                         if (on instanceof OrcaNode) {
                             // call XMLRPC proxy to insert the key into node
                             Boolean tmpRes = OrcaSMXMLRPCProxy.getInstance().modifySliverSSH(
                                     GUIUnifiedState.getInstance().getSliceName(), 
-                                    on.getReservationGuid(), username, sudo, Arrays.asList(keys));
+                                    on.getReservationGuid(), username, sudo, Collections.singletonList(keys));
                             if (!tmpRes) 
                                 throw new Exception("Unable to insert ssh key into node " + on.getName());
                         }

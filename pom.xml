@@ -420,10 +420,6 @@
 			<version>5.2.1</version>
 			<exclusions>
 				<exclusion>
-					<artifactId>bcprov-jdk16</artifactId>
-					<groupId>bouncycastle.bcprov-jdk16</groupId>
-				</exclusion>
-				<exclusion>
 					<artifactId>bcprov-ext-jdk15</artifactId>
 					<groupId>org.bouncycastle</groupId>
 				</exclusion>

@@ -16,7 +16,6 @@ import java.awt.event.ActionListener;
 import java.awt.geom.Point2D;
 import java.io.File;
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Properties;
@@ -35,7 +34,6 @@ import edu.uci.ics.jung.visualization.VisualizationViewer;
 import edu.uci.ics.jung.visualization.control.AbstractModalGraphMouse;
 import edu.uci.ics.jung.visualization.control.ModalGraphMouse;
 import orca.flukes.ui.PasswordDialog;
-import orca.flukes.ui.TextAreaDialog;
 import orca.flukes.xmlrpc.OrcaSMXMLRPCProxy;
 import orca.ndl.ScaledFormatPrinter;
 
@@ -542,7 +540,7 @@ public class MouseMenus {
 	                    // call XMLRPC proxy to insert the key into node
 	                    Boolean res = OrcaSMXMLRPCProxy.getInstance().modifySliverSSH(
 	                            GUIUnifiedState.getInstance().getSliceName(), 
-	                            node.getReservationGuid(), username, sudo, Arrays.asList(keys));
+	                            node.getReservationGuid(), username, sudo, Collections.singletonList(keys));
 	                    if (res) {
 	                        KMessageDialog kd = new KMessageDialog(GUI.getInstance().getFrame(), "Result", true);
 	                        kd.setMessage("SSH Keys inserted successfully into node " + node.getName());                            
