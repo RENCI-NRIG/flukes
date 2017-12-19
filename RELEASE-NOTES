@@ -1,5 +1,15 @@
 Flukes Release Notes:
 ---------------------
+12/15/17:
+- Added ability to create user accounts on instances
+
+12/13/17:
+- Added ability to insert other users' SSH keys
+
+12/12/17:
+- Making visual fixes
+- Fixing bugs in IP address assignment
+
 9/5/17:
 - Better SSH connection string in node properties
 

@@ -13,6 +13,7 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -22,22 +23,6 @@ import java.util.Set;
 import java.util.TimeZone;
 
 import javax.swing.Icon;
-
-import orca.flukes.GUI.GuiTabs;
-import orca.flukes.GUI.PrefsEnum;
-import orca.flukes.OrcaNode.OrcaNodeIconTransformer;
-import orca.flukes.OrcaResource.ResourceType;
-import orca.flukes.irods.IRodsException;
-import orca.flukes.irods.IRodsICommands;
-import orca.flukes.ndl.ManifestLoader;
-import orca.flukes.ndl.ModifySaver;
-import orca.flukes.ndl.RequestSaver;
-import orca.flukes.ui.TextAreaDialog;
-import orca.flukes.util.IP4Assign;
-import orca.flukes.xmlrpc.GENICHXMLRPCProxy;
-import orca.flukes.xmlrpc.GENICHXMLRPCProxy.FedField;
-import orca.flukes.xmlrpc.NDLConverter;
-import orca.flukes.xmlrpc.OrcaSMXMLRPCProxy;
 
 import org.apache.commons.collections15.Transformer;
 
@@ -61,6 +46,21 @@ import edu.uci.ics.jung.visualization.decorators.ToStringLabeller;
 import edu.uci.ics.jung.visualization.picking.PickedState;
 import edu.uci.ics.jung.visualization.renderers.BasicVertexRenderer;
 import edu.uci.ics.jung.visualization.transform.shape.GraphicsDecorator;
+import orca.flukes.GUI.GuiTabs;
+import orca.flukes.GUI.PrefsEnum;
+import orca.flukes.OrcaNode.OrcaNodeIconTransformer;
+import orca.flukes.OrcaResource.ResourceType;
+import orca.flukes.irods.IRodsException;
+import orca.flukes.irods.IRodsICommands;
+import orca.flukes.ndl.ManifestLoader;
+import orca.flukes.ndl.ModifySaver;
+import orca.flukes.ndl.RequestSaver;
+import orca.flukes.ui.TextAreaDialog;
+import orca.flukes.util.IP4Assign;
+import orca.flukes.xmlrpc.GENICHXMLRPCProxy;
+import orca.flukes.xmlrpc.GENICHXMLRPCProxy.FedField;
+import orca.flukes.xmlrpc.NDLConverter;
+import orca.flukes.xmlrpc.OrcaSMXMLRPCProxy;
 
 /**
  * For managing new and existing slices - unification of Request and Manifest states.
@@ -877,6 +877,39 @@ public class GUIUnifiedState extends GUICommonState implements IDeleteEdgeCallBa
 					// query one last time to get e.g. IP addresses and other labels with late binding
 					queryManifest();
 				}
+			} else if (e.getActionCommand().equals("addsshkey")) {
+			    try {
+                    // display key dialog
+                    NewUserDialog sshKeyDialog = new NewUserDialog(GUI.getInstance().getFrame(), "Account and SSH keys", 
+                            "Paste your public SSH key here:", 20, 50);
+                    sshKeyDialog.pack();
+                    sshKeyDialog.setVisible(true);
+                    String keys = sshKeyDialog.getSSHKeys();
+                    boolean sudo = sshKeyDialog.getSudo();
+                    String username = sshKeyDialog.getUsername();
+
+                    for(OrcaResource on: g.getVertices()) {
+                        if (on instanceof OrcaNode) {
+                            // call XMLRPC proxy to insert the key into node
+                            Boolean tmpRes = OrcaSMXMLRPCProxy.getInstance().modifySliverSSH(
+                                    GUIUnifiedState.getInstance().getSliceName(), 
+                                    on.getReservationGuid(), username, sudo, Collections.singletonList(keys));
+                            if (!tmpRes) 
+                                throw new Exception("Unable to insert ssh key into node " + on.getName());
+                        }
+                    }
+
+                    KMessageDialog kd = new KMessageDialog(GUI.getInstance().getFrame(), "Result", true);
+                    kd.setMessage("SSH Keys inserted successfully");                            
+                    kd.setLocationRelativeTo(GUI.getInstance().getFrame());
+                    kd.setVisible(true);
+                } catch (Exception ex) {
+                    ExceptionDialog ked = new ExceptionDialog(GUI.getInstance().getFrame(),
+                            "Unable to insert SSH key due to exception!");
+                    ked.setException("Exception encountered: ", ex);
+                    ked.setLocationRelativeTo(GUI.getInstance().getFrame());
+                    ked.setVisible(true);
+                }
 			}  else if (e.getActionCommand().equals("clear")) {
 				// distinguish modify clear and all clear
 				switch(guiState) {

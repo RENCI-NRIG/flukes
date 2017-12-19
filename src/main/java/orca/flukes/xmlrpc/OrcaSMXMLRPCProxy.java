@@ -22,6 +22,7 @@ import javax.xml.bind.DatatypeConverter;
 
 import orca.flukes.GUI;
 
+import org.apache.commons.lang.Validate;
 import org.apache.xmlrpc.XmlRpcException;
 import org.apache.xmlrpc.client.XmlRpcClient;
 import org.apache.xmlrpc.client.XmlRpcClientConfigImpl;
@@ -39,6 +40,7 @@ public class OrcaSMXMLRPCProxy extends OrcaXMLRPCBase {
 	private static final String CREATE_SLICE = "orca.createSlice";
 	private static final String DELETE_SLICE = "orca.deleteSlice";
 	private static final String MODIFY_SLICE = "orca.modifySlice";
+	private static final String MODIFY_SLIVER = "orca.modifySliver";
 	private static final String RENEW_SLICE = "orca.renewSlice";
 	private static final String LIST_SLICES = "orca.listSlices";
 	private static final String LIST_RESOURCES = "orca.listResources";
@@ -100,8 +102,10 @@ public class OrcaSMXMLRPCProxy extends OrcaXMLRPCBase {
 	 */
 	@SuppressWarnings("unchecked")
 	public String createSlice(String sliceId, String resReq, List<Map<String, ?>> users) throws Exception {
-		assert(sliceId != null);
-		assert(resReq != null);
+	    Validate.notNull(sliceId);
+	    Validate.notNull(resReq);
+	    Validate.notNull(users);
+	    Validate.notEmpty(users);
 
 		String result = null;
 		setSSLIdentity(null, GUI.getInstance().getSelectedController());
@@ -150,7 +154,8 @@ public class OrcaSMXMLRPCProxy extends OrcaXMLRPCBase {
 	 */
 	@SuppressWarnings("unchecked")
 	public String renewSlice(String sliceId, Date newDate) throws Exception {
-		assert(sliceId != null);
+		Validate.notNull(sliceId);
+		Validate.notNull(newDate);
 
 		String result = "";
 		setSSLIdentity(null, GUI.getInstance().getSelectedController());
@@ -347,7 +352,7 @@ public class OrcaSMXMLRPCProxy extends OrcaXMLRPCBase {
 
 	@SuppressWarnings("unchecked")
 	public String sliceStatus(String sliceId)  throws Exception {
-		assert(sliceId != null);
+		Validate.notNull(sliceId);
 
 		String result = null;
 		setSSLIdentity(null, GUI.getInstance().getSelectedController());
@@ -390,7 +395,9 @@ public class OrcaSMXMLRPCProxy extends OrcaXMLRPCBase {
 
 	@SuppressWarnings("unchecked")
 	public Map<String, Map<String, String>> getReservationStates(String sliceId, List<String> reservationIds)  throws Exception {
-		assert((sliceId != null) && (reservationIds != null));
+	    Validate.notNull(sliceId);
+	    Validate.notNull(reservationIds);
+	    Validate.notEmpty(reservationIds);
 
 		setSSLIdentity(null, GUI.getInstance().getSelectedController());
 		
@@ -429,7 +436,9 @@ public class OrcaSMXMLRPCProxy extends OrcaXMLRPCBase {
 	
 	@SuppressWarnings("unchecked")
 	public Map<String, Object> getReservationSliceStitchInfo(String sliceId, List<String> reservationIds)  throws Exception {
-		assert((sliceId != null) && (reservationIds != null));
+	    Validate.notNull(sliceId);
+	    Validate.notNull(reservationIds);
+	    Validate.notEmpty(reservationIds);
 
 		setSSLIdentity(null, GUI.getInstance().getSelectedController());
 		
@@ -468,7 +477,8 @@ public class OrcaSMXMLRPCProxy extends OrcaXMLRPCBase {
 	
 	@SuppressWarnings("unchecked")
 	public List<Map<String, String>> getSliverProperties(String sliceId, String reservationId)  throws Exception {
-		assert((sliceId != null) && (reservationId != null));
+		Validate.notNull(sliceId);
+		Validate.notNull(reservationId);
 
 		setSSLIdentity(null, GUI.getInstance().getSelectedController());
 		
@@ -560,9 +570,64 @@ public class OrcaSMXMLRPCProxy extends OrcaXMLRPCBase {
 	}
 
 	@SuppressWarnings("unchecked")
+	public Boolean modifySliverSSH(String sliceId, String resId, String user, boolean sudo, List<String> keys) throws Exception {
+	    Validate.notNull(sliceId);
+	    Validate.notNull(resId);
+	    Validate.notNull(user);
+	    Validate.notNull(keys);
+	    Validate.notEmpty(keys);
+
+	    Boolean result = null;
+	    setSSLIdentity(null, GUI.getInstance().getSelectedController());
+
+	    if (!isSSLIdentitySet())
+	        throw new Exception("SSL Identity not set, unable to proceed");
+
+	    Map<String, Object> rr = null;
+	    try {
+	        XmlRpcClientConfigImpl config = new XmlRpcClientConfigImpl();
+	        config.setServerURL(new URL(GUI.getInstance().getSelectedController()));
+	        XmlRpcClient client = new XmlRpcClient();
+	        client.setConfig(config);
+
+	        // set this transport factory for host-specific SSLContexts to work
+	        XmlRpcCommonsTransportFactory f = new XmlRpcCommonsTransportFactory(client);
+	        client.setTransportFactory(f);
+
+	        List<Map<String, ?>> keyList = new ArrayList<>();
+	        Map<String, Object> userEntry = new HashMap<>();
+	        userEntry.put("login", user);
+	        userEntry.put("keys", keys);
+	        if (sudo)
+	            userEntry.put("sudo", "yes");
+	        else
+	            userEntry.put("sudo", "no");
+	        keyList.add(userEntry);
+	        // modify sliver String slice_urn, String sliver_guid, Object[] credentials, 
+            // String modifySubcommand, List<Map<String, ?>> modifyProperties
+	        rr = (Map<String, Object>)client.execute(MODIFY_SLIVER, new Object[]{ sliceId, resId, new Object[]{}, "ssh", keyList});
+	    } catch (MalformedURLException e) {
+	        throw new Exception("Please check the controller URL " + GUI.getInstance().getSelectedController());
+	    } catch (XmlRpcException e) {
+	        throw new Exception("Unable to contact controller " + GUI.getInstance().getSelectedController() + " due to " + e);
+	    } catch (Exception e) {
+	        throw new Exception("Unable to contact controller " + GUI.getInstance().getSelectedController());
+	    }
+
+	    if (rr == null)
+	        throw new Exception("Unable to contact controller " + GUI.getInstance().getSelectedController());
+
+	    if ((Boolean)rr.get(ERR_RET_FIELD))
+	        throw new Exception("Unable to insert SSH key into sliver: " + (String)rr.get(MSG_RET_FIELD));
+
+	    result = (Boolean)rr.get(RET_RET_FIELD);
+	    return result;
+	}
+	
+	@SuppressWarnings("unchecked")
 	public String modifySlice(String sliceId, String modReq) throws Exception {
-		assert(sliceId != null);
-		assert(modReq != null);
+	    Validate.notNull(sliceId);
+	    Validate.notNull(modReq);
 
 		String result = null;
 		setSSLIdentity(null, GUI.getInstance().getSelectedController());
@@ -643,8 +708,9 @@ public class OrcaSMXMLRPCProxy extends OrcaXMLRPCBase {
 
 	@SuppressWarnings("unchecked")
 	public boolean permitSliceStitch(String sliceId, String reservationId, String secret) throws Exception {
-		assert(sliceId != null);
-		assert(reservationId != null);
+	    Validate.notNull(sliceId);
+	    Validate.notNull(reservationId);
+	    Validate.notNull(secret);
 		
 		Boolean result = null;
 		setSSLIdentity(null, GUI.getInstance().getSelectedController());
@@ -685,8 +751,8 @@ public class OrcaSMXMLRPCProxy extends OrcaXMLRPCBase {
 	
 	@SuppressWarnings("unchecked")
 	public boolean revokeSliceStitch(String sliceId, String reservationId) throws Exception {
-		assert(sliceId != null);
-		assert(reservationId != null);
+	    Validate.notNull(sliceId);
+	    Validate.notNull(reservationId);
 		
 		Boolean result = null;
 		setSSLIdentity(null, GUI.getInstance().getSelectedController());
@@ -728,11 +794,13 @@ public class OrcaSMXMLRPCProxy extends OrcaXMLRPCBase {
 	@SuppressWarnings("unchecked")
 	public boolean performSliceStitch(String fromSliceId, String fromReservationId, 
 			String toSliceId, String toReservationId, String secret, Properties p) throws Exception {
-		assert(fromSliceId != null);
-		assert(fromReservationId != null);
-		assert(toSliceId != null);
-		assert(toReservationId != null);
-		
+	    Validate.notNull(fromSliceId);
+	    Validate.notNull(fromReservationId);
+	    Validate.notNull(toSliceId);
+	    Validate.notNull(toReservationId);
+	    Validate.notNull(secret);
+	    Validate.notNull(p);
+	    
 		Boolean result = null;
 		setSSLIdentity(null, GUI.getInstance().getSelectedController());
 		
@@ -772,10 +840,10 @@ public class OrcaSMXMLRPCProxy extends OrcaXMLRPCBase {
 	
 	@SuppressWarnings("unchecked")
 	public boolean undoSliceStitch(String fromSliceId, String fromReservationId, String toSliceId, String toReservationId) throws Exception {
-		assert(fromSliceId != null);
-		assert(fromReservationId != null);
-		assert(toSliceId != null);
-		assert(toReservationId != null);
+	    Validate.notNull(fromSliceId);
+	    Validate.notNull(fromReservationId);
+	    Validate.notNull(toSliceId);
+	    Validate.notNull(toReservationId);
 		
 		Boolean result = null;
 		setSSLIdentity(null, GUI.getInstance().getSelectedController());

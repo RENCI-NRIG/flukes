@@ -27,16 +27,15 @@ import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.JRadioButtonMenuItem;
 
-import orca.flukes.ui.PasswordDialog;
-import orca.flukes.xmlrpc.OrcaSMXMLRPCProxy;
-import orca.ndl.ScaledFormatPrinter;
-
 import com.hyperrealm.kiwi.ui.dialog.ExceptionDialog;
 import com.hyperrealm.kiwi.ui.dialog.KMessageDialog;
 
 import edu.uci.ics.jung.visualization.VisualizationViewer;
 import edu.uci.ics.jung.visualization.control.AbstractModalGraphMouse;
 import edu.uci.ics.jung.visualization.control.ModalGraphMouse;
+import orca.flukes.ui.PasswordDialog;
+import orca.flukes.xmlrpc.OrcaSMXMLRPCProxy;
+import orca.ndl.ScaledFormatPrinter;
 
 /**
  * A collection of classes used to assemble popup mouse menus for the custom
@@ -518,6 +517,57 @@ public class MouseMenus {
 			this.point = point;			
 		}
 
+	}
+	
+	public static class NodeInsertSSHKeyItem extends JMenuItem implements NodeMenuListener<OrcaNode, OrcaLink>, MenuPointListener {
+	    OrcaResource node;
+	    VisualizationViewer<OrcaNode, OrcaLink> visComp;
+	    Point2D point;
+
+	    public NodeInsertSSHKeyItem(final JFrame frame) {
+	        super("Insert guest SSH key ...");
+	        this.addActionListener(new ActionListener() {
+	            public void actionPerformed(ActionEvent e) {
+	                try {
+	                    // display key dialog
+	                    NewUserDialog sshKeyDialog = new NewUserDialog(GUI.getInstance().getFrame(), "Account and SSH keys for node " + node.getName(), 
+	                            "Paste your public SSH key here:", 20, 50);
+	                    sshKeyDialog.pack();
+	                    sshKeyDialog.setVisible(true);
+	                    String keys = sshKeyDialog.getSSHKeys();
+	                    boolean sudo = sshKeyDialog.getSudo();
+	                    String username = sshKeyDialog.getUsername();
+	                    // call XMLRPC proxy to insert the key into node
+	                    Boolean res = OrcaSMXMLRPCProxy.getInstance().modifySliverSSH(
+	                            GUIUnifiedState.getInstance().getSliceName(), 
+	                            node.getReservationGuid(), username, sudo, Collections.singletonList(keys));
+	                    if (res) {
+	                        KMessageDialog kd = new KMessageDialog(GUI.getInstance().getFrame(), "Result", true);
+	                        kd.setMessage("SSH Keys inserted successfully into node " + node.getName());                            
+	                        kd.setLocationRelativeTo(GUI.getInstance().getFrame());
+	                        kd.setVisible(true);
+	                    }
+	                } catch (Exception ex) {
+	                    ExceptionDialog ked = new ExceptionDialog(GUI.getInstance().getFrame(),
+	                            "Unable to insert SSH key due to exception!");
+	                    ked.setException("Exception encountered: ", ex);
+	                    ked.setLocationRelativeTo(GUI.getInstance().getFrame());
+	                    ked.setVisible(true);
+	                }
+	            }
+	        });
+	    }
+	    
+        @Override
+        public void setPoint(Point2D point) {
+            this.point = point; 
+        }
+
+        @Override
+        public void setNodeAndView(OrcaNode v, VisualizationViewer<OrcaNode, OrcaLink> visView) {
+            visComp = visView;
+            node = v;
+        }
 	}
 	
 	public static class NodePropertiesItem extends JMenuItem implements NodeMenuListener<OrcaNode, OrcaLink>, MenuPointListener {
