@@ -1,5 +1,8 @@
 Flukes Release Notes:
 ---------------------
+12/21/17:
+- Updated to use regex to shorten long names of objects
+
 12/15/17:
 - Added ability to create user accounts on instances
 
