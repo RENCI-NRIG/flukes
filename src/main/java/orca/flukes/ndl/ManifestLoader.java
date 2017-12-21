@@ -81,6 +81,7 @@ import orca.ndl.NdlToRSpecHelper;
 public class ManifestLoader implements INdlManifestModelListener, INdlRequestModelListener , INdlColorRequestListener {
 
 	private static final String NOTICE_GUID_PATTERN = "^Reservation\\s+([a-zA-Z0-9-]+)\\s+.*(\\s+.*)*$";
+	private static final String LONG_VLAN_GUID_PATTERN = "/Domain/vlan/(\\{{0,1}([0-9a-fA-F]){8}-([0-9a-fA-F]){4}-([0-9a-fA-F]){4}-([0-9a-fA-F]){4}-([0-9a-fA-F]){12}\\}{0,1})";
 	private Map<String, List<OrcaNode>> interfaceToNode = new HashMap<String, List<OrcaNode>>();
 	private Set<Resource> sameAs = new HashSet<>();
 	private Map<String, OrcaNode> nodes = new HashMap<String, OrcaNode>();
@@ -220,12 +221,12 @@ public class ManifestLoader implements INdlManifestModelListener, INdlRequestMod
 		if (ind > 0) {
 			rname = rname.substring(ind + 1);
 		}
-		// also cut off everything after first '/' if present
-		ind = rname.indexOf('/');
-		if (ind > 0) {
-			rname = rname.substring(0, ind);
-		}
-		return rname;
+		// also cut off everything after first '/' if present 
+		// NO - this is wrong, as it
+		// doesn't work for NodeGroups. Instead do a regex match and shorten names of type
+		// xxx/Domain/vlan/<guid>/vlan to xxx/vlan /ib 12/20/2017
+
+		return rname.replaceAll(LONG_VLAN_GUID_PATTERN, "");
 	}
 	
 	private void addNodeToInterface(Resource iface, OrcaNode n) {
@@ -1077,5 +1078,8 @@ public class ManifestLoader implements INdlManifestModelListener, INdlRequestMod
 		msg = "Reservation 9d194ec5-a849-49a5-88c6-789bca669e9a (Slice test-4) is in state [Failed,None]\n\n" +
 				"Last ticket update:\n java.lang.RuntimeException: Insufficient <memoryCapacity,0> to meet request:6000";
 		System.out.println(getGuidFromNotice(msg));
+		
+		String vlanName = "ion/Domain/vlan/8656151e-279e-4f09-9fb1-a82f37fdb61b/vlan";
+		System.out.println(vlanName.replaceAll("/Domain/vlan/(\\{{0,1}([0-9a-fA-F]){8}-([0-9a-fA-F]){4}-([0-9a-fA-F]){4}-([0-9a-fA-F]){4}-([0-9a-fA-F]){12}\\}{0,1})", ""));
 	}
 }
