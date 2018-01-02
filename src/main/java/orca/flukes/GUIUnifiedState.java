@@ -884,6 +884,8 @@ public class GUIUnifiedState extends GUICommonState implements IDeleteEdgeCallBa
                             "Paste your public SSH key here:", 20, 50);
                     sshKeyDialog.pack();
                     sshKeyDialog.setVisible(true);
+                    if (sshKeyDialog.isCancelled())
+                        return;
                     String keys = sshKeyDialog.getSSHKeys();
                     boolean sudo = sshKeyDialog.getSudo();
                     String username = sshKeyDialog.getUsername();

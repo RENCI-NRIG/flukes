@@ -22,6 +22,10 @@ import com.hyperrealm.kiwi.ui.dialog.ComponentDialog;
 import com.hyperrealm.kiwi.ui.dialog.KMessageDialog;
 
 public class NewUserDialog extends ComponentDialog {
+    /**
+     * 
+     */
+    private static final long serialVersionUID = 1L;
     private JFrame parent;
     private KPanel kp;
     private final KTextArea ta;
@@ -142,7 +146,7 @@ public class NewUserDialog extends ComponentDialog {
 
 
         if (getSSHKeys().length() > 1000) {
-            inputErrorDialog("Invalid SSH key", "SSH key too long");
+            inputErrorDialog("Invalid public SSH key", "Public SSH key too long");
             return false;
         }
 
@@ -150,7 +154,7 @@ public class NewUserDialog extends ComponentDialog {
         Matcher dsaMatcher = dsaPattern.matcher(getSSHKeys());
 
         if (!rsaMatcher.matches() && !dsaMatcher.matches()) {
-            inputErrorDialog("Invalid SSH key", "SSH key doesn't match pattern");
+            inputErrorDialog("Invalid Public SSH key", "Public SSH key doesn't match pattern for RSA or DSA");
             return false;
         }
 
