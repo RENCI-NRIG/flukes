@@ -1,5 +1,8 @@
 Flukes Release Notes:
 ---------------------
+01/02/18:
+- Fixing Cancel button behavior for SSH key insertion
+
 12/21/17:
 - Updated to use regex to shorten long names of objects
 

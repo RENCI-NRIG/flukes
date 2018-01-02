@@ -2,7 +2,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>orca</groupId>
 	<artifactId>flukes</artifactId>
-	<version>0.7.1</version>
+	<version>0.7.2</version>
 	<name>FLUKES</name>
 	<description>FLUKES - ORCA NDL graph editor</description>
 	<url>http://geni-images.renci.org/webstart</url>
