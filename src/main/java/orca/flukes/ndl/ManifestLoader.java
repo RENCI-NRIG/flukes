@@ -117,8 +117,7 @@ public class ManifestLoader implements INdlManifestModelListener, INdlRequestMod
 			return noIp;
 		}
 	}
-	private Map<Resource, Resource> sharedStorageLinkInterfaceEquivalence = new HashMap<Resource, Resource>();
-	
+		
 	public boolean loadGraph(File f) {
 		BufferedReader bin = null; 
 		try {
@@ -388,85 +387,17 @@ public class ManifestLoader implements INdlManifestModelListener, INdlRequestMod
 			setRequestGuid(l, ml);
 			
 			nodes.put(getTrueName(l), ml);
-			
-			// special case handling - if storage is one side of the link
-			// (only for shared vlan storage), then we only remember
-			// interfaces with no ip addresses on them (others are duplicates; 
-			// we save the equivalence relationship to lookup IP later) /ib 09/18/14
-			boolean sharedVlanStorageLink = false;
-			Map<Resource, List<Resource>> interfacesByOwner = new HashMap<Resource, List<Resource>>();
-			
-			for(Resource ti: interfaces) {
-				List<Resource> attached = NdlCommons.getWhoHasInterface(ti, m);
-				if (attached == null)
-					continue;
-				for(Resource ta: attached) {
-					// skip links (self included)
-					if (NdlCommons.hasResourceType(ta, NdlCommons.topologyLinkConnectionClass))
-						continue;
-					if (NdlCommons.isISCSINetworkStorage(ta)) {
-						sharedVlanStorageLink = true;
-					}
-					List<Resource> tmp = interfacesByOwner.get(ta);
-					if (tmp == null)
-						tmp = new ArrayList<Resource>();
-					tmp.add(ti);
-					interfacesByOwner.put(ta, tmp);
-				}
-			}
-
-			// map ip/noip interfaces to each other
-			for(Map.Entry<Resource, List<Resource>> ee: interfacesByOwner.entrySet()) {
-				// for regular nodes and storage, not for node groups
-				if (ee.getValue().size() == 2) {
-					Resource noIp = null, ip = null;
-					if (NdlCommons.getInterfaceIP(ee.getValue().get(0)) == null) {
-						noIp = ee.getValue().get(0);
-						ip = ee.getValue().get(1);
-					} else {
-						noIp = ee.getValue().get(1);
-						ip = ee.getValue().get(0);
-					}
-					sharedStorageLinkInterfaceEquivalence.put(noIp, ip);
-					sharedStorageLinkInterfaceEquivalence.put(ip, noIp);
-				}
-			}
 
 			// remember the interfaces
 			while(it.hasNext()) {
 				Resource intR = it.next();
-				//interfaceToNode.put(getTrueName(intR), ml);
-				if (sharedVlanStorageLink) {
-					// does it have an IP address? - then we use it (for node groups this ends up false)
-					if ((NdlCommons.getInterfaceIP(intR) != null) && sharedStorageLinkInterfaceEquivalence.containsKey(intR)) {
-						// if it has IP, it is shared and we don't need it, however we need
-						// IP address from it
-						GUI.logger().debug("  Skipping/deleting interface " + intR + " of " + ml + " that has IP address");
-						interfaceToNode.remove(getTrueName(intR));
-					} else {
-						// if it doesn't have IP, we need it for proper topology visualization
-						GUI.logger().debug("  Remembering interface " + intR + " of " + ml);
-						addNodeToInterface(intR, ml);
-					}
-				} else {
-					GUI.logger().debug("  Remembering interface " + intR + " of " + ml);					
-					addNodeToInterface(intR, ml);
-				}
+				GUI.logger().debug("  Remembering interface " + intR + " of " + ml);					
+				addNodeToInterface(intR, ml);
 			}
 			
 			// add crossconnect to the graph
 			GUIUnifiedState.getInstance().getGraph().addVertex(ml);
 			
-			// link to this later from interface information
-			
-			// link nodes (we've already seen them) to it
-//			for(Resource intf: interfaces) {
-//				if (interfaceToNode.get(getTrueName(intf)) != null) {
-//					GUI.logger().debug("  Creating a link " + lcount + " from " + ml + " to " + interfaceToNode.get(getTrueName(intf)));
-//					OrcaLink ol = new OrcaLink("Link " + lcount++);
-//					GUIUnifiedState.getInstance().getGraph().addEdge(ol, new Pair<OrcaNode>(ml, interfaceToNode.get(getTrueName(intf))), EdgeType.UNDIRECTED);
-//				}
-//			}
 		}
 	}
 
@@ -535,19 +466,6 @@ public class ManifestLoader implements INdlManifestModelListener, INdlRequestMod
 		} else {
 			if (mask != null)
 				nmInt = "" + RequestSaver.netmaskStringToInt(mask);
-		}
-		
-		// check mirrored storage interfaces
-		if ((ip == null) && (sharedStorageLinkInterfaceEquivalence.containsKey(intf))){
-			String ifIpLabel = NdlCommons.getLabelID(sharedStorageLinkInterfaceEquivalence.get(intf));
-			// x.y.z.w/24
-			if (ifIpLabel != null) {
-				String[] ipnm = ifIpLabel.split("/");
-				if (ipnm.length == 2) {
-					ip = ipnm[0];
-					nmInt = ipnm[1];
-				}
-			}
 		}
 		
 		if (on != null) {
