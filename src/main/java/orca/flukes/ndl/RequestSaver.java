@@ -123,6 +123,8 @@ public class RequestSaver {
 		dm.put("PUCP (Lima,  Peru) XO Rack", "pucpvmsite.rdf#pucpvmsite");
 		dm.put("RENCI RADICS (Chapel Hill, NC USA) RADICS Rack", "rciradicsvmsite.rdf#rciradicsvmsite");
 		dm.put("BBN RADICS (Boston, MA USA) RADICS Rack", "bbnradicsvmsite.rdf#bbnradicsvmsite");
+		dm.put("LAT (LA Tech, Ruston, LA USA) XO Rack", "latvmsite.rdf#latvmsite");
+		dm.put("DISA XO Rack", "disavmsite.rdf#disavmsite");
 		dm.put(OrcaStitchPort.STITCHING_DOMAIN_SHORT_NAME, "orca.rdf#Stitching");
 
 		domainMap = Collections.unmodifiableMap(dm);
@@ -159,6 +161,8 @@ public class RequestSaver {
 		ndm.put("PUCP XO Rack Net", "pucpNet.rdf#pucpNet");
 		ndm.put("RENCI RADICS Rack Net", "rciradicsNet#rciradicsNet");
 		ndm.put("BBN RADICS Net", "bbnradicsNet#bbnradicsNet");
+		ndm.put("LAT XO Rack Net", "latNet.rdf#latNet");
+		ndm.put("DISA Net", "disaNet.rdf#disaNet");
 
 		ndm.put("I2 ION/AL2S", "ion.rdf#ion");
 		ndm.put("NLR Net", "nlr.rdf#nlr");
