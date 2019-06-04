@@ -289,6 +289,8 @@ public class ManifestLoader implements INdlManifestModelListener, INdlRequestMod
 		Iterator<Resource> it = interfaces.iterator(); 
 		
 		String label = NdlCommons.getResourceLabel(l);
+		long bw = NdlCommons.getResourceBandwidth(l);
+		GUI.logger().debug("Link Connection: " + l + " with label " + label + " and bw " + bw);
 		
 		// limit to link connections not part of a network connection
 		if (interfaces.size() == 2){
@@ -329,6 +331,7 @@ public class ManifestLoader implements INdlManifestModelListener, INdlRequestMod
 									// degenerate case of a node on a shared vlan
 									OrcaCrossconnect oc = new OrcaCrossconnect(getPrettyName(l));
 									oc.setLabel(label);
+									oc.setBandwidth(bw);
 									oc.setUrl(l.getURI());
 									oc.setDomain(RequestSaver.reverseLookupDomain(NdlCommons.getDomain(l)));
 									nodes.put(getTrueName(l), oc);
@@ -374,6 +377,7 @@ public class ManifestLoader implements INdlManifestModelListener, INdlRequestMod
 			OrcaCrossconnect ml = new OrcaCrossconnect(getPrettyName(l));
 
 			ml.setLabel(label);
+			ml.setBandwidth(bw);
 			ml.setUrl(l.getURI());
 			ml.setReservationNotice(NdlCommons.getResourceReservationNotice(l));
 			ml.setReservationGuid(getGuidFromNotice(ml.getReservationNotice()));
@@ -523,7 +527,7 @@ public class ManifestLoader implements INdlManifestModelListener, INdlRequestMod
 		if (c == null)
 			return;
 
-		GUI.logger().debug("CrossConnect: " + c + " with label " + label);
+		GUI.logger().debug("CrossConnect: " + c + " with label " + label + " and bw " + bw);
 		
 		OrcaCrossconnect oc = new OrcaCrossconnect(getPrettyName(c));
 		oc.setLabel(label);
@@ -674,6 +678,10 @@ public class ManifestLoader implements INdlManifestModelListener, INdlRequestMod
 		// management IP/port access
 		on.setManagementAccess(NdlCommons.getNodeServices(nr));
 		
+		
+		// Horizon details if available
+		on.setHorizonDetails(NdlCommons.getHorizonUrl(nr), 
+		        NdlCommons.getHorizonUserName(nr), NdlCommons.getHorizonUserPwd(nr));
 		// state
 		on.setState(NdlCommons.getResourceStateAsString(nr));
 		

@@ -2,7 +2,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>orca</groupId>
 	<artifactId>flukes</artifactId>
-	<version>0.7.3</version>
+	<version>0.7.4</version>
 	<name>FLUKES</name>
 	<description>FLUKES - ORCA NDL graph editor</description>
 	<url>http://geni-images.renci.org/webstart</url>
@@ -312,7 +312,7 @@
 		<dependency>
 			<groupId>orca</groupId>
 			<artifactId>ndl</artifactId>
-			<version>5.2.1</version>
+			<version>5.4.10-SNAPSHOT</version>
 			<exclusions>
 				<exclusion>
 					<artifactId>xml-apis</artifactId>
@@ -417,7 +417,7 @@
 		<dependency>
 			<groupId>orca.core</groupId>
 			<artifactId>util</artifactId>
-			<version>5.2.1</version>
+			<version>5.4.10-SNAPSHOT</version>
 			<exclusions>
 				<exclusion>
 					<artifactId>bcprov-ext-jdk15</artifactId>

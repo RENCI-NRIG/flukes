@@ -109,6 +109,7 @@ public class OrcaCrossconnect extends OrcaNode {
 		viewText += "\nReservation notice: " + (resNotice != null ? resNotice : NOT_SPECIFIED);
 		if (label != null)
 			viewText += "\nLabel/Tag: " + label;
+		viewText += "\nBandwidth: " + bandwidth;
 		if (interfaces.size() > 0) {
 			viewText += "\nInterfaces: ";
 			for(Entry<OrcaLink, String> e: interfaces.entrySet()) {
