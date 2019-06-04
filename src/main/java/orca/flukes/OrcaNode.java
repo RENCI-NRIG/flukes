@@ -66,7 +66,7 @@ import orca.flukes.ui.IconOutline;
 
 public class OrcaNode extends OrcaResource {
 
-	protected static final String NOT_SPECIFIED = "Not specified";
+    protected static final String NOT_SPECIFIED = "Not specified";
 	public static final String NODE_NETMASK="32";
 	
 	protected String image = null;
@@ -89,6 +89,9 @@ public class OrcaNode extends OrcaResource {
 	protected String postBootScript = null;
 	// list of open ports
 	protected String openPorts = null;
+	
+	// Horizon URL, name and password (if available)
+	protected String horizonURL = null, horizonName = null, horizonPass = null;
 	
 	protected Set<OrcaNode> dependencies = new HashSet<OrcaNode>();
 	
@@ -380,6 +383,14 @@ public class OrcaNode extends OrcaResource {
 		return null;
 	}
 	
+	// if Horizon is available
+	public void setHorizonDetails(String url, String name, String pass) {
+	   
+	    horizonURL = url;
+	    horizonName = name;
+	    horizonPass = pass;
+	}
+	
 	public String getPortsList() {
 		return openPorts;
 	}
@@ -425,11 +436,20 @@ public class OrcaNode extends OrcaResource {
 						GUI.getInstance().getPreference(GUI.PrefsEnum.SSH_OPTIONS) + " ");
 				service = service.replaceAll(":", " -p ");
 			} 
-			viewText += service + "\n";
+			viewText += "\t" + service + "\n";
 		}
+		
 		if (getManagementAccess().size() == 0) {
-			viewText += NOT_SPECIFIED + "\n";
+			viewText += "\t" + NOT_SPECIFIED + "\n";
 		}
+		
+        if (horizonURL != null) {
+            viewText += "\n\nHorizon Access Details:";
+            viewText += "\n\tHorizon URL: " + horizonURL;
+            viewText += "\n\tHorizon Username: " + (horizonName != null ? horizonName : NOT_SPECIFIED);
+            viewText += "\n\tHorizon Password: " + (horizonPass != null ? horizonPass : NOT_SPECIFIED);
+        }
+		
 		viewText += "\n\nInterfaces: ";
 		for(Map.Entry<OrcaLink, Pair<String>> e: addresses.entrySet()) {
 			viewText += "\n\t" + e.getKey().getName() + ": " + e.getValue().getFirst() + "/" + e.getValue().getSecond() + " " + 

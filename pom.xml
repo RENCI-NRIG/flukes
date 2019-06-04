@@ -312,7 +312,7 @@
 		<dependency>
 			<groupId>orca</groupId>
 			<artifactId>ndl</artifactId>
-			<version>5.2.1</version>
+			<version>5.4.10-SNAPSHOT</version>
 			<exclusions>
 				<exclusion>
 					<artifactId>xml-apis</artifactId>
@@ -417,7 +417,7 @@
 		<dependency>
 			<groupId>orca.core</groupId>
 			<artifactId>util</artifactId>
-			<version>5.2.1</version>
+			<version>5.4.10-SNAPSHOT</version>
 			<exclusions>
 				<exclusion>
 					<artifactId>bcprov-ext-jdk15</artifactId>
