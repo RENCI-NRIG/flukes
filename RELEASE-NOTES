@@ -1,5 +1,9 @@
 Flukes Release Notes:
 ---------------------
+06/04/19:
+- Adding Horizon login details to VMs
+- Fixed bandwidth view on cross connect objects
+
 01/02/18:
 - Fixing Cancel button behavior for SSH key insertion
 
