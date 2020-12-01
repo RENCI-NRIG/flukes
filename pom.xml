@@ -148,7 +148,7 @@
 				<executions>
 					<execution>
 						<id>pack-jnlp</id>
-						<phase>package</phase>
+						<phase>install</phase>
 						<goals>
 							<goal>jnlp-single</goal> <!-- use jnlp, jnlp-inline or jnlp-single as appropriate -->
 						</goals>

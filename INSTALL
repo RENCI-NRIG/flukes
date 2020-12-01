@@ -1,4 +1,4 @@
-To create a jar run
+To create an installable binary (under target/)
 $ mvn clean package 
 To create a jnlp-launchable zip
 $ mvn clean install -Dkeypass=<your keystore password>
